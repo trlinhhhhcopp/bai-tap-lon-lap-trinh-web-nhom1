@@ -1,5 +1,5 @@
 # bai-tap-lon-lap-trinh-web-nhom1
-# Tên đề tài: Xây dựng website... (Điền tên đề tài của nhóm)
+# Chủ đề 9: HỆ THỐNG TIẾP NHẬN VÀ XỬ LÝ HỖ TRỢ ( HELPDESK) NHÓM 1
 
 ## Danh sách thành viên:
 1. Phạm Thị Thanh Ngân (224001736) - Trưởng nhóm
