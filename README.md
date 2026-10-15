@@ -13,10 +13,5 @@
 2. Trần Thục Linh (224001729) 
 3. Lê Hà My (224001736)
 4. Nguyễn Ánh Nhi (224001742)
-<<<<<<< HEAD
 5. Phan Công Thành (224001746) 
-=======
-5. Phan Công Thành  (224001746) 
->>>>>>> a8d49582f7068cd413ce506e8a9759ebff96958f
-
-6. lehamy
+...
