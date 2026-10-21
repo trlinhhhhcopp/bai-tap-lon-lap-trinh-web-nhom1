@@ -14,6 +14,7 @@
 3. Lê Hà My (224001736)
 4. Nguyễn Ánh Nhi (224001742)
 5. Phan Công Thành (224001746) 
+<<<<<<< HEAD
 ...
 
 # I. PHÂN TẦNG PHẠM VI (P0 / P1 / P2) & VAI TRÒ NGƯỜI DÙNG
@@ -56,3 +57,5 @@
 
 - **Xử lý lỗi chưa rõ nguyên nhân:** Trong bảng categories có sẵn danh mục "Chưa rõ nguyên nhân / Sự cố khác". Người dùng không biết lỗi thuộc nhóm nào chỉ cần chọn danh mục này và đính kèm ảnh màn hình lỗi; Admin sẽ xem ảnh và cập nhật lại category_id chính xác khi phân công.
 - **Chống khai khống mức Khẩn cấp:** Bảng tickets lưu tách biệt 2 cột: priority_requested_id (mức do người dùng chọn lúc tạo phiếu) và priority_id (mức áp dụng thực tế). Nếu người dùng chọn *Khẩn cấp*, hệ thống lưu nguyên đề xuất đó nhưng khởi tạo priority_id ở mức *Trung bình* chờ Admin duyệt và chốt khi phân công.
+=======
+>>>>>>> d96f79559bbd3bc302cc154fcbf1bd52b461c577
