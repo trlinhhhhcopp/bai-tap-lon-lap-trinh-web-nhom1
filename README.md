@@ -59,3 +59,30 @@
 - **Chống khai khống mức Khẩn cấp:** Bảng tickets lưu tách biệt 2 cột: priority_requested_id (mức do người dùng chọn lúc tạo phiếu) và priority_id (mức áp dụng thực tế). Nếu người dùng chọn *Khẩn cấp*, hệ thống lưu nguyên đề xuất đó nhưng khởi tạo priority_id ở mức *Trung bình* chờ Admin duyệt và chốt khi phân công.
 =======
 >>>>>>> d96f79559bbd3bc302cc154fcbf1bd52b461c577
+II. SƠ ĐỒ QUAN HỆ THỰC THỂ (ERD V2) & THIẾT KẾ CSDL (CHUẨN 3NF)
+1. Quan hệ giữa 10 bảng dữ liệu trong schema.sql (ERD v2)
+users (1) ──── (n) tickets qua requester_id (Một người dùng tạo nhiều phiếu yêu cầu).
+users (1) ──── (n) tickets qua assigned_to (Một kỹ thuật viên phụ trách nhiều phiếu).
+users (n) ──── (n) categories qua bảng trung gian agent_specialties (user_id, category_id) (Một kỹ thuật viên có thể phụ trách nhiều danh mục chuyên môn).
+categories (1) ──── (n) tickets qua category_id (Mỗi phiếu thuộc một danh mục sự cố).
+priorities (1) ──── (n) tickets qua priority_requested_id và priority_id (Mức ưu tiên đề xuất và mức ưu tiên áp dụng).
+locations (1) ──── (n) tickets qua location_id (Mỗi phiếu gắn với một phòng học/phòng Lab chuẩn hóa).
+tickets (1) ──── (n) ticket_replies qua ticket_id (Một phiếu có nhiều phản hồi trao đổi).
+tickets (1) ──── (n) ticket_histories qua ticket_id (Một phiếu có nhiều bản ghi lịch sử thay đổi).
+tickets (1) ──── (0..1) ticket_ratings qua ticket_id UNIQUE (Mỗi phiếu đã giải quyết có tối đa 1 đánh giá CSAT).
+categories (1) ──── (n) kb_articles qua category_id (Mỗi danh mục có nhiều bài viết hướng dẫn tự khắc phục).
+2. Đặc tả chi tiết các bảng CSDL (MySQL InnoDB, utf8mb4_unicode_ci)
+Bảng 1 — users (Người dùng): id (PK), full_name (VARCHAR(100)), email (VARCHAR(190) UNIQUE), password_hash (VARCHAR(255)), role (ENUM('requester','agent','admin')), academic_role (ENUM('student','lecturer','staff')), department (VARCHAR(100)), max_capacity (TINYINT UNSIGNED DEFAULT 5), is_on_duty (TINYINT(1)), failed_login_attempts, locked_until (DATETIME NULL), is_active (TINYINT(1)), created_at.
+Bảng 2 — categories (Danh mục sự cố): id (PK), name (VARCHAR(100) UNIQUE), description (VARCHAR(500)), sla_hours (SMALLINT UNSIGNED DEFAULT 24), is_active (TINYINT(1)), created_at.
+Bảng 3 — priorities (Mức độ ưu tiên — CRUD bởi Admin): id (PK), code (VARCHAR(20) UNIQUE), name (VARCHAR(60) UNIQUE), sla_factor (DECIMAL(4,2)), sort_order (TINYINT UNSIGNED), is_active (TINYINT(1)), created_at.
+Bảng 4 — locations (Vị trí phòng học / phòng Lab chuẩn hóa): id (PK), building (VARCHAR(50)), room_code (VARCHAR(30) UNIQUE), name (VARCHAR(120)), is_active (TINYINT(1)), created_at.
+Bảng 5 — agent_specialties (Chuyên môn kỹ thuật viên): Khóa chính kép (user_id, category_id) tham chiếu users(id) và categories(id).
+Bảng 6 — tickets (Phiếu yêu cầu hỗ trợ):
+Khóa & Tham chiếu: id (PK), ticket_code (VARCHAR(30) UNIQUE), requester_id (FK), assigned_to (FK NULL), category_id (FK), location_id (FK NULL), priority_requested_id (FK), priority_id (FK), parent_ticket_id (FK tự tham chiếu tickets.id NULL).
+Nội dung & Thời gian: asset_note (VARCHAR(100) NULL), title (VARCHAR(150)), description (TEXT), status (ENUM('new','in_progress','resolved','closed')), attachment_path (VARCHAR(255) NULL), attachment_original_name (VARCHAR(255) NULL), due_at (DATETIME), first_response_at (DATETIME NULL), resolved_at (DATETIME NULL), closed_at (DATETIME NULL), created_at, updated_at.
+Chỉ mục kết hợp (Composite Indexes): idx_tickets_status_due (status, due_at), idx_tickets_assigned_status (assigned_to, status), idx_tickets_requester_created (requester_id, created_at), idx_tickets_dup_check (category_id, location_id, created_at).
+Bảng 7 — ticket_replies (Phản hồi phiếu): id (PK), ticket_id (FK), user_id (FK), message (TEXT), attachment_path (VARCHAR(255) NULL), created_at.
+Bảng 8 — ticket_histories (Lịch sử thao tác & kiểm toán): id (PK), ticket_id (FK), changed_by (FK), action_type (ENUM('created','assigned','status_changed','priority_changed','category_changed','reopened')), old_value (VARCHAR(100) NULL), new_value (VARCHAR(100)), note (VARCHAR(500) NULL), created_at.
+Bảng 9 — ticket_ratings (Đánh giá hài lòng CSAT): id (PK), ticket_id (FK UNIQUE), requester_id (FK), rating (TINYINT UNSIGNED CHECK 1..5), comment (VARCHAR(500) NULL), created_at.
+Bảng 10 — kb_articles (Bài viết hướng dẫn tự khắc phục — P2): id (PK), category_id (FK), title (VARCHAR(200)), keywords (VARCHAR(300)), content (TEXT), is_active (TINYINT(1)), created_at, kèm FULLTEXT INDEX ft_kb_search (title, keywords, content).
+
