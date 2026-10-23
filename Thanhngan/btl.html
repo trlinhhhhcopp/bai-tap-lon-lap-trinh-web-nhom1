@@ -533,16 +533,43 @@
         Đồng thời, hệ thống tạm thời khóa tùy chọn gửi phiếu thuộc phân loại sự cố này (Deflection), ngăn chặn ngay từ đầu hàng trăm phiếu trùng lặp dồn về KTV.
     </p>
 
+    <h3>D. Quản lý Hồ sơ Lớp học &amp; Ngữ cảnh Môn học của Sinh viên Khóa TUD D24</h3>
+    <ul>
+        <li><strong>Gắn kết Lớp học &amp; Danh sách Sinh viên:</strong> Mỗi sinh viên thuộc một lớp sinh hoạt chính (Ví dụ: <code>D24-CNTT1</code> thuộc bảng <code>classes</code>, khóa tuyển sinh <code>D24</code>) và được ghi nhận trong bảng liên kết <code>class_students</code> (1 lớp có nhiều sinh viên, ràng buộc <code>UNIQUE (class_id, student_id)</code>).</li>
+        <li><strong>Ngữ cảnh Học phần khi Tạo Phiếu:</strong> Khi sinh viên gặp sự cố liên quan đến học tập (như không thấy môn học trên LMS, lỗi nộp bài tập lớn, trùng lịch thi), form tạo phiếu cung cấp menu động để chọn <strong>Lớp học (<code>class_id</code>)</strong> và <strong>Môn học (<code>course_id</code>)</strong>. Hệ thống tự động đính kèm thông tin này vào Ticket, giúp KTV 4 (phụ trách LMS) và Giảng viên phụ trách nắm bắt chính xác ngữ cảnh để xử lý nhanh chóng mà không cần hỏi lại sinh viên.</li>
+    </ul>
+
     <div class="page-break"></div>
 
     <!-- TRANG 4: PHÂN HỆ GIẢNG VIÊN, KTV VÀ ADMIN -->
     <div class="module-header">&#128104;&#8205;&#127979; PHÂN HỆ 2: MODULE GIẢNG VIÊN (LECTURER PORTAL - ACADEMIC FAST-TRACK)</div>
     <p>Dành riêng cho giảng viên và cán bộ nghiên cứu (<code>@daihocthudo.edu.vn</code>) với chính sách hỗ trợ ưu tiên cao nhất phục vụ công tác đào tạo:</p>
+    
+    <h3>A. Quyền lợi Học thuật &amp; Làn Ưu tiên Đào tạo (Academic Fast-Track)</h3>
     <ul>
         <li><strong>Định danh học thuật tự động (Academic Identity):</strong> Hệ thống nhận diện <code>user_type: 'lecturer'</code> để tự động kích hoạt làn ưu tiên đặc biệt.</li>
         <li><strong>Quyền chọn Mức ưu tiên Đào tạo (Academic Fast-track):</strong> Giảng viên được trao quyền chủ động gán mức <code>HIGH</code> hoặc <code>URGENT</code> cho các sự cố khẩn cấp: Lỗi cổng nhập điểm QLĐT sát hạn nộp điểm, lỗi phòng học MS Teams trước giờ lên lớp, lỗi tài liệu thi trên Canvas LMS. Hệ thống tự động đẩy phiếu lên đầu hàng đợi của KTV.</li>
         <li><strong>Hỗ trợ Bản quyền &amp; Nghiên cứu khoa học:</strong> Cấp bản quyền phần mềm học thuật, nâng hạn ngạch OneDrive lên 1TB phục vụ lưu trữ số liệu nghiên cứu, cấp chứng thư VPN truy cập tài liệu tạp chí quốc tế từ Thư viện số Đại học Thủ Đô Hà Nội.</li>
         <li><strong>Theo dõi SLA thời gian thực &amp; Chấm điểm KTV:</strong> Xem đồng hồ đếm ngược SLA và chấm điểm chất lượng phục vụ sau khi sự cố được giải quyết.</li>
+    </ul>
+
+    <h3>B. Cơ chế Phân công Giảng dạy Lớp học phần: 1 Lớp HP chỉ có 1 Giáo viên phụ trách</h3>
+    <p>
+        Đáp ứng mô hình đào tạo tín chỉ chuẩn mực của Trường Đại học Thủ Đô Hà Nội (TUD), hệ thống thiết kế bảng liên kết <code>course_assignments</code> với nguyên tắc:
+    </p>
+    <ul>
+        <li><strong>1 Lớp học phần chỉ có 1 Giáo viên phụ trách:</strong> Trong 1 học kỳ, sinh viên lớp sinh hoạt (ví dụ: <code>D24-CNTT1</code>) học 6 môn học. Tương ứng với mỗi môn học của lớp là 1 lớp học phần do <strong>duy nhất 1 giảng viên phụ trách và quản lý danh sách sinh viên</strong>:
+            <ul>
+                <li>Lớp HP Lập trình Web (<code>WEB101</code>) &rarr; TS. Nguyễn Văn Giảng phụ trách.</li>
+                <li>Lớp HP Mạng máy tính (<code>NET201</code>) &rarr; ThS. Trần Thị Hạnh phụ trách.</li>
+                <li>Lớp HP Cơ sở dữ liệu (<code>DB102</code>) &rarr; TS. Lê Văn Tuấn phụ trách.</li>
+                <li>Lớp HP Hệ điều hành (<code>OS101</code>) &rarr; ThS. Phạm Mai Lan phụ trách.</li>
+                <li>Lớp HP Kỹ nghệ phần mềm (<code>SE201</code>) &rarr; TS. Hoàng Quốc Bảo phụ trách.</li>
+                <li>Lớp HP E-Learning &amp; LMS (<code>LMS301</code>) &rarr; ThS. Vũ Thị Ngọc phụ trách.</li>
+            </ul>
+        </li>
+        <li><strong>Ràng buộc Toàn vẹn CSDL:</strong> Thiết lập <code>UNIQUE (class_id, course_id, semester)</code> đảm bảo tuyệt đối không có sự chồng chéo giảng viên trong cùng 1 lớp học phần của học kỳ.</li>
+        <li><strong>Quản lý Sự cố Môn học &amp; Lớp học:</strong> Giảng viên có thể theo dõi danh sách các phiếu hỗ trợ do sinh viên trong lớp học phần mình phụ trách gửi lên, chủ động phối hợp với KTV 4 để mở lại cổng nộp bài hoặc cấp bù thời gian thi trực tuyến.</li>
     </ul>
 
     <div class="module-header">&#128187; PHÂN HỆ 3: MODULE KỸ THUẬT VIÊN (AGENT WORKSPACE)</div>
@@ -579,15 +606,31 @@
     <div class="module-header">&#9881;&#65039; PHÂN HỆ 4: MODULE QUẢN TRỊ VIÊN (ADMIN CONTROL CENTER &amp; MAJOR INCIDENT DISPATCHING)</div>
     <p>Trung tâm chỉ huy của Admin Trung tâm CNTT, nắm toàn quyền điều phối tài nguyên, nhân sự và quản trị bảo mật:</p>
 
-    <h3>A. Quản lý Tài khoản &amp; Khóa Cứng Sinh Viên Bị Buộc Thôi Học (Expelled Students Hard Lock)</h3>
+    <h3>A. Quản trị Vòng đời Người dùng &amp; Khóa Cứng Buộc Thôi Học (User Lifecycle &amp; Hard Lock)</h3>
     <div class="card-box card-danger">
-        <strong>Chính sách Khóa Cứng Đặc Biệt (Hard Lock - Expelled):</strong> Áp dụng cho các trường hợp sinh viên bị Hội đồng Kỷ luật ra quyết định buộc thôi học, đình chỉ học tập hoặc xóa tên sinh viên do vi phạm quy chế đào tạo.
+        <strong>Chính sách Quản trị Vòng đời Học thuật (Academic Lifecycle Management):</strong> Quản lý toàn diện tài khoản từ thời điểm nhập học đến khi tốt nghiệp ra trường, phân định nghiêm ngặt giữa sinh viên bình thường, sinh viên tốt nghiệp và sinh viên bị kỷ luật buộc thôi học.
     </div>
     <ul>
-        <li><strong>Thao tác quản trị của Admin:</strong> Admin chọn tài khoản sinh viên &rarr; Chọn hành động <strong>"Khóa Cứng Kỷ Luật / Buộc Thôi Học"</strong> &rarr; CSDL cập nhật: <code>is_active = 0</code> và <code>lock_reason = 'expelled'</code>.</li>
-        <li><strong>Hủy toàn bộ phiên đăng nhập:</strong> Thu hồi toàn bộ Session và Refresh Token ngay lập tức, đẩy người dùng văng khỏi hệ thống nếu đang đăng nhập.</li>
-        <li><strong>Chặn hoàn toàn cơ chế Quên mật khẩu (SSPR):</strong> Khi nhập mã SV này tại trang "Quên mật khẩu", hệ thống kiểm tra thấy <code>lock_reason = 'expelled'</code> sẽ từ chối gửi mail và hiện thông báo: <em>"Tài khoản đã bị đình chỉ hoạt động theo quyết định kỷ luật của Nhà trường. Vui lòng liên hệ trực tiếp Phòng Quản lý Đào tạo."</em></li>
-        <li><strong>Chặn lạm dụng Guest Ticket:</strong> Nếu sinh viên cố tình tạo Guest Ticket báo tài khoản bị khóa, hệ thống hiển thị cờ cảnh báo đỏ trên bàn làm việc của KTV 1: <code>[CẢNH BÁO: TÀI KHOẢN BUỘC THÔI HỌC - NGHIÊM CẤM MỞ KHÓA]</code>. KTV 1 chỉ có quyền từ chối phiếu với lý do theo quyết định của trường.</li>
+        <li><strong>1. Đầu học kỳ - Cấp phát &amp; Import Hàng loạt (Bulk Import CSV):</strong>
+            <ul>
+                <li>Admin tải lên file CSV chuẩn hóa trích xuất từ Cổng Đào tạo gồm danh sách Tân sinh viên, Giảng viên mới và Kỹ thuật viên (chứa: Mã SV/GV, Họ tên, Khóa tuyển sinh, Lớp học, Số điện thoại...).</li>
+                <li>Hệ thống tự động: (1) Khởi tạo tài khoản trong bảng <code>users</code>, (2) Tạo email định danh chuẩn <code>@daihocthudo.edu.vn</code>, (3) Băm Bcrypt mật khẩu khởi tạo cố định <code>123456</code>, (4) Đặt cờ <code>is_first_login = 1</code> bắt buộc đổi mật khẩu lần đầu, (5) Tự động liên kết sinh viên vào lớp học tương ứng thông qua bảng <code>class_students</code>.</li>
+            </ul>
+        </li>
+        <li><strong>2. Cuối khóa học - Quản lý Sinh viên Ra trường (Cohort Graduation &amp; Expulsion):</strong>
+            <ul>
+                <li><strong>Lọc theo Niên khóa / Khóa tuyển sinh (Cohort Filter):</strong> Admin lọc nhanh danh sách sinh viên theo <code>cohort</code> (Ví dụ: lọc toàn bộ khóa <code>K20</code> đã hoàn thành chương trình học).</li>
+                <li><strong>Sinh viên Tốt nghiệp (Graduated Students):</strong> Chuyển trạng thái <code>academic_status = 'graduated'</code> và <code>lock_reason = 'graduated'</code>. Thu hồi quyền đăng ký tín chỉ học phần mới, chuyển sang chế độ tài khoản Cựu sinh viên chỉ duy trì quyền tra cứu văn bằng và bảng điểm điện tử.</li>
+                <li><strong>Sinh viên Buộc thôi học / Đình chỉ Kỷ luật (Expelled Students Hard Lock):</strong> Áp dụng cho các trường hợp sinh viên bị Hội đồng Kỷ luật Nhà trường ra quyết định đình chỉ học tập, xóa tên sinh viên hoặc buộc thôi học do vi phạm quy chế đào tạo:
+                    <ul>
+                        <li>Admin kích hoạt: <code>academic_status = 'expelled'</code>, <code>is_active = 0</code> và <code>lock_reason = 'expelled'</code>.</li>
+                        <li><strong>Hủy toàn bộ phiên làm việc:</strong> Thu hồi toàn bộ Session và Refresh Token ngay lập tức, đẩy người dùng văng khỏi hệ thống nếu đang trực tuyến.</li>
+                        <li><strong>Chặn hoàn toàn cơ chế Quên mật khẩu (SSPR):</strong> Khi nhập mã SV này tại trang "Quên mật khẩu", hệ thống kiểm tra thấy <code>lock_reason = 'expelled'</code> sẽ từ chối gửi mail xác thực và hiện thông báo: <em>"Tài khoản đã bị đình chỉ hoạt động theo quyết định kỷ luật của Nhà trường. Vui lòng liên hệ trực tiếp Phòng Quản lý Đào tạo."</em></li>
+                        <li><strong>Chặn lạm dụng Guest Ticket:</strong> Nếu sinh viên cố tình tạo Guest Ticket báo tài khoản bị khóa, hệ thống hiển thị cờ cảnh báo đỏ trên bàn làm việc của KTV 1: <code>[CẢNH BÁO: TÀI KHOẢN BUỘC THÔI HỌC - NGHIÊM CẤM MỞ KHÓA]</code>. KTV 1 chỉ có quyền từ chối phiếu với lý do theo quyết định kỷ luật của Nhà trường.</li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
     </ul>
 
     <h3>B. Động cơ Phân công Chuyên môn &amp; Cân bằng tải Tràn tải Tự động (Skill-based &amp; Overflow)</h3>
@@ -624,7 +667,7 @@
     <ul>
         <li><span class="step-num">1</span> <strong>Phân loại luồng:</strong> Luồng SSPR tự động qua email (15 phút) vs. Luồng Guest Ticket đối chiếu ảnh Thẻ SV/CCCD khi mất email hoặc tài khoản bị khóa cứng.</li>
         <li><span class="step-num">2</span> <strong>Kiểm tra lý do khóa:</strong> Nếu <code>lock_reason = 'expelled'</code> &rarr; Từ chối phiếu, không mở khóa. Nếu là khóa mềm hoặc khóa do bảo mật &rarr; Tiến hành bước 3.</li>
-        <li><span class="step-num">3</span> <strong>Mở khóa &amp; Cấp pass tạm:</strong> Cập nhật <code>is_active = 1</code>, reset <code>failed_attempts = 0</code>, cấp pass tạm <code>Thudo@2026!</code> băm Bcrypt, bật <code>is_first_login = 1</code>.</li>
+        <li><span class="step-num">3</span> <strong>Mở khóa &amp; Cấp pass tạm:</strong> Cập nhật <code>is_active = 1</code>, reset <code>failed_attempts = 0</code>, cấp pass tạm <code>123456</code> băm Bcrypt, bật <code>is_first_login = 1</code>.</li>
         <li><span class="step-num">4</span> <strong>Bàn giao kết quả:</strong> Gửi mật khẩu tạm về <code>contact_email</code> &rarr; Chuyển <code>waiting_requester</code> &rarr; Sinh viên đăng nhập đổi pass &rarr; Chuyển <code>resolved</code>.</li>
     </ul>
 
@@ -829,51 +872,135 @@ public function autoAssignTicket(int $ticketId, int $categoryId, string $dueAt):
 
     <div class="page-break"></div>
 
-    <!-- TRANG 9: CHƯƠNG 5 - CƠ SỞ DỮ LIỆU TỐI ƯU (PHẦN 1) -->
-    <h1>5. ĐẶC TẢ CƠ SỞ DỮ LIỆU TỐI ƯU (DATABASE SCHEMA DDL)</h1>
+    <!-- TRANG 9: CHƯƠNG 5 - CƠ SỞ DỮ LIỆU TỐI ƯU (PHẦN 1: MASTER DATA & HỌC THUẬT) -->
+    <h1>5. ĐẶC TẢ CƠ SỞ DỮ LIỆU TỐI ƯU (DATABASE SCHEMA DDL - 12 BẢNG)</h1>
     <p>
-        Cơ sở dữ liệu MySQL 8 InnoDB utf8mb4 bổ sung trường quản lý sinh viên buộc thôi học <code>lock_reason</code>, bảng danh mục ngày nghỉ lễ <code>holidays</code>, và các bảng quản trị sự cố:
+        Cơ sở dữ liệu MySQL 8.0+ InnoDB <code>utf8mb4_unicode_ci</code> được thiết kế chuẩn hóa 3NF gồm <strong>12 bảng dữ liệu</strong>, quản trị chặt chẽ quan hệ học thuật (Lớp - Sinh viên, Phân công Giảng viên - Môn học), vòng đời tài khoản (đang học, tốt nghiệp, buộc thôi học) và cơ chế vận hành Helpdesk tự động:
     </p>
 
-    <pre><code>-- 1. BẢNG TÀI KHOẢN NGƯỜI DÙNG (USERS - HỖ TRỢ KHÓA CỨNG BUỘC THÔI HỌC)
-CREATE TABLE users (
+    <pre><code>-- 1. BẢNG DANH MỤC DỊCH VỤ TRỰC TUYẾN (CATEGORIES)
+CREATE TABLE categories (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    user_code VARCHAR(30) NOT NULL UNIQUE, -- Mã Sinh viên (VD: 224001736) hoặc Mã Giảng viên
+    code VARCHAR(50) NOT NULL UNIQUE, -- CAT_SSO, CAT_MAIL, CAT_QLDT, CAT_CANVAS, CAT_WIFI
     name VARCHAR(100) NOT NULL,
-    email VARCHAR(190) NOT NULL UNIQUE, -- Email Trường (@daihocthudo.edu.vn)
-    password_hash VARCHAR(255) NOT NULL,
-    role ENUM('requester', 'agent', 'admin') NOT NULL,
-    user_type ENUM('student', 'lecturer') NOT NULL DEFAULT 'student',
-    department VARCHAR(100) NULL,
-    
-    specialty_category_id INT UNSIGNED NULL, -- KTV chuyên môn (1 đến 5)
-    max_capacity TINYINT UNSIGNED NOT NULL DEFAULT 5, -- Giới hạn tối đa 5 phiếu đồng thời
-    active_tickets_count TINYINT UNSIGNED NOT NULL DEFAULT 0, -- Biến đếm nguyên tử chống quá tải
-    is_on_duty TINYINT(1) NOT NULL DEFAULT 1, -- Ca trực KTV: 1 (Đang trực), 0 (Nghỉ trực)
-    
-    -- Cơ chế Khóa tài khoản & Xử lý Buộc thôi học
-    failed_attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
-    locked_until DATETIME NULL, -- Thời hạn khóa mềm (30 phút sau 5 lần sai)
-    is_active TINYINT(1) NOT NULL DEFAULT 1, -- 0: Bị khóa
-    lock_reason ENUM('none', 'brute_force', 'violation', 'expelled', 'tuition_debt') NOT NULL DEFAULT 'none',
-    
-    is_first_login TINYINT(1) NOT NULL DEFAULT 1,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_agent_dispatch (role, is_active, is_on_duty, specialty_category_id, active_tickets_count),
-    INDEX idx_user_lookup (user_code, user_type)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 2. BẢNG DANH MỤC NGÀY NGHỈ LỄ TRƯỜNG HỌC (HOLIDAYS - CHỐNG LỖI CẤU HÌNH LMS)
-CREATE TABLE holidays (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL, -- Tết Nguyên Đán, Nghỉ Lễ 30/4 - 1/5, Quốc Khánh 2/9
-    start_date DATE NOT NULL,
-    end_date DATE NOT NULL,
-    is_recurring TINYINT(1) NOT NULL DEFAULT 0,
+    description VARCHAR(255) NULL,
+    default_priority_code VARCHAR(20) NOT NULL DEFAULT 'MED',
+    sla_hours DECIMAL(4,1) NOT NULL DEFAULT 4.0,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 3. BẢNG KHÔI PHỤC MẬT KHẨU TỰ ĐỘNG (PASSWORD_RESETS - HỖ TRỢ SSPR QUA EMAIL)
+-- 2. BẢNG MỨC ĐỘ ƯU TIÊN (PRIORITIES)
+CREATE TABLE priorities (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(20) NOT NULL UNIQUE, -- URGENT, HIGH, MED, LOW
+    name VARCHAR(50) NOT NULL,
+    sla_factor DECIMAL(3,2) NOT NULL DEFAULT 1.00,
+    sort_order TINYINT UNSIGNED NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 3. BẢNG LỚP HỌC HÀNH CHÍNH (CLASSES - KHÓA TUD D24)
+CREATE TABLE classes (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    class_code VARCHAR(30) NOT NULL UNIQUE, -- D24-CNTT1, D24-CNTT2
+    name VARCHAR(100) NOT NULL, -- Lớp Công nghệ Thông tin D24-1
+    cohort VARCHAR(20) NOT NULL DEFAULT 'D24', -- Khóa tuyển sinh: D24 (niên khóa 2024-2028)
+    faculty VARCHAR(100) NOT NULL DEFAULT 'Khoa Công nghệ Thông tin',
+    academic_year VARCHAR(30) NOT NULL DEFAULT '2024-2028',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 4. BẢNG HỌC PHẦN / MÔN HỌC (COURSES - 6 MÔN TRONG 1 HỌC KỲ)
+CREATE TABLE courses (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    course_code VARCHAR(30) NOT NULL UNIQUE, -- WEB101, NET201, DB102, OS101, SE201, LMS301
+    name VARCHAR(100) NOT NULL, -- Lập trình Web, Mạng máy tính...
+    credits TINYINT UNSIGNED NOT NULL DEFAULT 3,
+    department VARCHAR(100) NOT NULL DEFAULT 'Bộ môn Công nghệ Phần mềm',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 5. BẢNG TÀI KHOẢN NGƯỜI DÙNG & VÒNG ĐỜI HỌC THUẬT (USERS)
+CREATE TABLE users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_code VARCHAR(30) NOT NULL UNIQUE, -- Mã SV (224001736) hoặc Mã GV / Cán bộ
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(190) NOT NULL UNIQUE, -- @daihocthudo.edu.vn
+    password_hash VARCHAR(255) NOT NULL, -- Mật khẩu băm Bcrypt mặc định: 123456
+    role ENUM('requester', 'agent', 'admin') NOT NULL DEFAULT 'requester',
+    user_type ENUM('student', 'lecturer', 'staff') NOT NULL DEFAULT 'student',
+    department VARCHAR(100) NULL,
+    phone VARCHAR(20) NULL,
+    
+    -- Liên kết Lớp sinh hoạt & Quản trị Vòng đời Học tập
+    class_id INT UNSIGNED NULL, -- Lớp sinh hoạt chính của SV (D24-CNTT1)
+    cohort VARCHAR(20) NULL DEFAULT 'D24', -- Khóa tuyển sinh (D24, D20...) để lọc cuối khóa
+    academic_status ENUM('studying', 'graduated', 'expelled', 'suspended') NOT NULL DEFAULT 'studying',
+    
+    -- Cờ Chuyên môn & Tải xử lý của KTV (Phân công thông minh & Tràn tải)
+    specialty_category_id INT UNSIGNED NULL, -- 1 đến 5 (CAT_SSO, CAT_MAIL...)
+    max_capacity TINYINT UNSIGNED NOT NULL DEFAULT 5, -- Tối đa 5 phiếu đồng thời
+    active_tickets_count TINYINT UNSIGNED NOT NULL DEFAULT 0, -- Bộ đếm nguyên tử
+    is_on_duty TINYINT(1) NOT NULL DEFAULT 1, -- Ca trực: 1 (Đang trực), 0 (Nghỉ trực)
+    
+    -- Cơ chế Khóa mềm & Khóa cứng (Buộc thôi học / Tốt nghiệp)
+    failed_attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    locked_until DATETIME NULL, -- Khóa mềm 30 phút sau 5 lần nhập sai
+    is_active TINYINT(1) NOT NULL DEFAULT 1, -- 0: Khóa cứng
+    lock_reason ENUM('none', 'brute_force', 'violation', 'expelled', 'tuition_debt', 'graduated') NOT NULL DEFAULT 'none',
+    is_first_login TINYINT(1) NOT NULL DEFAULT 1, -- Bắt buộc đổi mật khẩu lần đầu
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_agent_dispatch (role, is_active, is_on_duty, specialty_category_id, active_tickets_count),
+    INDEX idx_user_lookup (user_code, user_type, academic_status),
+    INDEX idx_cohort_filter (cohort, academic_status),
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE SET NULL,
+    FOREIGN KEY (specialty_category_id) REFERENCES categories(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;</code></pre>
+
+    <div class="page-break"></div>
+
+    <!-- TRANG 10: CHƯƠNG 5 - CƠ SỞ DỮ LIỆU TỐI ƯU (PHẦN 2: QUAN HỆ & AN TOÀN HỌC THUẬT) -->
+    <pre><code>-- 6. BẢNG SINH VIÊN THUỘC LỚP (CLASS_STUDENTS - 1 LỚP CÓ NHIỀU SINH VIÊN)
+CREATE TABLE class_students (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    class_id INT UNSIGNED NOT NULL,
+    student_id INT UNSIGNED NOT NULL,
+    enrolled_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_class_student (class_id, student_id),
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 7. BẢNG PHÂN CÔNG GIẢNG DẠY LỚP HỌC PHẦN (COURSE_ASSIGNMENTS)
+-- Cơ chế: 1 Lớp học phần (1 môn của lớp trong kỳ) CHỈ CÓ DUY NHẤT 1 GIÁO VIÊN PHỤ TRÁCH
+CREATE TABLE course_assignments (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    class_id INT UNSIGNED NOT NULL,
+    course_id INT UNSIGNED NOT NULL,
+    lecturer_id INT UNSIGNED NOT NULL, -- 1 GV duy nhất phụ trách lớp học phần
+    semester VARCHAR(20) NOT NULL DEFAULT '2026_1',
+    academic_year VARCHAR(20) NOT NULL DEFAULT '2026-2027',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_course_class_semester (class_id, course_id, semester),
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    FOREIGN KEY (lecturer_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 8. BẢNG DANH MỤC NGÀY NGHỈ LỄ TRƯỜNG HỌC (HOLIDAYS - TỰ ĐỘNG ĐIỀU CHỈNH LMS)
+CREATE TABLE holidays (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    is_recurring TINYINT(1) NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_holidays_dates (start_date, end_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 9. BẢNG KHÔI PHỤC MẬT KHẨU TỰ ĐỘNG (PASSWORD_RESETS - HỖ TRỢ SSPR QUA EMAIL)
 CREATE TABLE password_resets (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     user_id INT UNSIGNED NOT NULL,
@@ -883,38 +1010,24 @@ CREATE TABLE password_resets (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_token_lookup (token_hash, expires_at),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 4. BẢNG DANH MỤC DỊCH VỤ TRỰC TUYẾN (CATEGORIES)
-CREATE TABLE categories (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(50) NOT NULL UNIQUE, -- CAT_SSO, CAT_MAIL, CAT_QLDT, CAT_CANVAS, CAT_WIFI
-    name VARCHAR(100) NOT NULL,
-    default_priority_code VARCHAR(20) NOT NULL DEFAULT 'MED',
-    sla_hours DECIMAL(4,1) NOT NULL DEFAULT 4.0,
-    is_active TINYINT(1) NOT NULL DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 5. BẢNG MỨC ĐỘ ƯU TIÊN (PRIORITIES)
-CREATE TABLE priorities (
-    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    code VARCHAR(20) NOT NULL UNIQUE, -- URGENT, HIGH, MED, LOW
-    name VARCHAR(50) NOT NULL,
-    sla_factor DECIMAL(3,2) NOT NULL DEFAULT 1.00,
-    sort_order TINYINT UNSIGNED NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;</code></pre>
 
     <div class="page-break"></div>
 
-    <!-- TRANG 10: CHƯƠNG 5 - CƠ SỞ DỮ LIỆU TỐI ƯU (PHẦN 2) -->
-    <pre><code>-- 6. BẢNG PHIẾU YÊU CẦU DỊCH VỤ SỐ (TICKETS - HỖ TRỢ GỘP PHIẾU SỰ CỐ DIỆN RỘNG & GUEST TICKET)
+    <!-- TRANG 11: CHƯƠNG 5 - CƠ SỞ DỮ LIỆU TỐI ƯU (PHẦN 3: SỰ CỐ & ĐÁNH GIÁ CSAT) -->
+    <pre><code>-- 10. BẢNG PHIẾU YÊU CẦU DỊCH VỤ SỐ (TICKETS)
+-- Hỗ trợ: Gộp sự cố diện rộng, Guest Ticket, Liên kết Môn học & Lớp học
 CREATE TABLE tickets (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     requester_id INT UNSIGNED NOT NULL,
     assigned_to INT UNSIGNED NULL,
     category_id INT UNSIGNED NOT NULL,
     priority_id INT UNSIGNED NOT NULL,
-    parent_ticket_id INT UNSIGNED NULL, -- Dùng gộp phiếu sự cố diện rộng LMS/QLĐT
+    parent_ticket_id INT UNSIGNED NULL, -- Gộp phiếu sự cố diện rộng LMS/QLĐT
+    
+    -- Định vị Môn học & Lớp học khi báo sự cố đào tạo
+    class_id INT UNSIGNED NULL,
+    course_id INT UNSIGNED NULL,
     
     is_guest_ticket TINYINT(1) NOT NULL DEFAULT 0,
     contact_email VARCHAR(190) NULL,
@@ -923,6 +1036,7 @@ CREATE TABLE tickets (
     title VARCHAR(150) NOT NULL,
     description TEXT NOT NULL,
     system_affected VARCHAR(50) NOT NULL,
+    attachment_path VARCHAR(255) NULL,
     
     status ENUM('new', 'in_progress', 'waiting_requester', 'resolved', 'closed') NOT NULL DEFAULT 'new',
     closed_reason ENUM('completed', 'auto_closed', 'duplicate', 'cancelled') NULL,
@@ -944,36 +1058,42 @@ CREATE TABLE tickets (
     INDEX idx_agent_work (assigned_to, status, due_at),
     INDEX idx_user_history (requester_id, created_at),
     INDEX idx_guest_lookup (ticket_code, lookup_pin),
-    FOREIGN KEY (requester_id) REFERENCES users(id),
-    FOREIGN KEY (assigned_to) REFERENCES users(id),
-    FOREIGN KEY (category_id) REFERENCES categories(id),
-    FOREIGN KEY (priority_id) REFERENCES priorities(id),
-    FOREIGN KEY (parent_ticket_id) REFERENCES tickets(id) ON DELETE SET NULL
+    INDEX idx_ticket_academic (class_id, course_id),
+    FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT,
+    FOREIGN KEY (priority_id) REFERENCES priorities(id) ON DELETE RESTRICT,
+    FOREIGN KEY (parent_ticket_id) REFERENCES tickets(id) ON DELETE SET NULL,
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE SET NULL,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 7. BẢNG PHẢN HỒI (TICKET_REPLIES) & ĐÁNH GIÁ (TICKET_RATINGS)
+-- 11. BẢNG PHẢN HỒI TRAO ĐỔI (TICKET_REPLIES)
 CREATE TABLE ticket_replies (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     ticket_id INT UNSIGNED NOT NULL,
     user_id INT UNSIGNED NOT NULL,
     message TEXT NOT NULL,
-    is_internal TINYINT(1) NOT NULL DEFAULT 0,
+    attachment_path VARCHAR(255) NULL,
+    is_internal TINYINT(1) NOT NULL DEFAULT 0, -- 1: Private Note dành riêng cho KTV/Admin
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_ticket_replies (ticket_id, is_internal, created_at),
     FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- 12. BẢNG ĐÁNH GIÁ ĐỘ HÀI LÒNG CSAT (TICKET_RATINGS)
 CREATE TABLE ticket_ratings (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    ticket_id INT UNSIGNED NOT NULL UNIQUE,
+    ticket_id INT UNSIGNED NOT NULL UNIQUE, -- Quan hệ 1-1 với tickets
     user_id INT UNSIGNED NOT NULL,
-    score TINYINT UNSIGNED NOT NULL,
+    score TINYINT UNSIGNED NOT NULL, -- 1 đến 5 sao
     comment VARCHAR(500) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES users(id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;</code></pre>
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT chk_ticket_ratings_score CHECK (score BETWEEN 1 AND 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
     <div class="page-break"></div>
 
@@ -1017,68 +1137,99 @@ CREATE TABLE ticket_ratings (
     <div class="page-break"></div>
 
     <!-- TRANG 12: PHÂN CÔNG NHIỆM VỤ RACI & KẾT LUẬN -->
-    <h2>6.2 Ma trận Phân công Trách nhiệm Nhóm 1 (RACI Matrix)</h2>
+    <h2>6.2 Ma trận Phân công Trách nhiệm &amp; Phân định Model Độc lập (RACI Matrix)</h2>
+    <p>
+        Hệ thống phân chia 5 phân hệ độc lập, mỗi thành viên chịu trách nhiệm độc quyền các Model và bảng CSDL tương ứng, đảm bảo <strong>không chồng lấn Model</strong> và phát triển song song hiệu quả:
+    </p>
     <table>
         <thead>
             <tr>
-                <th style="width: 23%;">Thành viên thực hiện</th>
-                <th style="width: 24%;">Phân hệ phụ trách</th>
-                <th style="width: 53%;">Hạng mục phụ trách và Sản phẩm bàn giao cụ thể</th>
+                <th style="width: 20%;">Thành viên thực hiện</th>
+                <th style="width: 22%;">Phân hệ phụ trách</th>
+                <th style="width: 25%;">Model &amp; Bảng CSDL độc quyền</th>
+                <th style="width: 33%;">Hạng mục công việc &amp; Sản phẩm bàn giao cụ thể</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td><strong>Phạm Thị Thanh Ngân</strong><br><em>(Trưởng nhóm)</em></td>
-                <td><strong>Core Architecture &amp; Agent Module</strong></td>
+                <td><strong>Core Architecture &amp; Agent Workspace</strong></td>
                 <td>
-                    - Thiết kế Database Schema hoàn chỉnh, bổ sung bảng <code>holidays</code>, trường <code>lock_reason</code> và cơ chế Parent Ticket.<br>
-                    - Xây dựng nhân MVC Core: Router, Front Controller, PDO Wrapper.<br>
-                    - Triển khai <code>TicketService</code>: Thuật toán Phân công Chuyên môn 5 KTV &amp; San sẻ Tràn tải thông minh.<br>
-                    - Xây dựng <strong>Module Kỹ thuật viên (Agent Workspace)</strong>: Hàng đợi cá nhân, Bàn làm việc, tiếp nhận phiếu tràn tải.<br>
-                    <em>Sản phẩm bàn giao: Nhân MVC, CSDL MySQL 8 và Phân hệ Kỹ thuật viên hoàn chỉnh.</em>
+                    • <code>Ticket.php</code> (Bảng <code>tickets</code>)<br>
+                    • <code>Reply.php</code> (Bảng <code>ticket_replies</code>)
+                </td>
+                <td>
+                    - Thiết kế khung MVC Core: Router, Front Controller, PDO Wrapper.<br>
+                    - Xây dựng Model <code>Ticket</code>: State Machine 5 bước, sinh mã <code>ticket_code</code>, tính mốc SLA.<br>
+                    - Xây dựng Model <code>Reply</code>: Trao đổi hai chiều và ghi chú nội bộ <code>is_internal = 1</code>.<br>
+                    - Triển khai <code>TicketService</code>: Thuật toán phân công 5 KTV &amp; san sẻ tràn tải.<br>
+                    - Bàn làm việc KTV: Hàng đợi theo SLA, nghiệm thu giải pháp <code>resolved</code>.<br>
+                    <em>Sản phẩm: Nhân MVC, Model Ticket/Reply và Phân hệ KTV.</em>
                 </td>
             </tr>
             <tr>
                 <td><strong>Trần Thục Linh</strong></td>
-                <td><strong>User Management &amp; SSPR Security</strong></td>
+                <td><strong>User Management &amp; Auth Security</strong></td>
                 <td>
-                    - Xây dựng hệ thống xác thực Auth: Đăng nhập, đăng xuất, bắt buộc đổi mật khẩu lần đầu.<br>
-                    - Triển khai <strong>Cổng Tự phục vụ Mật khẩu (SSPR)</strong> &amp; <strong>Form Báo sự cố Công khai (Guest Ticket)</strong>.<br>
-                    - Triển khai <strong>Khóa cứng tài khoản buộc thôi học</strong>: Chặn đăng nhập, chặn SSPR, cảnh báo KTV khi có yêu cầu mở khóa.<br>
-                    - Thiết lập <code>CsrfMiddleware</code>, module chống dò mật khẩu Brute-force và ErrorHandler tập trung.<br>
-                    <em>Sản phẩm bàn giao: Module Auth, SSPR qua Mail, Guest Ticket Form, Quản trị tài khoản Admin.</em>
+                    • <code>User.php</code> (Bảng <code>users</code>)<br>
+                    • <code>PasswordReset.php</code> (Bảng <code>password_resets</code>)
+                </td>
+                <td>
+                    - Xây dựng Model <code>User</code>: Xác thực Auth, băm Bcrypt mật khẩu khởi tạo <code>123456</code>, khóa mềm, khóa cứng buộc thôi học.<br>
+                    - Xây dựng Model <code>PasswordReset</code>: Token SHA-256 khôi phục mật khẩu qua Email (15 phút).<br>
+                    - Lập trình <code>AuthController</code> (Login, Logout, đổi pass lần đầu, SSPR).<br>
+                    - Lập trình <code>GuestTicketController</code>: Form báo khóa tài khoản và tra cứu PIN.<br>
+                    - <code>CsrfMiddleware</code>, chống dò Brute-force.<br>
+                    <em>Sản phẩm: Model User/PasswordReset, Auth &amp; SSPR.</em>
                 </td>
             </tr>
             <tr>
                 <td><strong>Lê Hà My</strong></td>
-                <td><strong>Lecturer Module &amp; Auto-SLA Engine</strong></td>
+                <td><strong>Academic &amp; Lecturer Portal</strong></td>
                 <td>
-                    - Xây dựng <strong>Module Giảng viên (Lecturer Portal)</strong>: Báo sự cố khẩn cấp (cho phép chọn HIGH/URGENT).<br>
-                    - Phát triển <code>SlaService</code>: Tự động gán Auto-Priority Mapping từ Category, tính hạn chót theo giờ hành chính (loại trừ ban đêm, Thứ 7/CN).<br>
-                    - Cơ chế đóng băng SLA khi ở trạng thái <code>waiting_requester</code>.<br>
-                    - Viết script CLI <code>cli/auto_close.php</code> (đóng phiếu 72h) và <code>cli/sync_lms_holidays.php</code> (sửa lịch học LMS tự động).<br>
-                    <em>Sản phẩm bàn giao: Phân hệ Giảng viên, Động cơ Auto-SLA và Script CLI tự động hóa.</em>
+                    • <code>CourseAssignment.php</code> (<code>course_assignments</code>)<br>
+                    • <code>ClassModel.php</code> (<code>classes</code>)<br>
+                    • <code>Course.php</code> (<code>courses</code>)<br>
+                    • <code>ClassStudent.php</code> (<code>class_students</code>)
+                </td>
+                <td>
+                    - Xây dựng bộ 4 Model Đào tạo: Lớp TUD D24, 6 môn học trong kỳ, danh sách sinh viên.<br>
+                    - Xây dựng Model <code>CourseAssignment</code>: Phân công 6 môn cho 6 GV, <strong>1 lớp học phần chỉ có 1 GV phụ trách</strong> (<code>UNIQUE (class_id, course_id, semester)</code>).<br>
+                    - Cổng Giảng viên (<code>LecturerDashboardController</code>): Xem danh sách lớp HP, quản lý sự cố học vụ.<br>
+                    - Làn ưu tiên đào tạo <strong>Academic Fast-Track</strong> (cho phép gán <code>HIGH</code>/<code>URGENT</code>).<br>
+                    <em>Sản phẩm: Bộ 4 Model Học vụ &amp; Phân hệ Giảng viên.</em>
                 </td>
             </tr>
             <tr>
                 <td><strong>Nguyễn Ánh Nhi</strong></td>
-                <td><strong>Student Module &amp; RESTful API</strong></td>
+                <td><strong>Student Portal &amp; Service Master</strong></td>
                 <td>
-                    - Xây dựng <strong>Module Sinh viên (Student Portal)</strong>: Form báo sự cố tinh gọn, giao diện trao đổi với KTV, nghiệm thu CSAT.<br>
-                    - Xây dựng <strong>Biểu ngữ Thông báo Khẩn (System Alert Banner)</strong> chặn tạo phiếu trùng lặp khi có sự cố diện rộng.<br>
-                    - Xây dựng <code>UploadService</code> kiểm duyệt ảnh chụp màn hình lỗi và ảnh thẻ SV 5 lớp ngoài webroot.<br>
-                    - Phát triển các API Endpoint JSON phục vụ Fetch API cập nhật trạng thái bất đồng bộ.<br>
-                    <em>Sản phẩm bàn giao: Phân hệ Sinh viên, Module Upload tệp an toàn và RESTful API.</em>
+                    • <code>Rating.php</code> (Bảng <code>ticket_ratings</code>)<br>
+                    • <code>Category.php</code> (Bảng <code>categories</code>)<br>
+                    • <code>Priority.php</code> (Bảng <code>priorities</code>)
+                </td>
+                <td>
+                    - Xây dựng Model <code>Rating</code>: Đánh giá CSAT 1–5 sao của sinh viên (1-1 <code>UNIQUE (ticket_id)</code>).<br>
+                    - Xây dựng Model <code>Category</code> (5 nhóm dịch vụ) và <code>Priority</code> (4 mức ưu tiên).<br>
+                    - Cổng Sinh viên: Form báo lỗi chọn trực tiếp Môn học/Lớp học, theo dõi tiến độ thời gian thực.<br>
+                    - <code>UploadService</code>: Kiểm soát an toàn 5 lớp cho ảnh thẻ SV/ảnh lỗi ngoài webroot.<br>
+                    <em>Sản phẩm: Bộ Model Rating/Category/Priority &amp; Phân hệ SV.</em>
                 </td>
             </tr>
             <tr>
                 <td><strong>Phan Công Thành</strong></td>
-                <td><strong>Admin Dashboard &amp; UI Analytics</strong></td>
+                <td><strong>Admin Center &amp; Holiday Engine</strong></td>
                 <td>
-                    - Thiết kế giao diện HTML5/CSS3 Responsive chuẩn mực (Mobile-first) bao gồm giao diện Tra cứu Guest Ticket bằng PIN.<br>
-                    - Xây dựng <strong>Bảng điều khiển Admin (Dashboard Control Center)</strong>: Giám sát cờ tải hệ thống, kích hoạt Major Incident Banner.<br>
-                    - Lập trình JavaScript Fetch API cập nhật bất đồng bộ và Module xuất báo cáo CSV an toàn.<br>
-                    <em>Sản phẩm bàn giao: Toàn bộ giao diện người dùng hoàn thiện và Bảng điều khiển trực quan.</em>
+                    • <code>Holiday.php</code> (Bảng <code>holidays</code>)<br>
+                    • <code>AdminReportModel.php</code> (Thống kê &amp; Báo cáo)
+                </td>
+                <td>
+                    - Xây dựng Model <code>Holiday</code>: Quản lý danh mục ngày nghỉ lễ toàn trường.<br>
+                    - Admin Control Center: Giám sát cờ tải 5 KTV (Xanh/Vàng/Đỏ), kích hoạt Major Incident Banner và gộp phiếu chủ.<br>
+                    - Quản lý tài khoản Admin: <strong>Bulk Import CSV đầu kỳ</strong> (cấp tài khoản SV D24, GV, KTV với pass <code>123456</code>) và <strong>xử lý cuối khóa</strong> (lọc <code>D20</code> tốt nghiệp, khóa cứng <code>expelled</code>).<br>
+                    - <code>SlaService</code> và script CLI <code>cli/sync_lms_holidays.php</code> dời lịch học Canvas LMS.<br>
+                    - Xuất báo cáo thống kê CSV an toàn chống Formula Injection.<br>
+                    <em>Sản phẩm: Model Holiday, Admin Center &amp; Script CLI.</em>
                 </td>
             </tr>
         </tbody>

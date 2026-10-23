@@ -51,15 +51,17 @@
 
 ---
 
-## 📋 3. MA TRẬN PHÂN CÔNG NHIỆM VỤ CHI TIẾT (RACI MATRIX)
+## 📋 3. MA TRẬN PHÂN CÔNG NHIỆM VỤ ĐỘC LẬP THEO MODEL (RACI MATRIX)
 
-| Thành viên thực hiện | Phân hệ phụ trách | Hạng mục công việc & Sản phẩm bàn giao cụ thể |
-|---|---|---|
-| **Phạm Thị Thanh Ngân**<br>*(Trưởng nhóm)* | **Core Architecture & Agent Module** | • Thiết kế toàn diện Database Schema, Migration & Seeders chuẩn Đại học Thủ Đô.<br>• Xây dựng nhân MVC Core: Router, Front Controller, PDO Wrapper, Exception Handler.<br>• Triển khai `TicketService`: Thuật toán phân công 5 KTV chuyên môn & cơ chế Tràn tải tự động nguyên tử.<br>• Xây dựng **Module Kỹ thuật viên (Agent Workspace)**: Hàng đợi theo SLA `due_at ASC`, Bàn làm việc KTV, ghi chú nội bộ bảo mật (`is_internal = 1`), biên bản giải pháp `resolved`.<br>*(Sản phẩm: Nhân MVC, CSDL MySQL 8 và Phân hệ KTV hoàn chỉnh)* |
-| **Trần Thục Linh** | **User Management & SSPR Security** | • Xây dựng hệ thống xác thực Auth: Login, Logout, bắt buộc đổi mật khẩu lần đầu (`is_first_login = 1`).<br>• Triển khai **Cổng Tự phục vụ Mật khẩu (SSPR)** qua Email với Token SHA-256 hiệu lực 15 phút.<br>• Triển khai **Khóa cứng tài khoản buộc thôi học** (`lock_reason = 'expelled'`): Chặn đăng nhập, hủy token, chặn SSPR và cảnh báo KTV từ chối mở khóa.<br>• Triển khai **Form Báo sự cố Công khai (Guest Ticket)** dành cho tài khoản bị khóa cứng.<br>• Xây dựng `CsrfMiddleware`, chống Brute-force và Module Quản trị tài khoản Admin.<br>*(Sản phẩm: Hệ thống Auth, SSPR qua Mail, Guest Ticket Form, Quản trị người dùng Admin)* |
-| **Lê Hà My** | **Lecturer Module & Auto-SLA Engine** | • Xây dựng **Module Giảng viên (Lecturer Portal)**: Hỗ trợ Fast-track ưu tiên cao, cho phép chọn `HIGH`/`URGENT` cho giờ lên lớp, thi cử, nhập điểm.<br>• Phát triển `SlaService`: Tự động gán Auto-Priority từ Category, tính hạn chót theo giờ hành chính (loại trừ ban đêm, Thứ 7/CN).<br>• Xây dựng cơ chế đóng băng đồng hồ SLA khi ở trạng thái `waiting_requester`.<br>• Lập trình các script CLI độc lập: `cli/auto_close.php` (tự đóng phiếu sau 72h) và `cli/sync_lms_holidays.php` (quét và dời lịch học trùng ngày lễ trên LMS).<br>*(Sản phẩm: Phân hệ Giảng viên, Động cơ Auto-SLA và Bộ tác vụ CLI tự động)* |
-| **Nguyễn Ánh Nhi** | **Student Module & RESTful API** | • Xây dựng **Module Sinh viên (Student Portal)**: Form báo lỗi tinh gọn (bỏ ô chọn Priority), Workspace theo dõi tiến độ, trao đổi trực tuyến, nghiệm thu và chấm sao CSAT.<br>• Xây dựng **Biểu ngữ Thông báo Khẩn (Major Incident Alert Banner)** trên giao diện để ngăn sinh viên tạo phiếu trùng khi có sự cố diện rộng.<br>• Xây dựng `UploadService` kiểm duyệt an toàn 5 lớp cho ảnh chụp màn hình lỗi và ảnh thẻ SV ngoài webroot.<br>• Phát triển các RESTful JSON API Endpoints phục vụ Fetch API cập nhật huy hiệu và lịch sử bất đồng bộ.<br>*(Sản phẩm: Phân hệ Sinh viên, Module Upload an toàn và Hệ thống RESTful API)* |
-| **Phan Công Thành** | **Admin Dashboard & UI Analytics** | • Thiết kế toàn bộ giao diện HTML5/CSS3 chuẩn Mobile-first, hiện đại, thân thiện, bao gồm giao diện Tra cứu Guest Ticket bằng mã PIN.<br>• Xây dựng **Bảng điều khiển Quản trị (Admin Dashboard Control Center)**: Giám sát cờ tải hệ thống thời gian thực (Xanh / Vàng / Đỏ), kích hoạt gộp phiếu sự cố chủ (Parent-Child Ticket).<br>• Lập trình JavaScript Fetch API cập nhật dữ liệu tự động không cần reload trang.<br>• Xây dựng Module xuất báo cáo thống kê sự cố ra file CSV có gắn cờ chống Formula Injection.<br>*(Sản phẩm: Toàn bộ giao diện người dùng hoàn thiện và Bảng điều khiển phân tích Admin)* |
+> **Cam kết Kiến trúc:** Phân công 5 thành viên phụ trách **5 phân hệ hoàn toàn tách biệt**, mỗi thành viên sở hữu độc quyền các Model và bảng CSDL tương ứng, **tuyệt đối không bị chồng lấn hay phụ thuộc chéo Model**, giúp quá trình phát triển song song mượt mà và bảo vệ đồ án rành mạch trước Giảng viên:
+
+| Thành viên thực hiện | Phân hệ phụ trách | Model & Bảng CSDL phụ trách độc quyền | Hạng mục công việc & Sản phẩm bàn giao cụ thể |
+|---|---|---|---|
+| **Phạm Thị Thanh Ngân**<br>*(Trưởng nhóm)* | **Core Architecture & Agent Workspace**<br>*(Phân hệ Kỹ thuật viên)* | • `Ticket.php` (`tickets`)<br>• `Reply.php` (`ticket_replies`) | • Thiết kế khung kiến trúc Clean MVC: Router, Front Controller, PDO Wrapper, Exception Handler.<br>• Xây dựng **Model `Ticket`**: Quản lý vòng đời State Machine 5 bước, sinh mã `ticket_code`, lưu mốc SLA.<br>• Xây dựng **Model `Reply`**: Xử lý phản hồi 2 chiều và ghi chú nội bộ bảo mật (`is_internal = 1`).<br>• Triển khai `TicketService`: Thuật toán phân công 5 KTV chuyên môn & cơ chế Tràn tải tự động nguyên tử.<br>• Lập trình **Agent Workspace**: Bàn làm việc KTV, hàng đợi theo `due_at ASC`, biên bản giải pháp `resolved`.<br>*(Sản phẩm: Nhân MVC, Model Ticket/Reply và Phân hệ KTV hoàn chỉnh)* |
+| **Trần Thục Linh** | **User Management & Auth Security**<br>*(Xác thực & Bảo mật tài khoản)* | • `User.php` (`users`)<br>• `PasswordReset.php` (`password_resets`) | • Xây dựng **Model `User`**: Quản trị xác thực, mật khẩu Bcrypt (mặc định `123456`), cờ `is_first_login`, khóa mềm (`locked_until`), khóa cứng (`lock_reason = 'expelled'`).<br>• Xây dựng **Model `PasswordReset`**: Sinh token SHA-256 khôi phục mật khẩu qua Email hiệu lực 15 phút.<br>• Lập trình `AuthController`: Đăng nhập, đăng xuất, bắt buộc đổi mật khẩu lần đầu, quy trình Quên mật khẩu SSPR.<br>• Lập trình `GuestTicketController`: Form báo sự cố công khai khi bị khóa cứng & Tra cứu theo PIN.<br>• Xây dựng `CsrfMiddleware`, bảo mật chống dò Brute-force.<br>*(Sản phẩm: Model User/PasswordReset, Hệ thống Auth, SSPR và Guest Ticket)* |
+| **Lê Hà My** | **Academic & Lecturer Portal**<br>*(Học vụ & Cổng Giảng viên)* | • `CourseAssignment.php` (`course_assignments`)<br>• `ClassModel.php` (`classes`)<br>• `Course.php` (`courses`)<br>• `ClassStudent.php` (`class_students`) | • Xây dựng bộ 4 Model Đào tạo: Quản lý danh mục lớp sinh hoạt TUD D24, 6 môn học trong kỳ, danh sách sinh viên thuộc lớp.<br>• Xây dựng **Model `CourseAssignment`**: Phân công 6 môn cho 6 giảng viên, **đảm bảo 1 lớp học phần chỉ có 1 giáo viên phụ trách duy nhất** (`UNIQUE (class_id, course_id, semester)`).<br>• Lập trình **Lecturer Portal**: Bảng điều khiển Giảng viên, xem danh sách sinh viên theo lớp học phần, phối hợp mở lại cổng nộp bài.<br>• Triển khai làn ưu tiên đào tạo **Academic Fast-Track** (cho phép GV gán `HIGH`/`URGENT` cho giờ lên lớp, thi cử).<br>*(Sản phẩm: Bộ 4 Model Học vụ, Phân hệ Giảng viên và Quản lý Lớp học phần)* |
+| **Nguyễn Ánh Nhi** | **Student Portal & Service Master**<br>*(Sinh viên & Đánh giá CSAT)* | • `Rating.php` (`ticket_ratings`)<br>• `Category.php` (`categories`)<br>• `Priority.php` (`priorities`) | • Xây dựng **Model `Rating`**: Đánh giá độ hài lòng CSAT 1–5 sao của sinh viên sau khi giải quyết (ràng buộc 1-1 `UNIQUE (ticket_id)`).<br>• Xây dựng **Model `Category` & `Priority`**: Danh mục 5 nhóm dịch vụ trực tuyến và 4 mức độ ưu tiên.<br>• Lập trình **Student Portal**: Form gửi yêu cầu báo lỗi tinh gọn (chọn trực tiếp Môn học/Lớp học bị lỗi), theo dõi tiến độ xử lý và nghiệm thu CSAT.<br>• Xây dựng `UploadService`: Kiểm duyệt an toàn 5 lớp cho file ảnh thẻ SV và ảnh chụp màn hình lỗi ngoài webroot.<br>*(Sản phẩm: Bộ Model Rating/Category/Priority, Phân hệ Sinh viên và Module Upload)* |
+| **Phan Công Thành** | **Admin Center & Holiday Engine**<br>*(Quản trị Toàn trường & Lịch lễ)* | • `Holiday.php` (`holidays`)<br>• `AdminReportModel.php` (Báo cáo Thống kê) | • Xây dựng **Model `Holiday`**: Quản lý danh mục ngày nghỉ lễ toàn trường phục vụ loại trừ giờ hành chính tính SLA.<br>• Xây dựng **Admin Control Center**: Giám sát cờ tải 5 KTV thời gian thực (Xanh/Vàng/Đỏ), kích hoạt Biểu ngữ thông báo khẩn (Major Incident Banner) và gộp phiếu chủ `parent_ticket_id`.<br>• Lập trình Module Quản trị Người dùng Admin: **Bulk Import CSV đầu kỳ** (cấp tài khoản SV D24, GV, KTV với pass `123456`) và **Xử lý cuối khóa** (lọc `D20` tốt nghiệp, khóa cứng `expelled`).<br>• Phát triển `SlaService` và script CLI tự động `cli/sync_lms_holidays.php` quét và dời lịch học Canvas LMS.<br>• Lập trình Module xuất báo cáo CSV an toàn chống Formula Injection.<br>*(Sản phẩm: Model Holiday, Admin Control Center, Động cơ Auto-SLA và Script CLI)* |
 
 ---
 
@@ -167,15 +169,26 @@ bai-tap-lon-lap-trinh-web-nhom1/
 
 ## 🗄️ 7. THIẾT KẾ CƠ SỞ DỮ LIỆU (CSDL) & SƠ ĐỒ ERD
 
-> Chi tiết đặc tả từng cột và hệ màu giao diện xem tại: 👉 [**CSDL_VA_ERD_NHOM1.md**](CSDL_VA_ERD_NHOM1.md)
+> Tài liệu đặc tả chuẩn hóa chi tiết và hệ màu UI xem tại: 👉 [**CSDL_VA_ERD_NHOM1.md**](CSDL_VA_ERD_NHOM1.md)
 
-### A. Sơ đồ Thực thể Liên kết (ERD)
-Hệ thống chuẩn hóa 8 bảng dữ liệu tối thiểu, đảm bảo chuẩn hóa 3NF, ràng buộc toàn vẹn khóa ngoại và khóa duy nhất:
+### A. Sơ đồ Thực thể Liên kết (ERD - 12 Bảng Chuẩn hóa 3NF)
+Hệ thống thiết kế chuẩn hóa 12 bảng dữ liệu, giải quyết trọn vẹn nghiệp vụ quản trị vòng đời sinh viên, cơ chế phân công nhiều giảng viên quản lý/dạy nhiều môn cho 1 lớp, và hỗ trợ điều phối sự cố CNTT thông minh:
 
 ```mermaid
 erDiagram
-    USERS ||--o{ TICKETS : "requester_id (tạo phiếu)"
-    USERS ||--o{ TICKETS : "assigned_to (tiếp nhận)"
+    CLASSES ||--o{ USERS : "class_id (lớp sinh hoạt chính)"
+    CLASSES ||--o{ CLASS_STUDENTS : "1 lớp có nhiều sinh viên"
+    USERS ||--o{ CLASS_STUDENTS : "student_id (hồ sơ lớp)"
+
+    CLASSES ||--o{ COURSE_ASSIGNMENTS : "class_id"
+    COURSES ||--o{ COURSE_ASSIGNMENTS : "course_id"
+    USERS ||--o{ COURSE_ASSIGNMENTS : "lecturer_id (1 GV phụ trách lớp HP)"
+
+    CLASSES ||--o{ TICKETS : "class_id (sự cố lớp học)"
+    COURSES ||--o{ TICKETS : "course_id (sự cố môn học LMS)"
+
+    USERS ||--o{ TICKETS : "requester_id (SV/GV tạo phiếu)"
+    USERS ||--o{ TICKETS : "assigned_to (KTV tiếp nhận)"
     USERS ||--o{ TICKET_REPLIES : "gửi phản hồi"
     USERS ||--o{ TICKET_RATINGS : "chấm điểm CSAT"
     USERS ||--o{ PASSWORD_RESETS : "yêu cầu SSPR"
@@ -188,23 +201,52 @@ erDiagram
     TICKETS ||--o| TICKET_RATINGS : "1 phiếu - tối đa 1 đánh giá (UNIQUE)"
     TICKETS ||--o{ TICKETS : "parent_ticket_id (gộp phiếu diện rộng)"
 
+    CLASSES {
+        int id PK
+        varchar class_code UK "D24-CNTT1"
+        varchar name "Lớp CNTT D24-1"
+        varchar cohort "D24"
+        varchar academic_year "2024-2028"
+    }
+    COURSES {
+        int id PK
+        varchar course_code UK "WEB101"
+        varchar name "Lập trình Web"
+        tinyint credits
+    }
     USERS {
         int id PK
-        varchar user_code UK
-        varchar email UK
+        varchar user_code UK "224001736"
+        varchar email UK "@daihocthudo.edu.vn"
         enum role "requester, agent, admin"
+        enum user_type "student, lecturer, staff"
+        int class_id FK "Lớp sinh hoạt"
+        varchar cohort "Khóa tuyển sinh D24"
+        enum academic_status "studying, graduated, expelled, suspended"
         int specialty_category_id FK
         tinyint is_active "0: Khóa cứng"
-        enum lock_reason "none, expelled..."
+        enum lock_reason "none, expelled, graduated..."
+    }
+    CLASS_STUDENTS {
+        int id PK
+        int class_id FK
+        int student_id FK
+    }
+    COURSE_ASSIGNMENTS {
+        int id PK
+        int class_id FK
+        int course_id FK
+        int lecturer_id FK
+        varchar semester "2026_1 (UNIQUE)"
     }
     CATEGORIES {
         int id PK
-        varchar code UK
+        varchar code UK "CAT_SSO, CAT_CANVAS..."
         decimal sla_hours
     }
     PRIORITIES {
         int id PK
-        varchar code UK
+        varchar code UK "URGENT, HIGH, MED, LOW"
         decimal sla_factor
     }
     TICKETS {
@@ -215,6 +257,8 @@ erDiagram
         int category_id FK
         int priority_id FK
         int parent_ticket_id FK
+        int class_id FK
+        int course_id FK
         enum status "new, in_progress, waiting_requester, resolved, closed"
     }
     TICKET_REPLIES {
@@ -242,23 +286,43 @@ erDiagram
     }
 ```
 
-### B. Danh sách 8 Bảng Dữ liệu Tối thiểu
-1. **`users`:** Quản lý tài khoản (Sinh viên, Giảng viên, 5 KTV, Admin). Chứa cơ chế Khóa mềm (`locked_until`), Khóa cứng buộc thôi học (`lock_reason = 'expelled'`), và cờ chuyên môn KTV (`specialty_category_id`).
-2. **`categories`:** 5 nhóm dịch vụ trực tuyến (`CAT_SSO`, `CAT_MAIL`, `CAT_QLDT`, `CAT_CANVAS`, `CAT_WIFI`) kèm hạn SLA chuẩn.
-3. **`priorities`:** 4 mức ưu tiên (`URGENT`, `HIGH`, `MED`, `LOW`) kèm hệ số rút ngắn SLA `sla_factor`.
-4. **`tickets`:** Bảng trung tâm lưu trữ phiếu hỗ trợ. Mã vé `ticket_code` sinh tự động bởi MySQL 8 (`STORED UNIQUE`), hỗ trợ cờ `is_guest_ticket`, mã PIN tra cứu `lookup_pin`, và gộp phiếu diện rộng `parent_ticket_id`.
-5. **`ticket_replies`:** Lưu trao đổi hai chiều giữa người dùng và KTV, có cờ `is_internal = 1` ghi chú nội bộ.
-6. **`ticket_ratings`:** Lưu đánh giá độ hài lòng CSAT 1–5 sao của sinh viên (ràng buộc `UNIQUE (ticket_id)` quan hệ 1-1).
-7. **`password_resets`:** Lưu token khôi phục mật khẩu tự động qua email (SSPR) hiệu lực 15 phút.
-8. **`holidays`:** Lưu lịch nghỉ lễ toàn trường phục vụ thuật toán trừ giờ hành chính và dời lịch LMS tự động.
+### B. Danh sách 12 Bảng Dữ liệu Chuẩn hóa
+1. **`categories`:** 5 nhóm dịch vụ trực tuyến (`CAT_SSO`, `CAT_MAIL`, `CAT_QLDT`, `CAT_CANVAS`, `CAT_WIFI`) kèm hạn SLA chuẩn.
+2. **`priorities`:** 4 mức ưu tiên (`URGENT`, `HIGH`, `MED`, `LOW`) kèm hệ số rút ngắn SLA `sla_factor`.
+3. **`classes`:** Quản lý danh mục lớp sinh hoạt/hành chính (Ví dụ: `D24-CNTT1`, `D24-CNTT2` thuộc khóa tuyển sinh `D24` Trường Đại học Thủ Đô Hà Nội - TUD). 1 lớp có nhiều sinh viên.
+4. **`courses`:** Quản lý danh mục 6 học phần/môn học trong học kỳ (`WEB101` - Lập trình Web, `NET201` - Mạng máy tính, `DB102` - Cơ sở dữ liệu, `OS101` - Hệ điều hành, `SE201` - Kỹ nghệ phần mềm, `LMS301` - Hệ thống LMS).
+5. **`users`:** Quản trị toàn bộ người dùng (SV, GV, KTV, Admin). Hỗ trợ:
+   - **Vòng đời học thuật:** Trạng thái `academic_status` (`studying`, `graduated`, `expelled`, `suspended`), khóa tuyển sinh `cohort` (Khóa `D24` cho sinh viên TUD hiện tại, khóa `D20` cựu sinh viên).
+   - **Mật khẩu khởi tạo cố định sau import:** Mặc định là **`123456`** (băm Bcrypt), cờ `is_first_login = 1` bắt buộc đổi mật khẩu lần đầu.
+   - **Cơ chế Khóa bảo mật:** Khóa mềm (`locked_until`), Khóa cứng (`lock_reason = 'expelled'`, `'graduated'`).
+   - **Phân công chuyên môn KTV:** Cờ `specialty_category_id`, giới hạn tải `max_capacity = 5`, cờ trực ca `is_on_duty`.
+6. **`class_students`:** Bảng quan hệ N-N giữa Lớp và Sinh viên. Đảm bảo ràng buộc `UNIQUE (class_id, student_id)`.
+7. **`course_assignments`:** Bảng phân công giảng dạy lớp học phần. **Mỗi lớp học phần CHỈ CÓ DUY NHẤT 1 GIÁO VIÊN PHỤ TRÁCH**. Ràng buộc nghiêm ngặt: `UNIQUE (class_id, course_id, semester)`. Ví dụ: 1 học kỳ sinh viên học 6 môn sẽ có 6 giảng viên quản lý danh sách sinh viên theo 6 lớp học phần tương ứng.
+8. **`holidays`:** Danh mục ngày nghỉ lễ toàn trường phục vụ loại trừ giờ hành chính tính SLA và kịch bản tự động dời lịch học LMS.
+9. **`password_resets`:** Lưu token khôi phục mật khẩu tự động qua email (SSPR) với token SHA-256 hiệu lực 15 phút.
+10. **`tickets`:** Bảng trung tâm lưu trữ phiếu hỗ trợ. Mã phiếu `ticket_code` sinh tự động bởi MySQL 8 (`STORED UNIQUE`), hỗ trợ cờ `is_guest_ticket`, mã PIN `lookup_pin`, gộp phiếu diện rộng `parent_ticket_id`, và liên kết định vị môn học/lớp học qua `class_id`, `course_id`.
+11. **`ticket_replies`:** Lưu trao đổi hai chiều giữa người dùng và KTV, có cờ `is_internal = 1` bảo mật ghi chú nội bộ.
+12. **`ticket_ratings`:** Lưu đánh giá độ hài lòng CSAT 1–5 sao của sinh viên (ràng buộc `UNIQUE (ticket_id)` quan hệ 1-1).
+
+### C. Cơ chế Vòng đời Học thuật & Đào tạo (Academic Lifecycle & Course Class Model)
+* **Đầu học kỳ (Bulk Import CSV):** Admin tải lên tệp CSV chuẩn hóa danh sách tân sinh viên, giảng viên và kỹ thuật viên mới. Hệ thống tự động tạo mã SV/GV theo quy chuẩn `@daihocthudo.edu.vn`, gán mật khẩu khởi tạo cố định **`123456`**, bật cờ `is_first_login = 1`, phân lớp và tự động ghi nhận vào bảng `class_students`.
+* **Cuối khóa học / Tốt nghiệp & Buộc thôi học:**
+  - **Sinh viên tốt nghiệp:** Admin kích hoạt tác vụ cuối khóa theo `cohort` (Ví dụ: lọc khóa `D20`) &rarr; Chuyển `academic_status = 'graduated'`, thu hồi các quyền truy cập cổng đào tạo nâng cao nhưng duy trì tài khoản cựu sinh viên để tra cứu văn bằng, điểm số.
+  - **Sinh viên thôi học / Kỷ luật:** Chuyển `academic_status = 'expelled'`, kích hoạt **Khóa cứng** (`is_active = 0`, `lock_reason = 'expelled'`), lập tức hủy toàn bộ Session đang mở, chặn hoàn toàn cơ chế Quên mật khẩu (SSPR) và cấm KTV mở khóa tài khoản qua Guest Ticket.
+* **Cơ chế Lớp học phần: 1 Lớp học phần chỉ có 1 Giáo viên phụ trách:**
+  - Một lớp sinh hoạt (ví dụ: `D24-CNTT1` thuộc khóa tuyển sinh `D24`) gồm nhiều sinh viên trong bảng `class_students`.
+  - Trong 1 học kỳ, sinh viên học 6 môn học (`courses`).
+  - Mỗi môn học của lớp được tổ chức thành 1 lớp học phần do **duy nhất 1 giảng viên phụ trách và quản lý danh sách sinh viên**. Do đó, 6 môn học sẽ có **6 giảng viên phụ trách 6 lớp học phần tương ứng**.
+  - Ràng buộc CSDL: `UNIQUE (class_id, course_id, semester)`.
+  - Khi sinh viên hoặc giảng viên gửi phiếu báo sự cố LMS/QLĐT, có thể gắn trực tiếp `class_id` và `course_id` để KTV 4 khoanh vùng lớp học phần và giảng viên phụ trách nhận được thông báo ngay lập tức.
 
 ---
 
 ## ⚡ 8. HƯỚNG DẪN CHẠY SCRIPT TẠO CƠ SỞ DỮ LIỆU (DATABASE RUN GUIDE)
 
 Hệ thống cung cấp sẵn 2 tập tin SQL tại thư mục `database/`:
-* 📄 [`database/schema.sql`](database/schema.sql): Tập tin DDL tạo cấu trúc CSDL và 8 bảng hoàn chỉnh.
-* 📄 [`database/seed.sql`](database/seed.sql): Tập tin DML nạp dữ liệu mẫu sẵn sàng đăng nhập trải nghiệm.
+* 📄 [`database/schema.sql`](database/schema.sql): Tập tin DDL tạo cấu trúc CSDL và **12 bảng chuẩn hóa** hoàn chỉnh.
+* 📄 [`database/seed.sql`](database/seed.sql): Tập tin DML nạp tài khoản mẫu Trường ĐH Thủ Đô Hà Nội (TUD D24), phân công giảng dạy 6 lớp học phần cho 6 giảng viên, lớp học, danh mục dịch vụ và lịch nghỉ lễ.
 
 ### Cách 1: Chạy qua phpMyAdmin (Giao diện XAMPP)
 1. Mở trình duyệt, vào `http://localhost/phpmyadmin`.
@@ -277,11 +341,24 @@ mysql -u root -p helpdesk_thudo < database/seed.sql
 ```
 
 ### Kiểm tra sau khi nạp:
-* Tài khoản mẫu mặc định đều có mật khẩu: **`Thudo@2026!`**
+* Mật khẩu cố định toàn bộ tài khoản sau import / seed mẫu là: **`123456`**
   * **Admin:** `admin@daihocthudo.edu.vn`
   * **KTV 1 (Chuyên trách SSO):** `ktv1@daihocthudo.edu.vn`
-  * **Giảng viên:** `gv.cntt@daihocthudo.edu.vn`
-  * **Sinh viên:** `224001736@daihocthudo.edu.vn`
+  * **6 Giảng viên phụ trách 6 lớp học phần kỳ 1:**
+    * `nguyenvangiang@daihocthudo.edu.vn` (Môn Web `WEB101` lớp `D24-CNTT1`)
+    * `tranthihanh@daihocthudo.edu.vn` (Môn Mạng `NET201` lớp `D24-CNTT1`)
+    * `levantuan@daihocthudo.edu.vn` (Môn CSDL `DB102` lớp `D24-CNTT1`)
+    * `phammailan@daihocthudo.edu.vn` (Môn Hệ điều hành `OS101` lớp `D24-CNTT1`)
+    * `hoangquocbao@daihocthudo.edu.vn` (Môn Kỹ nghệ phần mềm `SE201` lớp `D24-CNTT1`)
+    * `vuthingoc@daihocthudo.edu.vn` (Môn E-Learning `LMS301` lớp `D24-CNTT1`)
+  * **Sinh viên khóa TUD D24 (Lớp D24-CNTT1):**
+    * `224001736@daihocthudo.edu.vn` (Phạm Thị Thanh Ngân - Trưởng nhóm)
+    * `224001729@daihocthudo.edu.vn` (Trần Thục Linh)
+    * `224001737@daihocthudo.edu.vn` (Lê Hà My)
+    * `224001742@daihocthudo.edu.vn` (Nguyễn Ánh Nhi)
+    * `224001746@daihocthudo.edu.vn` (Phan Công Thành)
+  * **Cựu sinh viên hết khóa (D20 tốt nghiệp):** `220001001@daihocthudo.edu.vn`
+  * **Sinh viên TUD D24 bị kỷ luật buộc thôi học:** `224001999@daihocthudo.edu.vn` (Khóa cứng)
 
 ---
 
@@ -298,8 +375,7 @@ Toàn bộ hệ thống giao diện Web (CSS) được chuẩn hóa theo hệ m�
   * `resolved`: Chữ `#15803d` / Nền `#dcfce7`
   * `closed`: Chữ `#475569` / Nền `#f1f5f9`
   * `urgent / alert`: Chữ `#b91c1c` / Nền `#fee2e2`
-   * **Giảng viên (Lecturer):** Tài khoản `gv.cntt@daihocthudo.edu.vn` | Mật khẩu: `Thudo@2026!`
-   * **Sinh viên (Student):** Tài khoản `224001736@daihocthudo.edu.vn` | Mật khẩu: `Thudo@2026!`
+* **Mật khẩu khởi tạo chung (Toàn bộ tài khoản):** `123456`
 
 ---
 
