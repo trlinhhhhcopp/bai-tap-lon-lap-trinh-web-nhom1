@@ -14,7 +14,7 @@
 |:---:|---|:---:|:---:|---|
 | 1 | **Phạm Thị Thanh Ngân** | **224001736** | **Trưởng nhóm** | `224001736@daihocthudo.edu.vn` |
 | 2 | **Trần Thục Linh** | **224001729** | Thành viên | `224001729@daihocthudo.edu.vn` |
-| 3 | **Lê Hà My** | **224001736** | Thành viên | `224001736@daihocthudo.edu.vn` |
+| 3 | **Lê Hà My** | **224001735** | Thành viên | `224001735@daihocthudo.edu.vn` |
 | 4 | **Nguyễn Ánh Nhi** | **224001742** | Thành viên | `224001742@daihocthudo.edu.vn` |
 | 5 | **Phan Công Thành** | **224001746** | Thành viên | `224001746@daihocthudo.edu.vn` |
 
@@ -165,19 +165,139 @@ bai-tap-lon-lap-trinh-web-nhom1/
 
 ---
 
-## ⚡ 7. HƯỚNG DẪN CÀI ĐẶT & VẬN HÀNH NHANH (QUICK START)
+## 🗄️ 7. THIẾT KẾ CƠ SỞ DỮ LIỆU (CSDL) & SƠ ĐỒ ERD
 
-1. **Khởi động môi trường:**
-   * Mở phần mềm **XAMPP**, khởi động dịch vụ **Apache** và **MySQL**.
-2. **Cài đặt Cơ sở Dữ liệu:**
-   * Truy cập `http://localhost/phpmyadmin`.
-   * Tạo cơ sở dữ liệu mới có tên: `helpdesk_thudo` (Collation: `utf8mb4_unicode_ci`).
-   * Import lần lượt hai file: `database/schema.sql` rồi đến `database/seeders.sql`.
-3. **Cấu hình kết nối:**
-   * Mở file `config/database.php`, kiểm tra thông số kết nối (mặc định: `host=localhost`, `dbname=helpdesk_thudo`, `user=root`, `pass=`).
-4. **Trải nghiệm các tài khoản thử nghiệm mẫu:**
-   * **Quản trị viên (Admin):** Tài khoản `admin@daihocthudo.edu.vn` | Mật khẩu: `Thudo@2026!`
-   * **Kỹ thuật viên 1 (SSO/Tài khoản):** Tài khoản `ktv1@daihocthudo.edu.vn` | Mật khẩu: `Thudo@2026!`
+> Chi tiết đặc tả từng cột và hệ màu giao diện xem tại: 👉 [**CSDL_VA_ERD_NHOM1.md**](CSDL_VA_ERD_NHOM1.md)
+
+### A. Sơ đồ Thực thể Liên kết (ERD)
+Hệ thống chuẩn hóa 8 bảng dữ liệu tối thiểu, đảm bảo chuẩn hóa 3NF, ràng buộc toàn vẹn khóa ngoại và khóa duy nhất:
+
+```mermaid
+erDiagram
+    USERS ||--o{ TICKETS : "requester_id (tạo phiếu)"
+    USERS ||--o{ TICKETS : "assigned_to (tiếp nhận)"
+    USERS ||--o{ TICKET_REPLIES : "gửi phản hồi"
+    USERS ||--o{ TICKET_RATINGS : "chấm điểm CSAT"
+    USERS ||--o{ PASSWORD_RESETS : "yêu cầu SSPR"
+    USERS }o--|| CATEGORIES : "specialty_category_id (chuyên môn KTV)"
+    
+    CATEGORIES ||--o{ TICKETS : "category_id"
+    PRIORITIES ||--o{ TICKETS : "priority_id"
+    
+    TICKETS ||--o{ TICKET_REPLIES : "chứa các phản hồi"
+    TICKETS ||--o| TICKET_RATINGS : "1 phiếu - tối đa 1 đánh giá (UNIQUE)"
+    TICKETS ||--o{ TICKETS : "parent_ticket_id (gộp phiếu diện rộng)"
+
+    USERS {
+        int id PK
+        varchar user_code UK
+        varchar email UK
+        enum role "requester, agent, admin"
+        int specialty_category_id FK
+        tinyint is_active "0: Khóa cứng"
+        enum lock_reason "none, expelled..."
+    }
+    CATEGORIES {
+        int id PK
+        varchar code UK
+        decimal sla_hours
+    }
+    PRIORITIES {
+        int id PK
+        varchar code UK
+        decimal sla_factor
+    }
+    TICKETS {
+        int id PK
+        varchar ticket_code UK "Tự sinh HD-2026-xxxxx"
+        int requester_id FK
+        int assigned_to FK
+        int category_id FK
+        int priority_id FK
+        int parent_ticket_id FK
+        enum status "new, in_progress, waiting_requester, resolved, closed"
+    }
+    TICKET_REPLIES {
+        int id PK
+        int ticket_id FK
+        int user_id FK
+        tinyint is_internal "1: Private Note"
+    }
+    TICKET_RATINGS {
+        int id PK
+        int ticket_id FK, UK
+        tinyint score "1-5 sao"
+    }
+    PASSWORD_RESETS {
+        int id PK
+        int user_id FK
+        varchar token_hash
+        datetime expires_at
+    }
+    HOLIDAYS {
+        int id PK
+        varchar name
+        date start_date
+        date end_date
+    }
+```
+
+### B. Danh sách 8 Bảng Dữ liệu Tối thiểu
+1. **`users`:** Quản lý tài khoản (Sinh viên, Giảng viên, 5 KTV, Admin). Chứa cơ chế Khóa mềm (`locked_until`), Khóa cứng buộc thôi học (`lock_reason = 'expelled'`), và cờ chuyên môn KTV (`specialty_category_id`).
+2. **`categories`:** 5 nhóm dịch vụ trực tuyến (`CAT_SSO`, `CAT_MAIL`, `CAT_QLDT`, `CAT_CANVAS`, `CAT_WIFI`) kèm hạn SLA chuẩn.
+3. **`priorities`:** 4 mức ưu tiên (`URGENT`, `HIGH`, `MED`, `LOW`) kèm hệ số rút ngắn SLA `sla_factor`.
+4. **`tickets`:** Bảng trung tâm lưu trữ phiếu hỗ trợ. Mã vé `ticket_code` sinh tự động bởi MySQL 8 (`STORED UNIQUE`), hỗ trợ cờ `is_guest_ticket`, mã PIN tra cứu `lookup_pin`, và gộp phiếu diện rộng `parent_ticket_id`.
+5. **`ticket_replies`:** Lưu trao đổi hai chiều giữa người dùng và KTV, có cờ `is_internal = 1` ghi chú nội bộ.
+6. **`ticket_ratings`:** Lưu đánh giá độ hài lòng CSAT 1–5 sao của sinh viên (ràng buộc `UNIQUE (ticket_id)` quan hệ 1-1).
+7. **`password_resets`:** Lưu token khôi phục mật khẩu tự động qua email (SSPR) hiệu lực 15 phút.
+8. **`holidays`:** Lưu lịch nghỉ lễ toàn trường phục vụ thuật toán trừ giờ hành chính và dời lịch LMS tự động.
+
+---
+
+## ⚡ 8. HƯỚNG DẪN CHẠY SCRIPT TẠO CƠ SỞ DỮ LIỆU (DATABASE RUN GUIDE)
+
+Hệ thống cung cấp sẵn 2 tập tin SQL tại thư mục `database/`:
+* 📄 [`database/schema.sql`](database/schema.sql): Tập tin DDL tạo cấu trúc CSDL và 8 bảng hoàn chỉnh.
+* 📄 [`database/seed.sql`](database/seed.sql): Tập tin DML nạp dữ liệu mẫu sẵn sàng đăng nhập trải nghiệm.
+
+### Cách 1: Chạy qua phpMyAdmin (Giao diện XAMPP)
+1. Mở trình duyệt, vào `http://localhost/phpmyadmin`.
+2. Tạo CSDL mới tên: **`helpdesk_thudo`** (Collation: `utf8mb4_unicode_ci`).
+3. Bấm vào tab **Import** (Nhập):
+   * Lần 1: Chọn file `database/schema.sql` &rarr; Bấm **Import** để tạo bảng.
+   * Lần 2: Chọn file `database/seed.sql` &rarr; Bấm **Import** để nạp tài khoản và dữ liệu mẫu.
+
+### Cách 2: Chạy qua Dòng lệnh MySQL (Command Line / Terminal)
+```bash
+# 1. Chạy DDL tạo cấu trúc bảng
+mysql -u root -p helpdesk_thudo < database/schema.sql
+
+# 2. Chạy DML nạp dữ liệu mẫu
+mysql -u root -p helpdesk_thudo < database/seed.sql
+```
+
+### Kiểm tra sau khi nạp:
+* Tài khoản mẫu mặc định đều có mật khẩu: **`Thudo@2026!`**
+  * **Admin:** `admin@daihocthudo.edu.vn`
+  * **KTV 1 (Chuyên trách SSO):** `ktv1@daihocthudo.edu.vn`
+  * **Giảng viên:** `gv.cntt@daihocthudo.edu.vn`
+  * **Sinh viên:** `224001736@daihocthudo.edu.vn`
+
+---
+
+## 🎨 9. HỆ MÃ MÀU ĐỒNG BỘ GIAO DIỆN (UI COLOR TOKENS)
+
+Toàn bộ hệ thống giao diện Web (CSS) được chuẩn hóa theo hệ màu **"Thudo Metropolitan Blue & Modern Slate"**:
+* **Màu chủ đạo (Primary):** `#0284c7` (Sky Blue 600) | Hover: `#0369a1` | Nhạt: `#e0f2fe`
+* **Màu nền tối (Navbar/Sidebar):** `#0f172a` (Slate 900)
+* **Màu nền trang (Body):** `#f8fafc` (Slate 50) | Nền thẻ Card: `#ffffff` | Viền: `#cbd5e1`
+* **Màu trạng thái (Status Badges):**
+  * `new`: Chữ `#0284c7` / Nền `#e0f2fe`
+  * `in_progress`: Chữ `#b45309` / Nền `#fef3c7`
+  * `waiting_requester`: Chữ `#7c3aed` / Nền `#f5f3ff`
+  * `resolved`: Chữ `#15803d` / Nền `#dcfce7`
+  * `closed`: Chữ `#475569` / Nền `#f1f5f9`
+  * `urgent / alert`: Chữ `#b91c1c` / Nền `#fee2e2`
    * **Giảng viên (Lecturer):** Tài khoản `gv.cntt@daihocthudo.edu.vn` | Mật khẩu: `Thudo@2026!`
    * **Sinh viên (Student):** Tài khoản `224001736@daihocthudo.edu.vn` | Mật khẩu: `Thudo@2026!`
 
