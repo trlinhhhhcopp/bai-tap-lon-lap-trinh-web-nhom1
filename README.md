@@ -22,7 +22,7 @@
 | 1 | GET | `/login` | `AuthController@showLogin` | Khách | P0 |
 | 2 | POST | `/login` | `AuthController@login` | Khách | P0 |
 | 3 | POST | `/logout` | `AuthController@logout` | Đã đăng nhập | P0 |
-| 4 | GET | `/tickets/create` | `TicketController@create` | requester, admin | P0 |
+| 4 | GET | `/tickets/create` | `TicketController@cgit add .reate` | requester, admin | P0 |
 | 5 | POST | `/tickets/create` | `TicketController@store` | requester, admin | P0 |
 | 6 | GET | `/tickets/my` | `TicketController@myTickets` | requester | P0 |
 | 7 | GET | `/tickets/show?code=...` | `TicketController@show` | Chủ phiếu, agent được giao, admin | P0 |
