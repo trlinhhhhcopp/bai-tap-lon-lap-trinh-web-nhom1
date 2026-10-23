@@ -1,4 +1,4 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- BÀI TẬP LỚN LẬP TRÌNH WEB - HỌC KỲ I
 -- TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI (TUD) - KHOA CÔNG NGHỆ THÔNG TIN
 -- CHỦ ĐỀ 9: HỆ THỐNG HELPDESK CNTT TRỰC TUYẾN (IT SUPPORT ONLINE)
@@ -212,14 +212,14 @@ INSERT INTO `course_assignments` (`class_id`, `course_id`, `lecturer_id`, `semes
 -- 9. SEED CÁC PHIẾU YÊU CẦU MẪU (TICKETS - GẮN LỚP HỌC PHẦN & MÔN HỌC)
 -- ==============================================================================
 INSERT INTO `tickets` (
-    `id`, `requester_id`, `assigned_to`, `category_id`, `priority_id`, `parent_ticket_id`,
+    `id`, `ticket_code`, `requester_id`, `assigned_to`, `category_id`, `priority_id`, `parent_ticket_id`,
     `class_id`, `course_id`,
     `is_guest_ticket`, `contact_email`, `lookup_pin`, `title`, `description`, 
     `system_affected`, `status`, `created_at`, `sla_started_at`, `triage_due_at`, `due_at`, 
     `first_response_at`, `resolved_at`, `closed_at`
 ) VALUES
 -- Phiếu 1: Sự cố diện rộng Canvas LMS (Phiếu Chủ Master Ticket)
-(1, 1, 5, 4, 1, NULL, 
+(1, 'HD-2026-00001', 1, 5, 4, 1, NULL, 
  1, 6,
  0, NULL, NULL, 
  '[SỰ CỐ DIỆN RỘNG] Hiệu chỉnh lịch học trùng ngày nghỉ lễ trên Canvas LMS', 
@@ -229,7 +229,7 @@ INSERT INTO `tickets` (
  '2026-10-23 08:10:00', NULL, NULL),
 
 -- Phiếu 2: Sinh viên Ngân (TUD D24) báo lỗi nộp bài tập môn Lập trình Web lớp D24-CNTT1
-(2, 13, 5, 4, 1, 1, 
+(2, 'HD-2026-00002', 13, 5, 4, 1, 1, 
  1, 1,
  0, NULL, NULL, 
  'Lịch nộp bài tập lớn môn Lập trình Web lớp D24-CNTT1 rơi vào ngày 30/4', 
@@ -239,7 +239,7 @@ INSERT INTO `tickets` (
  '2026-10-23 08:20:00', NULL, NULL),
 
 -- Phiếu 3: Guest Ticket báo khóa tài khoản từ form ngoài của SV Linh (TUD D24)
-(3, 14, 2, 1, 3, NULL, 
+(3, 'HD-2026-00003', 14, 2, 1, 3, NULL, 
  1, NULL,
  1, 'tranlinh.personal@gmail.com', '4589', 
  'Tài khoản đăng nhập portal bị khóa cứng sau 5 lần nhập sai', 
@@ -249,7 +249,7 @@ INSERT INTO `tickets` (
  '2026-10-23 08:40:00', NULL, NULL),
 
 -- Phiếu 4: Giảng viên Giảng báo khẩn cấp (Mở quyền nhập điểm môn Lập trình Web lớp D24-CNTT1)
-(4, 7, 4, 3, 1, NULL, 
+(4, 'HD-2026-00004', 7, 4, 3, 1, NULL, 
  1, 1,
  0, NULL, NULL, 
  '[KHẨN CẤP] Cần mở quyền nhập điểm bổ sung học phần Lập trình Web Lớp D24-CNTT1', 
@@ -259,7 +259,7 @@ INSERT INTO `tickets` (
  '2026-10-22 14:05:00', '2026-10-22 14:25:00', NULL),
 
 -- Phiếu 5: Sinh viên Thành (TUD D24) báo lỗi Wi-Fi đã hoàn thành và chấm CSAT 5 sao
-(5, 17, 6, 5, 3, NULL, 
+(5, 'HD-2026-00005', 17, 6, 5, 3, NULL, 
  1, NULL,
  0, NULL, NULL, 
  'Không xác thực được mạng Wi-Fi THUDO-UNI tại KTX Nhà B', 

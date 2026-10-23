@@ -5,16 +5,12 @@
 -- TẬP TIN DDL TẠO BẢNG CƠ SỞ DỮ LIỆU: database/schema.sql
 -- Hệ quản trị CSDL: MySQL 8.0+ (InnoDB, utf8mb4_unicode_ci)
 -- ==============================================================================
-
 CREATE DATABASE IF NOT EXISTS `helpdesk_thudo` 
 DEFAULT CHARACTER SET utf8mb4 
 COLLATE utf8mb4_unicode_ci;
-
 USE `helpdesk_thudo`;
-
 -- Tắt kiểm tra khóa ngoại tạm thời để tránh xung đột thứ tự DROP
 SET FOREIGN_KEY_CHECKS = 0;
-
 DROP TABLE IF EXISTS `ticket_ratings`;
 DROP TABLE IF EXISTS `ticket_replies`;
 DROP TABLE IF EXISTS `tickets`;
@@ -27,9 +23,8 @@ DROP TABLE IF EXISTS `holidays`;
 DROP TABLE IF EXISTS `priorities`;
 DROP TABLE IF EXISTS `categories`;
 DROP TABLE IF EXISTS `users`;
-
-SET FOREIGN_KEY_CHECKS = 1;
-
+-- Giữ kiểm tra khóa ngoại tắt trong toàn bộ quá trình DROP và CREATE TABLE
+-- để tránh xung đột thứ tự tạo bảng. Bật lại ở cuối tập tin.
 -- ==============================================================================
 -- 1. BẢNG DANH MỤC DỊCH VỤ TRỰC TUYẾN (CATEGORIES)
 -- ==============================================================================
@@ -44,7 +39,6 @@ CREATE TABLE `categories` (
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT `uq_categories_code` UNIQUE (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 2. BẢNG MỨC ĐỘ ƯU TIÊN (PRIORITIES)
 -- ==============================================================================
@@ -56,7 +50,6 @@ CREATE TABLE `priorities` (
     `sort_order` TINYINT UNSIGNED NOT NULL DEFAULT 1,
     CONSTRAINT `uq_priorities_code` UNIQUE (`code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 3. BẢNG LỚP HỌC (CLASSES - 1 LỚP CÓ NHIỀU SINH VIÊN)
 -- ==============================================================================
@@ -70,7 +63,6 @@ CREATE TABLE `classes` (
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT `uq_classes_code` UNIQUE (`class_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 4. BẢNG MÔN HỌC / HỌC PHẦN (COURSES)
 -- ==============================================================================
@@ -83,7 +75,6 @@ CREATE TABLE `courses` (
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT `uq_courses_code` UNIQUE (`course_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 5. BẢNG TÀI KHOẢN NGƯỜI DÙNG (USERS)
 -- Quản trị vòng đời SV (học, tốt nghiệp, thôi học), GV, KTV và Admin
@@ -129,7 +120,6 @@ CREATE TABLE `users` (
     INDEX `idx_user_lookup` (`user_code`, `user_type`, `academic_status`),
     INDEX `idx_cohort_filter` (`cohort`, `academic_status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 6. BẢNG SINH VIÊN THUỘC LỚP (CLASS_STUDENTS - 1 LỚP CÓ NHIỀU SINH VIÊN)
 -- ==============================================================================
@@ -144,7 +134,6 @@ CREATE TABLE `class_students` (
     CONSTRAINT `fk_class_students_student` FOREIGN KEY (`student_id`) 
         REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 7. BẢNG PHÂN CÔNG GIẢNG DẠY LỚP HỌC PHẦN (COURSE_ASSIGNMENTS)
 -- Cơ chế: Mỗi lớp học phần (1 môn của 1 lớp trong 1 kỳ) CHỈ CÓ DUY NHẤT 1 GIẢNG VIÊN PHỤ TRÁCH
@@ -166,7 +155,6 @@ CREATE TABLE `course_assignments` (
     CONSTRAINT `fk_course_assign_lecturer` FOREIGN KEY (`lecturer_id`) 
         REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 8. BẢNG DANH MỤC NGÀY NGHỈ LỄ (HOLIDAYS)
 -- ==============================================================================
@@ -179,7 +167,6 @@ CREATE TABLE `holidays` (
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX `idx_holidays_dates` (`start_date`, `end_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 9. BẢNG KHÔI PHỤC MẬT KHẨU TỰ ĐỘNG QUA EMAIL (PASSWORD_RESETS)
 -- ==============================================================================
@@ -194,7 +181,6 @@ CREATE TABLE `password_resets` (
         REFERENCES `users` (`id`) ON DELETE CASCADE,
     INDEX `idx_token_lookup` (`token_hash`, `expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 10. BẢNG PHIẾU YÊU CẦU HỖ TRỢ (TICKETS)
 -- ==============================================================================
@@ -231,9 +217,7 @@ CREATE TABLE `tickets` (
     `closed_at` DATETIME NULL,
     `reopen_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
     
-    `ticket_code` VARCHAR(30) GENERATED ALWAYS AS (
-        CONCAT('HD-', YEAR(`created_at`), '-', LPAD(`id`, 5, '0'))
-    ) STORED UNIQUE,
+    `ticket_code` VARCHAR(30) NULL UNIQUE, -- Mã định dạng HD-2026-00001 (sinh bởi Controller/Service)
     
     CONSTRAINT `fk_tickets_requester` FOREIGN KEY (`requester_id`) 
         REFERENCES `users` (`id`) ON DELETE CASCADE,
@@ -256,7 +240,6 @@ CREATE TABLE `tickets` (
     INDEX `idx_guest_lookup` (`ticket_code`, `lookup_pin`),
     INDEX `idx_ticket_academic` (`class_id`, `course_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 11. BẢNG PHẢN HỒI & TRAO ĐỔI (TICKET_REPLIES)
 -- ==============================================================================
@@ -275,7 +258,6 @@ CREATE TABLE `ticket_replies` (
         REFERENCES `users` (`id`) ON DELETE CASCADE,
     INDEX `idx_ticket_replies` (`ticket_id`, `is_internal`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
 -- ==============================================================================
 -- 12. BẢNG ĐÁNH GIÁ CSAT 1-5 SAO (TICKET_RATINGS)
 -- ==============================================================================
@@ -294,3 +276,4 @@ CREATE TABLE `ticket_ratings` (
         REFERENCES `users` (`id`) ON DELETE CASCADE,
     CONSTRAINT `chk_ticket_ratings_score` CHECK (`score` BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+SET FOREIGN_KEY_CHECKS = 1;
