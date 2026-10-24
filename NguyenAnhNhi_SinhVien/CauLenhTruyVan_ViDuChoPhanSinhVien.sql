@@ -11,7 +11,7 @@ SELECT
 FROM tickets t
 JOIN categories c ON t.category_id = c.id
 JOIN priorities p ON t.priority_id = p.id
-WHERE t.requester_id = 13          -- 224001736 - Phạm Thị Thanh Ngân (thay id sinh viên khác nếu cần)
+WHERE t.requester_id = 13          
 ORDER BY t.created_at DESC;
 
 
@@ -50,7 +50,7 @@ SELECT
 FROM ticket_ratings r
 JOIN tickets t ON r.ticket_id = t.id
 JOIN users u ON r.user_id = u.id
-WHERE r.user_id = 17               -- 224001746 - Phan Công Thành (đã có rating 5 sao trong seed)
+WHERE r.user_id = 17           
 ORDER BY r.created_at DESC;
 
 
@@ -60,7 +60,7 @@ SELECT
     t.status,
     COUNT(*) AS so_luong
 FROM tickets t
-WHERE t.requester_id = 13          -- Sinh viên Ngân
+WHERE t.requester_id = 13         
 GROUP BY t.status
 ORDER BY 
     FIELD(t.status, 'new', 'in_progress', 'waiting_requester', 'resolved', 'closed');
