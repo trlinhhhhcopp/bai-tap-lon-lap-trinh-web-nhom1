@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cẩm Nang Toàn Bộ 12 Bảng CSDL & Câu Lệnh SQL - Helpdesk ĐH Thủ Đô</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    .active-main-tab {
+      background-color: #4f46e5 !important;
+      color: #ffffff !important;
+      box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
+    }
+    .active-nav-btn {
+      background-color: #4f46e5 !important;
+      color: #ffffff !important;
+      font-weight: 600;
+      border-color: #4338ca !important;
+    }
+    .badge-pk { background-color: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-fk { background-color: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+    .badge-uk { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .badge-nn { background-color: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .badge-opt { background-color: #f3f4f6; color: #4b5563; border: 1px solid #e5e7eb; }
+
+    .quiz-opt {
+      cursor: pointer;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 0.65rem 1rem;
+      font-size: 0.825rem;
+      transition: all 0.2s ease;
+      background: #ffffff;
+    }
+    .quiz-opt:hover {
+      border-color: #6366f1;
+      background-color: #f5f3ff;
+    }
+    .quiz-opt.correct {
+      border-color: #10b981 !important;
+      background-color: #ecfdf5 !important;
+      color: #065f46 !important;
+      font-weight: 600;
+    }
+    .quiz-opt.wrong {
+      border-color: #ef4444 !important;
+      background-color: #fef2f2 !important;
+      color: #991b1b !important;
+    }
+
+    .table-container::-webkit-scrollbar { height: 6px; }
+    .table-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased font-sans p-3 md:p-6">
+
+<div class="max-w-7xl mx-auto space-y-6">
+
+  <!-- HEADER CHÍNH -->
+  <header class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">ĐH Thủ Đô Hà Nội • Khóa TUD D24</span>
+          <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">Chuẩn Kiến Trúc CSDL 3NF</span>
+        </div>
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Học Sâu CSDL & Các Loại Câu Lệnh Truy Vấn SQL</h1>
+        <p class="text-sm text-slate-500 mt-1">Dành riêng cho Trưởng nhóm <strong>Phạm Thị Thanh Ngân (224001736 - D24-CNTT1)</strong> — Tra cứu 12 bảng, thực hành SQL & kiểm tra nhanh.</p>
+      </div>
+
+      <!-- MAIN TAB NAVIGATION -->
+      <div class="flex flex-wrap gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200 self-start md:self-auto">
+        <button onclick="switchMainTab('tab-tables')" id="nav-tables" class="main-tab-btn active-main-tab px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-1.5">
+          <span>📚</span> 1. Tra Cứu 12 Bảng
+        </button>
+        <button onclick="switchMainTab('tab-sql')" id="nav-sql" class="main-tab-btn px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <span>⚡</span> 2. Các Loại Câu Lệnh SQL
+        </button>
+        <button onclick="switchMainTab('tab-quiz')" id="nav-quiz" class="main-tab-btn px-4 py-2 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 transition flex items-center gap-1.5">
+          <span>🧠</span> 3. Bài Kiểm Tra Nhanh (10 Câu)
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- TAB 1: TRA CỨU 12 BẢNG CSDL (CHI TIẾT TỪNG BẢNG & TỪNG THUỘC TÍNH) -->
+  <!-- ========================================================================= -->
+  <section id="section-tables" class="space-y-6">
+    
+    <!-- THANH TÌM KIẾM THUỘC TÍNH -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="text-xs text-slate-600">
+        <strong class="text-slate-900">🔍 Cần tìm nghĩa của một cột bất kỳ?</strong>
+        <p class="text-slate-400">Gõ từ khóa vào ô bên cạnh để hệ thống chỉ rõ tên cột đó nằm ở bảng nào và giải nghĩa nghiệp vụ.</p>
+      </div>
+      <div class="w-full md:w-96 relative">
+        <input type="text" id="colSearch" placeholder="Ví dụ: lookup_pin, sla_factor, token_hash, due_at..." 
+          oninput="searchAttributes(this.value)"
+          class="w-full px-3.5 py-2 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all shadow-inner" />
+        <span class="absolute right-3 top-2.5 text-xs text-slate-400">Esc để đóng</span>
+      </div>
+    </div>
+
+    <!-- KẾT QUẢ TÌM KIẾM POPUP -->
+    <div id="searchResultBox" class="hidden p-4 bg-indigo-50/80 border border-indigo-200 rounded-2xl">
+      <div class="flex justify-between items-center mb-2">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-indigo-900">Kết quả tìm thấy (<span id="matchCount">0</span> thuộc tính khớp)</h4>
+        <button onclick="clearSearch()" class="text-xs text-indigo-600 hover:underline">Đóng</button>
+      </div>
+      <div id="searchResultsList" class="space-y-2 max-h-64 overflow-y-auto"></div>
+    </div>
+
+    <!-- 4 PHÂN NHÓM CHỌN BẢNG -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold uppercase text-slate-400 tracking-wider">Danh mục 12 Bảng (Bấm để xem chi tiết từng bảng):</span>
+        <span class="text-xs text-indigo-600 font-medium">Bấm chọn bên dưới 👇</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+        <!-- CỤM 1 -->
+        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+          <div class="font-bold text-slate-600 flex items-center gap-1.5">
+            <span>📁</span> 1. Danh Mục Nền Tảng
+          </div>
+          <div class="flex flex-col gap-1">
+            <button onclick="selectTable('classes')" id="btn-classes" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>classes</strong> <span class="text-slate-400 text-[11px] block">Lớp sinh hoạt (D24-CNTT1)</span>
+            </button>
+            <button onclick="selectTable('courses')" id="btn-courses" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>courses</strong> <span class="text-slate-400 text-[11px] block">Môn học (Lập trình Web...)</span>
+            </button>
+            <button onclick="selectTable('categories')" id="btn-categories" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>categories</strong> <span class="text-slate-400 text-[11px] block">Nhóm dịch vụ (SSO, Canvas...)</span>
+            </button>
+            <button onclick="selectTable('priorities')" id="btn-priorities" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>priorities</strong> <span class="text-slate-400 text-[11px] block">Mức ưu tiên (URGENT, HIGH...)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CỤM 2 -->
+        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+          <div class="font-bold text-slate-600 flex items-center gap-1.5">
+            <span>👥</span> 2. Người Dùng & Phân Công
+          </div>
+          <div class="flex flex-col gap-1">
+            <button onclick="selectTable('users')" id="btn-users" class="table-btn active-nav-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>users</strong> <span class="text-slate-200 text-[11px] block">SV, GV, KTV 1-5, Admin</span>
+            </button>
+            <button onclick="selectTable('class_students')" id="btn-class_students" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>class_students</strong> <span class="text-slate-400 text-[11px] block">Sinh viên thuộc lớp (1 Lớp-N SV)</span>
+            </button>
+            <button onclick="selectTable('course_assignments')" id="btn-course_assignments" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>course_assignments</strong> <span class="text-slate-400 text-[11px] block">Phân công (1 Lớp HP = 1 GV)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CỤM 3 -->
+        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+          <div class="font-bold text-slate-600 flex items-center gap-1.5">
+            <span>🎫</span> 3. Trọng Tâm Sự Cố (Tickets)
+          </div>
+          <div class="flex flex-col gap-1">
+            <button onclick="selectTable('tickets')" id="btn-tickets" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>tickets</strong> <span class="text-slate-400 text-[11px] block">Phiếu báo lỗi (HD-2026-xxxxx)</span>
+            </button>
+            <button onclick="selectTable('ticket_replies')" id="btn-ticket_replies" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>ticket_replies</strong> <span class="text-slate-400 text-[11px] block">Trao đổi công khai & nội bộ</span>
+            </button>
+            <button onclick="selectTable('ticket_ratings')" id="btn-ticket_ratings" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>ticket_ratings</strong> <span class="text-slate-400 text-[11px] block">Chấm điểm CSAT 1-5 sao</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- CỤM 4 -->
+        <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+          <div class="font-bold text-slate-600 flex items-center gap-1.5">
+            <span>⚙️</span> 4. Tiện Ích & Bảo Mật
+          </div>
+          <div class="flex flex-col gap-1">
+            <button onclick="selectTable('holidays')" id="btn-holidays" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>holidays</strong> <span class="text-slate-400 text-[11px] block">Lịch nghỉ lễ (Trừ SLA & dời LMS)</span>
+            </button>
+            <button onclick="selectTable('password_resets')" id="btn-password_resets" class="table-btn text-left px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-indigo-50 transition">
+              <strong>password_resets</strong> <span class="text-slate-400 text-[11px] block">Mã khôi phục SSPR (15 phút)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTAINER HIỂN THỊ CHI TIẾT BẢNG -->
+    <div id="tableDetailContainer" class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-6"></div>
+
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- TAB 2: CÁC LOẠI CÂU LỆNH TRUY VẤN SQL THỰC CHIẾN -->
+  <!-- ========================================================================= -->
+  <section id="section-sql" class="hidden space-y-6">
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+      <div>
+        <h2 class="text-xl font-bold text-slate-900">⚡ Bản Đồ Các Loại Câu Lệnh SQL Trong Hệ Thống</h2>
+        <p class="text-sm text-slate-500 mt-1">Trong SQL chuẩn ISO và MySQL, các câu lệnh được chia làm 3 nhóm chính mà bạn bắt buộc phải biết khi bảo vệ đồ án:</p>
+      </div>
+
+      <!-- 3 NHÓM LỆNH -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div class="p-4 bg-indigo-50 border border-indigo-200 rounded-xl space-y-2">
+          <span class="px-2 py-0.5 rounded font-bold bg-indigo-600 text-white text-[11px]">1. DQL (Data Query Language)</span>
+          <h3 class="font-bold text-sm text-indigo-950">Lệnh Truy Vấn & Rút Trích Dữ Liệu</h3>
+          <p class="text-indigo-900 leading-relaxed">Gồm duy nhất lệnh <strong>SELECT</strong> kết hợp cùng các mệnh đề <code>FROM</code>, <code>WHERE</code>, <code>JOIN</code>, <code>GROUP BY</code>, <code>HAVING</code>, <code>ORDER BY</code>, <code>LIMIT</code>. Dùng để xem, tìm kiếm, thống kê báo cáo mà không làm thay đổi dữ liệu gốc.</p>
+        </div>
+        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
+          <span class="px-2 py-0.5 rounded font-bold bg-emerald-600 text-white text-[11px]">2. DML (Data Manipulation Language)</span>
+          <h3 class="font-bold text-sm text-emerald-950">Lệnh Thao Tác & Biến Đổi Dữ Liệu</h3>
+          <p class="text-emerald-900 leading-relaxed">Gồm <strong>INSERT</strong> (Thêm mới), <strong>UPDATE</strong> (Sửa đổi), <strong>DELETE</strong> (Xóa dòng dữ liệu). Tác động trực tiếp vào nội dung các dòng trong bảng.</p>
+        </div>
+        <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+          <span class="px-2 py-0.5 rounded font-bold bg-amber-600 text-white text-[11px]">3. DDL (Data Definition Language)</span>
+          <h3 class="font-bold text-sm text-amber-950">Lệnh Định Nghĩa Cấu Trúc Bảng</h3>
+          <p class="text-amber-900 leading-relaxed">Gồm <strong>CREATE</strong> (Tạo bảng), <strong>ALTER</strong> (Thêm/Sửa cột), <strong>DROP</strong> (Xóa sổ bảng), <strong>TRUNCATE</strong> (Làm sạch trắng bảng). Tác động vào cấu trúc khung sườn (schema.sql).</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- HƯỚNG DẪN CHI TIẾT TỪNG LOẠI CÂU LỆNH KÈM CODE MẪU THẬT -->
+    <div class="space-y-4">
+      
+      <!-- LỆNH 1: SELECT VÀ WHERE -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-slate-900 text-emerald-400">1. SELECT + WHERE</span>
+          <h3 class="font-bold text-base text-slate-900">Truy Vấn Lọc Dữ Liệu Cơ Bản Có Điều Kiện</h3>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          <strong>Ý nghĩa đời thường:</strong> Giống như bạn bảo lớp trưởng: <em>"Hãy lấy cho tôi danh sách họ tên và email của các bạn sinh viên thuộc khóa D24 đang theo học bình thường"</em>. Mệnh đề <code>WHERE</code> đóng vai trò như bộ lọc trong Excel.
+        </p>
+        <div class="bg-slate-950 text-slate-200 p-3.5 rounded-xl text-xs font-mono overflow-x-auto space-y-1">
+          <div class="text-slate-500">-- Lấy sinh viên Khóa D24 đang học, loại bỏ sinh viên đã thôi học hoặc tốt nghiệp</div>
+          <div><span class="text-indigo-400">SELECT</span> user_code <span class="text-indigo-400">AS</span> ma_sv, name <span class="text-indigo-400">AS</span> ho_ten, email, academic_status</div>
+          <div><span class="text-indigo-400">FROM</span> users</div>
+          <div><span class="text-indigo-400">WHERE</span> user_type = <span class="text-emerald-400">'student'</span> </div>
+          <div class="pl-4"><span class="text-indigo-400">AND</span> cohort = <span class="text-emerald-400">'D24'</span> </div>
+          <div class="pl-4"><span class="text-indigo-400">AND</span> academic_status = <span class="text-emerald-400">'studying'</span>;</div>
+        </div>
+      </div>
+
+      <!-- LỆNH 2: INNER JOIN VÀ LEFT JOIN -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-slate-900 text-emerald-400">2. PHÉP JOIN (NỐI BẢNG)</span>
+          <h3 class="font-bold text-base text-slate-900">Ghép Nhiều Sổ Sách Lại Với Nhau Bằng Khóa Ngoại</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <strong class="text-indigo-700 font-bold block">🔗 INNER JOIN (Chỉ lấy phần giao nhau):</strong>
+            <p class="text-slate-600">Chỉ trả về các dòng mà <strong>cả 2 bảng đều có dữ liệu khớp nhau</strong>. Ví dụ: Lấy phiếu hỗ trợ và KTV đã tiếp nhận (những phiếu chưa ai nhận sẽ bị loại bỏ).</p>
+          </div>
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <strong class="text-indigo-700 font-bold block">⬅️ LEFT JOIN (Lấy hết bên Trái):</strong>
+            <p class="text-slate-600">Lấy <strong>100% dòng ở bảng bên Trái</strong>, bảng bên Phải nếu chưa có dữ liệu thì tự động điền <code>NULL</code>. Rất quan trọng khi muốn thống kê: Liệt kê đủ tất cả 5 KTV kể cả KTV chưa được giao phiếu nào!</p>
+          </div>
+        </div>
+        <div class="bg-slate-950 text-slate-200 p-3.5 rounded-xl text-xs font-mono overflow-x-auto space-y-1">
+          <div class="text-slate-500">-- Ghép 3 bảng: Tickets + Users (Người gửi) + Classes (Lớp học)</div>
+          <div><span class="text-indigo-400">SELECT</span> t.ticket_code, t.title, u.name <span class="text-indigo-400">AS</span> nguoi_gui, c.class_code</div>
+          <div><span class="text-indigo-400">FROM</span> tickets t</div>
+          <div><span class="text-indigo-400">INNER JOIN</span> users u <span class="text-indigo-400">ON</span> t.requester_id = u.id</div>
+          <div><span class="text-indigo-400">LEFT JOIN</span> classes c <span class="text-indigo-400">ON</span> t.class_id = c.id;</div>
+        </div>
+      </div>
+
+      <!-- LỆNH 3: GROUP BY VÀ HAVING -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-slate-900 text-emerald-400">3. GROUP BY + HAVING</span>
+          <h3 class="font-bold text-base text-slate-900">Gom Nhóm Thống Kê & Bộ Lọc Sau Gom Nhóm</h3>
+        </div>
+        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed">
+          <strong>⚠️ Điểm phân biệt "vàng" khi thầy/cô hỏi vấn đáp:</strong>
+          <ul class="list-disc pl-5 mt-1 space-y-1">
+            <li><strong>WHERE:</strong> Lọc từng dòng dữ liệu thô <em>TRƯỚC</em> khi hệ thống tiến hành gom nhóm.</li>
+            <li><strong>HAVING:</strong> Lọc kết quả tính toán (như <code>COUNT()</code>, <code>AVG()</code>, <code>SUM()</code>) <em>SAU</em> khi đã gom nhóm xong. Không thể dùng WHERE để lọc hàm đếm!</li>
+          </ul>
+        </div>
+        <div class="bg-slate-950 text-slate-200 p-3.5 rounded-xl text-xs font-mono overflow-x-auto space-y-1">
+          <div class="text-slate-500">-- Đếm số phiếu của từng KTV và chỉ lấy những KTV đang nhận từ 1 phiếu trở lên</div>
+          <div><span class="text-indigo-400">SELECT</span> u.name <span class="text-indigo-400">AS</span> ten_ktv, <span class="text-yellow-400">COUNT</span>(t.id) <span class="text-indigo-400">AS</span> tong_so_phieu</div>
+          <div><span class="text-indigo-400">FROM</span> users u</div>
+          <div><span class="text-indigo-400">LEFT JOIN</span> tickets t <span class="text-indigo-400">ON</span> t.assigned_to = u.id</div>
+          <div><span class="text-indigo-400">WHERE</span> u.role = <span class="text-emerald-400">'agent'</span></div>
+          <div><span class="text-indigo-400">GROUP BY</span> u.id, u.name</div>
+          <div><span class="text-indigo-400">HAVING</span> tong_so_phieu >= 1</div>
+          <div><span class="text-indigo-400">ORDER BY</span> tong_so_phieu <span class="text-indigo-400">DESC</span>;</div>
+        </div>
+      </div>
+
+      <!-- LỆNH 4: DML - INSERT, UPDATE, DELETE -->
+      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-slate-900 text-emerald-400">4. DML (INSERT, UPDATE, DELETE)</span>
+          <h3 class="font-bold text-base text-slate-900">Thao Tác Thêm Mới, Cập Nhật & Xóa Dữ Liệu</h3>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <strong class="text-emerald-700 font-bold block">➕ INSERT INTO:</strong>
+            <p class="text-slate-600">Thêm 1 bản ghi mới khi bạn bấm gửi phiếu báo hỏng hoặc import tài khoản đầu kỳ.</p>
+          </div>
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <strong class="text-blue-700 font-bold block">✏️ UPDATE ... SET:</strong>
+            <p class="text-slate-600">Đổi trạng thái phiếu sang <code>resolved</code>, gán KTV, mở khóa tài khoản.</p>
+          </div>
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+            <strong class="text-rose-700 font-bold block">🗑️ DELETE FROM:</strong>
+            <p class="text-slate-600">Xóa dữ liệu hết hạn (ví dụ mã token SSPR hết hạn sau 15 phút). <em>Luôn luôn phải có WHERE!</em></p>
+          </div>
+        </div>
+        <div class="bg-slate-950 text-slate-200 p-3.5 rounded-xl text-xs font-mono overflow-x-auto space-y-1">
+          <div class="text-slate-500">-- Ví dụ UPDATE: KTV bấm hoàn thành phiếu sự cố</div>
+          <div><span class="text-indigo-400">UPDATE</span> tickets </div>
+          <div><span class="text-indigo-400">SET</span> status = <span class="text-emerald-400">'resolved'</span>, resolved_at = <span class="text-yellow-400">NOW</span>() </div>
+          <div><span class="text-indigo-400">WHERE</span> ticket_code = <span class="text-emerald-400">'HD-2026-00002'</span>;</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========================================================================= -->
+  <!-- TAB 3: BÀI KIỂM TRA NHANH 10 CÂU TRẮC NGHIỆM THỰC TẾ -->
+  <!-- ========================================================================= -->
+  <section id="section-quiz" class="hidden space-y-6">
+    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900">🧠 Bài Kiểm Tra Nhanh Kiến Thức CSDL (10 Câu)</h2>
+          <p class="text-xs text-slate-500 mt-1">Các câu hỏi xoay quanh trực tiếp 12 bảng và các tình huống nghiệp vụ trong đề tài Helpdesk của nhóm.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="px-3.5 py-1.5 bg-indigo-50 border border-indigo-200 rounded-xl text-xs font-bold text-indigo-700">
+            Điểm số: <span id="quizScoreText" class="text-base text-indigo-900">0/10</span>
+          </div>
+          <button onclick="resetFullQuiz()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition">
+            🔄 Làm lại từ đầu
+          </button>
+        </div>
+      </div>
+
+      <!-- DANH SÁCH 10 CÂU HỎI TRẮC NGHIỆM -->
+      <div id="fullQuizContainer" class="space-y-4">
+        <!-- JS render -->
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER TÓM TẮT -->
+  <footer class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm text-center text-xs text-slate-400">
+    Hệ thống CSDL Helpdesk CNTT Trực Tuyến • Trường Đại học Thủ Đô Hà Nội (TUD) • Khóa D24 • Nhóm 1
+  </footer>
+
+</div>
+
+<script>
+// DỮ LIỆU ĐẦY ĐỦ 12 BẢNG CỦA CƠ SỞ DỮ LIỆU HELPDESK_THUDO
+const dbData = {
+  classes: {
+    name: "classes",
+    title: "Bảng Lớp Học Sinh Hoạt (Administrative Cohort Classes)",
+    category: "Danh Mục Nền Tảng",
+    lifeAnalogy: "Giống như 'Sổ danh sách lớp' của phòng Công tác Sinh viên. Mỗi lớp sinh hoạt hành chính (như D24-CNTT1) là một đơn vị tổ chức xuyên suốt 4 năm học.",
+    relationship: "1 Lớp có NHIỀU sinh viên (users.class_id, class_students). 1 Lớp học NHIỀU môn học phần (course_assignments).",
+    sampleQuery: "SELECT * FROM classes WHERE cohort = 'D24';",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Mã số định danh nội bộ tự tăng của lớp học trong CSDL (1, 2, 3...)", sample: "1" },
+      { name: "class_code", type: "VARCHAR(30)", tag: "UK", meaning: "Mã lớp quản lý chính thức, không trùng nhau trên toàn trường", sample: "'D24-CNTT1'" },
+      { name: "name", type: "VARCHAR(100)", tag: "NN", meaning: "Tên hiển thị đầy đủ bằng tiếng Việt có dấu của lớp", sample: "'Lớp Công nghệ Thông tin D24-1'" },
+      { name: "cohort", type: "VARCHAR(20)", tag: "NN", meaning: "Khóa tuyển sinh. Dùng để Admin lọc hết khóa (ví dụ: lọc D20 đã tốt nghiệp, D24 đang học)", sample: "'D24'" },
+      { name: "faculty", type: "VARCHAR(100)", tag: "NN", meaning: "Khoa quản trị trực tiếp lớp sinh hoạt", sample: "'Khoa Công nghệ Thông tin'" },
+      { name: "academic_year", type: "VARCHAR(30)", tag: "NN", meaning: "Niên khóa học 4 năm của sinh viên", sample: "'2024-2028'" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm lớp học được tạo trong hệ thống", sample: "CURRENT_TIMESTAMP" }
+    ]
+  },
+
+  courses: {
+    name: "courses",
+    title: "Bảng Môn Học / Học Phần (Academic Courses)",
+    category: "Danh Mục Nền Tảng",
+    lifeAnalogy: "Giống như 'Chương trình đào tạo' của Khoa CNTT. Lưu danh sách từng môn học cụ thể (Lập trình Web, CSDL, Mạng máy tính...).",
+    relationship: "1 Môn học được phân công giảng dạy cho nhiều lớp trong các học kỳ (course_assignments.course_id). Khi SV báo lỗi môn học LMS sẽ liên kết tới đây (tickets.course_id).",
+    sampleQuery: "SELECT course_code, name, credits FROM courses WHERE department LIKE '%Phần mềm%';",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính tự tăng định danh môn học", sample: "1" },
+      { name: "course_code", type: "VARCHAR(30)", tag: "UK", meaning: "Mã học phần viết tắt chuẩn quy chế (không trùng lặp)", sample: "'WEB101'" },
+      { name: "name", type: "VARCHAR(100)", tag: "NN", meaning: "Tên môn học đầy đủ", sample: "'Lập trình Web & Ứng dụng'" },
+      { name: "credits", type: "TINYINT UNSIGNED", tag: "NN", meaning: "Số lượng tín chỉ của môn học (từ 1 đến 5)", sample: "3" },
+      { name: "department", type: "VARCHAR(100)", tag: "NN", meaning: "Bộ môn chịu trách nhiệm nội dung chuyên môn", sample: "'Bộ môn Công nghệ Phần mềm'" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Ngày môn học được tạo vào CSDL", sample: "CURRENT_TIMESTAMP" }
+    ]
+  },
+
+  categories: {
+    name: "categories",
+    title: "Bảng Danh Mục Dịch Vụ CNTT (Service Categories)",
+    category: "Danh Mục Nền Tảng",
+    lifeAnalogy: "Tương tự các 'Cửa hỗ trợ' hay quầy giao dịch ở Trung tâm CNTT trường. Chia sự cố thành 5 nhóm: SSO, Mail M365, QLĐT, Canvas LMS, Wi-Fi KTX.",
+    relationship: "Mỗi phiếu yêu cầu (tickets) thuộc 1 danh mục. Mỗi KTV (users.specialty_category_id) có 1 nhóm chuyên môn phụ trách chính.",
+    sampleQuery: "SELECT code, name, sla_hours FROM categories WHERE is_active = 1;",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính định danh nhóm dịch vụ", sample: "4" },
+      { name: "code", type: "VARCHAR(50)", tag: "UK", meaning: "Mã ký hiệu nội bộ hệ thống code PHP đọc (CAT_SSO, CAT_CANVAS...)", sample: "'CAT_CANVAS'" },
+      { name: "name", type: "VARCHAR(100)", tag: "NN", meaning: "Tên danh mục hiển thị cho SV và GV chọn trên giao diện", sample: "'Hệ thống Học tập (Canvas & Teams)'" },
+      { name: "description", type: "VARCHAR(255)", tag: "OPT", meaning: "Mô tả giải thích phạm vi dịch vụ", sample: "'Lỗi không thấy môn học, sự cố nộp bài tập lớn...'" },
+      { name: "default_priority_code", type: "VARCHAR(20)", tag: "NN", meaning: "Mức ưu tiên mặc định khi SV gửi vào nhóm này (MED hoặc HIGH)", sample: "'HIGH'" },
+      { name: "sla_hours", type: "DECIMAL(4,1)", tag: "NN", meaning: "Số giờ hành chính cam kết phải giải quyết xong (SLA chuẩn)", sample: "2.0 (tức 2 tiếng)" },
+      { name: "is_active", type: "TINYINT(1)", tag: "NN", meaning: "1: Đang mở hỗ trợ; 0: Tạm đóng nhóm này", sample: "1" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm tạo danh mục", sample: "CURRENT_TIMESTAMP" }
+    ]
+  },
+
+  priorities: {
+    name: "priorities",
+    title: "Bảng Mức Độ Ưu Tiên (Ticket Priorities & SLA Factors)",
+    category: "Danh Mục Nền Tảng",
+    lifeAnalogy: "Giống như biển phân luồng 'Cấp Cứu' trong bệnh viện: Ca nguy cấp vào trước, ca khám thường vào sau.",
+    relationship: "Bảng tickets tham chiếu đến đây qua priority_id. Giúp thuật toán SlaService tính ra giờ deadline chính xác.",
+    sampleQuery: "SELECT code, name, sla_factor FROM priorities ORDER BY sort_order ASC;",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính mức ưu tiên", sample: "1" },
+      { name: "code", type: "VARCHAR(20)", tag: "UK", meaning: "Mã ưu tiên: URGENT (Khẩn), HIGH (Cao), MED (Vừa), LOW (Thấp)", sample: "'URGENT'" },
+      { name: "name", type: "VARCHAR(50)", tag: "NN", meaning: "Tên tiếng Việt hiển thị trên giao diện thẻ màu", sample: "'Khẩn cấp (Giờ thi / Sự cố diện rộng)'" },
+      { name: "sla_factor", type: "DECIMAL(3,2)", tag: "NN", meaning: "Hệ số co giãn thời gian SLA. URGENT = 0.25 (rút ngắn 4 lần); MED = 1.00 (chuẩn)", sample: "0.25" },
+      { name: "sort_order", type: "TINYINT UNSIGNED", tag: "NN", meaning: "Thứ tự sắp xếp ưu tiên hiển thị từ cao xuống thấp (1, 2, 3, 4)", sample: "1" }
+    ]
+  },
+
+  users: {
+    name: "users",
+    title: "Bảng Tài Khoản Người Dùng (Users - Quản Trị Vòng Đời)",
+    category: "Người Dùng & Phân Công",
+    lifeAnalogy: "Sổ bộ quản lý toàn bộ con người trong trường: Sinh viên, Giảng viên, 5 Kỹ thuật viên (KTV) và Quản trị viên (Admin). Quản lý cả vòng đời học tập (đang học, tốt nghiệp, thôi học) và cơ chế khóa tài khoản.",
+    relationship: "Là 'trái tim' của hệ thống. Nối với classes (lớp sinh hoạt), categories (chuyên môn KTV), tickets (người tạo & KTV xử lý), replies, ratings, holidays (Admin tạo).",
+    sampleQuery: "SELECT user_code, name, role, user_type, academic_status FROM users WHERE cohort = 'D24';",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "ID định danh duy nhất của người dùng trong hệ thống", sample: "13" },
+      { name: "user_code", type: "VARCHAR(30)", tag: "UK", meaning: "Mã sinh viên (224001736) hoặc Mã cán bộ/KTV/Admin (KTV001, ADMIN001)", sample: "'224001736'" },
+      { name: "name", type: "VARCHAR(100)", tag: "NN", meaning: "Họ và tên đầy đủ của người dùng", sample: "'Phạm Thị Thanh Ngân'" },
+      { name: "email", type: "VARCHAR(190)", tag: "UK", meaning: "Email trường cấp (@daihocthudo.edu.vn), dùng để đăng nhập và nhận thông báo", sample: "'224001736@daihocthudo.edu.vn'" },
+      { name: "password_hash", type: "VARCHAR(255)", tag: "NN", meaning: "Mật khẩu mã hoá Bcrypt một chiều (sau import mặc định là '123456')", sample: "'$2y$10$ZjTmLmtE3...'" },
+      { name: "role", type: "ENUM", tag: "NN", meaning: "Vai trò phân quyền hệ thống: 'requester' (người gửi phiếu), 'agent' (KTV), 'admin' (Quản trị)", sample: "'requester'" },
+      { name: "user_type", type: "ENUM", tag: "NN", meaning: "Phân loại người thực: 'student' (sinh viên), 'lecturer' (giảng viên), 'staff' (cán bộ/KTV)", sample: "'student'" },
+      { name: "department", type: "VARCHAR(100)", tag: "OPT", meaning: "Khoa hoặc phòng ban công tác", sample: "'Khoa CNTT - Trưởng nhóm'" },
+      { name: "phone", type: "VARCHAR(20)", tag: "OPT", meaning: "Số điện thoại liên lạc khẩn cấp", sample: "'0901234501'" },
+      { name: "class_id", type: "INT UNSIGNED", tag: "FK", meaning: "Khóa ngoại trỏ sang bảng classes.id (Lớp sinh hoạt của SV)", sample: "1 (Lớp D24-CNTT1)" },
+      { name: "cohort", type: "VARCHAR(20)", tag: "OPT", meaning: "Khóa đào tạo của sinh viên (D24, D20...)", sample: "'D24'" },
+      { name: "academic_status", type: "ENUM", tag: "NN", meaning: "Trạng thái học tập: 'studying' (đang học), 'graduated' (tốt nghiệp), 'expelled' (buộc thôi học), 'suspended' (đình chỉ)", sample: "'studying'" },
+      { name: "specialty_category_id", type: "INT UNSIGNED", tag: "FK", meaning: "Dành cho KTV: ID nhóm dịch vụ chuyên môn chính (1=SSO, 4=Canvas...)", sample: "NULL (với SV/GV); 4 (với KTV Canvas)" },
+      { name: "max_capacity", type: "TINYINT UNSIGNED", tag: "NN", meaning: "Số lượng phiếu tối đa KTV được nhận cùng 1 lúc (ngăn quá tải)", sample: "5" },
+      { name: "active_tickets_count", type: "TINYINT UNSIGNED", tag: "NN", meaning: "Bộ đếm nguyên tử: Số phiếu KTV đang thực tế xử lý hiện tại (0 -> 5)", sample: "0" },
+      { name: "is_on_duty", type: "TINYINT(1)", tag: "NN", meaning: "Trạng thái ca trực của KTV: 1 (Đang trực tiếp nhận), 0 (Nghỉ ca)", sample: "1" },
+      { name: "failed_attempts", type: "TINYINT UNSIGNED", tag: "NN", meaning: "Số lần gõ sai mật khẩu liên tiếp (tăng từ 1 đến 5 để kích hoạt chống Brute-force)", sample: "0" },
+      { name: "locked_until", type: "DATETIME", tag: "OPT", meaning: "Khóa mềm (Soft Lock): Thời điểm hết hạn phạt khóa 30 phút sau 5 lần gõ sai", sample: "NULL" },
+      { name: "is_active", type: "TINYINT(1)", tag: "NN", meaning: "Khóa cứng (Hard Lock): 1 (Bình thường), 0 (Tài khoản bị cấm hoàn toàn)", sample: "1" },
+      { name: "lock_reason", type: "ENUM", tag: "NN", meaning: "Lý do khóa: 'none', 'brute_force', 'violation', 'expelled', 'tuition_debt', 'graduated'", sample: "'none'" },
+      { name: "is_first_login", type: "TINYINT(1)", tag: "NN", meaning: "1: Tài khoản mới import mật khẩu 123456, bắt buộc đổi mật khẩu ở lần đầu đăng nhập", sample: "1" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm tài khoản được import vào hệ thống", sample: "CURRENT_TIMESTAMP" },
+      { name: "updated_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm cập nhật thông tin gần nhất", sample: "CURRENT_TIMESTAMP" }
+    ]
+  },
+
+  class_students: {
+    name: "class_students",
+    title: "Bảng Sinh Viên Thuộc Lớp (Class Enrollment Records)",
+    category: "Người Dùng & Phân Công",
+    lifeAnalogy: "Sổ danh sách sinh viên đóng dấu xác nhận chính thức thuộc về lớp học nào. Thể hiện quan hệ 1 Lớp có Nhiều Sinh Viên.",
+    relationship: "Bảng nối (Junction Table) giữa classes.id và users.id. Ràng buộc UNIQUE(class_id, student_id) chống việc 1 sinh viên bị ghi đúp 2 lần vào 1 lớp.",
+    sampleQuery: "SELECT c.class_code, u.user_code, u.name FROM class_students cs JOIN classes c ON cs.class_id = c.id JOIN users u ON cs.student_id = u.id;",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính định danh bản ghi ghi danh", sample: "1" },
+      { name: "class_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID lớp sinh hoạt (trỏ sang classes.id). ON DELETE CASCADE", sample: "1 (Lớp D24-CNTT1)" },
+      { name: "student_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID sinh viên (trỏ sang users.id). ON DELETE CASCADE", sample: "13 (Phạm Thị Thanh Ngân)" },
+      { name: "enrolled_at", type: "DATETIME", tag: "NN", meaning: "Thời gian sinh viên được nhập học vào lớp", sample: "CURRENT_TIMESTAMP" }
+    ]
+  },
+
+  course_assignments: {
+    name: "course_assignments",
+    title: "Bảng Phân Công Giảng Dạy Lớp Học Phần (Course Class Assignments)",
+    category: "Người Dùng & Phân Công",
+    lifeAnalogy: "Quyết định phân công giảng dạy của Phòng Quản lý Đào tạo: Cùng 1 học kỳ, sinh viên học 6 môn thì sẽ có 6 giảng viên quản lý 6 lớp học phần riêng biệt.",
+    relationship: "Quy tắc cốt lõi: 1 lớp học phần CHỈ CÓ DUY NHẤT 1 GIẢNG VIÊN PHỤ TRÁCH. Ràng buộc UNIQUE(class_id, course_id, semester).",
+    sampleQuery: "SELECT c.class_code, co.name AS mon_hoc, u.name AS giang_vien FROM course_assignments ca JOIN classes c ON ca.class_id = c.id JOIN courses co ON ca.course_id = co.id JOIN users u ON ca.lecturer_id = u.id;",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính bản ghi phân công", sample: "1" },
+      { name: "class_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID lớp sinh hoạt (trỏ sang classes.id)", sample: "1 (D24-CNTT1)" },
+      { name: "course_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID môn học (trỏ sang courses.id)", sample: "1 (Lập trình Web)" },
+      { name: "lecturer_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID Giảng viên duy nhất phụ trách môn này của lớp (trỏ sang users.id)", sample: "7 (TS. Nguyễn Văn Giảng)" },
+      { name: "semester", type: "VARCHAR(20)", tag: "NN", meaning: "Ký hiệu học kỳ ('2026_1': Kỳ 1 năm 2026)", sample: "'2026_1'" },
+      { name: "academic_year", type: "VARCHAR(20)", tag: "NN", meaning: "Năm học thực hiện giảng dạy", sample: "'2026-2027'" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Ngày ban hành phân công giảng dạy", sample: "CURRENT_TIMESTAMP" }
+    ]
+  },
+
+  tickets: {
+    name: "tickets",
+    title: "Bảng Phiếu Yêu Cầu Hỗ Trợ Sự Cố (Helpdesk Incident Tickets)",
+    category: "Trọng Tâm Sự Cố (Tickets)",
+    lifeAnalogy: "Tờ phiếu báo hỏng / khiếu nại dịch vụ. Khi sinh viên không vào được Canvas nộp bài, họ mở 1 phiếu. Phiếu ghi rõ ai gửi, ai sửa, lỗi gì, hạn chót xử lý lúc mấy giờ.",
+    relationship: "Liên kết với users (người gửi và KTV), categories, priorities, classes, courses. Tự liên kết parent_ticket_id (gộp phiếu con vào phiếu chủ sự cố diện rộng).",
+    sampleQuery: "SELECT ticket_code, title, status, due_at FROM tickets WHERE status = 'in_progress';",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính tự tăng của phiếu trong CSDL", sample: "2" },
+      { name: "ticket_code", type: "VARCHAR(30)", tag: "UK", meaning: "Mã định danh phiếu công khai hiển thị cho người dùng (Ví dụ: HD-2026-00002)", sample: "'HD-2026-00002'" },
+      { name: "requester_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID của người gửi yêu cầu (SV hoặc GV tạo phiếu)", sample: "13 (Phạm Thị Thanh Ngân)" },
+      { name: "assigned_to", type: "INT UNSIGNED", tag: "FK", meaning: "ID của KTV được phân công xử lý phiếu (NULL nếu chưa ai nhận)", sample: "5 (KTV Phạm Hoàng Dũng)" },
+      { name: "category_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID nhóm dịch vụ gặp sự cố (SSO, Canvas, Mail...)", sample: "4 (CAT_CANVAS)" },
+      { name: "priority_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID mức độ ưu tiên tính toán SLA", sample: "1 (URGENT)" },
+      { name: "parent_ticket_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID của phiếu chủ khi gộp sự cố diện rộng (Major Incident). NULL nếu là phiếu độc lập", sample: "1 (Gộp vào phiếu chủ LMS)" },
+      { name: "class_id", type: "INT UNSIGNED", tag: "FK", meaning: "Lớp học liên quan đến sự cố (nếu có)", sample: "1 (D24-CNTT1)" },
+      { name: "course_id", type: "INT UNSIGNED", tag: "FK", meaning: "Môn học liên quan (Ví dụ: lỗi hạn nộp bài môn Web)", sample: "1 (Lập trình Web)" },
+      { name: "is_guest_ticket", type: "TINYINT(1)", tag: "NN", meaning: "1: Phiếu tạo từ form công khai ngoài cổng (khi tài khoản bị khóa không đăng nhập được)", sample: "0" },
+      { name: "contact_email", type: "VARCHAR(190)", tag: "OPT", meaning: "Email cá nhân ngoài trường (Gmail) để nhận thông báo khôi phục tài khoản", sample: "NULL (hoặc 'tranlinh@gmail.com')" },
+      { name: "lookup_pin", type: "VARCHAR(10)", tag: "OPT", meaning: "Mã PIN bảo mật gồm 4 số ngẫu nhiên để khách tra cứu tiến độ không cần đăng nhập", sample: "NULL (hoặc '8921')" },
+      { name: "title", type: "VARCHAR(150)", tag: "NN", meaning: "Tiêu đề ngắn gọn tóm tắt sự cố", sample: "'Lịch nộp bài tập lớn môn Lập trình Web rơi vào ngày 30/4'" },
+      { name: "description", type: "TEXT", tag: "NN", meaning: "Nội dung chi tiết mô tả lỗi sinh viên/giảng viên gặp phải", sample: "'Em thấy trên Canvas hạn nộp rơi đúng ngày lễ 30/4...'" },
+      { name: "system_affected", type: "VARCHAR(50)", tag: "NN", meaning: "Tên hệ thống bị ảnh hưởng ('Canvas LMS', 'SSO Portal', 'Wi-Fi')", sample: "'Canvas LMS'" },
+      { name: "attachment_path", type: "VARCHAR(255)", tag: "OPT", meaning: "Đường dẫn file ảnh chụp màn hình lỗi hoặc ảnh thẻ SV đính kèm", sample: "NULL" },
+      { name: "status", type: "ENUM", tag: "NN", meaning: "Trạng thái State Machine 5 bước: 'new' -> 'in_progress' -> 'waiting_requester' -> 'resolved' -> 'closed'", sample: "'in_progress'" },
+      { name: "closed_reason", type: "ENUM", tag: "OPT", meaning: "Lý do đóng phiếu: 'completed' (xong tốt), 'auto_closed' (hết hạn), 'duplicate' (trùng lặp), 'cancelled'", sample: "NULL" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm sinh viên bấm nút gửi phiếu", sample: "'2026-10-23 08:15:00'" },
+      { name: "sla_started_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm đồng hồ SLA bắt đầu đếm ngược", sample: "'2026-10-23 08:15:00'" },
+      { name: "triage_due_at", type: "DATETIME", tag: "NN", meaning: "Hạn chót KTV phải tiếp nhận (Triage SLA - thường là 15-30 phút)", sample: "'2026-10-23 08:30:00'" },
+      { name: "due_at", type: "DATETIME", tag: "NN", meaning: "Hạn chót KTV phải giải quyết xong phiếu (Resolution SLA Deadline)", sample: "'2026-10-23 10:00:00'" },
+      { name: "first_response_at", type: "DATETIME", tag: "OPT", meaning: "Thời điểm thực tế KTV gửi câu trả lời đầu tiên cho người dùng", sample: "'2026-10-23 08:20:00'" },
+      { name: "resolved_at", type: "DATETIME", tag: "OPT", meaning: "Thời điểm KTV bấm chuyển trạng thái Đã Giải Quyết (Resolved)", sample: "NULL" },
+      { name: "closed_at", type: "DATETIME", tag: "OPT", meaning: "Thời điểm người dùng xác nhận hài lòng hoặc tự động đóng sau 48h", sample: "NULL" },
+      { name: "reopen_count", type: "TINYINT UNSIGNED", tag: "NN", meaning: "Số lần người dùng mở lại phiếu (Reopen) nếu sau khi sửa vẫn bị lỗi", sample: "0" }
+    ]
+  },
+
+  ticket_replies: {
+    name: "ticket_replies",
+    title: "Bảng Phản Hồi & Trao Đổi (Ticket Discussion & Internal Notes)",
+    category: "Trọng Tâm Sự Cố (Tickets)",
+    lifeAnalogy: "Giống khung chat/nhắn tin trong từng phiếu. Giúp sinh viên và KTV trao đổi bằng chứng, hoặc KTV ghi chú riêng với nhau mà sinh viên không nhìn thấy.",
+    relationship: "Nhiều trao đổi thuộc về 1 ticket (ticket_id). Người viết tin nhắn là users (user_id).",
+    sampleQuery: "SELECT r.message, r.is_internal, u.name FROM ticket_replies r JOIN users u ON r.user_id = u.id WHERE r.ticket_id = 3;",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính của tin nhắn/phản hồi", sample: "1" },
+      { name: "ticket_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID phiếu hỗ trợ chứa tin nhắn này (trỏ tickets.id). ON DELETE CASCADE", sample: "3" },
+      { name: "user_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID người gửi tin nhắn (KTV hoặc Sinh viên)", sample: "2 (KTV An)" },
+      { name: "message", type: "TEXT", tag: "NN", meaning: "Nội dung văn bản trao đổi", sample: "'Chào bạn, KTV đã nhận được ảnh thẻ SV và đang đối chiếu...'" },
+      { name: "attachment_path", type: "VARCHAR(255)", tag: "OPT", meaning: "File tài liệu hoặc ảnh đính kèm trong tin nhắn", sample: "NULL" },
+      { name: "is_internal", type: "TINYINT(1)", tag: "NN", meaning: "0: Phản hồi công khai (SV đọc được); 1: Ghi chú nội bộ (Private Note - chỉ KTV và Admin thấy)", sample: "0" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm gửi tin nhắn phản hồi", sample: "'2026-10-23 08:40:00'" }
+    ]
+  },
+
+  ticket_ratings: {
+    name: "ticket_ratings",
+    title: "Bảng Đánh Giá Độ Hài Lòng CSAT (Customer Satisfaction Ratings)",
+    category: "Trọng Tâm Sự Cố (Tickets)",
+    lifeAnalogy: "Tương tự như bước 'Chấm 5 sao cho tài xế Grab' sau khi kết thúc chuyến đi. Đo lường chất lượng phục vụ của từng KTV.",
+    relationship: "Quan hệ 1-1 với tickets: Mỗi phiếu chỉ được đánh giá DUY NHẤT 1 LẦN (Ràng buộc UNIQUE trên cột ticket_id).",
+    sampleQuery: "SELECT t.ticket_code, r.score, r.comment, u.name AS ktv FROM ticket_ratings r JOIN tickets t ON r.ticket_id = t.id JOIN users u ON t.assigned_to = u.id;",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính bản ghi đánh giá", sample: "1" },
+      { name: "ticket_id", type: "INT UNSIGNED", tag: "UK", meaning: "Khóa ngoại trỏ tickets.id VÀ đồng thời là UNIQUE (ngăn 1 phiếu bị chấm 2 lần)", sample: "5" },
+      { name: "user_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID người thực hiện chấm sao (thường là sinh viên/giảng viên tạo phiếu)", sample: "17 (Phan Công Thành)" },
+      { name: "score", type: "TINYINT UNSIGNED", tag: "NN", meaning: "Điểm chấm sao đánh giá chất lượng dịch vụ (từ 1 đến 5 sao)", sample: "5" },
+      { name: "comment", type: "VARCHAR(255)", tag: "OPT", meaning: "Ý kiến nhận xét, đóng góp hoặc khen ngợi KTV", sample: "'KTV hỗ trợ rất nhanh và nhiệt tình, Wi-Fi KTX bắt sóng khỏe.'" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm người dùng gửi đánh giá", sample: "'2026-10-21 11:55:00'" }
+    ]
+  },
+
+  holidays: {
+    name: "holidays",
+    title: "Bảng Danh Mục Ngày Nghỉ Lễ (Academic & National Holidays)",
+    category: "Tiện Ích & Bảo Mật",
+    lifeAnalogy: "Lịch nghỉ lễ toàn quốc & lịch nghỉ Tết của trường. Giúp bảo vệ KTV không bị tính là 'làm muộn / quá hạn' trong những ngày toàn trường nghỉ.",
+    relationship: "Được Admin (users.id qua created_by) cấu hình mỗi đầu năm học. Không gắn FK vào từng vé mà được SlaService và script LMS truy vấn theo khoảng ngày (BETWEEN start_date AND end_date).",
+    sampleQuery: "SELECT name, start_date, end_date FROM holidays WHERE start_date >= '2026-01-01';",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính định danh kỳ nghỉ lễ", sample: "4" },
+      { name: "name", type: "VARCHAR(100)", tag: "NN", meaning: "Tên kỳ nghỉ lễ chính thức", sample: "'Ngày Giải phóng Miền Nam & Quốc tế Lao động'" },
+      { name: "start_date", type: "DATE", tag: "NN", meaning: "Ngày bắt đầu kỳ nghỉ (YYYY-MM-DD)", sample: "'2026-04-30'" },
+      { name: "end_date", type: "DATE", tag: "NN", meaning: "Ngày kết thúc kỳ nghỉ lễ", sample: "'2026-05-01'" },
+      { name: "is_recurring", type: "TINYINT(1)", tag: "NN", meaning: "1: Lễ cố định hằng năm (như 30/4); 0: Lễ theo lịch âm biến đổi từng năm (Tết Nguyên Đán)", sample: "1" },
+      { name: "created_by", type: "INT UNSIGNED", tag: "FK", meaning: "Khóa ngoại trỏ sang users.id (Tài khoản Admin cấu hình lịch này)", sample: "1 (Quản Trị Viên HT)" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Ngày cấu hình kỳ nghỉ", sample: "CURRENT_TIMESTAMP" }
+    ]
+  },
+
+  password_resets: {
+    name: "password_resets",
+    title: "Bảng Khôi Phục Mật Khẩu Tự Động (Self-Service Password Reset - SSPR)",
+    category: "Tiện Ích & Bảo Mật",
+    lifeAnalogy: "Giống như mã OTP hay link 'Đặt lại mật khẩu' ngân hàng gửi vào email khi bạn bấm 'Quên mật khẩu'. Có hạn dùng trong 15 phút, dùng xong sẽ hủy.",
+    relationship: "Khóa ngoại user_id trỏ sang bảng users.id. Giúp sinh viên tự lấy lại mật khẩu mà không cần làm phiền Admin.",
+    sampleQuery: "SELECT email, expires_at FROM password_resets WHERE expires_at > NOW();",
+    columns: [
+      { name: "id", type: "INT UNSIGNED", tag: "PK", meaning: "Khóa chính bản ghi khôi phục", sample: "1" },
+      { name: "user_id", type: "INT UNSIGNED", tag: "FK", meaning: "ID của tài khoản yêu cầu khôi phục mật khẩu (trỏ sang users.id)", sample: "14 (Trần Thục Linh)" },
+      { name: "email", type: "VARCHAR(190)", tag: "NN", meaning: "Địa chỉ email nhận link đặt lại mật khẩu", sample: "'224001729@daihocthudo.edu.vn'" },
+      { name: "token_hash", type: "VARCHAR(64)", tag: "NN", meaning: "Chuỗi mã băm bảo mật ngẫu nhiên (SHA-256) nằm trên đường link gửi vào email", sample: "'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'" },
+      { name: "expires_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm hết hạn (Chính xác sau 15 phút kể từ lúc bấm Quên Mật Khẩu)", sample: "NOW() + INTERVAL 15 MINUTE" },
+      { name: "created_at", type: "DATETIME", tag: "NN", meaning: "Thời điểm phát sinh yêu cầu", sample: "CURRENT_TIMESTAMP" }
+    ]
+  }
+};
+
+// DỮ LIỆU 10 CÂU QUIZ TOÀN DIỆN
+const fullQuizData = [
+  {
+    q: "1. Trong bảng <code>tickets</code>, cột <code>requester_id</code> là loại khóa gì và trỏ sang bảng nào?",
+    opts: [
+      "Khóa chính (PK) của chính bảng tickets",
+      "Khóa ngoại (FK) trỏ sang cột id của bảng users",
+      "Khóa duy nhất (UK) ngăn một người gửi 2 phiếu",
+      "Chỉ là một số nguyên ngẫu nhiên không liên kết"
+    ],
+    ans: 1,
+    exp: "Chính xác! <code>requester_id</code> là Foreign Key (FK) trỏ sang <code>users.id</code> để hệ thống biết ai (sinh viên/giảng viên nào) là người tạo phiếu."
+  },
+  {
+    q: "2. Quy định nghiệp vụ: '1 lớp học phần chỉ có 1 giáo viên phụ trách duy nhất' được CSDL đảm bảo bằng cách nào trong bảng <code>course_assignments</code>?",
+    opts: [
+      "Dùng lệnh CHECK constraint kiểm tra sĩ số",
+      "Dùng ràng buộc UNIQUE (class_id, course_id, semester)",
+      "Đặt cột lecturer_id làm Primary Key",
+      "Không cần ràng buộc trong CSDL, chỉ chặn ở giao diện PHP"
+    ],
+    ans: 1,
+    exp: "Chính xác! Ràng buộc <code>UNIQUE (class_id, course_id, semester)</code> khóa cứng việc một môn học của một lớp trong một học kỳ không thể có 2 giảng viên phụ trách."
+  },
+  {
+    q: "3. Tại sao cột <code>ticket_id</code> trong bảng <code>ticket_ratings</code> vừa là Khóa Ngoại (FK) vừa có ràng buộc DUY NHẤT (UNIQUE)?",
+    opts: [
+      "Để người dùng có thể chấm điểm 5 sao nhiều lần cho vui",
+      "Để thiết lập mối quan hệ 1-1: Mỗi phiếu hỗ trợ sau khi hoàn thành chỉ được đánh giá DUY NHẤT một lần",
+      "Để tự động tăng điểm trung bình của KTV",
+      "Do viết nhầm, bình thường FK không được phép có UNIQUE"
+    ],
+    ans: 1,
+    exp: "Chính xác! FK + UNIQUE tạo nên quan hệ Một - Một (One-to-One). Ngăn chặn hành vi spam chấm điểm nhiều lần cho cùng một phiếu sự cố."
+  },
+  {
+    q: "4. Trong bảng <code>ticket_replies</code>, cột <code>is_internal = 1</code> mang ý nghĩa gì?",
+    opts: [
+      "Tin nhắn bị lỗi không gửi đi được",
+      "Ghi chú nội bộ bí mật: Chỉ các KTV và Quản trị viên nhìn thấy, sinh viên không đọc được",
+      "Tin nhắn khẩn cấp gửi qua còi báo động",
+      "Tin nhắn do trí tuệ nhân tạo AI tự động trả lời"
+    ],
+    ans: 1,
+    exp: "Chính xác! <code>is_internal = 1</code> là 'Private Note' chuẩn ITIL. Dành cho các KTV trao đổi bằng chứng, kết quả đối chiếu hồ sơ sinh viên với nhau trước khi phản hồi công khai."
+  },
+  {
+    q: "5. Khi một sinh viên bị khóa tài khoản portal (không đăng nhập được), hệ thống Helpdesk dùng 2 thuộc tính nào trong bảng <code>tickets</code> để hỗ trợ họ?",
+    opts: [
+      "password_hash và token_hash",
+      "is_guest_ticket = 1 và mã lookup_pin gồm 4 số ngẫu nhiên",
+      "failed_attempts và lock_reason",
+      "credits và department"
+    ],
+    ans: 1,
+    exp: "Chính xác! <code>is_guest_ticket = 1</code> đánh dấu phiếu gửi từ cổng công khai ngoài trường, và <code>lookup_pin</code> cấp mã 4 số bảo mật để sinh viên tự tra cứu tiến độ xử lý mà không cần tài khoản."
+  },
+  {
+    q: "6. Muốn lấy danh sách TẤT CẢ các Kỹ thuật viên (kể cả KTV mới vào làm chưa được phân công phiếu nào), ta phải dùng phép JOIN nào giữa <code>users</code> và <code>tickets</code>?",
+    opts: [
+      "INNER JOIN",
+      "LEFT JOIN (hoặc RIGHT JOIN tùy vị trí bảng users)",
+      "CROSS JOIN",
+      "Chỉ dùng WHERE không dùng JOIN"
+    ],
+    ans: 1,
+    exp: "Chính xác! Nếu dùng <code>INNER JOIN</code>, những KTV có 0 phiếu sẽ bị loại bỏ hoàn toàn. Phải dùng <code>LEFT JOIN</code> để giữ lại 100% KTV, người chưa có phiếu sẽ mang giá trị NULL."
+  },
+  {
+    q: "7. Sự khác nhau cốt lõi giữa mệnh đề <code>WHERE</code> và mệnh đề <code>HAVING</code> trong câu lệnh SQL là gì?",
+    opts: [
+      "WHERE chỉ dùng cho số, HAVING chỉ dùng cho chữ",
+      "WHERE lọc từng dòng trước khi gom nhóm; HAVING lọc các giá trị tính toán sau khi GROUP BY",
+      "WHERE chạy chậm hơn HAVING",
+      "Hai từ khóa này hoàn toàn giống nhau, dùng cái nào cũng được"
+    ],
+    ans: 1,
+    exp: "Chính xác! Mệnh đề <code>WHERE</code> lọc dữ liệu thô ban đầu; <code>HAVING</code> lọc trên các hàm tổng hợp như <code>COUNT()</code>, <code>AVG()</code> sau khi hệ thống đã gom nhóm bằng <code>GROUP BY</code>."
+  },
+  {
+    q: "8. Bảng <code>holidays</code> không nối Foreign Key trực tiếp vào <code>tickets</code>. Vậy động cơ SlaService kiểm tra ngày lễ bằng cú pháp SQL nào?",
+    opts: [
+      "WHERE holiday_name LIKE '%Tết%'",
+      "WHERE :ticket_created_date BETWEEN start_date AND end_date",
+      "JOIN tickets ON holidays.id = tickets.id",
+      "DROP TABLE holidays"
+    ],
+    ans: 1,
+    exp: "Chính xác! SlaService dùng toán tử khoảng ngày: <code>WHERE :date BETWEEN start_date AND end_date</code>. Nếu ngày gửi phiếu nằm trong khoảng nghỉ lễ, đồng hồ SLA sẽ dừng đếm để KTV không bị phạt."
+  },
+  {
+    q: "9. Câu lệnh SQL nào dưới đây cập nhật trạng thái phiếu HD-2026-00002 sang 'resolved' (đã giải quyết) đúng chuẩn?",
+    opts: [
+      "SELECT * FROM tickets WHERE ticket_code = 'HD-2026-00002';",
+      "UPDATE tickets SET status = 'resolved', resolved_at = NOW() WHERE ticket_code = 'HD-2026-00002';",
+      "DELETE FROM tickets WHERE ticket_code = 'HD-2026-00002';",
+      "INSERT INTO tickets (status) VALUES ('resolved');"
+    ],
+    ans: 1,
+    exp: "Chính xác! Lệnh <code>UPDATE tickets SET ... WHERE ticket_code = '...'</code> dùng để sửa đổi trạng thái của bản ghi cụ thể mà không làm ảnh hưởng các phiếu khác."
+  },
+  {
+    q: "10. Ràng buộc <code>ON DELETE CASCADE</code> trên khóa ngoại <code>fk_ticket_replies_ticket</code> có tác dụng gì khi xóa một phiếu sự cố?",
+    opts: [
+      "Báo lỗi cấm không cho xóa phiếu",
+      "Tự động xóa luôn toàn bộ các phản hồi/tin nhắn liên quan đến phiếu đó để tránh dữ liệu mồ côi (rác CSDL)",
+      "Chuyển tin nhắn sang cho Admin giữ",
+      "Không có tác dụng gì"
+    ],
+    ans: 1,
+    exp: "Chính xác! <code>CASCADE</code> nghĩa là 'thác đổ'. Khi bảng Cha (tickets) bị xóa, toàn bộ bản ghi con ở bảng Con (ticket_replies) sẽ tự động bị xóa sạch, bảo toàn tính toàn vẹn của dữ liệu."
+  }
+];
+
+let quizAnswers = new Array(fullQuizData.length).fill(null);
+
+// HÀM CHUYỂN TAB CHÍNH (TABLES / SQL / QUIZ)
+function switchMainTab(tabId) {
+  document.querySelectorAll('.main-tab-btn').forEach(btn => {
+    btn.classList.remove('active-main-tab');
+    btn.classList.add('text-slate-600');
+  });
+
+  document.getElementById('section-tables').classList.add('hidden');
+  document.getElementById('section-sql').classList.add('hidden');
+  document.getElementById('section-quiz').classList.add('hidden');
+
+  if (tabId === 'tab-tables') {
+    document.getElementById('section-tables').classList.remove('hidden');
+    document.getElementById('nav-tables').classList.add('active-main-tab');
+    document.getElementById('nav-tables').classList.remove('text-slate-600');
+  } else if (tabId === 'tab-sql') {
+    document.getElementById('section-sql').classList.remove('hidden');
+    document.getElementById('nav-sql').classList.add('active-main-tab');
+    document.getElementById('nav-sql').classList.remove('text-slate-600');
+  } else if (tabId === 'tab-quiz') {
+    document.getElementById('section-quiz').classList.remove('hidden');
+    document.getElementById('nav-quiz').classList.add('active-main-tab');
+    document.getElementById('nav-quiz').classList.remove('text-slate-600');
+    renderFullQuiz();
+  }
+}
+
+// HÀM HIỂN THỊ BẢNG ĐANG CHỌN (TAB 1)
+function selectTable(tblKey) {
+  document.querySelectorAll('.table-btn').forEach(btn => {
+    btn.classList.remove('active-nav-btn');
+  });
+  const currentBtn = document.getElementById('btn-' + tblKey);
+  if (currentBtn) {
+    currentBtn.classList.add('active-nav-btn');
+  }
+
+  const data = dbData[tblKey];
+  if (!data) return;
+
+  const container = document.getElementById('tableDetailContainer');
+  container.innerHTML = `
+    <!-- HEADER BẢNG -->
+    <div class="border-b border-slate-200 pb-4">
+      <div class="flex items-center gap-2 mb-1">
+        <span class="px-2.5 py-0.5 rounded-md text-xs font-bold uppercase bg-slate-100 text-slate-700">${data.category}</span>
+        <span class="text-xs text-slate-400">•</span>
+        <span class="text-xs text-slate-500 font-mono">Tên bảng SQL: <strong class="text-indigo-600">${data.name}</strong></span>
+      </div>
+      <h2 class="text-xl font-bold text-slate-900">${data.title}</h2>
+      
+      <!-- VÍ DỤ ĐỜI THƯỜNG -->
+      <div class="mt-3 p-3.5 bg-amber-50/80 border border-amber-200 rounded-xl flex items-start gap-3">
+        <span class="text-xl">🏫</span>
+        <div class="text-xs text-amber-950 leading-relaxed">
+          <strong class="font-semibold text-amber-900">Ý nghĩa thực tế đời thường:</strong> ${data.lifeAnalogy}
+        </div>
+      </div>
+
+      <!-- QUAN HỆ VỚI BẢNG KHÁC -->
+      <div class="mt-2 p-3 bg-indigo-50/60 border border-indigo-200 rounded-xl flex items-start gap-3">
+        <span class="text-xl">🔗</span>
+        <div class="text-xs text-indigo-950 leading-relaxed">
+          <strong class="font-semibold text-indigo-900">Mối quan hệ trong hệ thống:</strong> ${data.relationship}
+        </div>
+      </div>
+    </div>
+
+    <!-- DANH SÁCH TỪNG CỘT / THUỘC TÍNH -->
+    <div class="space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
+          Chi Tiết Toàn Bộ Thuộc Tính / Cột (${data.columns.length} Cột):
+        </h3>
+        <span class="text-xs text-slate-400">Đọc kỹ cột "Ý Nghĩa"</span>
+      </div>
+
+      <div class="overflow-x-auto border border-slate-200 rounded-xl shadow-sm table-container">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="bg-slate-100/80 text-slate-700 font-bold border-b border-slate-200">
+              <th class="p-3 w-40">Tên Cột (Attribute)</th>
+              <th class="p-3 w-32">Kiểu Dữ Liệu</th>
+              <th class="p-3 w-28 text-center">Ràng Buộc</th>
+              <th class="p-3">Ý Nghĩa Thực Tế & Nghiệp Vụ Tại Sao Cần Cột Này</th>
+              <th class="p-3 w-48 font-mono">Dữ Liệu Mẫu Thật</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            ${data.columns.map((col, idx) => {
+              let badgeHtml = '';
+              if (col.tag === 'PK') badgeHtml = '<span class="badge-pk px-2 py-0.5 rounded text-[11px] font-bold">PK (Khóa chính)</span>';
+              else if (col.tag === 'FK') badgeHtml = '<span class="badge-fk px-2 py-0.5 rounded text-[11px] font-bold">FK (Khóa ngoại)</span>';
+              else if (col.tag === 'UK') badgeHtml = '<span class="badge-uk px-2 py-0.5 rounded text-[11px] font-bold">UK (Duy nhất)</span>';
+              else if (col.tag === 'NN') badgeHtml = '<span class="badge-nn px-2 py-0.5 rounded text-[11px]">NOT NULL</span>';
+              else badgeHtml = '<span class="badge-opt px-2 py-0.5 rounded text-[11px]">Có thể NULL</span>';
+
+              return `
+                <tr class="hover:bg-slate-50 transition">
+                  <td class="p-3 font-mono font-bold text-slate-900 flex items-center gap-1.5">
+                    <span class="text-slate-400 text-[10px]">${idx + 1}.</span>
+                    <code>${col.name}</code>
+                  </td>
+                  <td class="p-3 font-mono text-slate-600">${col.type}</td>
+                  <td class="p-3 text-center">${badgeHtml}</td>
+                  <td class="p-3 text-slate-800 leading-relaxed">${col.meaning}</td>
+                  <td class="p-3 font-mono text-indigo-700 bg-slate-50/50">${col.sample}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CÂU LỆNH TRUY VẤN MẪU -->
+    <div class="p-4 bg-slate-900 text-slate-200 rounded-xl space-y-2">
+      <div class="flex justify-between items-center text-xs">
+        <span class="font-bold text-slate-400 flex items-center gap-1.5">
+          <span>⚡</span> Câu Truy Vấn SQL Mẫu Cho Bảng <code>${data.name}</code>:
+        </span>
+        <span class="text-slate-500 font-mono">Chạy thử trong phpMyAdmin</span>
+      </div>
+      <pre class="font-mono text-xs text-emerald-400 p-2.5 bg-slate-950 rounded-lg overflow-x-auto"><code>${data.sampleQuery}</code></pre>
+    </div>
+  `;
+}
+
+// HÀM TÌM KIẾM THUỘC TÍNH
+function searchAttributes(keyword) {
+  const box = document.getElementById('searchResultBox');
+  const list = document.getElementById('searchResultsList');
+  const countSpan = document.getElementById('matchCount');
+
+  const q = keyword.trim().toLowerCase();
+  if (!q) {
+    box.classList.add('hidden');
+    return;
+  }
+
+  const results = [];
+  Object.keys(dbData).forEach(tblKey => {
+    const tbl = dbData[tblKey];
+    tbl.columns.forEach(col => {
+      if (col.name.toLowerCase().includes(q) || col.meaning.toLowerCase().includes(q)) {
+        results.push({
+          tableKey: tblKey,
+          tableName: tbl.name,
+          columnName: col.name,
+          type: col.type,
+          tag: col.tag,
+          meaning: col.meaning
+        });
+      }
+    });
+  });
+
+  countSpan.textContent = results.length;
+  if (results.length === 0) {
+    list.innerHTML = `<p class="text-xs text-slate-500 italic p-2">Không tìm thấy cột nào khớp với từ khóa "${keyword}". Thử tìm: pin, due, sla, lock, token...</p>`;
+  } else {
+    list.innerHTML = results.map(r => `
+      <div class="p-2.5 bg-white border border-indigo-100 rounded-lg hover:border-indigo-400 cursor-pointer transition text-xs flex items-center justify-between gap-3"
+           onclick="selectTable('${r.tableKey}')">
+        <div>
+          <span class="font-mono font-bold text-indigo-700">${r.tableName}</span>.<span class="font-mono font-bold text-slate-900 bg-yellow-100 px-1 rounded">${r.columnName}</span>
+          <span class="text-slate-400 text-[11px] ml-1">(${r.type})</span>
+          <p class="text-slate-600 mt-0.5 text-[11px] line-clamp-1">${r.meaning}</p>
+        </div>
+        <button class="shrink-0 px-2.5 py-1 bg-indigo-50 text-indigo-600 rounded-md font-semibold text-[11px] hover:bg-indigo-600 hover:text-white transition">
+          Xem bảng này →
+        </button>
+      </div>
+    `).join('');
+  }
+
+  box.classList.remove('hidden');
+}
+
+function clearSearch() {
+  document.getElementById('colSearch').value = '';
+  document.getElementById('searchResultBox').classList.add('hidden');
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') clearSearch();
+});
+
+// HÀM RENDER VÀ XỬ LÝ 10 CÂU QUIZ (TAB 3)
+function renderFullQuiz() {
+  const container = document.getElementById('fullQuizContainer');
+  container.innerHTML = fullQuizData.map((item, qIdx) => `
+    <div class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 space-y-3">
+      <p class="text-sm font-bold text-slate-900">${item.q}</p>
+      <div class="space-y-2" id="quiz-opts-${qIdx}">
+        ${item.opts.map((opt, oIdx) => `
+          <div class="quiz-opt" id="opt-${qIdx}-${oIdx}" onclick="handleQuizAnswer(${qIdx}, ${oIdx})">
+            ${opt}
+          </div>
+        `).join('')}
+      </div>
+      <div id="quiz-exp-${qIdx}" class="hidden p-3 rounded-xl text-xs leading-relaxed"></div>
+    </div>
+  `).join('');
+}
+
+function handleQuizAnswer(qIdx, oIdx) {
+  if (quizAnswers[qIdx] !== null) return; // Đã trả lời rồi thì không đổi
+  quizAnswers[qIdx] = oIdx;
+
+  const correctIdx = fullQuizData[qIdx].ans;
+  const isCorrect = (oIdx === correctIdx);
+
+  // Style các nút
+  const optElements = document.getElementById(`quiz-opts-${qIdx}`).querySelectorAll('.quiz-opt');
+  optElements.forEach((el, idx) => {
+    el.style.pointerEvents = 'none';
+    if (idx === correctIdx) {
+      el.classList.add('correct');
+    } else if (idx === oIdx && !isCorrect) {
+      el.classList.add('wrong');
+    }
+  });
+
+  // Hiển thị giải thích
+  const expBox = document.getElementById(`quiz-exp-${qIdx}`);
+  expBox.classList.remove('hidden');
+  if (isCorrect) {
+    expBox.className = "p-3 rounded-xl text-xs leading-relaxed bg-emerald-50 border border-emerald-200 text-emerald-900";
+    expBox.innerHTML = `<strong>✅ Chính xác!</strong> ${fullQuizData[qIdx].exp}`;
+  } else {
+    expBox.className = "p-3 rounded-xl text-xs leading-relaxed bg-rose-50 border border-rose-200 text-rose-900";
+    expBox.innerHTML = `<strong>❌ Chưa đúng!</strong> ${fullQuizData[qIdx].exp}`;
+  }
+
+  // Cập nhật điểm số
+  updateScore();
+}
+
+function updateScore() {
+  let score = 0;
+  quizAnswers.forEach((ans, idx) => {
+    if (ans === fullQuizData[idx].ans) score++;
+  });
+  document.getElementById('quizScoreText').textContent = `${score}/10`;
+}
+
+function resetFullQuiz() {
+  quizAnswers = new Array(fullQuizData.length).fill(null);
+  document.getElementById('quizScoreText').textContent = `0/10`;
+  renderFullQuiz();
+}
+
+// Khởi tạo ban đầu
+selectTable('users');
+</script>
+
+</body>
+</html>

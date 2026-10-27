@@ -24,8 +24,6 @@ TRUNCATE TABLE `priorities`;
 TRUNCATE TABLE `categories`;
 TRUNCATE TABLE `users`;
 
-SET FOREIGN_KEY_CHECKS = 1;
-
 -- ==============================================================================
 -- 1. SEED DANH MỤC DỊCH VỤ TRỰC TUYẾN (CATEGORIES)
 -- ==============================================================================
@@ -67,13 +65,14 @@ INSERT INTO `courses` (`id`, `course_code`, `name`, `credits`, `department`) VAL
 
 -- ==============================================================================
 -- 5. SEED DANH MỤC NGÀY NGHỈ LỄ TRƯỜNG HỌC NĂM 2026 (HOLIDAYS)
+-- Quản trị viên (Admin user_id = 1) cấu hình lịch nghỉ lễ toàn trường
 -- ==============================================================================
-INSERT INTO `holidays` (`id`, `name`, `start_date`, `end_date`, `is_recurring`) VALUES
-(1, 'Tết Dương Lịch 2026', '2026-01-01', '2026-01-01', 1),
-(2, 'Tết Nguyên Đán Bính Ngọ 2026', '2026-02-14', '2026-02-23', 0),
-(3, 'Giỗ Tổ Hùng Vương (10/3 Âm lịch)', '2026-04-26', '2026-04-26', 1),
-(4, 'Ngày Giải phóng Miền Nam & Quốc tế Lao động', '2026-04-30', '2026-05-01', 1),
-(5, 'Quốc khánh nước CHXHCN Việt Nam', '2026-09-01', '2026-09-03', 1);
+INSERT INTO `holidays` (`id`, `name`, `start_date`, `end_date`, `is_recurring`, `created_by`) VALUES
+(1, 'Tết Dương Lịch 2026', '2026-01-01', '2026-01-01', 1, 1),
+(2, 'Tết Nguyên Đán Bính Ngọ 2026', '2026-02-14', '2026-02-23', 0, 1),
+(3, 'Giỗ Tổ Hùng Vương (10/3 Âm lịch)', '2026-04-26', '2026-04-26', 1, 1),
+(4, 'Ngày Giải phóng Miền Nam & Quốc tế Lao động', '2026-04-30', '2026-05-01', 1, 1),
+(5, 'Quốc khánh nước CHXHCN Việt Nam', '2026-09-01', '2026-09-03', 1, 1);
 
 -- ==============================================================================
 -- 6. SEED TÀI KHOẢN NGƯỜI DÙNG (USERS)
@@ -212,14 +211,14 @@ INSERT INTO `course_assignments` (`class_id`, `course_id`, `lecturer_id`, `semes
 -- 9. SEED CÁC PHIẾU YÊU CẦU MẪU (TICKETS - GẮN LỚP HỌC PHẦN & MÔN HỌC)
 -- ==============================================================================
 INSERT INTO `tickets` (
-    `id`, `requester_id`, `assigned_to`, `category_id`, `priority_id`, `parent_ticket_id`,
+    `id`, `ticket_code`, `requester_id`, `assigned_to`, `category_id`, `priority_id`, `parent_ticket_id`,
     `class_id`, `course_id`,
     `is_guest_ticket`, `contact_email`, `lookup_pin`, `title`, `description`, 
     `system_affected`, `status`, `created_at`, `sla_started_at`, `triage_due_at`, `due_at`, 
     `first_response_at`, `resolved_at`, `closed_at`
 ) VALUES
 -- Phiếu 1: Sự cố diện rộng Canvas LMS (Phiếu Chủ Master Ticket)
-(1, 1, 5, 4, 1, NULL, 
+(1, 'HD-2026-00001', 1, 5, 4, 1, NULL, 
  1, 6,
  0, NULL, NULL, 
  '[SỰ CỐ DIỆN RỘNG] Hiệu chỉnh lịch học trùng ngày nghỉ lễ trên Canvas LMS', 
@@ -229,7 +228,7 @@ INSERT INTO `tickets` (
  '2026-10-23 08:10:00', NULL, NULL),
 
 -- Phiếu 2: Sinh viên Ngân (TUD D24) báo lỗi nộp bài tập môn Lập trình Web lớp D24-CNTT1
-(2, 13, 5, 4, 1, 1, 
+(2, 'HD-2026-00002', 13, 5, 4, 1, 1, 
  1, 1,
  0, NULL, NULL, 
  'Lịch nộp bài tập lớn môn Lập trình Web lớp D24-CNTT1 rơi vào ngày 30/4', 
@@ -239,7 +238,7 @@ INSERT INTO `tickets` (
  '2026-10-23 08:20:00', NULL, NULL),
 
 -- Phiếu 3: Guest Ticket báo khóa tài khoản từ form ngoài của SV Linh (TUD D24)
-(3, 14, 2, 1, 3, NULL, 
+(3, 'HD-2026-00003', 14, 2, 1, 3, NULL, 
  1, NULL,
  1, 'tranlinh.personal@gmail.com', '4589', 
  'Tài khoản đăng nhập portal bị khóa cứng sau 5 lần nhập sai', 
@@ -249,7 +248,7 @@ INSERT INTO `tickets` (
  '2026-10-23 08:40:00', NULL, NULL),
 
 -- Phiếu 4: Giảng viên Giảng báo khẩn cấp (Mở quyền nhập điểm môn Lập trình Web lớp D24-CNTT1)
-(4, 7, 4, 3, 1, NULL, 
+(4, 'HD-2026-00004', 7, 4, 3, 1, NULL, 
  1, 1,
  0, NULL, NULL, 
  '[KHẨN CẤP] Cần mở quyền nhập điểm bổ sung học phần Lập trình Web Lớp D24-CNTT1', 
@@ -259,7 +258,7 @@ INSERT INTO `tickets` (
  '2026-10-22 14:05:00', '2026-10-22 14:25:00', NULL),
 
 -- Phiếu 5: Sinh viên Thành (TUD D24) báo lỗi Wi-Fi đã hoàn thành và chấm CSAT 5 sao
-(5, 17, 6, 5, 3, NULL, 
+(5, 'HD-2026-00005', 17, 6, 5, 3, NULL, 
  1, NULL,
  0, NULL, NULL, 
  'Không xác thực được mạng Wi-Fi THUDO-UNI tại KTX Nhà B', 
@@ -282,3 +281,6 @@ INSERT INTO `ticket_replies` (`id`, `ticket_id`, `user_id`, `message`, `is_inter
 -- ==============================================================================
 INSERT INTO `ticket_ratings` (`id`, `ticket_id`, `user_id`, `score`, `comment`, `created_at`) VALUES
 (1, 5, 17, 5, 'KTV hỗ trợ rất nhanh và nhiệt tình, Wi-Fi phòng KTX mình đã bắt được sóng khỏe.', '2026-10-21 11:55:00');
+
+-- Bật lại kiểm tra khóa ngoại
+SET FOREIGN_KEY_CHECKS = 1;

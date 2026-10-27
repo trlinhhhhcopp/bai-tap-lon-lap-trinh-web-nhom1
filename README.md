@@ -192,6 +192,7 @@ erDiagram
     USERS ||--o{ TICKET_REPLIES : "gửi phản hồi"
     USERS ||--o{ TICKET_RATINGS : "chấm điểm CSAT"
     USERS ||--o{ PASSWORD_RESETS : "yêu cầu SSPR"
+    USERS ||--o{ HOLIDAYS : "created_by (Admin cấu hình)"
     USERS }o--|| CATEGORIES : "specialty_category_id (chuyên môn KTV)"
     
     CATEGORIES ||--o{ TICKETS : "category_id"
@@ -283,6 +284,7 @@ erDiagram
         varchar name
         date start_date
         date end_date
+        int created_by FK "Admin tạo lịch"
     }
 ```
 
@@ -359,6 +361,36 @@ mysql -u root -p helpdesk_thudo < database/seed.sql
     * `224001746@daihocthudo.edu.vn` (Phan Công Thành)
   * **Cựu sinh viên hết khóa (D20 tốt nghiệp):** `220001001@daihocthudo.edu.vn`
   * **Sinh viên TUD D24 bị kỷ luật buộc thôi học:** `224001999@daihocthudo.edu.vn` (Khóa cứng)
+
+---
+
+## 🚀 8. TIẾN ĐỘ BÀI 5: TÍCH HỢP PHP PDO & XÂY DỰNG CRUD HOÀN CHỈNH
+
+Tuân thủ 100% mục tiêu Bài 5 môn Lập trình Web:
+- [x] **Hàm kết nối PDO dùng chung:** `config/database.php` thiết lập chuẩn `charset=utf8mb4`, `ERRMODE_EXCEPTION`, `FETCH_ASSOC`.
+- [x] **Repository Functions:** `app/Repositories/TicketRepository.php` tách riêng toàn bộ SQL khỏi View (Slide 9 & 10).
+- [x] **Prepared Statements:** 100% câu lệnh truy vấn có tham số (`LIKE :kw`, `:limit`, `:offset`, `:status`) đều dùng `prepare()` và `execute()`, triệt tiêu lỗ hổng SQL Injection.
+- [x] **Mô hình POST-Redirect-GET & Flash Message:** Khi tạo phiếu mới hoặc cập nhật trạng thái, hệ thống redirect an toàn chống F5 gửi trùng dữ liệu.
+- [x] **Phân trang an toàn (Safe Pagination):** Áp dụng công thức `offset = (page - 1) * perPage` kết hợp `COUNT(*)` đếm tổng trang.
+
+### Danh Sách URL Module CRUD Tickets (Bài 5):
+| Chức năng | Phương thức | URL Truy cập | Ghi chú kỹ thuật |
+|---|:---:|---|---|
+| **Cổng chính dự án** | `GET` | `http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/` | Điều hướng các phân hệ & kiểm tra kết nối PDO |
+| **Danh sách & Phân trang** | `GET` | `http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/tickets/index.php` | 5 phiếu/trang, tìm kiếm từ khóa, lọc theo Danh mục & Trạng thái |
+| **Tạo phiếu mới** | `GET/POST` | `http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/tickets/create.php` | Áp dụng PRG, validate dữ liệu, tự sinh mã vé HD-2026-xxxxx |
+| **Xem chi tiết & Phản hồi** | `GET/POST` | `http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/tickets/show.php?id=...` | Hiển thị mốc SLA, lịch sử trao đổi, ghi chú nội bộ KTV |
+| **Chỉnh sửa phiếu** | `GET/POST` | `http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/tickets/edit.php?id=...` | Cho phép sửa tiêu đề, mô tả, phân công KTV |
+| **Xóa phiếu** | `POST` | `http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/tickets/delete.php` | Xóa an toàn chỉ qua phương thức POST có xác nhận |
+
+### Bảng 5 Test Case Kiểm Thử Dữ Liệu (Slide 16):
+| Mã TC | Chức năng kiểm thử | Dữ liệu đầu vào (Input) | Kết quả mong đợi (Expected Output) | Trạng thái |
+|:---:|---|---|---|:---:|
+| **TC01** | Báo lỗi để trống tiêu đề | `title = ""` *(rỗng)*, `category_id = 4` | Báo lỗi: *"Tiêu đề sự cố không được để trống"*. Không lưu vào CSDL. | **ĐẠT** |
+| **TC02** | Báo lỗi chưa chọn danh mục | `category_id = 0` | Báo lỗi: *"Vui lòng chọn nhóm dịch vụ gặp sự cố"*. | **ĐẠT** |
+| **TC03** | Chống SQL Injection trong tìm kiếm | `kw = "' OR '1'='1"` trong ô tìm kiếm | Prepared Statement coi là chuỗi thường, trả về 0 bản ghi, hệ thống an toàn. | **ĐẠT** |
+| **TC04** | Tạo phiếu hợp lệ (PRG) | `title = "Lỗi nộp bài Web"`, `category_id = 4`, `priority_id = 1` | Tạo thành công mã dạng `HD-2026-xxxxx`, chuyển hướng về trang danh sách có thông báo xanh. | **ĐẠT** |
+| **TC05** | Phân trang URL không hợp lệ | `page = -3` hoặc `page = "abc"` | Code tự ép kiểu đưa về `page = 1` an toàn, không báo lỗi PHP Warning. | **ĐẠT** |
 
 ---
 

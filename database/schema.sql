@@ -176,7 +176,10 @@ CREATE TABLE `holidays` (
     `start_date` DATE NOT NULL,
     `end_date` DATE NOT NULL,
     `is_recurring` TINYINT(1) NOT NULL DEFAULT 0,
+    `created_by` INT UNSIGNED NULL, -- Quản trị viên (Admin) cấu hình ngày nghỉ toàn trường
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_holidays_created_by` FOREIGN KEY (`created_by`) 
+        REFERENCES `users` (`id`) ON DELETE SET NULL,
     INDEX `idx_holidays_dates` (`start_date`, `end_date`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -231,9 +234,7 @@ CREATE TABLE `tickets` (
     `closed_at` DATETIME NULL,
     `reopen_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
     
-    `ticket_code` VARCHAR(30) GENERATED ALWAYS AS (
-        CONCAT('HD-', YEAR(`created_at`), '-', LPAD(`id`, 5, '0'))
-    ) STORED UNIQUE,
+    `ticket_code` VARCHAR(30) NOT NULL UNIQUE, -- Mã vé định danh (VD: HD-2026-00001) do hệ thống sinh tự động
     
     CONSTRAINT `fk_tickets_requester` FOREIGN KEY (`requester_id`) 
         REFERENCES `users` (`id`) ON DELETE CASCADE,
