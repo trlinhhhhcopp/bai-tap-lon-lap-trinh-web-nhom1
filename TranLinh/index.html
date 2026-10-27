@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bài 4: Thiết kế CSDL MySQL & Truy vấn SQL - Trần Thục Linh (224001729)</title>
+    <style>
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #e0f2fe;
+            --navy-dark: #0f172a;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --border-color: #cbd5e1;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --badge-green-bg: #dcfce7;
+            --badge-green-text: #15803d;
+            --badge-red-bg: #fee2e2;
+            --badge-red-text: #b91c1c;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-left: 6px solid var(--primary);
+        }
+        .header-card h1 {
+            font-size: 24px;
+            color: #38bdf8;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .header-card h2 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #e2e8f0;
+            margin-bottom: 15px;
+        }
+        .student-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .student-info-item strong {
+            color: #38bdf8;
+            display: block;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+        .student-info-item span {
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .card-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+        }
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .tag-blue { background: var(--primary-light); color: var(--primary-dark); }
+        .tag-green { background: var(--badge-green-bg); color: var(--badge-green-text); }
+        .tag-red { background: var(--badge-red-bg); color: var(--badge-red-text); }
+        
+        .diagram-container {
+            text-align: center;
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .diagram-container img, .diagram-container svg {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .query-block {
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .query-header {
+            background: #f1f5f9;
+            padding: 12px 18px;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .query-desc {
+            padding: 10px 18px;
+            background: #f8fafc;
+            font-size: 14px;
+            color: var(--text-muted);
+            border-bottom: 1px solid #e2e8f0;
+        }
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, "Courier New", Courier, monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .result-table-box {
+            background: #ffffff;
+            padding: 15px;
+            overflow-x: auto;
+        }
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        table.data-table th {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 600;
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #e2e8f0;
+        }
+        table.data-table td {
+            padding: 9px 10px;
+            border: 1px solid #e2e8f0;
+            color: #1e293b;
+        }
+        table.data-table tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        table.data-table tr:hover {
+            background-color: #f0f9ff;
+        }
+        .code-keyword { color: #38bdf8; font-weight: bold; }
+        .code-string { color: #a7f3d0; }
+        .code-func { color: #f472b6; }
+        .code-comment { color: #64748b; font-style: italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER CARD -->
+        <div class="header-card">
+            <h1>TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI · KHOA: TOÁN-CNTT</h1>
+            <h2>BÀI 4: THIẾT KẾ CSDL MYSQL & TRUY VẤN SQL · BÁO CÁO NHIỆM VỤ CÁ NHÂN</h2>
+            
+            <div class="student-info-grid">
+                <div class="student-info-item">
+                    <strong>Họ và tên sinh viên</strong>
+                    <span>Trần Thục Linh</span>
+                </div>
+                <div class="student-info-item">
+                    <strong>Mã sinh viên</strong>
+                    <span>224001729</span>
+                </div>
+                <div class="student-info-item">
+                    <strong>Lớp sinh hoạt</strong>
+                    <span>Toán Ứng Dụng D2024 (Khoa: Toán-CNTT)</span>
+                </div>
+                <div class="student-info-item">
+                    <strong>Phân hệ phụ trách độc quyền</strong>
+                    <span>User Management & Auth Security</span>
+                </div>
+                <div class="student-info-item">
+                    <strong>Bảng CSDL độc quyền</strong>
+                    <span><code>users</code>, <code>password_resets</code></span>
+                </div>
+                <div class="student-info-item">
+                    <strong>Email trường học</strong>
+                    <span>224001729@daihocthudo.edu.vn</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- PHẦN 1: ERD -->
+        <div class="card">
+            <div class="card-title">
+                <span>🏛️ 1. SƠ ĐỒ THỰC THỂ QUAN HỆ CÁ NHÂN (PERSONAL ERD)</span>
+                <span class="tag tag-blue">Chuẩn MySQL 8 InnoDB</span>
+            </div>
+            <p style="margin-bottom: 15px; color: var(--text-muted);">
+                Sơ đồ thể hiện 2 thực thể trung tâm do <strong>Trần Thục Linh</strong> độc quyền phụ trách (<code>users</code>, <code>password_resets</code>) cùng các mối quan hệ khóa ngoại bảo vệ toàn vẹn dữ liệu với các bảng liên kết (<code>classes</code>, <code>categories</code>, <code>tickets</code>):
+            </p>
+            <div class="diagram-container">
+                <img src="erd_diagram.svg" alt="Sơ đồ ERD Phân hệ User Management & Auth Security">
+            </div>
+        </div>
+
+        <!-- PHẦN 2: CÁC CÂU LỆNH TRUY VẤN SELECT -->
+        <div class="card">
+            <div class="card-title">
+                <span>⚡ 2. HỆ THỐNG TRUY VẤN SELECT THỰC THI THÀNH CÔNG VỚI DỮ LIỆU TIẾNG VIỆT</span>
+                <span class="tag tag-green">6/6 Truy vấn đạt 100%</span>
+            </div>
+
+            <!-- QUERY 1 -->
+            <div class="query-block">
+                <div class="query-header">
+                    <span>📌 Truy vấn 1: Xác thực đăng nhập & Kiểm tra khóa tài khoản Brute-force / Kỷ luật</span>
+                    <span class="tag tag-blue">WHERE & CASE WHEN</span>
+                </div>
+                <div class="query-desc">
+                    Kiểm tra tài khoản người dùng đăng nhập bằng Email hoặc Mã sinh viên. Đối soát cơ chế khóa cứng (buộc thôi học) hoặc khóa mềm 30 phút.
+                </div>
+                <pre><code><span class="code-keyword">SELECT</span> 
+    id, user_code, name, email, role, academic_status, is_active, lock_reason, failed_attempts, is_first_login,
+    <span class="code-keyword">CASE</span> 
+        <span class="code-keyword">WHEN</span> is_active = 0 <span class="code-keyword">THEN</span> <span class="code-string">'BỊ KHÓA CỨNG (Kỷ luật Buộc thôi học / Hết khóa)'</span>
+        <span class="code-keyword">WHEN</span> locked_until > <span class="code-func">NOW()</span> <span class="code-keyword">THEN</span> <span class="code-func">CONCAT</span>(<span class="code-string">'BỊ KHÓA MỀM (Còn '</span>, <span class="code-func">TIMESTAMPDIFF</span>(<span class="code-keyword">MINUTE</span>, <span class="code-func">NOW()</span>, locked_until), <span class="code-string">' phút)'</span>)
+        <span class="code-keyword">ELSE</span> <span class="code-string">'HỢP LỆ (Sẵn sàng đăng nhập)'</span>
+    <span class="code-keyword">END AS</span> trang_thai_tai_khoan
+<span class="code-keyword">FROM</span> users
+<span class="code-keyword">WHERE</span> email = <span class="code-string">'224001729@daihocthudo.edu.vn'</span> <span class="code-keyword">OR</span> user_code = <span class="code-string">'224001729'</span>;</code></pre>
+                <div class="result-table-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>id</th><th>user_code</th><th>name</th><th>email</th><th>role</th><th>academic_status</th><th>is_active</th><th>failed_attempts</th><th>trang_thai_tai_khoan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>14</td><td><strong>224001729</strong></td><td><strong>Trần Thục Linh</strong></td><td>224001729@daihocthudo.edu.vn</td><td>requester</td><td>studying</td><td>1</td><td>2</td><td><span class="tag tag-green">HỢP LỆ (Sẵn sàng đăng nhập)</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- QUERY 2 -->
+            <div class="query-block">
+                <div class="query-header">
+                    <span>📌 Truy vấn 2: Hồ sơ người dùng toàn diện kèm Lớp học & Chuyên môn KTV</span>
+                    <span class="tag tag-blue">LEFT JOIN 2 Bảng cha</span>
+                </div>
+                <div class="query-desc">
+                    Truy vấn dữ liệu hồ sơ cá nhân (Profile). Sử dụng LEFT JOIN để bảo đảm người dùng không thuộc lớp (như Giảng viên) hoặc không phải KTV vẫn hiển thị đầy đủ.
+                </div>
+                <pre><code><span class="code-keyword">SELECT</span> 
+    u.id, u.user_code <span class="code-keyword">AS</span> ma_dinh_danh, u.name <span class="code-keyword">AS</span> ho_va_ten, u.email <span class="code-keyword">AS</span> email_truong, u.role <span class="code-keyword">AS</span> vai_tro,
+    <span class="code-func">COALESCE</span>(c.class_code, <span class="code-string">'N/A'</span>) <span class="code-keyword">AS</span> ma_lop,
+    <span class="code-func">COALESCE</span>(c.name, <span class="code-string">'Chưa xếp lớp'</span>) <span class="code-keyword">AS</span> ten_lop_sinh_hoat,
+    <span class="code-func">COALESCE</span>(cat.name, <span class="code-string">'Không chuyên trách'</span>) <span class="code-keyword">AS</span> chuyen_mon_ktv
+<span class="code-keyword">FROM</span> users u
+<span class="code-keyword">LEFT JOIN</span> classes c <span class="code-keyword">ON</span> c.id = u.class_id
+<span class="code-keyword">LEFT JOIN</span> categories cat <span class="code-keyword">ON</span> cat.id = u.specialty_category_id
+<span class="code-keyword">WHERE</span> u.role <span class="code-keyword">IN</span> (<span class="code-string">'requester'</span>, <span class="code-string">'agent'</span>)
+<span class="code-keyword">ORDER BY</span> u.role <span class="code-keyword">DESC</span>, u.id <span class="code-keyword">ASC</span> <span class="code-keyword">LIMIT</span> 7;</code></pre>
+                <div class="result-table-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>id</th><th>ma_dinh_danh</th><th>ho_va_ten</th><th>email_truong</th><th>vai_tro</th><th>ma_lop</th><th>ten_lop_sinh_hoat</th><th>chuyen_mon_ktv</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>7</td><td>GV001</td><td>TS. Nguyễn Văn Giảng</td><td>nguyenvangiang@daihocthudo.edu.vn</td><td>requester</td><td>N/A</td><td>Chưa xếp lớp</td><td>Không chuyên trách</td></tr>
+                            <tr><td>13</td><td>224001736</td><td>Phạm Thị Thanh Ngân</td><td>224001736@daihocthudo.edu.vn</td><td>requester</td><td>TUD-D2024</td><td>Lớp Toán Ứng Dụng D2024</td><td>Không chuyên trách</td></tr>
+                            <tr style="background-color: #e0f2fe; font-weight: bold;"><td>14</td><td>224001729</td><td>Trần Thục Linh</td><td>224001729@daihocthudo.edu.vn</td><td>requester</td><td>TUD-D2024</td><td>Lớp Toán Ứng Dụng D2024</td><td>Không chuyên trách</td></tr>
+                            <tr><td>15</td><td>224001737</td><td>Lê Hà My</td><td>224001737@daihocthudo.edu.vn</td><td>requester</td><td>TUD-D2024</td><td>Lớp Toán Ứng Dụng D2024</td><td>Không chuyên trách</td></tr>
+                            <tr><td>16</td><td>224001742</td><td>Nguyễn Ánh Nhi</td><td>224001742@daihocthudo.edu.vn</td><td>requester</td><td>TUD-D2024</td><td>Lớp Toán Ứng Dụng D2024</td><td>Không chuyên trách</td></tr>
+                            <tr><td>17</td><td>224001746</td><td>Phan Công Thành</td><td>224001746@daihocthudo.edu.vn</td><td>requester</td><td>TUD-D2024</td><td>Lớp Toán Ứng Dụng D2024</td><td>Không chuyên trách</td></tr>
+                            <tr><td>18</td><td>220001001</td><td>Nguyễn Cựu Sinh Viên (D2020)</td><td>220001001@daihocthudo.edu.vn</td><td>requester</td><td>TUD-D2020</td><td>Lớp Toán Ứng Dụng D2020 (Đã tốt nghiệp)</td><td>Không chuyên trách</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- QUERY 3 -->
+            <div class="query-block">
+                <div class="query-header">
+                    <span>📌 Truy vấn 3: Xác thực Token SSPR khôi phục mật khẩu còn hiệu lực 15 phút</span>
+                    <span class="tag tag-blue">INNER JOIN & WHERE</span>
+                </div>
+                <div class="query-desc">
+                    Xác thực token SHA-256 từ email. Kiểm tra token chưa hết hạn và chặn tài khoản bị đình chỉ thôi học.
+                </div>
+                <pre><code><span class="code-keyword">SELECT</span> 
+    pr.id <span class="code-keyword">AS</span> token_id, u.user_code <span class="code-keyword">AS</span> ma_sinh_vien, u.name <span class="code-keyword">AS</span> ho_ten_sinh_vien,
+    pr.email <span class="code-keyword">AS</span> email_nhan_link, pr.token_hash <span class="code-keyword">AS</span> ma_token_sha256,
+    pr.expires_at <span class="code-keyword">AS</span> thoi_diem_het_han, u.is_active <span class="code-keyword">AS</span> tai_khoan_hoat_dong
+<span class="code-keyword">FROM</span> password_resets pr
+<span class="code-keyword">INNER JOIN</span> users u <span class="code-keyword">ON</span> u.id = pr.user_id
+<span class="code-keyword">WHERE</span> pr.expires_at > <span class="code-func">NOW()</span> <span class="code-keyword">AND</span> u.is_active = 1 <span class="code-keyword">AND</span> u.academic_status != <span class="code-string">'expelled'</span>;</code></pre>
+                <div class="result-table-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>token_id</th><th>ma_sinh_vien</th><th>ho_ten_sinh_vien</th><th>email_nhan_link</th><th>thoi_diem_het_han</th><th>trang_thai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td><td><strong>224001729</strong></td><td><strong>Trần Thục Linh</strong></td><td>224001729@daihocthudo.edu.vn</td><td>2026-10-24 15:35:00</td><td><span class="tag tag-green">Còn hiệu lực (Hợp lệ)</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- QUERY 4 -->
+            <div class="query-block">
+                <div class="query-header">
+                    <span>📌 Truy vấn 4: Phân tích Năng lực & Cân bằng tải Điều phối Kỹ thuật viên</span>
+                    <span class="tag tag-blue">INNER JOIN + LEFT JOIN + GROUP BY + ORDER BY</span>
+                </div>
+                <div class="query-desc">
+                    Thống kê số phiếu thực tế đang xử lý của từng KTV và tìm KTV có ít việc nhất để phân bổ tự động.
+                </div>
+                <pre><code><span class="code-keyword">SELECT</span> 
+    u.id <span class="code-keyword">AS</span> ktv_id, u.user_code <span class="code-keyword">AS</span> ma_ktv, u.name <span class="code-keyword">AS</span> ten_ky_thuat_vien,
+    cat.name <span class="code-keyword">AS</span> chuyen_mon_chinh, u.max_capacity <span class="code-keyword">AS</span> tai_toi_da,
+    <span class="code-func">COUNT</span>(t.id) <span class="code-keyword">AS</span> phieu_thuc_te_dang_xu_ly,
+    (u.max_capacity - <span class="code-func">COUNT</span>(t.id)) <span class="code-keyword">AS</span> so_slot_tiep_nhan_con_lai
+<span class="code-keyword">FROM</span> users u
+<span class="code-keyword">INNER JOIN</span> categories cat <span class="code-keyword">ON</span> cat.id = u.specialty_category_id
+<span class="code-keyword">LEFT JOIN</span> tickets t <span class="code-keyword">ON</span> t.assigned_to = u.id <span class="code-keyword">AND</span> t.status <span class="code-keyword">IN</span> (<span class="code-string">'new'</span>, <span class="code-string">'in_progress'</span>, <span class="code-string">'waiting_requester'</span>)
+<span class="code-keyword">WHERE</span> u.role = <span class="code-string">'agent'</span> <span class="code-keyword">AND</span> u.is_active = 1 <span class="code-keyword">AND</span> u.is_on_duty = 1
+<span class="code-keyword">GROUP BY</span> u.id, u.user_code, u.name, cat.name, u.max_capacity
+<span class="code-keyword">ORDER BY</span> phieu_thuc_te_dang_xu_ly <span class="code-keyword">ASC</span>, so_slot_tiep_nhan_con_lai <span class="code-keyword">DESC</span>;</code></pre>
+                <div class="result-table-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ktv_id</th><th>ma_ktv</th><th>ten_ky_thuat_vien</th><th>chuyen_mon_chinh</th><th>tai_toi_da</th><th>phieu_dang_xu_ly</th><th>slot_con_lai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>3</td><td>KTV002</td><td>KTV Trần Thị Bích</td><td>Email Trường & Microsoft 365</td><td>5</td><td>0</td><td><span class="tag tag-green">5 (Rảnh)</span></td></tr>
+                            <tr><td>4</td><td>KTV003</td><td>KTV Lê Văn Cường</td><td>Cổng Quản lý Đào tạo (QLĐT)</td><td>5</td><td>0</td><td><span class="tag tag-green">5 (Rảnh)</span></td></tr>
+                            <tr><td>6</td><td>KTV005</td><td>KTV Vũ Thị Én</td><td>Wi-Fi Trường & VPN Từ xa</td><td>5</td><td>0</td><td><span class="tag tag-green">5 (Rảnh)</span></td></tr>
+                            <tr><td>2</td><td>KTV001</td><td>KTV Nguyễn Văn An</td><td>Tài khoản & Xác thực SSO</td><td>5</td><td>1</td><td><span class="tag tag-blue">4 (Đang xử lý)</span></td></tr>
+                            <tr><td>5</td><td>KTV004</td><td>KTV Phạm Hoàng Dũng</td><td>Hệ thống Học tập (Canvas & Teams)</td><td>5</td><td>2</td><td><span class="tag tag-blue">3 (Đang xử lý)</span></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- QUERY 5 -->
+            <div class="query-block">
+                <div class="query-header">
+                    <span>📌 Truy vấn 5: Thống kê Cơ cấu Sinh viên theo Khóa đào tạo & Trạng thái Học thuật</span>
+                    <span class="tag tag-blue">GROUP BY & SUM(CASE WHEN...)</span>
+                </div>
+                <div class="query-desc">
+                    Quản lý vòng đời sinh viên: đếm số sinh viên đang học, tốt nghiệp hoặc bị kỷ luật thôi học.
+                </div>
+                <pre><code><span class="code-keyword">SELECT</span> 
+    u.cohort <span class="code-keyword">AS</span> khoa_tuyen_sinh,
+    <span class="code-func">COUNT</span>(u.id) <span class="code-keyword">AS</span> tong_sinh_vien,
+    <span class="code-func">SUM</span>(<span class="code-keyword">CASE WHEN</span> u.academic_status = <span class="code-string">'studying'</span> <span class="code-keyword">THEN</span> 1 <span class="code-keyword">ELSE</span> 0 <span class="code-keyword">END</span>) <span class="code-keyword">AS</span> dang_hoc,
+    <span class="code-func">SUM</span>(<span class="code-keyword">CASE WHEN</span> u.academic_status = <span class="code-string">'graduated'</span> <span class="code-keyword">THEN</span> 1 <span class="code-keyword">ELSE</span> 0 <span class="code-keyword">END</span>) <span class="code-keyword">AS</span> da_tot_nghiep,
+    <span class="code-func">SUM</span>(<span class="code-keyword">CASE WHEN</span> u.academic_status = <span class="code-string">'expelled'</span> <span class="code-keyword">THEN</span> 1 <span class="code-keyword">ELSE</span> 0 <span class="code-keyword">END</span>) <span class="code-keyword">AS</span> bi_ky_luat_duoi_hoc
+<span class="code-keyword">FROM</span> users u
+<span class="code-keyword">WHERE</span> u.user_type = <span class="code-string">'student'</span>
+<span class="code-keyword">GROUP BY</span> u.cohort <span class="code-keyword">ORDER BY</span> u.cohort <span class="code-keyword">DESC</span>;</code></pre>
+                <div class="result-table-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>khoa_tuyen_sinh</th><th>tong_sinh_vien</th><th>dang_hoc</th><th>da_tot_nghiep</th><th>bi_ky_luat_duoi_hoc</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><strong>D2024</strong></td><td>6</td><td>5</td><td>0</td><td><span class="tag tag-red">1 (Buộc thôi học)</span></td></tr>
+                            <tr><td><strong>D2020</strong></td><td>1</td><td>0</td><td><span class="tag tag-green">1 (Đã tốt nghiệp)</span></td><td>0</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- QUERY 6 -->
+            <div class="query-block">
+                <div class="query-header">
+                    <span>📌 Truy vấn 6: Tra cứu lịch sử phiếu hỗ trợ của SV Trần Thục Linh (Mã SV: 224001729)</span>
+                    <span class="tag tag-blue">INNER JOIN + LEFT JOIN</span>
+                </div>
+                <div class="query-desc">
+                    Tra cứu tiến độ xử lý phiếu báo khóa cứng tài khoản sau 5 lần nhập sai do SV Linh gửi kèm ảnh thẻ SV.
+                </div>
+                <pre><code><span class="code-keyword">SELECT</span> 
+    t.ticket_code <span class="code-keyword">AS</span> ma_phieu, req.name <span class="code-keyword">AS</span> sinh_vien_gui, cat.name <span class="code-keyword">AS</span> dich_vu_yeu_cau,
+    t.title <span class="code-keyword">AS</span> tieu_de_su_co, t.status <span class="code-keyword">AS</span> trang_thai_xu_ly,
+    <span class="code-func">COALESCE</span>(ktv.name, <span class="code-string">'Đang chờ phân công'</span>) <span class="code-keyword">AS</span> ktv_tiep_nhan,
+    t.created_at <span class="code-keyword">AS</span> thoi_gian_gui_phieu
+<span class="code-keyword">FROM</span> tickets t
+<span class="code-keyword">INNER JOIN</span> users req <span class="code-keyword">ON</span> req.id = t.requester_id
+<span class="code-keyword">INNER JOIN</span> categories cat <span class="code-keyword">ON</span> cat.id = t.category_id
+<span class="code-keyword">LEFT JOIN</span> users ktv <span class="code-keyword">ON</span> ktv.id = t.assigned_to
+<span class="code-keyword">WHERE</span> req.user_code = <span class="code-string">'224001729'</span> <span class="code-keyword">OR</span> t.is_guest_ticket = 1
+<span class="code-keyword">ORDER BY</span> t.created_at <span class="code-keyword">DESC</span>;</code></pre>
+                <div class="result-table-box">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ma_phieu</th><th>sinh_vien_gui</th><th>dich_vu_yeu_cau</th><th>tieu_de_su_co</th><th>trang_thai_xu_ly</th><th>ktv_tiep_nhan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>HD-2026-00003</strong></td><td><strong>Trần Thục Linh</strong></td><td>Tài khoản & Xác thực SSO</td><td>Tài khoản đăng nhập portal bị khóa cứng sau 5 lần nhập sai</td><td><span class="tag tag-blue">in_progress</span></td><td>KTV Nguyễn Văn An (Chuyên trách SSO)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FOOTER CARD -->
+        <div class="card" style="text-align: center; color: var(--text-muted); font-size: 13px;">
+            <p>Bài tập thực hành Lập trình Web - Học kỳ I · Trường Đại học Thủ Đô Hà Nội · Khoa: Toán-CNTT</p>
+            <p>Sinh viên thực hiện: <strong>Trần Thục Linh (224001729)</strong> · Lớp <strong>Toán Ứng Dụng D2024</strong> · Nhóm 1</p>
+        </div>
+    </div>
+</body>
+</html>
+
