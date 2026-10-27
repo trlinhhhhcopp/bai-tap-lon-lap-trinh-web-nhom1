@@ -1,0 +1,9 @@
+# Database SQLite tạm thời
+*.sqlite
+*.sqlite3
+*.db
+
+# Hệ điều hành & IDE rác
+.DS_Store
+Thumbs.db
+
