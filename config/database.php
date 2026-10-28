@@ -4,13 +4,30 @@
  * BÀI TẬP LỚN LẬP TRÌNH WEB - NHÓM 1
  * HỆ THỐNG HELPDESK CNTT TRỰC TUYẾN - TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI
  * ------------------------------------------------------------------------------
- * CẤU HÌNH KẾT NỐI CƠ SỞ DỮ LIỆU MYSQL PDO
+ * CẤU HÌNH KẾT NỐI CƠ SỞ DỮ LIỆU MYSQL PDO & PSR-4 AUTOLOADER
  * ==============================================================================
  */
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+/**
+ * Autoloader PSR-4 cho không gian tên App\...
+ */
+spl_autoload_register(function ($class) {
+    $prefix = 'App\\';
+    $base_dir = dirname(__DIR__) . '/app/';
+    $len = strlen($prefix);
+    if (strncmp($prefix, $class, $len) !== 0) {
+        return;
+    }
+    $relative_class = substr($class, $len);
+    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+    if (file_exists($file)) {
+        require_once $file;
+    }
+});
 
 /**
  * Hàm db(): PDO dùng chung cho các repository & script (Slide 4)

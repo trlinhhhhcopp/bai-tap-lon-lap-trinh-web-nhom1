@@ -236,14 +236,22 @@ class TicketRepository {
     }
 
     /**
-     * Lấy các tin nhắn phản hồi của phiếu
+     * Lấy các tin nhắn phản hồi của phiếu (Slide 7 & 10)
+     * - $canViewInternal: Nếu false (Sinh viên), ẩn hoàn toàn các dòng ghi chú nội bộ (is_internal = 1)
      */
-    public static function getReplies(int $ticketId): array {
-        $sql = "SELECT r.*, u.name AS user_name, u.role AS user_role
+    public static function getReplies(int $ticketId, bool $canViewInternal = true): array {
+        if (class_exists('App\Models\Reply')) {
+            return \App\Models\Reply::getByTicketId($ticketId, $canViewInternal);
+        }
+
+        $sql = "SELECT r.*, u.name AS user_name, u.role AS user_role, u.user_code
                 FROM ticket_replies r
                 JOIN users u ON r.user_id = u.id
-                WHERE r.ticket_id = :ticket_id
-                ORDER BY r.created_at ASC";
+                WHERE r.ticket_id = :ticket_id";
+        if (!$canViewInternal) {
+            $sql .= " AND r.is_internal = 0";
+        }
+        $sql .= " ORDER BY r.created_at ASC, r.id ASC";
 
         $stmt = db()->prepare($sql);
         $stmt->execute(['ticket_id' => $ticketId]);
@@ -251,19 +259,69 @@ class TicketRepository {
     }
 
     /**
-     * Thêm tin nhắn phản hồi
+     * Thêm tin nhắn phản hồi và tự động luân chuyển trạng thái vé (State Machine)
      */
-    public static function addReply(int $ticketId, int $userId, string $message, bool $isInternal = false): bool {
+    public static function addReply(
+        int $ticketId, 
+        int $userId, 
+        string $message, 
+        bool $isInternal = false, 
+        ?string $forceStatus = null
+    ): bool {
+        $db = db();
+
+        // 1. Thêm phản hồi vào bảng ticket_replies
         $sql = "INSERT INTO ticket_replies (ticket_id, user_id, message, is_internal, created_at)
                 VALUES (:ticket_id, :user_id, :message, :is_internal, NOW())";
-
-        $stmt = db()->prepare($sql);
-        return $stmt->execute([
+        $stmt = $db->prepare($sql);
+        $ok = $stmt->execute([
             'ticket_id'   => $ticketId,
             'user_id'     => $userId,
             'message'     => trim($message),
             'is_internal' => $isInternal ? 1 : 0,
         ]);
+
+        if (!$ok) {
+            return false;
+        }
+
+        // 2. Tra cứu vai trò của người gửi & trạng thái hiện tại của vé
+        $userStmt = $db->prepare("SELECT role FROM users WHERE id = :id LIMIT 1");
+        $userStmt->execute(['id' => $userId]);
+        $userRole = $userStmt->fetchColumn() ?: 'requester';
+
+        $ticketStmt = $db->prepare("SELECT status, first_response_at FROM tickets WHERE id = :id LIMIT 1");
+        $ticketStmt->execute(['id' => $ticketId]);
+        $ticket = $ticketStmt->fetch();
+
+        if (!$ticket) {
+            return true;
+        }
+
+        // 3. Xử lý Logic tự động State Machine
+        // Nếu người gửi chọn ép trạng thái cụ thể (ví dụ giải quyết xong -> resolved)
+        if (!empty($forceStatus) && in_array($forceStatus, ['new', 'in_progress', 'waiting_requester', 'resolved', 'closed'])) {
+            self::updateStatus($ticketId, $forceStatus);
+        } else {
+            // Logic tự động thông minh:
+            if (in_array($userRole, ['agent', 'admin']) && !$isInternal) {
+                // KTV phản hồi công khai -> Ghi nhận mốc phản hồi đầu tiên (First Response SLA)
+                if (empty($ticket['first_response_at'])) {
+                    $db->prepare("UPDATE tickets SET first_response_at = NOW() WHERE id = :id")->execute(['id' => $ticketId]);
+                }
+                // Nếu vé đang 'new' hoặc 'in_progress' -> Chuyển sang 'waiting_requester' (Chờ người gửi kiểm tra)
+                if (in_array($ticket['status'], ['new', 'in_progress'])) {
+                    self::updateStatus($ticketId, 'waiting_requester');
+                }
+            } elseif ($userRole === 'requester') {
+                // Người gửi (Sinh viên/Giảng viên) phản hồi lại -> Kích hoạt vé quay lại 'in_progress' để KTV xử lý tiếp
+                if (in_array($ticket['status'], ['waiting_requester', 'resolved'])) {
+                    self::updateStatus($ticketId, 'in_progress');
+                }
+            }
+        }
+
+        return true;
     }
 
     // Các hàm tra cứu danh mục phục vụ Select Form
@@ -284,4 +342,3 @@ class TicketRepository {
         return db()->query("SELECT id, user_code, name, role, user_type FROM users WHERE is_active = 1 ORDER BY id ASC")->fetchAll();
     }
 }
-

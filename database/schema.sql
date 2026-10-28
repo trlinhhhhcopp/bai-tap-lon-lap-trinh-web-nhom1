@@ -93,6 +93,7 @@ CREATE TABLE `users` (
     `user_code` VARCHAR(30) NOT NULL, -- Mã SV (224001736) hoặc Mã GV / Cán bộ
     `name` VARCHAR(100) NOT NULL,
     `email` VARCHAR(190) NOT NULL, -- @daihocthudo.edu.vn
+    `personal_email` VARCHAR(190) NULL, -- Email cá nhân (Gmail, Outlook...) liên kết lần đầu để cứu hộ khẩn cấp & KTV phản hồi
     `password_hash` VARCHAR(255) NOT NULL,
     `role` ENUM('requester', 'agent', 'admin') NOT NULL DEFAULT 'requester',
     `user_type` ENUM('student', 'lecturer', 'staff') NOT NULL DEFAULT 'student',
