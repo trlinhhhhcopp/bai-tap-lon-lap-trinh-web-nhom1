@@ -1,0 +1,162 @@
+<?php
+/**
+ * Model CourseAssignment
+ * Bảng: course_assignments
+ * Quy tắc: Mỗi lớp học phần chỉ có DUY NHẤT 1 giảng viên phụ trách
+ * Phần của: Lê Hà My
+ */
+require_once __DIR__ . '/../config/database.php';
+
+class CourseAssignment
+{
+    public static function count(string $keyword = ''): int
+    {
+        $sql = "SELECT COUNT(*) AS total
+                FROM course_assignments ca
+                JOIN classes cl ON ca.class_id = cl.id
+                JOIN courses co ON ca.course_id = co.id
+                JOIN users u ON ca.lecturer_id = u.id
+                WHERE 1=1";
+        $params = [];
+
+        if ($keyword !== '') {
+            $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
+                       OR co.course_code LIKE :kw OR co.name LIKE :kw
+                       OR u.name LIKE :kw OR ca.semester LIKE :kw)";
+            $params['kw'] = '%' . $keyword . '%';
+        }
+
+        $stmt = db()->prepare($sql);
+        $stmt->execute($params);
+        return (int) $stmt->fetch()['total'];
+    }
+
+    public static function findAll(string $keyword = '', int $page = 1, int $perPage = 10): array
+    {
+        $offset = max(0, ($page - 1) * $perPage);
+
+        $sql = "SELECT ca.id, ca.class_id, ca.course_id, ca.lecturer_id,
+                       ca.semester, ca.academic_year, ca.created_at,
+                       cl.class_code, cl.name AS class_name,
+                       co.course_code, co.name AS course_name,
+                       u.name AS lecturer_name, u.email AS lecturer_email
+                FROM course_assignments ca
+                JOIN classes cl ON ca.class_id = cl.id
+                JOIN courses co ON ca.course_id = co.id
+                JOIN users u ON ca.lecturer_id = u.id
+                WHERE 1=1";
+        $params = [];
+
+        if ($keyword !== '') {
+            $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
+                       OR co.course_code LIKE :kw OR co.name LIKE :kw
+                       OR u.name LIKE :kw OR ca.semester LIKE :kw)";
+            $params['kw'] = '%' . $keyword . '%';
+        }
+
+        $sql .= " ORDER BY ca.semester DESC, cl.class_code, co.course_code
+                  LIMIT :limit OFFSET :offset";
+
+        $stmt = db()->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(':' . $k, $v);
+        }
+        $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public static function findById(int $id): ?array
+    {
+        $sql = "SELECT ca.*,
+                       cl.class_code, cl.name AS class_name,
+                       co.course_code, co.name AS course_name,
+                       u.name AS lecturer_name, u.email AS lecturer_email
+                FROM course_assignments ca
+                JOIN classes cl ON ca.class_id = cl.id
+                JOIN courses co ON ca.course_id = co.id
+                JOIN users u ON ca.lecturer_id = u.id
+                WHERE ca.id = :id LIMIT 1";
+        $stmt = db()->prepare($sql);
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
+    public static function exists(int $classId, int $courseId, string $semester, ?int $excludeId = null): bool
+    {
+        $sql = "SELECT COUNT(*) AS c FROM course_assignments
+                WHERE class_id = :class_id AND course_id = :course_id AND semester = :semester";
+        $params = [
+            'class_id'  => $classId,
+            'course_id' => $courseId,
+            'semester'  => $semester,
+        ];
+        if ($excludeId !== null) {
+            $sql .= " AND id != :id";
+            $params['id'] = $excludeId;
+        }
+        $stmt = db()->prepare($sql);
+        $stmt->execute($params);
+        return (int) $stmt->fetch()['c'] > 0;
+    }
+
+    public static function create(array $data): int
+    {
+        $sql = "INSERT INTO course_assignments
+                (class_id, course_id, lecturer_id, semester, academic_year)
+                VALUES (:class_id, :course_id, :lecturer_id, :semester, :academic_year)";
+        $stmt = db()->prepare($sql);
+        $stmt->execute([
+            'class_id'      => $data['class_id'],
+            'course_id'     => $data['course_id'],
+            'lecturer_id'   => $data['lecturer_id'],
+            'semester'      => $data['semester'],
+            'academic_year' => $data['academic_year'],
+        ]);
+        return (int) db()->lastInsertId();
+    }
+
+    public static function update(int $id, array $data): bool
+    {
+        $sql = "UPDATE course_assignments SET
+                    class_id = :class_id, course_id = :course_id,
+                    lecturer_id = :lecturer_id, semester = :semester,
+                    academic_year = :academic_year
+                WHERE id = :id";
+        $stmt = db()->prepare($sql);
+        return $stmt->execute([
+            'class_id'      => $data['class_id'],
+            'course_id'     => $data['course_id'],
+            'lecturer_id'   => $data['lecturer_id'],
+            'semester'      => $data['semester'],
+            'academic_year' => $data['academic_year'],
+            'id'            => $id,
+        ]);
+    }
+
+    public static function delete(int $id): bool
+    {
+        $stmt = db()->prepare("DELETE FROM course_assignments WHERE id = :id");
+        return $stmt->execute(['id' => $id]);
+    }
+
+    public static function getAllClasses(): array
+    {
+        return db()->query("SELECT id, class_code, name FROM classes ORDER BY class_code")->fetchAll();
+    }
+
+    public static function getAllCourses(): array
+    {
+        return db()->query("SELECT id, course_code, name FROM courses ORDER BY course_code")->fetchAll();
+    }
+
+    public static function getAllLecturers(): array
+    {
+        return db()->query("SELECT id, name, email, user_code FROM users
+                            WHERE user_type = 'lecturer' AND is_active = 1
+                            ORDER BY name")->fetchAll();
+    }
+}
+?>
