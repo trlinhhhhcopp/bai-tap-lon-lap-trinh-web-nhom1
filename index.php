@@ -15,8 +15,10 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/app/Models/User.php';
 require_once __DIR__ . '/app/Models/PasswordReset.php';
 require_once __DIR__ . '/app/Services/AuthService.php';
+require_once __DIR__ . '/app/Services/InternalMailboxService.php';
 
 use App\Services\AuthService;
+use App\Services\InternalMailboxService;
 use App\Models\PasswordReset;
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -181,9 +183,28 @@ if ($action === 'forgot_password') {
                 'verified'   => false,
             ];
 
+            // Gửi thư chứa mã OTP vào Hòm thư nội bộ Webmail của sinh viên/giảng viên (@daihocthudo.edu.vn)
+            $mailSubject = "[TUD-Helpdesk] Mã OTP xác nhận khôi phục mật khẩu tài khoản học thuật";
+            $mailBody = "
+                <p>Kính gửi bạn <strong>{$user['name']}</strong> (Mã định danh: <code>{$user['user_code']}</code>),</p>
+                <p>Hệ thống Hỗ trợ Kỹ thuật & CNTT - Trường Đại Học Thủ Đô Hà Nội đã tiếp nhận yêu cầu cấp lại mật khẩu cho tài khoản học thuật của bạn.</p>
+                <div style='margin: 18px 0; padding: 20px; background: #0f172a; border-radius: 14px; border: 2px solid #f59e0b; text-align: center;'>
+                    <div style='color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;'>MÃ XÁC THỰC OTP (GỒM 6 CHỮ CÁI IN HOA):</div>
+                    <div style='color: #fbbf24; font-family: monospace; font-size: 36px; font-weight: 900; letter-spacing: 8px; margin: 10px 0;'>{$otp}</div>
+                    <div style='color: #cbd5e1; font-size: 11.5px;'>Hiệu lực mã: 15 phút. Tuyệt đối không chia sẻ mã này cho bất kỳ ai để đảm bảo an toàn tài khoản.</div>
+                </div>
+                <p>Vui lòng quay lại Cổng Helpdesk và nhập đúng 6 chữ cái trên vào ô xác thực để hoàn tất đổi mật khẩu.</p>
+                <p style='margin-top: 24px; color: #64748b; font-size: 11.5px; border-top: 1px solid #e2e8f0; padding-top: 12px;'>
+                    Trân trọng,<br>
+                    <strong>Trung tâm CNTT & Thư viện - Trường Đại Học Thủ Đô Hà Nội</strong><br>
+                    Email hỗ trợ: helpdesk@daihocthudo.edu.vn | Hotline: (024) 3833 0708
+                </p>
+            ";
+            \App\Services\InternalMailboxService::send($user['email'], $user['name'], $mailSubject, $mailBody, $otp);
+
             $_SESSION['flash'] = [
                 'type'    => 'success',
-                'message' => "Đã gửi mã xác thực OTP về hòm thư trường: <strong>{$user['email']}</strong>! Vui lòng kiểm tra hòm thư bên dưới và nhập đúng 6 chữ cái OTP."
+                'message' => "Đã chuyển thư chứa mã OTP vào Hòm thư nội bộ trường: <strong>{$user['email']}</strong>! Vui lòng bấm nút mở Hòm thư nội bộ bên dưới để đọc thư lấy mã."
             ];
             header('Location: ' . $appBase . 'index.php?action=forgot_password&step=enter_otp');
             exit;
@@ -271,38 +292,43 @@ if ($action === 'forgot_password') {
                 <?php endif; ?>
 
                 <?php if ($hasOtp || $step === 'enter_otp'): ?>
-                    <!-- 1. HÒM THƯ EMAIL TRƯỜNG NHẬN MÃ OTP CHỮ CÁI -->
-                    <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4 sm:p-5 space-y-3">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-indigo-900 flex items-center gap-1.5">
-                                <span class="text-base">📬</span> HÒM THƯ NỘI BỘ SINH VIÊN (@daihocthudo.edu.vn)
+                    <!-- 1. THÔNG BÁO VÀ HƯỚNG DẪN MỞ HÒM THƯ NỘI BỘ (BẢO MẬT: KHÔNG HIỂN THỊ MÃ OTP TẠI ĐÂY) -->
+                    <div class="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <span class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                                <span class="text-base">📬</span> HÒM THƯ NỘI BỘ TRƯỜNG (@daihocthudo.edu.vn)
                             </span>
-                            <span class="text-[11px] font-bold text-indigo-600 bg-white px-2 py-0.5 rounded-full border border-indigo-100">
-                                Hiệu lực: 15 phút
+                            <span class="text-[11px] font-bold text-indigo-700 bg-white px-2.5 py-1 rounded-full border border-indigo-200 shadow-2xs">
+                                Hiệu lực mã: 15 phút
                             </span>
                         </div>
 
-                        <div class="bg-white rounded-xl p-4 border border-indigo-100 text-xs space-y-2.5 shadow-2xs">
-                            <div class="text-[11.5px] text-slate-600 space-y-0.5 pb-2 border-b border-slate-100">
-                                <div>Người nhận: <strong class="text-slate-800"><?php echo htmlspecialchars($activeOtp['user_name'] ?? 'Sinh viên'); ?></strong> &lt;<?php echo htmlspecialchars($activeOtp['email'] ?? ''); ?>&gt;</div>
-                                <div>Tiêu đề: <strong class="text-indigo-700">[TUD-Helpdesk] Mã OTP xác nhận khôi phục mật khẩu tài khoản</strong></div>
-                            </div>
-                            
-                            <p class="text-slate-700 leading-relaxed text-[11.5px]">
-                                Chào bạn <strong><?php echo htmlspecialchars($activeOtp['user_name'] ?? ''); ?></strong>, mã OTP gồm các chữ cái để xác thực đặt lại mật khẩu của bạn là:
-                            </p>
-
-                            <!-- KHỐI MÃ OTP DẠNG CHỮ CÁI NỔI BẬT -->
-                            <div class="py-3 px-4 bg-slate-900 text-amber-400 rounded-xl text-center border-2 border-amber-400/40 shadow-inner">
-                                <div class="text-[10.5px] text-slate-400 uppercase tracking-widest font-semibold mb-1">Mã OTP (Gồm 6 chữ cái):</div>
-                                <div class="font-mono text-3xl sm:text-4xl font-black tracking-[0.35em] select-all uppercase">
-                                    <?php echo htmlspecialchars($activeOtp['otp'] ?? ''); ?>
+                        <div class="bg-white rounded-xl p-4 border border-indigo-100 text-xs space-y-3 shadow-2xs">
+                            <div class="space-y-1 pb-2.5 border-b border-slate-100 text-[11.5px]">
+                                <div class="text-slate-600">
+                                    Hòm thư nhận: <strong class="text-slate-900 font-mono"><?php echo htmlspecialchars($activeOtp['email'] ?? ''); ?></strong>
+                                </div>
+                                <div class="text-slate-600">
+                                    Chủ tài khoản: <strong class="text-slate-800"><?php echo htmlspecialchars($activeOtp['user_name'] ?? 'Sinh viên'); ?></strong> 
+                                    (Mã: <code class="text-indigo-600 font-bold"><?php echo htmlspecialchars($activeOtp['user_code'] ?? ''); ?></code>)
                                 </div>
                             </div>
-
-                            <p class="text-[11px] text-slate-500 italic">
-                                ⚠️ Lưu ý: Vui lòng nhập chính xác 6 chữ cái in hoa trên vào ô xác thực bên dưới. Mã có giá trị đến: <?php echo date('H:i:s', $activeOtp['expires_at'] ?? time()); ?>.
+                            
+                            <p class="text-slate-600 leading-relaxed text-[11.5px]">
+                                🔒 <strong>Bảo mật thông tin:</strong> Hệ thống đã chuyển thư chứa mã xác thực OTP (gồm 6 chữ cái in hoa) vào đúng Hòm thư nội bộ của bạn. Mã OTP <strong>không hiển thị trực tiếp tại trang này</strong>.
                             </p>
+
+                            <!-- NÚT BẤM MỞ HÒM THƯ NỘI BỘ WEBMAIL TRONG TAB MỚI -->
+                            <div class="pt-1">
+                                <a href="<?php echo $appBase; ?>webmail.php?email=<?php echo urlencode($activeOtp['email'] ?? ''); ?>" 
+                                   target="_blank" 
+                                   class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-md shadow-emerald-100 flex items-center justify-center gap-2 text-xs">
+                                    <span>📬</span> MỞ HÒM THƯ NỘI BỘ WEBMAIL (MỞ TAB MỚI ↗)
+                                </a>
+                                <p class="text-[10.5px] text-slate-400 mt-1.5 text-center">
+                                    Bấm nút trên để mở hòm thư <code><?php echo htmlspecialchars($activeOtp['email'] ?? ''); ?></code> trong tab mới, xem thư lấy mã OTP rồi quay lại tab này nhập vào ô bên dưới.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -313,9 +339,9 @@ if ($action === 'forgot_password') {
 
                         <div>
                             <label class="block font-bold text-slate-800 mb-1.5">
-                                Nhập mã OTP gồm 6 chữ cái vừa nhận từ Email:
+                                Nhập mã OTP gồm 6 chữ cái vừa nhận trong Hòm thư nội bộ:
                             </label>
-                            <input type="text" name="otp_input" required maxlength="6" autofocus placeholder="VD: <?php echo htmlspecialchars($activeOtp['otp'] ?? 'TUDKHA'); ?>" 
+                            <input type="text" name="otp_input" required maxlength="6" autofocus placeholder="VD: ABCXYZ (6 chữ cái)" 
                                    style="text-transform: uppercase; letter-spacing: 0.35em;"
                                    class="w-full px-4 py-3 bg-slate-50 border-2 border-indigo-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-center font-mono text-2xl font-black text-indigo-950 uppercase" />
                             <p class="text-[11px] text-slate-400 mt-1 text-center">Hệ thống tự động chuyển thành chữ in hoa khi bạn gõ.</p>

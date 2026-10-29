@@ -1,0 +1,17 @@
+{
+    "224001736@daihocthudo.edu.vn": [
+        {
+            "id": "msg_1793289505_55c1b9",
+            "to_email": "224001736@daihocthudo.edu.vn",
+            "to_name": "Phạm Thị Thanh Ngân",
+            "from_name": "Trung tâm CNTT - Trường ĐH Thủ Đô Hà Nội",
+            "from_email": "helpdesk@daihocthudo.edu.vn",
+            "subject": "[TUD-Helpdesk] Mã OTP xác nhận khôi phục mật khẩu tài khoản học thuật",
+            "body_html": "<p>Chào bạn, mã OTP của bạn là: <strong>REEXRG<\/strong><\/p>",
+            "otp_code": "REEXRG",
+            "sent_at": "2026-10-29 16:58:25",
+            "sent_time": "16:58:25 29\/10\/2026",
+            "is_read": 0
+        }
+    ]
+}

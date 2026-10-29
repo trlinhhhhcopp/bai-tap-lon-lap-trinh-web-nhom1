@@ -66,6 +66,9 @@ $currentQuery  = $_SERVER['QUERY_STRING'] ?? '';
             <nav class="hidden md:flex items-center gap-1">
                 <?php if (!$isLoggedIn): ?>
                     <!-- Menu dành cho Khách chưa đăng nhập -->
+                    <a href="<?php echo $appBase; ?>webmail.php" target="_blank" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-400 hover:text-sky-300 hover:bg-sky-950/40 transition flex items-center gap-1">
+                        <span>📬</span> Hòm Thư Nội Bộ (Webmail)
+                    </a>
                     <a href="<?php echo $appBase; ?>index.php?action=guest_ticket" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition">
                         🆘 Cứu Hộ Tài Khoản (Bị Khóa)
                     </a>
@@ -151,6 +154,13 @@ $currentQuery  = $_SERVER['QUERY_STRING'] ?? '';
                             ?>
                         </span>
                     </div>
+
+                    <a href="<?php echo $appBase; ?>webmail.php?email=<?php echo urlencode($currentUser['email'] ?? ''); ?>" 
+                       target="_blank" 
+                       title="Mở Hòm thư điện tử nội bộ @daihocthudo.edu.vn" 
+                       class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white border border-slate-700/80 rounded-xl text-xs font-semibold transition flex items-center gap-1">
+                        <span>📬</span> <span class="hidden sm:inline">Webmail</span>
+                    </a>
 
                     <a href="<?php echo $appBase; ?>index.php?action=logout" 
                        onclick="return confirm('Bạn có chắc chắn muốn đăng xuất?');" 
