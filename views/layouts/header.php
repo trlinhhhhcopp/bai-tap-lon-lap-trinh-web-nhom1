@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../../config/database.php';
+
 if (!function_exists('get_app_base_url')) {
     function get_app_base_url(): string {
         $docRoot = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: ($_SERVER['DOCUMENT_ROOT'] ?? ''));
@@ -254,7 +256,7 @@ $appBase = get_app_base_url();
 </nav>
 
 <div class="container">
-    <?php if (\App\Core\Database::isFallback()): ?>
+    <?php if (class_exists('\App\Core\Database') && \App\Core\Database::isFallback()): ?>
         <div class="alert alert-warning" style="margin-bottom: 16px;">
             <div class="alert-icon-wrapper">⚠️</div>
             <div>

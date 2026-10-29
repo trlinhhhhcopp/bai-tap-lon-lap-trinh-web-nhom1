@@ -7,7 +7,7 @@
     </div>
 
     <div style="padding: 28px;">
-        <form method="GET" action="/guest/lookup" style="display: flex; gap: 10px; margin-bottom: 24px;">
+        <form method="GET" action="<?= $appBase ?>public/index.php/guest/lookup" style="display: flex; gap: 10px; margin-bottom: 24px;">
             <input type="text" name="code" value="<?= htmlspecialchars($code) ?>" required placeholder="Nhập mã phiếu (VD: HD-2026-2910-842B19D)" style="flex:1; padding:12px 16px; border:1.5px solid var(--border-color); border-radius:8px; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
             <button type="submit" style="padding:12px 24px; background:var(--primary); color:#fff; font-weight:700; font-size:14px; border:none; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.2s;">🔍 Tra Cứu Ngay</button>
         </form>
@@ -22,10 +22,10 @@
                     Để đảm bảo tính riêng tư và bảo mật thông tin cá nhân, tính năng tra cứu công khai không hiển thị nội dung này. Vui lòng đăng nhập vào tài khoản để xem chi tiết!
                 </p>
                 <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                    <a href="/login" style="padding: 10px 22px; background: var(--primary); color: #fff; font-weight: 700; border-radius: 8px; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25);">
+                    <a href="<?= $appBase ?>index.php" style="padding: 10px 22px; background: var(--primary); color: #fff; font-weight: 700; border-radius: 8px; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25);">
                         🔑 Đăng Nhập Cổng Sinh Viên
                     </a>
-                    <a href="/guest/lookup" style="padding: 10px 18px; background: #f1f5f9; color: #475569; font-weight: 600; border-radius: 8px; text-decoration: none; font-size: 14px; border: 1px solid #cbd5e1;">
+                    <a href="<?= $appBase ?>public/index.php/guest/lookup" style="padding: 10px 18px; background: #f1f5f9; color: #475569; font-weight: 600; border-radius: 8px; text-decoration: none; font-size: 14px; border: 1px solid #cbd5e1;">
                         Tra Cứu Mã Khác
                     </a>
                 </div>

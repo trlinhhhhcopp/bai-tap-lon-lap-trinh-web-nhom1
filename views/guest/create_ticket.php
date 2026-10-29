@@ -11,7 +11,7 @@
             ⚠️ <strong>Quy trình cứu hộ khẩn cấp:</strong> Khi bạn không thể đăng nhập do <strong>quên mật khẩu</strong>, <strong>bị khóa mềm 30 phút</strong> hoặc <strong>bị khóa tài khoản</strong>, hãy gửi đơn cứu hộ này. Đơn sẽ gửi thẳng đến <strong>Kỹ thuật viên chuyên trách SSO (KTV Nguyễn Văn An)</strong> để xử lý mở khóa ngay. Sau khi gửi, bạn sẽ nhận được <strong>Mã tra cứu duy nhất</strong> để theo dõi tiến độ mà không cần đăng nhập!
         </div>
 
-        <form method="POST" action="/guest/ticket" enctype="multipart/form-data">
+        <form method="POST" action="<?= $appBase ?>public/index.php/guest/ticket" enctype="multipart/form-data">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
                 <div>
                     <label style="display:block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Mã Sinh Viên (*):</label>
@@ -108,7 +108,7 @@
             </button>
 
             <div style="text-align: center; margin-top: 18px; font-size: 13px;">
-                Đã có mã phiếu cứu hộ? <a href="/guest/lookup" style="color: var(--primary); text-decoration: none; font-weight: 600;">Bấm vào đây để tra cứu tiến độ ngay</a>
+                Đã có mã phiếu cứu hộ? <a href="<?= $appBase ?>public/index.php/guest/lookup" style="color: var(--primary); text-decoration: none; font-weight: 600;">Bấm vào đây để tra cứu tiến độ ngay</a>
             </div>
         </form>
     </div>

@@ -740,6 +740,9 @@ $recentTickets = $pdo->query("
                 <p class="text-xs text-indigo-200/80">Quản trị người dùng, phân ca trực KTV, Triage phiếu và giám sát tải trọng toàn trường.</p>
             </div>
             <div class="flex items-center gap-2">
+                <a href="<?php echo $appBase; ?>PhanCongThanh_Admin/index.php" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition text-xs flex items-center gap-1.5">
+                    <span>📅</span> Quản Lý Lịch Nghỉ Lễ
+                </a>
                 <a href="<?php echo $appBase; ?>TranLinh/users.php" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl shadow-md transition text-xs flex items-center gap-1.5">
                     <span>👥</span> Quản Lý Tài Khoản & Phân Ca
                 </a>

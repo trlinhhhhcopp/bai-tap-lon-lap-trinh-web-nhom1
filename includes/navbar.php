@@ -84,6 +84,11 @@ $currentQuery  = $_SERVER['QUERY_STRING'] ?? '';
                     <a href="<?php echo $appBase; ?>TranLinh/users.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
                         <span>👥</span> Quản Lý Người Dùng & Ca Trực
                     </a>
+                    <a href="<?php echo $appBase; ?>PhanCongThanh_Admin/index.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
+                        <span>📅</span> Quản Lý Lịch Nghỉ Lễ
+                    </a>
+                        <span>👥</span> Quản Lý Người Dùng & Ca Trực
+                    </a>
                     <a href="<?php echo $appBase; ?>tickets/index.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
                         <span>🎫</span> Triage & Phân Công Phiếu
                     </a>

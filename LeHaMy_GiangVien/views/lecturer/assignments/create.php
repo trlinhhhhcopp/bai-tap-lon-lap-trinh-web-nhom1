@@ -1,59 +1,58 @@
 <?php
-$pageTitle = 'Thêm Phân công giảng dạy';
+$pageTitle = 'Thêm Phân Công Giảng Dạy';
+require_once __DIR__ . '/../../../../config/database.php';
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    session_start();
+}
+if (empty($_SESSION['user'])) {
+    header('Location: ../../index.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle) ?> | Helpdesk CNTT – ĐH Thủ Đô</title>
-    <style>
-        :root {
-            --primary:#0284c7; --primary-dark:#0369a1; --primary-light:#e0f2fe;
-            --navy:#0f172a; --bg:#f8fafc; --card:#fff; --border:#cbd5e1;
-            --text:#1e293b; --muted:#64748b; --err:#b91c1c;
-        }
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-        .navbar{background:var(--navy);color:#fff;padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center}
-        .navbar a{color:#fff;text-decoration:none;font-weight:600}
-        .container{max-width:700px;margin:1.5rem auto;padding:0 1rem}
-        .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-        h1{font-size:1.35rem;margin-bottom:1rem;color:var(--primary-dark)}
-        .btn{display:inline-block;padding:.4rem .9rem;border-radius:6px;border:none;cursor:pointer;font-size:.9rem;text-decoration:none;color:#fff;background:var(--primary)}
-        .btn:hover{background:var(--primary-dark)} .btn-secondary{background:var(--muted)}
-        .form-group{margin-bottom:1rem}
-        label{display:block;font-weight:600;margin-bottom:.3rem;font-size:.9rem}
-        input[type=text],select{width:100%;padding:.45rem .7rem;border:1px solid var(--border);border-radius:6px;font-size:.95rem}
-        input:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light)}
-        .error-list{color:var(--err);font-size:.875rem;margin-bottom:1rem}
-        .error-list li{margin-left:1.2rem}
-        .note{background:var(--primary-light);border-left:4px solid var(--primary);padding:.6rem .9rem;font-size:.875rem;margin-bottom:1rem;border-radius:0 6px 6px 0}
-    </style>
+    <title><?= htmlspecialchars($pageTitle) ?> - Helpdesk ĐH Thủ Đô</title>
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body>
-<nav class="navbar">
-    <a href="index.php?action=index">Helpdesk CNTT · Phân công giảng dạy</a>
-    <span style="color:#94a3b8;font-size:.85rem">Lê Hà My – ĐH Thủ Đô Hà Nội</span>
-</nav>
-<div class="container">
-    <div class="card">
-        <h1>Thêm Phân công giảng dạy</h1>
-        <div class="note">Mỗi lớp học phần chỉ được phân công <strong>1 giảng viên duy nhất</strong>.</div>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+<?php require_once __DIR__ . '/../../../../includes/navbar.php'; ?>
+
+<main class="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+        
+        <div class="border-b border-slate-100 pb-4">
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                📚 PHÂN HỆ GIẢNG VIÊN & ĐÀO TẠO
+            </span>
+            <h1 class="text-2xl font-black text-slate-900 mt-1">
+                <?= htmlspecialchars($pageTitle) ?>
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">
+                Nguyên tắc nghiệp vụ ITIL v4: Mỗi lớp học phần được phân công <strong>1 giảng viên duy nhất</strong> phụ trách trong kỳ học.
+            </p>
+        </div>
 
         <?php if (!empty($errors)): ?>
-            <ul class="error-list">
-                <?php foreach ($errors as $err): ?>
-                    <li><?= htmlspecialchars($err) ?></li>
-                <?php endforeach; ?>
-            </ul>
+            <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 space-y-1">
+                <p class="font-bold">⚠️ Có lỗi phát sinh khi lưu:</p>
+                <ul class="list-disc list-inside">
+                    <?php foreach ($errors as $err): ?>
+                        <li><?= htmlspecialchars($err) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
         <?php endif; ?>
 
-        <form method="post" action="index.php?action=create" novalidate>
-            <div class="form-group">
-                <label for="class_id">Lớp học <span style="color:#b91c1c">*</span></label>
-                <select id="class_id" name="class_id" required>
-                    <option value="">-- Chọn lớp --</option>
+        <form method="post" action="index.php?action=create" novalidate class="space-y-4 text-xs">
+            <div>
+                <label for="class_id" class="block font-bold text-slate-700 mb-1">
+                    Lớp Học: <span class="text-rose-500">*</span>
+                </label>
+                <select id="class_id" name="class_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
+                    <option value="">-- Chọn lớp học phần --</option>
                     <?php foreach ($classes as $cl): ?>
                         <option value="<?= (int)$cl['id'] ?>" <?= ($old['class_id'] == $cl['id']) ? 'selected' : '' ?>>
                             <?= htmlspecialchars($cl['class_code'] . ' – ' . $cl['name']) ?>
@@ -61,9 +60,12 @@ $pageTitle = 'Thêm Phân công giảng dạy';
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="course_id">Môn học <span style="color:#b91c1c">*</span></label>
-                <select id="course_id" name="course_id" required>
+
+            <div>
+                <label for="course_id" class="block font-bold text-slate-700 mb-1">
+                    Môn Học / Học Phần: <span class="text-rose-500">*</span>
+                </label>
+                <select id="course_id" name="course_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
                     <option value="">-- Chọn môn học --</option>
                     <?php foreach ($courses as $co): ?>
                         <option value="<?= (int)$co['id'] ?>" <?= ($old['course_id'] == $co['id']) ? 'selected' : '' ?>>
@@ -72,9 +74,12 @@ $pageTitle = 'Thêm Phân công giảng dạy';
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="lecturer_id">Giảng viên phụ trách <span style="color:#b91c1c">*</span></label>
-                <select id="lecturer_id" name="lecturer_id" required>
+
+            <div>
+                <label for="lecturer_id" class="block font-bold text-slate-700 mb-1">
+                    Giảng Viên Phụ Trách: <span class="text-rose-500">*</span>
+                </label>
+                <select id="lecturer_id" name="lecturer_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
                     <option value="">-- Chọn giảng viên --</option>
                     <?php foreach ($lecturers as $gv): ?>
                         <option value="<?= (int)$gv['id'] ?>" <?= ($old['lecturer_id'] == $gv['id']) ? 'selected' : '' ?>>
@@ -83,20 +88,36 @@ $pageTitle = 'Thêm Phân công giảng dạy';
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="semester">Học kỳ <span style="color:#b91c1c">*</span></label>
-                <input type="text" id="semester" name="semester" value="<?= htmlspecialchars($old['semester']) ?>" placeholder="Ví dụ: 2026_1" required>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="semester" class="block font-bold text-slate-700 mb-1">
+                        Học Kỳ: <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" id="semester" name="semester" value="<?= htmlspecialchars($old['semester']) ?>" placeholder="Ví dụ: 2026_1" required
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800">
+                </div>
+                <div>
+                    <label for="academic_year" class="block font-bold text-slate-700 mb-1">
+                        Năm Học: <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="text" id="academic_year" name="academic_year" value="<?= htmlspecialchars($old['academic_year']) ?>" placeholder="Ví dụ: 2026-2027" required
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800">
+                </div>
             </div>
-            <div class="form-group">
-                <label for="academic_year">Năm học <span style="color:#b91c1c">*</span></label>
-                <input type="text" id="academic_year" name="academic_year" value="<?= htmlspecialchars($old['academic_year']) ?>" placeholder="Ví dụ: 2026-2027" required>
-            </div>
-            <div style="display:flex;gap:.5rem;margin-top:1.25rem">
-                <button type="submit" class="btn">Lưu phân công</button>
-                <a href="index.php?action=index" class="btn btn-secondary">Hủy</a>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <a href="index.php?action=index" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
+                    Hủy bỏ
+                </a>
+                <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center gap-1.5">
+                    💾 Lưu Phân Công
+                </button>
             </div>
         </form>
     </div>
-</div>
+</main>
+
+<?php require_once __DIR__ . '/../../../../includes/footer.php'; ?>
 </body>
 </html>
