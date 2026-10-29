@@ -1,3 +1,24 @@
+<?php
+if (!function_exists('get_app_base_url')) {
+    function get_app_base_url(): string {
+        $docRoot = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: ($_SERVER['DOCUMENT_ROOT'] ?? ''));
+        $appRoot = str_replace('\\', '/', realpath(__DIR__ . '/../..') ?: dirname(dirname(__DIR__)));
+        if ($docRoot && str_starts_with($appRoot, $docRoot)) {
+            $rel = substr($appRoot, strlen($docRoot));
+            $base = '/' . trim(str_replace('\\', '/', $rel), '/') . '/';
+            return str_replace('//', '/', $base);
+        }
+        $script = $_SERVER['SCRIPT_NAME'] ?? '';
+        $folder = 'bai-tap-lon-lap-trinh-web-nhom1';
+        $pos = strpos($script, $folder);
+        if ($pos !== false) {
+            return substr($script, 0, $pos + strlen($folder)) . '/';
+        }
+        return '/';
+    }
+}
+$appBase = get_app_base_url();
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -197,7 +218,7 @@
 <body>
 
 <nav class="navbar">
-    <a href="/" class="navbar-brand">
+    <a href="<?= $appBase ?>index.php" class="navbar-brand">
         <div class="brand-logo">TUD</div>
         <div class="brand-text">
             <h1>Helpdesk CNTT Online</h1>
@@ -205,11 +226,19 @@
         </div>
     </a>
 
-    <div class="navbar-menu">
+    <div class="navbar-menu" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <a href="<?= $appBase ?>index.php">🏠 Tổng Quan</a>
+        <a href="<?= $appBase ?>agent/index.php">👨‍💻 KTV Workspace</a>
+        <a href="<?= $appBase ?>tickets/index.php">🎫 Quản Lý Phiếu</a>
+        <a href="<?= $appBase ?>views/student/dashboard.php">🎓 Cổng Sinh Viên</a>
+        <a href="<?= $appBase ?>NguyenAnhNhi_SinhVien/views/student/ratings/index.php">⭐ CSAT</a>
+        <a href="<?= $appBase ?>LeHaMy_GiangVien/views/lecturer/assignments/index.php">👨‍🏫 Giảng Viên</a>
+        <a href="<?= $appBase ?>TranLinh/users.php">👥 Người Dùng</a>
+
         <?php if ($currentUser): ?>
             <div class="user-pill" style="display: flex; align-items: center; gap: 8px;">
                 <?php if (!empty($currentUser['avatar_path'])): ?>
-                    <img src="/tickets/attachment?file=<?= urlencode($currentUser['avatar_path']) ?>" alt="Avatar" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1.5px solid #38bdf8;">
+                    <img src="<?= $appBase ?>tickets/attachment?file=<?= urlencode($currentUser['avatar_path']) ?>" alt="Avatar" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1.5px solid #38bdf8;">
                 <?php else: ?>
                     <span>👤</span>
                 <?php endif; ?>
@@ -217,18 +246,9 @@
                 <span style="opacity: 0.6;">|</span>
                 <span style="color: #cbd5e1;"><?= strtoupper($currentUser['role']) ?></span>
             </div>
-
-            <?php if ($currentUser['role'] === 'admin'): ?>
-                <a href="/admin/users">👥 Quản trị Người dùng</a>
-            <?php else: ?>
-                <a href="/student/dashboard">📋 Phiếu của tôi</a>
-            <?php endif; ?>
-
-            <a href="/logout" style="color: #f87171;" onclick="return confirm('Bạn có chắc muốn đăng xuất?');">🚪 Đăng xuất</a>
+            <a href="<?= $appBase ?>public/index.php/logout" style="color: #f87171;" onclick="return confirm('Bạn có chắc muốn đăng xuất?');">🚪 Đăng xuất</a>
         <?php else: ?>
-            <a href="/guest/ticket" style="color: #f87171; font-weight: 600;">🆘 Báo cứu hộ tài khoản</a>
-            <a href="/guest/lookup">🔍 Tra cứu phiếu cứu hộ</a>
-            <a href="/login" style="background: var(--primary); color: #fff;">🔑 Đăng nhập</a>
+            <a href="<?= $appBase ?>public/index.php/login" style="background: var(--primary); color: #fff; padding: 6px 12px; border-radius: 6px;">🔑 Đăng nhập</a>
         <?php endif; ?>
     </div>
 </nav>

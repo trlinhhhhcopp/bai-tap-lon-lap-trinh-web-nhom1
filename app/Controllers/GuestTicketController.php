@@ -41,6 +41,7 @@ class GuestTicketController extends Controller {
 
             $ticketId = Ticket::create([
                 'requester_id'     => $userId,
+                'requester_name'   => $name,
                 'category_id'      => 1, // CAT_SSO: Hỗ trợ tài khoản
                 'priority_id'      => 2, // HIGH
                 'is_guest_ticket'  => 1,
@@ -68,15 +69,20 @@ class GuestTicketController extends Controller {
     public function showLookup(): void {
         $code = trim($_GET['code'] ?? '');
         $ticket = null;
+        $isInternalTicket = false;
 
         if (!empty($code)) {
             $ticket = Ticket::findByTicketCode($code);
+            if ($ticket && empty($ticket['is_guest_ticket'])) {
+                $isInternalTicket = true;
+            }
         }
 
         $this->view('guest/lookup_ticket', [
-            'ticket' => $ticket,
-            'code'   => $code,
-            'title'  => 'Tra Cứu Tiến Độ Phiếu Cứu Hộ',
+            'ticket'           => $ticket,
+            'isInternalTicket' => $isInternalTicket,
+            'code'             => $code,
+            'title'            => 'Tra Cứu Tiến Độ Phiếu Cứu Hộ',
         ]);
     }
 }

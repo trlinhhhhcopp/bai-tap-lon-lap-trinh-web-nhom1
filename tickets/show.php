@@ -135,7 +135,10 @@ $flash   = get_flash();
     <title>Chi Tiết Phiếu <?php echo htmlspecialchars($ticket['ticket_code']); ?> - Trao Đổi Phản Hồi</title>
     <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen p-4 md:p-6">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<?php require_once __DIR__ . '/../includes/navbar.php'; ?>
+<div class="flex-1 p-4 md:p-6">
+
 
 <div class="max-w-5xl mx-auto space-y-6">
 
@@ -350,13 +353,16 @@ $flash   = get_flash();
 
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Hành động trạng thái sau phản hồi:</label>
-                            <select name="quick_status" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="">Tự động thông minh theo State Machine</option>
-                                <option value="waiting_requester">Chuyển sang: Chờ người dùng kiểm tra (waiting)</option>
-                                <option value="resolved">Chuyển sang: Đã có giải pháp (resolved)</option>
-                                <option value="closed">Chuyển sang: Đã hoàn tất & Đóng phiếu (closed)</option>
-                                <option value="in_progress">Chuyển sang: Tiếp tục xử lý (in_progress)</option>
+                            <select name="quick_status" id="quickStatusSelect" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                <option value="">⚡ Tự động thông minh theo State Machine</option>
+                                <option value="resolved">✅ Chuyển sang: Đã có giải pháp (resolved)</option>
+                                <option value="closed">🏁 Chuyển sang: Đã hoàn tất & Đóng phiếu (closed)</option>
+                                <option value="waiting_requester">⏳ Chuyển sang: Chờ người dùng kiểm tra (waiting)</option>
+                                <option value="in_progress">⚙️ Chuyển sang: Tiếp tục xử lý (in_progress)</option>
                             </select>
+                            <p class="text-[11px] text-indigo-600 mt-1 font-medium flex items-center gap-1">
+                                <span>💡</span> <span>Khi chọn trạng thái tại đây và bấm <strong>Lưu Phản Hồi</strong>, trạng thái của phiếu sẽ <strong>được cập nhật ngay</strong> trong CSDL.</span>
+                            </p>
                         </div>
                     </div>
 
@@ -381,8 +387,8 @@ $flash   = get_flash();
                                 <span class="text-amber-800">🔒 Đặt làm Ghi chú nội bộ KTV (Sinh viên không thấy)</span>
                             </label>
                         </div>
-                        <button type="submit" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5">
-                            <span>📤</span> Gửi Phản Hồi Ngay
+                        <button type="submit" id="btnSubmitReply" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5">
+                            <span id="btnIcon">💾</span> <span id="btnText">Lưu Phản Hồi & Cập Nhật Trạng Thái</span>
                         </button>
                     </div>
 
@@ -496,5 +502,49 @@ $flash   = get_flash();
 
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('quickStatusSelect');
+    const btnSubmit = document.getElementById('btnSubmitReply');
+    const btnIcon = document.getElementById('btnIcon');
+    const btnText = document.getElementById('btnText');
+    const messageArea = document.querySelector('textarea[name="message"]');
+
+    if (statusSelect && btnSubmit) {
+        statusSelect.addEventListener('change', function() {
+            const val = this.value;
+            if (val === 'resolved') {
+                btnSubmit.className = 'px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5 ring-2 ring-emerald-400';
+                if (btnIcon) btnIcon.textContent = '✅';
+                if (btnText) btnText.textContent = 'Lưu Phản Hồi & Đánh Dấu: ĐÃ CÓ GIẢI PHÁP (resolved)';
+                if (messageArea && !messageArea.value.trim()) {
+                    messageArea.placeholder = "Kỹ thuật viên đã xử lý và cung cấp giải pháp khắc phục sự cố (Nhấn Lưu để áp dụng ngay)...";
+                }
+            } else if (val === 'closed') {
+                btnSubmit.className = 'px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5 ring-2 ring-slate-400';
+                if (btnIcon) btnIcon.textContent = '🏁';
+                if (btnText) btnText.textContent = 'Lưu Phản Hồi & ĐÓNG HOÀN TẤT PHIẾU (closed)';
+                if (messageArea && !messageArea.value.trim()) {
+                    messageArea.placeholder = "Kỹ thuật viên đã hoàn tất hỗ trợ và đóng phiếu thành công (Nhấn Lưu để đóng phiếu)...";
+                }
+            } else if (val === 'waiting_requester') {
+                btnSubmit.className = 'px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5';
+                if (btnIcon) btnIcon.textContent = '⏳';
+                if (btnText) btnText.textContent = 'Lưu Phản Hồi & Chuyển: CHỜ NGƯỜI DÙNG KIỂM TRA';
+            } else if (val === 'in_progress') {
+                btnSubmit.className = 'px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5';
+                if (btnIcon) btnIcon.textContent = '⚙️';
+                if (btnText) btnText.textContent = 'Lưu Phản Hồi & TIẾP TỤC XỬ LÝ (in_progress)';
+            } else {
+                btnSubmit.className = 'px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5';
+                if (btnIcon) btnIcon.textContent = '💾';
+                if (btnText) btnText.textContent = 'Lưu Phản Hồi & Cập Nhật Trạng Thái';
+            }
+        });
+    }
+});
+</script>
+</div>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>

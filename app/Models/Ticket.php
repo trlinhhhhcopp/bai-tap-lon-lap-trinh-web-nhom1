@@ -55,14 +55,42 @@ class Ticket {
         return $stmt->fetchAll();
     }
 
-    public static function generateUniqueTicketCode(string $prefix = 'HD'): string {
+    public static function generateUniqueTicketCode(string $prefix = 'HD', ?string $userName = null): string {
         $pdo = Database::getConnection();
         $year = date('Y');
         $dayMonth = date('dm'); // Ngày (2 số) + Tháng (2 số), ví dụ ngày 29/10 => '2910'
+
+        // Bảng ký tự chữ hoa rõ ràng, không gây nhầm lẫn thị giác (bỏ O, 0, I, 1)
+        $charList = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+
+        // Nếu có tên người dùng, lấy chữ cái đầu đại diện (ví dụ: Linh -> L, Ngân -> N)
+        $userChar = null;
+        if (!empty($userName)) {
+            $words = preg_split('/\s+/u', trim($userName));
+            if (!empty($words)) {
+                $lastWord = end($words);
+                $first = mb_strtoupper(mb_substr($lastWord, 0, 1, 'UTF-8'), 'UTF-8');
+                $firstAscii = @iconv('UTF-8', 'ASCII//TRANSLIT', $first);
+                $cleanChar = preg_replace('/[^A-Z]/', '', strtoupper($firstAscii ?: $first));
+                if (!empty($cleanChar) && strpos($charList, $cleanChar[0]) !== false) {
+                    $userChar = $cleanChar[0];
+                }
+            }
+        }
+
         do {
-            // Sinh mã gồm tiền tố HD, năm, ngày tháng và 6 số ngẫu nhiên bảo mật (Ví dụ: HD-2026-2910-849216)
-            $randomNum = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
-            $code = "{$prefix}-{$year}-{$dayMonth}-{$randomNum}";
+            // Định dạng bảo mật cao: HD-YYYY-DDMM-xxxBxxd (Ví dụ: HD-2026-2910-842B19D)
+            // 1. xxx: 3 số ngẫu nhiên
+            $xxx = str_pad((string)random_int(100, 999), 3, '0', STR_PAD_LEFT);
+            // 2. B: Chữ cái thứ 1 (ưu tiên chữ cái tên người dùng hoặc chữ cái ngẫu nhiên)
+            $charB = $userChar ?? $charList[random_int(0, strlen($charList) - 1)];
+            // 3. xx: 2 số ngẫu nhiên
+            $xx = str_pad((string)random_int(10, 99), 2, '0', STR_PAD_LEFT);
+            // 4. d: Chữ cái thứ 2 ngẫu nhiên
+            $charD = $charList[random_int(0, strlen($charList) - 1)];
+
+            $suffix = "{$xxx}{$charB}{$xx}{$charD}";
+            $code = "{$prefix}-{$year}-{$dayMonth}-{$suffix}";
 
             // Kiểm tra trùng lặp trong CSDL để đảm bảo độc nhất 100% không trùng với bất kỳ ai
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM tickets WHERE ticket_code = :code");
@@ -75,7 +103,8 @@ class Ticket {
 
     public static function create(array $data): int {
         $pdo = Database::getConnection();
-        $ticketCode = $data['ticket_code'] ?? self::generateUniqueTicketCode('HD');
+        $userName = $data['requester_name'] ?? null;
+        $ticketCode = $data['ticket_code'] ?? self::generateUniqueTicketCode('HD', $userName);
 
         $sql = "INSERT INTO tickets (
                     ticket_code, requester_id, assigned_to, category_id, priority_id,
@@ -111,9 +140,15 @@ class Ticket {
 
     public static function findByTicketCode(string $code): ?array {
         $pdo = Database::getConnection();
-        $sql = "SELECT t.*, c.name AS category_name, COALESCE(agent.name, 'Đang chờ phân công') AS agent_name
+        $sql = "SELECT t.*, 
+                       c.name AS category_name, 
+                       p.name AS priority_name,
+                       req.name AS requester_name,
+                       COALESCE(agent.name, 'Đang chờ phân công') AS agent_name
                 FROM tickets t
                 JOIN categories c ON c.id = t.category_id
+                JOIN priorities p ON p.id = t.priority_id
+                JOIN users req ON req.id = t.requester_id
                 LEFT JOIN users agent ON agent.id = t.assigned_to
                 WHERE UPPER(t.ticket_code) = UPPER(:code) LIMIT 1";
         $stmt = $pdo->prepare($sql);

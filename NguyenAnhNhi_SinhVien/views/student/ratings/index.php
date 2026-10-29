@@ -153,5 +153,6 @@ $pageTitle = 'Danh sách Đánh giá CSAT';
         <?php endif; ?>
     </div>
 </div>
+<?php require_once __DIR__ . '/../../../../includes/footer.php'; ?>
 </body>
 </html>
