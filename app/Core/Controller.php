@@ -3,7 +3,22 @@ namespace App\Core;
 
 class Controller {
     protected function view(string $viewPath, array $data = []): void {
-        View::render($viewPath, $data);
+        if (class_exists(View::class)) {
+            View::render($viewPath, $data);
+            return;
+        }
+
+        extract($data);
+        $flash = Session::getFlash();
+        $currentUser = Session::user();
+
+        $viewFile = __DIR__ . '/../../views/' . str_replace('.', '/', $viewPath) . '.php';
+
+        if (!file_exists($viewFile)) {
+            die("Lỗi: Không tìm thấy tệp giao diện view [{$viewFile}]!");
+        }
+
+        require_once $viewFile;
     }
 
     protected function json(array $data, int $statusCode = 200): void {
