@@ -1,0 +1,276 @@
+<?php
+namespace App\Services;
+
+use App\Core\Database;
+use App\Models\Ticket;
+use App\Models\Reply;
+use PDO;
+use RuntimeException;
+
+/**
+ * ==============================================================================
+ * BÀI TẬP LỚN LẬP TRÌNH WEB - HỌC KỲ I
+ * TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI (TUD) - KHOA CÔNG NGHỆ THÔNG TIN
+ * CHỦ ĐỀ 9: HỆ THỐNG TIẾP NHẬN & XỬ LÝ HỖ TRỢ CNTT TRỰC TUYẾN (HELPDESK ONLINE)
+ * 
+ * PHÂN HỆ: CORE ARCHITECTURE & AGENT WORKSPACE
+ * THÀNH VIÊN PHỤ TRÁCH ĐỘC QUYỀN: PHẠM THỊ THANH NGÂN (TRƯỞNG NHÓM - MSSV: 224001736)
+ * LÕI NGHIỆP VỤ: THUẬT TOÁN PHÂN CÔNG 5 KTV CHUYÊN MÔN & TRÀN TẢI TỰ ĐỘNG NGUYÊN TỬ
+ * ==============================================================================
+ */
+class TicketService {
+
+    /**
+     * Thuật toán phân công KTV thông minh (Smart Dispatching & Atomic Overflow)
+     * 
+     * 1. Bước 1: Tìm KTV chuyên trách tương ứng với category_id đang trực (is_on_duty = 1)
+     * 2. Bước 2: Kiểm tra số lượng phiếu đang xử lý của KTV chuyên trách đó (active_tickets_count)
+     *    - Nếu < max_capacity (mặc định 5): Phân công cho KTV chuyên trách này.
+     *    - Nếu >= max_capacity: KÍCH HOẠT CƠ CHẾ TRÀN TẢI (Overflow Dispatch)
+     *      Tìm KTV khác đang trực (is_on_duty = 1) có số phiếu active ít nhất để phân công tạm.
+     */
+    public static function dispatchAgent(int $categoryId): array {
+        $pdo = Database::getConnection();
+
+        // 1. Tìm KTV chuyên trách nhóm dịch vụ này đang trực
+        $stmt = $pdo->prepare("
+            SELECT u.*, 
+                   (SELECT COUNT(*) FROM tickets t 
+                    WHERE t.assigned_to = u.id 
+                      AND t.status IN ('new', 'in_progress', 'waiting_requester')
+                   ) AS current_active_count
+            FROM users u
+            WHERE u.role = 'agent' 
+              AND u.is_active = 1 
+              AND u.is_on_duty = 1 
+              AND u.specialty_category_id = :cat_id
+            LIMIT 1
+        ");
+        $stmt->execute([':cat_id' => $categoryId]);
+        $primaryAgent = $stmt->fetch();
+
+        // Nếu có KTV chuyên trách và chưa vượt ngưỡng max_capacity (5 phiếu)
+        if ($primaryAgent && $primaryAgent['current_active_count'] < $primaryAgent['max_capacity']) {
+            return [
+                'agent_id'     => (int)$primaryAgent['id'],
+                'agent_name'   => $primaryAgent['name'],
+                'agent_code'   => $primaryAgent['user_code'],
+                'is_overflow'  => false,
+                'reason'       => "Phân công đúng KTV chuyên trách ({$primaryAgent['name']})",
+                'active_count' => (int)$primaryAgent['current_active_count'],
+            ];
+        }
+
+        // 2. KÍCH HOẠT CƠ CHẾ TRÀN TẢI (OVERFLOW DISPATCH)
+        // Tìm KTV khác đang trực (is_on_duty = 1) có ít phiếu đang xử lý nhất
+        $overflowStmt = $pdo->query("
+            SELECT u.*, 
+                   (SELECT COUNT(*) FROM tickets t 
+                    WHERE t.assigned_to = u.id 
+                      AND t.status IN ('new', 'in_progress', 'waiting_requester')
+                   ) AS current_active_count
+            FROM users u
+            WHERE u.role = 'agent' 
+              AND u.is_active = 1 
+              AND u.is_on_duty = 1
+            ORDER BY current_active_count ASC, u.id ASC
+            LIMIT 1
+        ");
+        $backupAgent = $overflowStmt->fetch();
+
+        if ($backupAgent) {
+            $primaryName = $primaryAgent ? $primaryAgent['name'] : 'Chưa có KTV chuyên trách';
+            return [
+                'agent_id'     => (int)$backupAgent['id'],
+                'agent_name'   => $backupAgent['name'],
+                'agent_code'   => $backupAgent['user_code'],
+                'is_overflow'  => true,
+                'reason'       => "Kích hoạt cơ chế TRÀN TẢI tự động do KTV chuyên trách ({$primaryName}) đã đạt ngưỡng tải tối đa. Điều phối sang {$backupAgent['name']}.",
+                'active_count' => (int)$backupAgent['current_active_count'],
+            ];
+        }
+
+        // Trường hợp dự phòng nếu không có KTV nào đang trực (gán mặc định KTV 1)
+        return [
+            'agent_id'     => 2,
+            'agent_name'   => 'KTV Trực Ban Hệ Thống',
+            'agent_code'   => 'KTV001',
+            'is_overflow'  => false,
+            'reason'       => 'Gán KTV trực ban mặc định',
+            'active_count' => 0,
+        ];
+    }
+
+    /**
+     * Tính toán hạn chót xử lý SLA tự động
+     */
+    public static function calculateSla(int $categoryId, int $priorityId): array {
+        $pdo = Database::getConnection();
+
+        $catStmt = $pdo->prepare("SELECT sla_hours FROM categories WHERE id = :id");
+        $catStmt->execute([':id' => $categoryId]);
+        $slaHours = (float)($catStmt->fetchColumn() ?: 4.0);
+
+        $prioStmt = $pdo->prepare("SELECT sla_factor FROM priorities WHERE id = :id");
+        $prioStmt->execute([':id' => $priorityId]);
+        $slaFactor = (float)($prioStmt->fetchColumn() ?: 1.0);
+
+        $effectiveMinutes = (int)round($slaHours * $slaFactor * 60);
+
+        return [
+            'effective_minutes' => $effectiveMinutes,
+            'triage_due_at'     => date('Y-m-d H:i:s', strtotime('+30 minutes')),
+            'due_at'            => date('Y-m-d H:i:s', strtotime("+{$effectiveMinutes} minutes")),
+        ];
+    }
+
+    /**
+     * Tạo phiếu mới kèm điều phối phân công tự động & ghi chú tràn tải (nếu có)
+     */
+    public static function createTicketWithAutoDispatch(array $data): array {
+        $pdo = Database::getConnection();
+
+        $categoryId = (int)$data['category_id'];
+        $priorityId = (int)($data['priority_id'] ?? 3);
+
+        // 1. Chạy thuật toán phân công KTV
+        $dispatch = self::dispatchAgent($categoryId);
+        $assignedTo = $dispatch['agent_id'];
+
+        // 2. Tính toán mốc thời gian SLA
+        $sla = self::calculateSla($categoryId, $priorityId);
+
+        // 3. Tự sinh mã ticket_code HD-2026-xxxxx
+        $ticketCode = 'HD-2026-' . str_pad((string)mt_rand(100, 99999), 5, '0', STR_PAD_LEFT);
+
+        // 4. Lưu vào CSDL trong một Transaction
+        $pdo->beginTransaction();
+        try {
+            $sql = "INSERT INTO tickets (
+                        ticket_code, requester_id, assigned_to, category_id, priority_id,
+                        class_id, course_id, is_guest_ticket, contact_email, lookup_pin,
+                        title, description, system_affected, status,
+                        created_at, sla_started_at, triage_due_at, due_at
+                    ) VALUES (
+                        :ticket_code, :requester_id, :assigned_to, :category_id, :priority_id,
+                        :class_id, :course_id, :is_guest, :contact_email, :lookup_pin,
+                        :title, :description, :system_affected, 'new',
+                        NOW(), NOW(), :triage_due, :due_at
+                    )";
+
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([
+                ':ticket_code'      => $ticketCode,
+                ':requester_id'     => (int)$data['requester_id'],
+                ':assigned_to'      => $assignedTo,
+                ':category_id'      => $categoryId,
+                ':priority_id'      => $priorityId,
+                ':class_id'         => !empty($data['class_id']) ? (int)$data['class_id'] : null,
+                ':course_id'        => !empty($data['course_id']) ? (int)$data['course_id'] : null,
+                ':is_guest'         => !empty($data['is_guest_ticket']) ? 1 : 0,
+                ':contact_email'    => $data['contact_email'] ?? null,
+                ':lookup_pin'       => $data['lookup_pin'] ?? null,
+                ':title'            => trim($data['title']),
+                ':description'      => trim($data['description']),
+                ':system_affected'  => trim($data['system_affected'] ?? 'Chung'),
+                ':triage_due'       => $sla['triage_due_at'],
+                ':due_at'           => $sla['due_at'],
+            ]);
+
+            $ticketId = (int)$pdo->lastInsertId();
+
+            // Nếu là cơ chế tràn tải -> Tự động thêm 1 dòng ghi chú nội bộ hệ thống để KTV nắm bắt
+            if ($dispatch['is_overflow']) {
+                $noteSql = "INSERT INTO ticket_replies (ticket_id, user_id, message, is_internal, created_at)
+                            VALUES (:ticket_id, :user_id, :message, 1, NOW())";
+                $noteStmt = $pdo->prepare($noteSql);
+                $noteStmt->execute([
+                    ':ticket_id' => $ticketId,
+                    ':user_id'   => 1, // Admin / Hệ thống
+                    ':message'   => "⚠️ [HỆ THỐNG ĐIỀU PHỐI TỰ ĐỘNG]: " . $dispatch['reason'],
+                ]);
+            }
+
+            $pdo->commit();
+
+            return [
+                'success'        => true,
+                'ticket_id'      => $ticketId,
+                'ticket_code'    => $ticketCode,
+                'assigned_agent' => $dispatch['agent_name'],
+                'is_overflow'    => $dispatch['is_overflow'],
+                'dispatch_info'  => $dispatch,
+            ];
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw new RuntimeException("Lỗi tạo phiếu và phân công KTV: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Lấy hàng đợi phiếu của KTV được sắp xếp theo hạn SLA (due_at ASC)
+     * Ưu tiên phiếu sắp quá hạn xử lý trước
+     */
+    public static function getAgentQueue(int $agentId, string $statusFilter = ''): array {
+        $pdo = Database::getConnection();
+
+        $sql = "SELECT t.*, 
+                       u_req.name AS requester_name, u_req.user_code AS requester_code,
+                       c.name AS category_name, c.code AS category_code,
+                       p.name AS priority_name, p.code AS priority_code,
+                       TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) AS minutes_remaining
+                FROM tickets t
+                JOIN users u_req ON t.requester_id = u_req.id
+                JOIN categories c ON t.category_id = c.id
+                JOIN priorities p ON t.priority_id = p.id
+                WHERE t.assigned_to = :agent_id";
+
+        if (!empty($statusFilter)) {
+            $sql .= " AND t.status = :status";
+        } else {
+            $sql .= " AND t.status IN ('new', 'in_progress', 'waiting_requester')";
+        }
+
+        // SẮP XẾP QUAN TRỌNG: due_at ASC (Phiếu sắp quá hạn SLA đứng đầu)
+        $sql .= " ORDER BY t.due_at ASC";
+
+        $stmt = $pdo->prepare($sql);
+        $params = [':agent_id' => $agentId];
+        if (!empty($statusFilter)) {
+            $params[':status'] = $statusFilter;
+        }
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Nghiệm thu phiếu & lập biên bản giải pháp kỹ thuật
+     */
+    public static function resolveWithSolution(int $ticketId, int $agentId, string $solutionNote): bool {
+        $pdo = Database::getConnection();
+        $pdo->beginTransaction();
+        try {
+            // 1. Thêm phản hồi ghi nhận giải pháp công khai
+            $replySql = "INSERT INTO ticket_replies (ticket_id, user_id, message, is_internal, created_at)
+                         VALUES (:ticket_id, :user_id, :message, 0, NOW())";
+            $pdo->prepare($replySql)->execute([
+                ':ticket_id' => $ticketId,
+                ':user_id'   => $agentId,
+                ':message'   => "✅ [BIÊN BẢN NGHIỆM THU GIẢI PHÁP KỸ THUẬT]:\n" . trim($solutionNote),
+            ]);
+
+            // 2. Chuyển trạng thái sang resolved
+            $ticketSql = "UPDATE tickets 
+                          SET status = 'resolved', 
+                              resolved_at = NOW() 
+                          WHERE id = :id";
+            $pdo->prepare($ticketSql)->execute([':id' => $ticketId]);
+
+            $pdo->commit();
+            return true;
+        } catch (\Exception $e) {
+            $pdo->rollBack();
+            throw new RuntimeException("Lỗi nghiệm thu giải pháp: " . $e->getMessage());
+        }
+    }
+}
