@@ -18,96 +18,144 @@ if (empty($ticket) && !empty($code)) {
 }
 ?>
 
-<div style="max-width: 680px; margin: 30px auto; background: #fff; border: 1px solid var(--border-color); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden;">
-    <div style="background: linear-gradient(135deg, var(--navy-dark) 0%, #1e293b 100%); color: #fff; padding: 24px; text-align: center; border-bottom: 3px solid var(--primary);">
-        <h2 style="font-size: 20px; color: #38bdf8; margin: 0 0 6px 0; font-weight: 800; letter-spacing: 0.3px;">🔍 Tra Cứu Tiến Độ Phiếu Hỗ Trợ</h2>
-        <p style="font-size: 13.5px; color: #94a3b8; margin: 0;">Nhập mã định danh phiếu của bạn để kiểm tra trạng thái xử lý thời gian thực</p>
-    </div>
-
-    <div style="padding: 28px;">
-        <form method="GET" action="" style="display: flex; gap: 10px; margin-bottom: 24px;">
-            <input type="text" name="code" value="<?= htmlspecialchars($code) ?>" required placeholder="Nhập mã phiếu (VD: HD-2026-2910-L0H004)" style="flex:1; padding:12px 16px; border:1.5px solid var(--border-color); border-radius:8px; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
-            <button type="submit" style="padding:12px 24px; background:var(--primary); color:#fff; font-weight:700; font-size:14px; border:none; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.2s;">🔍 Tra Cứu Ngay</button>
-        </form>
-
-        <?php if (!empty($isInternalTicket)): ?>
-            <!-- BẢO MẬT: PHIẾU NỘI BỘ YÊU CẦU ĐĂNG NHẬP TRÁNH BỊ NGƯỜI NGOÀI XEM LÉN -->
-            <div style="background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px; padding: 26px 20px; text-align: center; box-shadow: 0 4px 15px rgba(217, 119, 6, 0.08);">
-                <div style="width: 58px; height: 58px; line-height: 58px; font-size: 30px; background: #fef3c7; border-radius: 50%; margin: 0 auto 14px auto; color: #d97706; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.15);">🔒</div>
-                <h3 style="font-size: 18px; color: #92400e; margin: 0 0 8px 0; font-weight: 800;">Phiếu Hỗ Trợ Nội Bộ Sinh Viên / Giảng Viên</h3>
-                <p style="font-size: 13.5px; color: #78350f; line-height: 1.6; margin: 0 auto 20px auto; max-width: 520px;">
-                    Mã phiếu <strong><?= htmlspecialchars($code) ?></strong> được gửi từ tài khoản nội bộ Nhà trường.<br>
-                    Để đảm bảo tính riêng tư và bảo mật thông tin cá nhân, tính năng tra cứu công khai không hiển thị nội dung này. Vui lòng đăng nhập vào tài khoản để xem chi tiết!
+<div class="my-auto py-8 flex items-center justify-center">
+    <div class="w-full max-w-2xl bg-white border border-slate-200/80 rounded-3xl shadow-2xl shadow-indigo-950/10 overflow-hidden transition-all">
+        <!-- Header Card -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 md:p-8 text-center border-b-2 border-sky-500 relative overflow-hidden">
+            <div class="absolute -right-12 -top-12 w-32 h-32 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="relative z-10 space-y-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                    🔍 TRA CỨU TIẾN ĐỘ
+                </span>
+                <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">
+                    TRA CỨU TIẾN ĐỘ PHIẾU HỖ TRỢ
+                </h2>
+                <p class="text-xs text-slate-300">
+                    Nhập mã phiếu bảo mật để kiểm tra kết quả xử lý thời gian thực từ Kỹ thuật viên
                 </p>
-                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                    <a href="<?= $appBase ?>index.php" style="padding: 10px 22px; background: var(--primary); color: #fff; font-weight: 700; border-radius: 8px; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25);">
-                        🔑 Đăng Nhập Cổng Sinh Viên
-                    </a>
-                    <a href="<?= $appBase ?>public/index.php/guest/lookup" style="padding: 10px 18px; background: #f1f5f9; color: #475569; font-weight: 600; border-radius: 8px; text-decoration: none; font-size: 14px; border: 1px solid #cbd5e1;">
-                        Tra Cứu Mã Khác
-                    </a>
-                </div>
             </div>
+        </div>
 
-        <?php elseif ($ticket): ?>
-            <!-- PHIẾU CỨU HỘ KHẨN CẤP / GUEST TICKET -->
-            <?php
-                $maskedEmail = '';
-                if (!empty($ticket['contact_email'])) {
-                    $emParts = explode('@', $ticket['contact_email']);
-                    if (count($emParts) === 2) {
-                        $p = $emParts[0];
-                        $maskedP = (strlen($p) > 4) ? substr($p, 0, 3) . '***' . substr($p, -1) : substr($p, 0, 1) . '***';
-                        $maskedEmail = $maskedP . '@' . $emParts[1];
-                    }
-                }
-            ?>
-            <div style="background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 14px; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <div>
-                        <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; letter-spacing: 0.5px;">Mã Phiếu Cứu Hộ Bảo Mật</span>
-                        <h3 style="font-size: 21px; color: #0284c7; margin: 2px 0 0 0; font-weight: 800; letter-spacing: 0.8px; font-family: monospace;"><?= htmlspecialchars($ticket['ticket_code']) ?></h3>
+        <!-- Body Form -->
+        <div class="p-6 md:p-8 space-y-6">
+            <form method="GET" action="<?= $appBase ?>guest/lookup" class="flex gap-2">
+                <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                        🎫
+                    </span>
+                    <input type="text" name="code" value="<?= htmlspecialchars($code) ?>" required 
+                           placeholder="Nhập mã phiếu (VD: HD-2026-2910-842B19D)" 
+                           class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-mono font-bold uppercase focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400">
+                </div>
+                <button type="submit" 
+                        class="px-6 py-3 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md shadow-sky-500/20 transition whitespace-nowrap flex items-center gap-1.5">
+                    <span>🔍</span> Tra Cứu
+                </button>
+            </form>
+
+            <?php if (!empty($isInternalTicket)): ?>
+                <!-- BẢO MẬT: PHIẾU NỘI BỘ YÊU CẦU ĐĂNG NHẬP TRÁNH BỊ NGƯỜI NGOÀI XEM LÉN -->
+                <div class="bg-amber-50/90 border border-amber-200 text-amber-900 p-6 rounded-2xl text-center space-y-3.5 shadow-sm animate-fade-in">
+                    <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 mx-auto flex items-center justify-center text-2xl shadow-sm">
+                        🔒
                     </div>
-                    <div>
-                        <?php if ($ticket['status'] === 'resolved'): ?>
-                            <span style="background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 4px;">✓ ĐÃ MỞ KHÓA THÀNH CÔNG</span>
-                        <?php elseif ($ticket['status'] === 'in_progress'): ?>
-                            <span style="background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 4px;">⏳ KTV ĐANG XỬ LÝ</span>
-                        <?php elseif ($ticket['status'] === 'closed'): ?>
-                            <span style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 4px;">🔒 ĐÃ ĐÓNG</span>
-                        <?php else: ?>
-                            <span style="background: #e0f2fe; color: #0284c7; border: 1px solid #bae6fd; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: 12.5px; display: inline-flex; align-items: center; gap: 4px;">● MỚI TIẾP NHẬN</span>
+                    <div class="space-y-1">
+                        <h3 class="text-base font-black text-amber-950">Phiếu Hỗ Trợ Nội Bộ Sinh Viên / Giảng Viên</h3>
+                        <p class="text-xs text-amber-800/90 leading-relaxed max-w-md mx-auto">
+                            Mã phiếu <strong class="font-mono"><?= htmlspecialchars($code) ?></strong> được khởi tạo từ tài khoản nội bộ Nhà trường.<br>
+                            Để bảo đảm tính riêng tư và an toàn dữ liệu học tập cá nhân, vui lòng đăng nhập vào Cổng sinh viên để xem chi tiết!
+                        </p>
+                    </div>
+                    <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
+                        <a href="<?= $appBase ?>login" class="px-5 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl shadow-md shadow-sky-600/20 transition flex items-center gap-1.5">
+                            <span>🔑</span> Đăng Nhập Cổng Sinh Viên
+                        </a>
+                        <a href="<?= $appBase ?>guest/lookup" class="px-4 py-2.5 bg-white hover:bg-slate-100 border border-amber-200 text-amber-900 text-xs font-bold rounded-xl transition">
+                            Tra Cứu Mã Khác
+                        </a>
+                    </div>
+                </div>
+
+            <?php elseif ($ticket): ?>
+                <!-- PHIẾU CỨU HỘ KHẨN CẤP / GUEST TICKET -->
+                <?php
+                    $maskedEmail = '';
+                    if (!empty($ticket['contact_email'])) {
+                        $emParts = explode('@', $ticket['contact_email']);
+                        if (count($emParts) === 2) {
+                            $p = $emParts[0];
+                            $maskedP = (strlen($p) > 4) ? substr($p, 0, 3) . '***' . substr($p, -1) : substr($p, 0, 1) . '***';
+                            $maskedEmail = $maskedP . '@' . $emParts[1];
+                        }
+                    }
+                ?>
+                <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 md:p-6 space-y-4 shadow-sm animate-fade-in">
+                    <div class="flex items-center justify-between pb-3.5 border-b border-slate-200 flex-wrap gap-2">
+                        <div>
+                            <span class="text-[10.5px] uppercase font-bold text-slate-400 tracking-wider block">Mã Phiếu Cứu Hộ</span>
+                            <h3 class="text-xl font-black font-mono text-sky-700 tracking-tight">
+                                <?= htmlspecialchars($ticket['ticket_code']) ?>
+                            </h3>
+                        </div>
+                        <div>
+                            <?php if ($ticket['status'] === 'resolved'): ?>
+                                <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
+                                    ✓ ĐÃ MỞ KHÓA THÀNH CÔNG
+                                </span>
+                            <?php elseif ($ticket['status'] === 'in_progress'): ?>
+                                <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1">
+                                    ⏳ KTV ĐANG XỬ LÝ
+                                </span>
+                            <?php elseif ($ticket['status'] === 'closed'): ?>
+                                <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-slate-100 text-slate-600 border border-slate-200 inline-flex items-center gap-1">
+                                    🔒 ĐÃ ĐÓNG
+                                </span>
+                            <?php else: ?>
+                                <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-sky-50 text-sky-700 border border-sky-200 inline-flex items-center gap-1">
+                                    ● MỚI TIẾP NHẬN
+                                </span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2.5 text-xs text-slate-700 leading-relaxed">
+                        <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-1.5">
+                            <div><strong>Tiêu đề sự cố:</strong> <?= htmlspecialchars($ticket['title']) ?></div>
+                            <div><strong>Kỹ thuật viên phụ trách:</strong> <span class="font-bold text-sky-700"><?= htmlspecialchars($ticket['agent_name']) ?></span></div>
+                            <div><strong>Thời gian gửi:</strong> <span class="font-mono text-slate-500"><?= htmlspecialchars($ticket['created_at']) ?></span></div>
+                            <?php if (!empty($maskedEmail)): ?>
+                                <div><strong>Email nhận thông báo:</strong> <span class="font-mono bg-slate-100 px-2 py-0.5 rounded border border-slate-200"><?= htmlspecialchars($maskedEmail) ?></span></div>
+                            <?php endif; ?>
+                        </div>
+
+                        <div>
+                            <span class="font-bold text-slate-500 block mb-1 uppercase tracking-wider text-[11px]">Chi tiết yêu cầu:</span>
+                            <div class="p-3 bg-white border border-slate-200 rounded-xl leading-relaxed whitespace-pre-wrap">
+                                <?= nl2br(htmlspecialchars($ticket['description'])) ?>
+                            </div>
+                        </div>
+
+                        <?php if (!empty($ticket['attachment_path'])): ?>
+                            <div class="pt-2">
+                                <a href="<?= $appBase ?>tickets/attachment?file=<?= urlencode($ticket['attachment_path']) ?>" target="_blank" 
+                                   class="inline-flex items-center gap-1.5 px-3 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl font-bold transition text-xs">
+                                    📎 Xem ảnh minh chứng đã gửi
+                                </a>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
 
-                <div style="font-size: 14px; line-height: 1.7; color: #334155;">
-                    <p style="margin: 0 0 8px 0;"><strong>Tiêu đề sự cố:</strong> <?= htmlspecialchars($ticket['title']) ?></p>
-                    <p style="margin: 0 0 8px 0;"><strong>Kỹ thuật viên phụ trách:</strong> <span style="color: #0284c7; font-weight: 600;"><?= htmlspecialchars($ticket['agent_name']) ?></span></p>
-                    <p style="margin: 0 0 8px 0;"><strong>Thời gian gửi phiếu:</strong> <?= htmlspecialchars($ticket['created_at']) ?></p>
-                    <?php if (!empty($maskedEmail)): ?>
-                        <p style="margin: 0 0 8px 0;"><strong>Email nhận thông báo:</strong> <span style="font-family: monospace; background: #e2e8f0; padding: 2px 8px; border-radius: 4px;"><?= htmlspecialchars($maskedEmail) ?></span></p>
-                    <?php endif; ?>
-                    <p style="margin: 0 0 8px 0;"><strong>Chi tiết yêu cầu:</strong> <?= nl2br(htmlspecialchars($ticket['description'])) ?></p>
-
-                    <?php if (!empty($ticket['attachment_path'])): ?>
-                        <p style="margin: 12px 0 0 0; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
-                            <strong>Minh chứng đã gửi:</strong>
-                            <a href="/tickets/attachment?file=<?= urlencode($ticket['attachment_path']) ?>" target="_blank" style="color: #0284c7; font-weight: 600; text-decoration: underline; margin-left: 6px; display: inline-inline-flex; align-items: center; gap: 4px;">
-                                📎 Bấm vào đây để xem ảnh minh chứng
-                            </a>
-                        </p>
-                    <?php endif; ?>
+            <?php elseif (!empty($code)): ?>
+                <div class="bg-rose-50 border border-rose-200 text-rose-900 p-5 rounded-2xl text-center space-y-1.5 animate-fade-in">
+                    <span class="text-2xl">❌</span>
+                    <h4 class="font-bold text-sm">Không tìm thấy phiếu hỗ trợ nào</h4>
+                    <p class="text-xs text-rose-700">
+                        Mã phiếu <strong class="font-mono"><?= htmlspecialchars($code) ?></strong> không tồn tại trong hệ thống. Vui lòng kiểm tra lại chính xác từng ký tự!
+                    </p>
                 </div>
-            </div>
-
-        <?php elseif (!empty($code)): ?>
-            <div style="text-align: center; color: #b91c1c; padding: 22px; background: #fef2f2; border-radius: 12px; border: 1.5px solid #fecaca; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.05);">
-                <div style="font-size: 26px; margin-bottom: 6px;">❌</div>
-                <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px;">Không tìm thấy phiếu hỗ trợ nào</div>
-                <div style="font-size: 13.5px; color: #7f1d1d;">Mã phiếu <strong><?= htmlspecialchars($code) ?></strong> không tồn tại trong hệ thống. Vui lòng kiểm tra lại chính xác từng ký tự trong mã bạn đã nhận!</div>
-            </div>
-        <?php endif; ?>
+            <?php endif; ?>
+        </div>
     </div>
 </div>
 

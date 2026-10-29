@@ -1,411 +1,514 @@
 <?php require __DIR__ . '/../layouts/header.php'; ?>
 
-<style>
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: 320px 1fr;
-        gap: 24px;
+<?php
+    $totalCount = count($myTickets);
+    $activeCount = 0;
+    $resolvedCount = 0;
+    foreach ($myTickets as $tk) {
+        if (in_array($tk['status'], ['new', 'in_progress', 'waiting_requester'])) {
+            $activeCount++;
+        } elseif (in_array($tk['status'], ['resolved', 'closed'])) {
+            $resolvedCount++;
+        }
     }
-    @media (max-width: 850px) {
-        .dashboard-grid { grid-template-columns: 1fr; }
-    }
-    .profile-card {
-        background: #fff;
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    }
-    .profile-avatar {
-        width: 76px;
-        height: 76px;
-        background: linear-gradient(135deg, var(--primary) 0%, #0369a1 100%);
-        color: #fff;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        font-weight: 800;
-        margin-bottom: 8px;
-        position: relative;
-        overflow: hidden;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
-    }
-    .profile-avatar .avatar-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(15, 23, 42, 0.65);
-        color: #fff;
-        font-size: 11px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.2s;
-        border-radius: 50%;
-    }
-    .profile-avatar:hover .avatar-overlay {
-        opacity: 1;
-    }
-    .profile-name { font-size: 18px; font-weight: 700; color: #0f172a; margin-bottom: 2px; }
-    .profile-code { font-size: 13px; color: #64748b; margin-bottom: 16px; font-family: monospace; }
-    .profile-item {
-        padding: 10px 0;
-        border-bottom: 1px solid #f1f5f9;
-        font-size: 13px;
-        display: flex;
-        justify-content: space-between;
-    }
-    .profile-item:last-child { border-bottom: none; }
-    .profile-label { color: #64748b; font-weight: 500; }
-    .profile-val { font-weight: 600; color: #1e293b; text-align: right; }
+?>
 
-    .content-card {
-        background: #fff;
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 24px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-    }
-    .section-title {
-        font-size: 16px;
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 16px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .ticket-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 13px;
-    }
-    .ticket-table th {
-        background: #f8fafc;
-        padding: 10px 12px;
-        border-bottom: 2px solid var(--border-color);
-        text-align: left;
-        color: #475569;
-        font-size: 11.5px;
-        text-transform: uppercase;
-    }
-    .ticket-table td {
-        padding: 12px;
-        border-bottom: 1px solid #f1f5f9;
-        vertical-align: middle;
-    }
-</style>
+<!-- BỐ CỤC DASHBOARD HIỆN ĐẠI 2 CỘT -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-<div class="dashboard-grid">
-    <!-- Cột trái: Thông tin cá nhân CỦA CHÍNH SINH VIÊN -->
-    <div class="profile-card">
-        <div class="profile-avatar" onclick="openAvatarModal()" title="Bấm vào đây để đổi ảnh đại diện">
-            <?php if (!empty($user['avatar_path'])): ?>
-                <img src="/tickets/attachment?file=<?= urlencode($user['avatar_path']) ?>" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
-            <?php else: ?>
-                <?= mb_substr($user['name'], 0, 1) ?>
-            <?php endif; ?>
-            <div class="avatar-overlay">📷 Đổi ảnh</div>
-        </div>
-        <button type="button" onclick="openAvatarModal()" style="background: none; border: 1px dashed #38bdf8; color: #0284c7; padding: 3px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 600; cursor: pointer; margin-bottom: 12px; transition: background 0.2s;">
-            📷 Đổi ảnh đại diện
-        </button>
-        <div class="profile-name"><?= htmlspecialchars($user['name']) ?></div>
-        <div class="profile-code">Mã SV: <?= htmlspecialchars($user['user_code']) ?></div>
-
-        <div style="background: #e0f2fe; color: #0284c7; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; display: inline-block; margin-bottom: 16px;">
-            🎓 CỔNG SINH VIÊN CHÍNH THỨC
-        </div>
-
-        <div class="profile-item">
-            <span class="profile-label">Lớp hành chính:</span>
-            <span class="profile-val" style="color: var(--primary); font-weight:700;">Toán Ứng Dụng D2024</span>
-        </div>
-        <div class="profile-item">
-            <span class="profile-label">Email trường:</span>
-            <span class="profile-val"><?= htmlspecialchars($user['email']) ?></span>
-        </div>
-        <div class="profile-item">
-            <span class="profile-label">Khoa phụ trách:</span>
-            <span class="profile-val">Khoa: Toán-CNTT</span>
-        </div>
-        <div class="profile-item">
-            <span class="profile-label">Trạng thái học vụ:</span>
-            <span class="profile-val" style="color: #15803d;">● Đang học (D2024)</span>
-        </div>
-        <div class="profile-item">
-            <span class="profile-label">Quyền hạn (RBAC):</span>
-            <span class="profile-val"><?= strtoupper($user['role']) ?></span>
-        </div>
-
-        <div style="margin-top: 20px; padding: 12px; background: #f8fafc; border-radius: 8px; font-size: 11.5px; color: #64748b; line-height: 1.5;">
-            🔒 <em>Cổng sinh viên được cách ly bảo mật tuyệt đối. Bạn chỉ có thể xem hồ sơ và các phiếu sự cố của chính mình.</em>
-        </div>
-    </div>
-
-    <!-- Cột phải: Danh sách phiếu & Form gửi báo lỗi -->
-    <div class="content-card">
-        <div class="section-title">
-            <span>📋 Các Phiếu Hỗ Trợ Đã Gửi Của Bạn</span>
-            <button id="btnOpenTicketForm" type="button" onclick="openTicketForm()" style="background:var(--primary); color:#fff; border:none; padding:8px 14px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">
-                ➕ Báo sự cố mới
-            </button>
-        </div>
-
-        <!-- Form tạo phiếu mới (Tự động ẩn nút khi mở, tích hợp danh mục sự cố chuẩn & đính kèm minh chứng) -->
-        <div id="ticketFormBox" style="display: none; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
-                <h4 style="color: var(--primary-dark); font-size: 15px; margin: 0;">🚀 Gửi Yêu Cầu Hỗ Trợ Kỹ Thuật CNTT</h4>
-                <button type="button" onclick="closeTicketForm()" style="background:#fee2e2; color:#b91c1c; border:1px solid #fecaca; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:13px; font-weight:700;">✕ Đóng</button>
+    <!-- CỘT TRÁI: HỒ SƠ SINH VIÊN (4 COLS) -->
+    <div class="lg:col-span-4 space-y-6">
+        <div class="bg-white border border-slate-200/80 rounded-3xl shadow-xl shadow-slate-200/40 overflow-hidden">
+            <!-- Banner màu nền trường Thủ Đô -->
+            <div class="h-28 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 relative">
+                <div class="absolute -right-8 -top-8 w-28 h-28 bg-sky-500/20 rounded-full blur-xl pointer-events-none"></div>
+                <div class="absolute top-3 right-3">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                        🎓 CỔNG SINH VIÊN
+                    </span>
+                </div>
             </div>
 
-            <form method="POST" action="/student/tickets/create" enctype="multipart/form-data">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
-                    <div>
-                        <label style="display:block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">1. Chọn Nhóm dịch vụ sự cố:</label>
-                        <select name="category_id" id="categorySelect" onchange="onCategoryChange()" style="width:100%; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; background:#fff; font-size:13px;">
-                            <?php foreach ($categories as $cat): ?>
-                                <option value="<?= $cat['id'] ?>" <?= $cat['id'] == 4 ? 'selected' : '' ?> data-code="<?= $cat['code'] ?>">
-                                    <?= htmlspecialchars($cat['name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="display:block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">2. Hệ thống bị ảnh hưởng:</label>
-                        <input type="text" name="system_affected" id="systemAffectedInput" readonly required style="width:100%; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; background:#f1f5f9; color:#334155; font-size:13px; font-weight:600;">
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 14px;">
-                    <label style="display:block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">3. Chọn loại sự cố gặp phải:</label>
-                    <select id="issuePresetSelect" onchange="onIssuePresetChange()" style="width:100%; padding:8px 10px; border:1px solid #38bdf8; border-radius:6px; background:#f0f9ff; color:#0369a1; font-size:13px; font-weight:600;">
-                        <!-- Options sẽ tự động nạp theo Category được chọn -->
-                    </select>
-                </div>
-
-                <div style="margin-bottom: 14px;">
-                    <label style="display:block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">4. Tiêu đề ngắn gọn sự cố:</label>
-                    <input type="text" name="title" id="ticketTitleInput" required style="width:100%; padding:8px 10px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
-                </div>
-
-                <div style="margin-bottom: 14px;">
-                    <label style="display:block; font-size: 12.5px; font-weight: 600; margin-bottom: 4px;">5. Mô tả hiện tượng lỗi chi tiết (Kèm thông tin môn học, mã SV):</label>
-                    <textarea name="description" id="ticketDescriptionInput" rows="4" required style="width:100%; padding:10px; border:1px solid var(--border-color); border-radius:6px; resize:vertical; font-size:13px; line-height:1.5;"></textarea>
-                </div>
-
-                <!-- 6. Đính kèm minh chứng lỗi (Cho phép chọn tải tệp từ thiết bị hoặc chụp ảnh camera) -->
-                <div style="margin-bottom: 18px; padding: 14px; background: #fff; border: 1px dashed var(--border-color); border-radius: 8px;">
-                    <label style="display:block; font-size: 12.5px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
-                        6. Đính kèm minh chứng lỗi (Ảnh chụp màn hình lỗi / Ảnh minh chứng):
-                    </label>
-                    <div style="font-size: 12px; color: #64748b; margin-bottom: 10px;">
-                        Bạn có thể chọn <strong>Tải ảnh từ máy tính/điện thoại</strong> hoặc bấm <strong>Chụp ảnh trực tiếp từ Camera</strong>:
-                    </div>
-
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
-                        <!-- Nút 1: Tải tệp từ thiết bị -->
-                        <label style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                            📁 Tải tệp từ thiết bị
-                            <input type="file" name="attachment" id="fileAttachmentInput" accept="image/*,.pdf" style="display: none;" onchange="onFileSelected(this)">
-                        </label>
-
-                        <!-- Nút 2: Chụp ảnh từ Camera -->
-                        <button type="button" onclick="startCamera()" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                            📸 Chụp ảnh từ Camera / Webcam
+            <!-- Avatar & Tên Sinh Viên -->
+            <div class="px-6 pb-6 pt-0 relative">
+                <div class="-mt-14 mb-4 flex items-end justify-between">
+                    <div class="relative group cursor-pointer" onclick="openAvatarModal()" title="Bấm vào để đổi ảnh đại diện">
+                        <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 p-0.5 shadow-xl shadow-sky-500/20">
+                            <div class="w-full h-full rounded-[14px] overflow-hidden bg-slate-100 flex items-center justify-center relative">
+                                <?php if (!empty($user['avatar_path'])): ?>
+                                    <img src="/tickets/attachment?file=<?= urlencode($user['avatar_path']) ?>" alt="Avatar" class="w-full h-full object-cover">
+                                <?php else: ?>
+                                    <span class="text-3xl font-black text-indigo-700">
+                                        <?= mb_substr($user['name'], 0, 1) ?>
+                                    </span>
+                                <?php endif; ?>
+                                <div class="absolute inset-0 bg-slate-900/60 opacity-0 group-hover:opacity-100 transition flex flex-col items-center justify-center text-white text-[11px] font-bold gap-0.5">
+                                    <span>📷</span>
+                                    <span>Đổi ảnh</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full border border-slate-200 shadow-md flex items-center justify-center text-xs text-sky-600 hover:scale-110 transition">
+                            📷
                         </button>
                     </div>
 
-                    <!-- Khung Video Camera Live Stream (ẩn khi chưa bật camera) -->
-                    <div id="cameraBox" style="display: none; margin-top: 12px; padding: 12px; background: #0f172a; border-radius: 8px; text-align: center;">
-                        <video id="webcamVideo" autoplay playsinline style="width: 100%; max-width: 480px; max-height: 280px; border-radius: 6px; background: #000;"></video>
-                        <div style="margin-top: 10px; display: flex; justify-content: center; gap: 10px;">
-                            <button type="button" onclick="captureSnapshot()" style="padding: 7px 18px; background: #16a34a; color: #fff; border: none; border-radius: 6px; font-weight: 700; cursor: pointer;">
-                                📸 Bấm Chụp Ngay
-                            </button>
-                            <button type="button" onclick="stopCamera()" style="padding: 7px 14px; background: #64748b; color: #fff; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
-                                ✕ Đóng Camera
-                            </button>
-                        </div>
-                        <canvas id="snapshotCanvas" style="display: none;"></canvas>
-                    </div>
-
-                    <!-- Khung xem trước minh chứng đã chọn hoặc vừa chụp (Preview Box) -->
-                    <div id="previewBox" style="display: none; margin-top: 12px; padding: 12px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 6px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-size: 12px; font-weight: 700; color: #15803d;" id="previewStatusText">✓ Đã đính kèm minh chứng lỗi:</span>
-                            <button type="button" onclick="clearAttachment()" style="background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; padding: 3px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 600; cursor: pointer;">
-                                🗑️ Xóa / Chọn lại
-                            </button>
-                        </div>
-                        <div style="text-align: center;">
-                            <img id="previewImage" src="" alt="Ảnh minh chứng lỗi" style="max-width: 100%; max-height: 200px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        </div>
-                    </div>
-
-                    <input type="hidden" name="captured_image" id="capturedImageInput" value="">
+                    <button type="button" onclick="openAvatarModal()" 
+                            class="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <span>Thay Avatar</span>
+                    </button>
                 </div>
 
-                <div style="display:flex; justify-content:flex-end; gap:10px;">
-                    <button type="button" onclick="closeTicketForm()" style="padding:9px 16px; background:#e2e8f0; color:#475569; font-weight:600; border:none; border-radius:6px; cursor:pointer;">Hủy bỏ</button>
-                    <button type="submit" style="padding:9px 20px; background:var(--primary); color:#fff; font-weight:700; border:none; border-radius:6px; cursor:pointer;">Gửi Phiếu Hỗ Trợ Ngay ➔</button>
+                <div class="space-y-1">
+                    <h2 class="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <?= htmlspecialchars($user['name']) ?>
+                    </h2>
+                    <p class="text-xs font-mono font-bold text-sky-600 bg-sky-50 inline-block px-2.5 py-0.5 rounded-lg border border-sky-100">
+                        MSV: <?= htmlspecialchars($user['user_code']) ?>
+                    </p>
                 </div>
-            </form>
+
+                <!-- Danh sách thông tin học vụ chi tiết -->
+                <div class="mt-6 pt-4 border-t border-slate-100 space-y-3 text-xs">
+                    <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                        <span class="text-slate-500 font-medium flex items-center gap-1.5">
+                            <span>🏛️</span> Lớp hành chính:
+                        </span>
+                        <span class="font-extrabold text-indigo-600">Toán Ứng Dụng D2024</span>
+                    </div>
+
+                    <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                        <span class="text-slate-500 font-medium flex items-center gap-1.5">
+                            <span>✉️</span> Email trường:
+                        </span>
+                        <span class="font-semibold text-slate-800 truncate max-w-[180px]" title="<?= htmlspecialchars($user['email']) ?>">
+                            <?= htmlspecialchars($user['email']) ?>
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                        <span class="text-slate-500 font-medium flex items-center gap-1.5">
+                            <span>📚</span> Khoa đào tạo:
+                        </span>
+                        <span class="font-semibold text-slate-800">Toán - CNTT</span>
+                    </div>
+
+                    <div class="flex items-center justify-between py-1 border-b border-slate-50">
+                        <span class="text-slate-500 font-medium flex items-center gap-1.5">
+                            <span>✅</span> Trạng thái học vụ:
+                        </span>
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Đang học (D2024)
+                        </span>
+                    </div>
+
+                    <div class="flex items-center justify-between py-1">
+                        <span class="text-slate-500 font-medium flex items-center gap-1.5">
+                            <span>🛡️</span> Vai trò hệ thống:
+                        </span>
+                        <span class="font-mono font-bold text-slate-700 uppercase bg-slate-100 px-2 py-0.5 rounded-md">
+                            <?= strtoupper($user['role']) ?>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="mt-5 p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-[11.5px] text-slate-500 leading-relaxed flex items-start gap-2">
+                    <span class="text-sm">🔒</span>
+                    <span>Cổng sinh viên được cách ly bảo mật dữ liệu tuyệt đối theo tiêu chuẩn ITIL v4. Bạn chỉ xem được hồ sơ và phiếu sự cố của chính mình.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CỘT PHẢI: THỐNG KÊ, BỘ LỌC & DANH SÁCH PHIẾU (8 COLS) -->
+    <div class="lg:col-span-8 space-y-6">
+
+        <!-- 4 THẺ THỐNG KÊ NHANH (KPI CARDS) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <div class="bg-white border border-slate-200/80 p-4 rounded-2xl shadow-sm hover:shadow-md transition">
+                <div class="flex items-center justify-between text-xs text-slate-500 font-bold mb-1">
+                    <span>Tổng Phiếu</span>
+                    <span>🎫</span>
+                </div>
+                <div class="text-2xl font-black text-slate-900"><?= $totalCount ?></div>
+                <div class="text-[11px] text-slate-400 mt-0.5">Đã gửi vào hệ thống</div>
+            </div>
+
+            <div class="bg-white border border-amber-200/80 p-4 rounded-2xl shadow-sm hover:shadow-md transition bg-gradient-to-br from-white to-amber-50/40">
+                <div class="flex items-center justify-between text-xs text-amber-700 font-bold mb-1">
+                    <span>Đang Xử Lý</span>
+                    <span>⏳</span>
+                </div>
+                <div class="text-2xl font-black text-amber-600"><?= $activeCount ?></div>
+                <div class="text-[11px] text-amber-600/80 mt-0.5">KTV đang tiếp nhận</div>
+            </div>
+
+            <div class="bg-white border border-emerald-200/80 p-4 rounded-2xl shadow-sm hover:shadow-md transition bg-gradient-to-br from-white to-emerald-50/40">
+                <div class="flex items-center justify-between text-xs text-emerald-700 font-bold mb-1">
+                    <span>Hoàn Thành</span>
+                    <span>✓</span>
+                </div>
+                <div class="text-2xl font-black text-emerald-600"><?= $resolvedCount ?></div>
+                <div class="text-[11px] text-emerald-600/80 mt-0.5">Đã giải quyết xong</div>
+            </div>
+
+            <div class="bg-white border border-sky-200/80 p-4 rounded-2xl shadow-sm hover:shadow-md transition bg-gradient-to-br from-white to-sky-50/40">
+                <div class="flex items-center justify-between text-xs text-sky-700 font-bold mb-1">
+                    <span>Chuẩn SLA</span>
+                    <span>⚡</span>
+                </div>
+                <div class="text-2xl font-black text-sky-600">&le; 4h</div>
+                <div class="text-[11px] text-sky-600/80 mt-0.5">Thời gian xử lý TB</div>
+            </div>
         </div>
 
-        <!-- Bảng danh sách phiếu của riêng sinh viên này -->
-        <?php if (empty($myTickets)): ?>
-            <div style="text-align: center; padding: 40px; color: #94a3b8; background: #f8fafc; border-radius: 8px;">
-                Bạn chưa gửi phiếu hỗ trợ nào. Bấm nút "<strong>➕ Báo sự cố mới</strong>" ở trên khi cần Trung tâm CNTT hỗ trợ nhé!
+        <!-- KHUNG CHÍNH: QUẢN LÝ PHIẾU HỖ TRỢ -->
+        <div class="bg-white border border-slate-200/80 rounded-3xl shadow-xl shadow-slate-200/40 p-6 space-y-6">
+            
+            <!-- Tiêu đề & Nút Báo Sự Cố -->
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                <div>
+                    <h3 class="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <span>📋</span> Danh Sách Phiếu Báo Sự Cố Của Bạn
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Theo dõi tiến độ giải quyết trực tiếp từ 5 Kỹ thuật viên phụ trách
+                    </p>
+                </div>
+                <button id="btnOpenTicketForm" type="button" onclick="openTicketForm()" 
+                        class="px-4 py-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-sky-500/20 transition flex items-center gap-1.5 transform hover:-translate-y-0.5 active:translate-y-0">
+                    <span>➕</span> Báo Sự Cố Mới
+                </button>
             </div>
-        <?php else: ?>
-            <!-- Thanh Công Cụ Tìm Kiếm & Bộ Lọc Phiếu -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-                <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
-                    
-                    <!-- 1. Tìm kiếm theo mã phiếu hoặc tên sự cố -->
-                    <div style="flex: 1 1 240px; min-width: 210px;">
-                        <label for="filterKeyword" style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">
-                            🔍 Tìm mã phiếu / Tiêu đề sự cố:
-                        </label>
-                        <input type="text" id="filterKeyword" oninput="applyTicketFilter()" placeholder="Nhập mã phiếu (VD: HD-...) hoặc tên sự cố..." 
-                               style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; box-sizing: border-box; outline: none;">
+
+            <!-- FORM BÁO SỰ CỐ MỚI (TỰ ĐỘNG MỞ KHI BẤM NÚT) -->
+            <div id="ticketFormBox" style="display: none;" class="bg-slate-50/90 border border-slate-200 rounded-2xl p-5 md:p-6 space-y-4 shadow-sm animate-fade-in">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <span class="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center font-bold text-sm">🚀</span>
+                        <div>
+                            <h4 class="font-black text-slate-900 text-sm">Gửi Yêu Cầu Hỗ Trợ Kỹ Thuật CNTT</h4>
+                            <p class="text-[11px] text-slate-500">Đơn sẽ chuyển đến KTV chuyên trách theo danh mục</p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeTicketForm()" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition">
+                        ✕ Đóng lại
+                    </button>
+                </div>
+
+                <form method="POST" action="/student/tickets/create" enctype="multipart/form-data" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                                1. Chọn Nhóm dịch vụ sự cố (*):
+                            </label>
+                            <select name="category_id" id="categorySelect" onchange="onCategoryChange()" 
+                                    class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition">
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= $cat['id'] ?>" <?= $cat['id'] == 4 ? 'selected' : '' ?> data-code="<?= $cat['code'] ?>">
+                                        <?= htmlspecialchars($cat['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                                2. Hệ thống bị ảnh hưởng:
+                            </label>
+                            <input type="text" name="system_affected" id="systemAffectedInput" readonly required 
+                                   class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl text-xs font-bold text-slate-700 focus:outline-none">
+                        </div>
                     </div>
 
-                    <!-- 2. Lọc theo ngày tháng năm (suộc chọn ngày) -->
-                    <div style="flex: 0 1 170px; min-width: 150px;">
-                        <label for="filterDate" style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">
-                            📅 Lọc theo ngày gửi:
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                            3. Chọn nhanh hiện tượng lỗi mẫu (Hoặc tự nhập):
+                        </label>
+                        <select id="issuePresetSelect" onchange="onIssuePresetChange()" 
+                                class="w-full px-3.5 py-2.5 bg-sky-50 border border-sky-300 rounded-xl text-xs font-bold text-sky-900 focus:outline-none focus:ring-4 focus:ring-sky-500/20">
+                            <!-- Options tự động nạp theo Category -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                            4. Tiêu đề sự cố ngắn gọn (*):
+                        </label>
+                        <input type="text" name="title" id="ticketTitleInput" required 
+                               class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition"
+                               placeholder="VD: Không nộp được bài tập lớn môn Lập trình Web">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                            5. Mô tả chi tiết hiện tượng lỗi (*):
+                        </label>
+                        <textarea name="description" id="ticketDescriptionInput" rows="3" required 
+                                  class="w-full p-3 bg-white border border-slate-300 rounded-xl text-xs font-medium focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition leading-relaxed"
+                                  placeholder="Mô tả cụ thể thông báo lỗi, tên môn học, lớp học phần và thời điểm gặp lỗi..."></textarea>
+                    </div>
+
+                    <!-- ĐÍNH KÈM MINH CHỨNG (TẢI TỆP HOẶC CHỤP ẢNH WEBCAM) -->
+                    <div class="p-4 bg-white border border-dashed border-slate-300 rounded-2xl space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-bold text-slate-700">
+                                6. Đính kèm minh chứng lỗi (Ảnh chụp màn hình lỗi / Ảnh minh chứng):
+                            </label>
+                            <span class="text-[11px] text-slate-400">PNG, JPG, JPEG, WEBP, PDF</span>
+                        </div>
+
+                        <div class="flex gap-2 flex-wrap">
+                            <label class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl text-xs font-bold cursor-pointer transition">
+                                <span>📁</span> Tải tệp từ máy
+                                <input type="file" name="attachment" id="fileAttachmentInput" accept="image/*,.pdf" class="hidden" onchange="onFileSelected(this)">
+                            </label>
+
+                            <button type="button" onclick="startCamera()" 
+                                    class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold transition">
+                                <span>📸</span> Bật Camera chụp ảnh lỗi
+                            </button>
+                        </div>
+
+                        <!-- Khung Video Camera Live Stream -->
+                        <div id="cameraBox" style="display: none;" class="mt-3 p-3 bg-slate-900 rounded-xl text-center space-y-2.5">
+                            <video id="webcamVideo" autoplay playsinline class="w-full max-w-md mx-auto max-h-56 rounded-lg bg-black"></video>
+                            <div class="flex justify-center gap-2">
+                                <button type="button" onclick="captureSnapshot()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition">
+                                    📸 Chụp Ảnh Ngay
+                                </button>
+                                <button type="button" onclick="stopCamera()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl text-xs transition">
+                                    ✕ Tắt Camera
+                                </button>
+                            </div>
+                            <canvas id="snapshotCanvas" class="hidden"></canvas>
+                        </div>
+
+                        <!-- Khung xem trước minh chứng -->
+                        <div id="previewBox" style="display: none;" class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-emerald-700" id="previewStatusText">✓ Đã đính kèm ảnh:</span>
+                                <button type="button" onclick="clearAttachment()" class="text-rose-600 hover:text-rose-700 font-bold hover:underline">
+                                    🗑️ Xóa / Chọn lại
+                                </button>
+                            </div>
+                            <div class="text-center py-1">
+                                <img id="previewImage" src="" alt="Ảnh minh chứng" class="max-h-48 mx-auto rounded-lg shadow-sm border border-slate-200">
+                            </div>
+                        </div>
+
+                        <input type="hidden" name="captured_image" id="capturedImageInput" value="">
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 pt-2">
+                        <button type="button" onclick="closeTicketForm()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition">
+                            Hủy bỏ
+                        </button>
+                        <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-sky-500/20 transition flex items-center gap-1.5">
+                            <span>Gửi Phiếu Báo Sự Cố</span>
+                            <span>➔</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- THANH TÌM KIẾM & BỘ LỌC ĐA TIÊU CHÍ -->
+            <div class="bg-slate-50/80 border border-slate-200/80 rounded-2xl p-4 space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+                    <!-- Từ khóa -->
+                    <div class="sm:col-span-5">
+                        <label for="filterKeyword" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                            🔍 Tìm kiếm mã phiếu / Tiêu đề:
+                        </label>
+                        <input type="text" id="filterKeyword" oninput="applyTicketFilter()" 
+                               placeholder="VD: HD-2026... hoặc Canvas, Mạng..."
+                               class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition">
+                    </div>
+
+                    <!-- Ngày gửi -->
+                    <div class="sm:col-span-3">
+                        <label for="filterDate" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                            📅 Ngày gửi:
                         </label>
                         <input type="date" id="filterDate" onchange="applyTicketFilter()" 
-                               style="width: 100%; padding: 7.5px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; box-sizing: border-box; outline: none;">
+                               class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition">
                     </div>
 
-                    <!-- 3. Lọc theo trạng thái -->
-                    <div style="flex: 0 1 190px; min-width: 170px;">
-                        <label for="filterStatus" style="display: block; font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px;">
-                            🏷️ Lọc theo trạng thái:
+                    <!-- Trạng thái -->
+                    <div class="sm:col-span-3">
+                        <label for="filterStatus" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                            🏷️ Trạng thái:
                         </label>
                         <select id="filterStatus" onchange="applyTicketFilter()" 
-                                style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; background: #fff; box-sizing: border-box; outline: none;">
+                                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition">
                             <option value="">-- Tất cả trạng thái --</option>
-                            <option value="new">● Mới tạo (Chờ tiếp nhận)</option>
+                            <option value="new">● Mới tạo (Chờ KTV)</option>
                             <option value="in_progress">⏳ Đang xử lý</option>
                             <option value="resolved">✓ Đã giải quyết</option>
                             <option value="cancelled">✕ Đã hủy</option>
                         </select>
                     </div>
 
-                    <!-- 4. Nút Đặt lại bộ lọc -->
-                    <div style="flex: 0 0 auto;">
+                    <!-- Nút reset -->
+                    <div class="sm:col-span-1">
                         <button type="button" onclick="resetTicketFilter()" 
-                                style="padding: 8px 14px; background: #e2e8f0; color: #475569; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s;" 
-                                title="Xóa bộ lọc để hiện lại tất cả các phiếu">
-                            🔄 Đặt lại
+                                class="w-full py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold transition flex items-center justify-center shadow-sm"
+                                title="Đặt lại bộ lọc về mặc định">
+                            🔄
                         </button>
                     </div>
-
                 </div>
 
-                <!-- Thống kê kết quả lọc -->
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 8px; border-top: 1px dashed #e2e8f0; font-size: 12px; color: #64748b;">
-                    <span>Hiển thị: <strong id="filterResultCount" style="color: var(--primary);"><?= count($myTickets) ?> / <?= count($myTickets) ?> phiếu</strong></span>
-                    <span id="activeFilterTags" style="font-size: 11.5px; color: #0284c7; font-weight: 600;"></span>
+                <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-500">
+                    <div>
+                        Hiển thị: <strong id="filterResultCount" class="text-sky-600 font-extrabold"><?= $totalCount ?> / <?= $totalCount ?> phiếu</strong>
+                    </div>
+                    <div id="activeFilterTags" class="font-semibold text-sky-700"></div>
                 </div>
             </div>
 
-            <table class="ticket-table" id="studentTicketTable">
-                <thead>
-                    <tr>
-                        <th>Mã Phiếu</th>
-                        <th>Dịch Vụ</th>
-                        <th>Tiêu Đề</th>
-                        <th>Minh Chứng</th>
-                        <th>KTV Tiếp Nhận</th>
-                        <th>Trạng Thái</th>
-                        <th>Thời Gian</th>
-                        <th style="text-align: center;">Thao Tác</th>
-                    </tr>
-                </thead>
-                <tbody id="studentTicketTbody">
-                    <?php foreach ($myTickets as $t): ?>
-                        <?php
-                            $createdTime = strtotime($t['created_at']);
-                            $elapsedSec = time() - $createdTime;
-                            $canCancel = ($t['status'] === 'new' && $elapsedSec <= 3600);
-                            $remMinutes = max(0, ceil((3600 - $elapsedSec) / 60));
-                            $ticketJson = htmlspecialchars(json_encode($t, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
-                            $statusFilterValue = ($t['status'] === 'closed' && ($t['closed_reason'] ?? '') === 'cancelled') ? 'cancelled' : $t['status'];
-                            $dateFilterValue = substr($t['created_at'], 0, 10);
-                        ?>
-                        <tr class="ticket-row" 
-                            data-code="<?= strtolower(htmlspecialchars($t['ticket_code'])) ?>" 
-                            data-title="<?= strtolower(htmlspecialchars($t['title'])) ?>" 
-                            data-date="<?= $dateFilterValue ?>" 
-                            data-status="<?= $statusFilterValue ?>">
-                            <td>
-                                <a href="javascript:void(0)" onclick="viewTicketDetail(<?= $ticketJson ?>)" style="color: var(--primary); font-weight: 700; text-decoration: underline;" title="Bấm vào để xem chi tiết thông tin đã điền">
-                                    <?= htmlspecialchars($t['ticket_code']) ?>
-                                </a>
-                            </td>
-                            <td><?= htmlspecialchars($t['category_name']) ?></td>
-                            <td>
-                                <span style="display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; max-width: 170px;" title="<?= htmlspecialchars($t['title']) ?>">
-                                    <?= htmlspecialchars($t['title']) ?>
-                                </span>
-                            </td>
-                            <td>
-                                <?php if (!empty($t['attachment_path'])): ?>
-                                    <a href="<?= $appBase ?><?= htmlspecialchars($t['attachment_path']) ?>" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: #f0f9ff; color: #0284c7; padding: 3px 8px; border-radius: 4px; text-decoration: none; font-size: 11.5px; font-weight: 600; border: 1px solid #bae6fd;">
-                                        📎 Xem file
-                                    </a>
-                                <?php else: ?>
-                                    <span style="color: #cbd5e1; font-size: 11.5px;">Không có</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?= htmlspecialchars($t['agent_name']) ?></td>
-                            <td>
-                                <?php if ($t['status'] === 'resolved'): ?>
-                                    <span style="background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 700;">✓ Đã giải quyết</span>
-                                <?php elseif ($t['status'] === 'in_progress'): ?>
-                                    <span style="background: #fef3c7; color: #b45309; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 700;">⏳ Đang xử lý</span>
-                                <?php elseif ($t['status'] === 'closed' && ($t['closed_reason'] ?? '') === 'cancelled'): ?>
-                                    <span style="background: #fee2e2; color: #b91c1c; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 700;">✕ Đã hủy</span>
-                                <?php else: ?>
-                                    <span style="background: #e0f2fe; color: #0284c7; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: 700;">● Chờ tiếp nhận</span>
-                                <?php endif; ?>
-                            </td>
-                            <td style="color: #64748b; font-size: 12px;"><?= htmlspecialchars(substr($t['created_at'], 0, 16)) ?></td>
-                            <td style="text-align: center; white-space: nowrap;">
-                                <button type="button" onclick="viewTicketDetail(<?= $ticketJson ?>)" style="padding: 4px 8px; background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 5px; font-size: 11.5px; font-weight: 600; cursor: pointer;">
-                                    🔍 Chi tiết
-                                </button>
-                                <?php if ($canCancel): ?>
-                                    <form method="POST" action="/student/tickets/cancel" style="display: inline-block; margin-left: 3px;" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu <?= htmlspecialchars($t['ticket_code']) ?> không? (Sau khi hủy, KTV sẽ không tiếp nhận xử lý phiếu này nữa)');">
-                                        <input type="hidden" name="ticket_id" value="<?= $t['id'] ?>">
-                                        <button type="submit" style="padding: 4px 8px; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 5px; font-size: 11.5px; font-weight: 600; cursor: pointer;" title="Bạn còn <?= $remMinutes ?> phút để hủy phiếu này nếu KTV chưa tiếp nhận">
-                                            🚫 Hủy (còn <?= $remMinutes ?>p)
-                                        </button>
-                                    </form>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                    <tr id="filterEmptyRow" style="display: none;">
-                        <td colspan="8" style="text-align: center; padding: 30px; color: #94a3b8; font-style: italic; background: #f8fafc;">
-                            🔍 Không tìm thấy phiếu hỗ trợ nào phù hợp với điều kiện tìm kiếm và bộ lọc của bạn.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        <?php endif; ?>
+            <!-- BẢNG DANH SÁCH PHIẾU HIỆN ĐẠI -->
+            <?php if (empty($myTickets)): ?>
+                <div class="text-center py-12 px-4 bg-slate-50 border border-dashed border-slate-200 rounded-2xl space-y-2">
+                    <span class="text-3xl">📭</span>
+                    <h4 class="font-bold text-slate-700 text-sm">Chưa có phiếu hỗ trợ nào</h4>
+                    <p class="text-xs text-slate-400 max-w-sm mx-auto">
+                        Khi bạn gặp sự cố về tài khoản, nộp bài Canvas, đăng ký tín chỉ hoặc mạng Wi-Fi, hãy bấm nút "➕ Báo sự cố mới" ở trên nhé!
+                    </p>
+                </div>
+            <?php else: ?>
+                <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs" id="studentTicketTable">
+                            <thead class="bg-slate-100/80 text-slate-600 uppercase text-[10.5px] font-black tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-3">Mã Phiếu</th>
+                                    <th class="px-3 py-3">Dịch Vụ</th>
+                                    <th class="px-3 py-3">Tiêu Đề</th>
+                                    <th class="px-3 py-3">Minh Chứng</th>
+                                    <th class="px-3 py-3">KTV Tiếp Nhận</th>
+                                    <th class="px-3 py-3">Trạng Thái</th>
+                                    <th class="px-3 py-3">Thời Gian</th>
+                                    <th class="px-4 py-3 text-center">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100" id="studentTicketTbody">
+                                <?php foreach ($myTickets as $t): ?>
+                                    <?php
+                                        $createdTime = strtotime($t['created_at']);
+                                        $elapsedSec = time() - $createdTime;
+                                        $canCancel = ($t['status'] === 'new' && $elapsedSec <= 3600);
+                                        $remMinutes = max(0, ceil((3600 - $elapsedSec) / 60));
+                                        $ticketJson = htmlspecialchars(json_encode($t, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8');
+                                        $statusFilterValue = ($t['status'] === 'closed' && ($t['closed_reason'] ?? '') === 'cancelled') ? 'cancelled' : $t['status'];
+                                        $dateFilterValue = substr($t['created_at'], 0, 10);
+                                    ?>
+                                    <tr class="ticket-row hover:bg-sky-50/40 transition group"
+                                        data-code="<?= strtolower(htmlspecialchars($t['ticket_code'])) ?>" 
+                                        data-title="<?= strtolower(htmlspecialchars($t['title'])) ?>" 
+                                        data-date="<?= $dateFilterValue ?>" 
+                                        data-status="<?= $statusFilterValue ?>">
+                                        
+                                        <!-- Mã phiếu Monospace bảo mật xxxBxxd -->
+                                        <td class="px-4 py-3 whitespace-nowrap">
+                                            <a href="javascript:void(0)" onclick="viewTicketDetail(<?= $ticketJson ?>)" 
+                                               class="font-mono font-bold text-sky-700 hover:text-sky-900 hover:underline flex items-center gap-1">
+                                                <span>🎫</span> <?= htmlspecialchars($t['ticket_code']) ?>
+                                            </a>
+                                        </td>
+
+                                        <td class="px-3 py-3 whitespace-nowrap font-medium text-slate-700">
+                                            <?= htmlspecialchars($t['category_name']) ?>
+                                        </td>
+
+                                        <td class="px-3 py-3 font-semibold text-slate-800 max-w-[200px] truncate" title="<?= htmlspecialchars($t['title']) ?>">
+                                            <?= htmlspecialchars($t['title']) ?>
+                                        </td>
+
+                                        <td class="px-3 py-3 whitespace-nowrap">
+                                            <?php if (!empty($t['attachment_path'])): ?>
+                                                <a href="/tickets/attachment?file=<?= urlencode($t['attachment_path']) ?>" target="_blank" 
+                                                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-[11px] font-bold transition">
+                                                    📎 Xem file
+                                                </a>
+                                            <?php else: ?>
+                                                <span class="text-slate-400 text-[11px]">Không có</span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <td class="px-3 py-3 whitespace-nowrap font-medium text-slate-600">
+                                            <?= htmlspecialchars($t['agent_name']) ?>
+                                        </td>
+
+                                        <!-- Badge trạng thái mềm mại -->
+                                        <td class="px-3 py-3 whitespace-nowrap">
+                                            <?php if ($t['status'] === 'resolved'): ?>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                    Đã giải quyết
+                                                </span>
+                                            <?php elseif ($t['status'] === 'in_progress'): ?>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                                    Đang xử lý
+                                                </span>
+                                            <?php elseif ($t['status'] === 'closed' && ($t['closed_reason'] ?? '') === 'cancelled'): ?>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                                                    Đã hủy
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-sky-50 text-sky-700 border border-sky-200">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping"></span>
+                                                    Chờ tiếp nhận
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <td class="px-3 py-3 whitespace-nowrap text-slate-500 text-[11px]">
+                                            <?= htmlspecialchars(substr($t['created_at'], 0, 16)) ?>
+                                        </td>
+
+                                        <!-- Thao tác xem & Hủy phiếu 1h -->
+                                        <td class="px-4 py-3 whitespace-nowrap text-center space-x-1">
+                                            <button type="button" onclick="viewTicketDetail(<?= $ticketJson ?>)" 
+                                                    class="px-2.5 py-1 bg-white hover:bg-sky-50 text-sky-700 border border-slate-200 hover:border-sky-300 rounded-lg font-bold text-[11px] transition shadow-sm">
+                                                🔍 Chi tiết
+                                            </button>
+
+                                            <?php if ($canCancel): ?>
+                                                <form method="POST" action="/student/tickets/cancel" class="inline-block" 
+                                                      onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu <?= htmlspecialchars($t['ticket_code']) ?> không? (Sau khi hủy, KTV sẽ không tiếp nhận xử lý phiếu này nữa)');">
+                                                    <input type="hidden" name="ticket_id" value="<?= $t['id'] ?>">
+                                                    <button type="submit" 
+                                                            class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg font-bold text-[11px] transition shadow-sm" 
+                                                            title="Bạn còn <?= $remMinutes ?> phút để hủy phiếu nếu KTV chưa tiếp nhận">
+                                                        🚫 Hủy (<?= $remMinutes ?>p)
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                <tr id="filterEmptyRow" style="display: none;">
+                                    <td colspan="8" class="text-center py-10 px-4 text-slate-400 italic bg-slate-50">
+                                        🔍 Không tìm thấy phiếu hỗ trợ nào phù hợp với bộ lọc tìm kiếm.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+        </div>
     </div>
 </div>
 
+<!-- ========================================================================= -->
+<!-- JAVASCRIPT LOGIC CHO TOÀN BỘ CỔNG SINH VIÊN -->
+<!-- ========================================================================= -->
 <script>
 // Danh mục hệ thống & Các sự cố chuẩn hóa theo Tài liệu Đặc tả đề tài 9
 const standardSpecs = {
@@ -508,7 +611,7 @@ function openTicketForm() {
 
 function closeTicketForm() {
     document.getElementById('ticketFormBox').style.display = 'none';
-    document.getElementById('btnOpenTicketForm').style.display = 'inline-block';
+    document.getElementById('btnOpenTicketForm').style.display = 'inline-flex';
     stopCamera();
 }
 
@@ -517,12 +620,10 @@ function onCategoryChange() {
     const catId = parseInt(catSelect.value);
     const spec = standardSpecs[catId] || standardSpecs[1];
 
-    // Cập nhật Hệ thống bị ảnh hưởng
     document.getElementById('systemAffectedInput').value = spec.system;
 
-    // Cập nhật Danh sách sự cố chuẩn
     const presetSelect = document.getElementById('issuePresetSelect');
-    presetSelect.innerHTML = '<option value="">-- Bấm để chọn sự cố... --</option>';
+    presetSelect.innerHTML = '<option value="">-- Bấm để chọn sự cố mẫu chuẩn... --</option>';
 
     spec.issues.forEach((item, index) => {
         const opt = document.createElement('option');
@@ -542,9 +643,7 @@ function onIssuePresetChange() {
     const presetVal = document.getElementById('issuePresetSelect').value;
     const spec = standardSpecs[catId] || standardSpecs[1];
 
-    if (presetVal === '') {
-        return;
-    }
+    if (presetVal === '') return;
 
     if (presetVal === 'other') {
         document.getElementById('ticketTitleInput').value = '';
@@ -579,7 +678,7 @@ function startCamera() {
             cameraBox.style.display = 'block';
         })
         .catch(err => {
-            alert("Không thể truy cập Camera. Vui lòng cấp quyền cho Camera hoặc dùng nút 'Tải tệp từ thiết bị'!");
+            alert("Không thể truy cập Camera. Vui lòng cấp quyền Camera trên trình duyệt!");
         });
 }
 
@@ -607,13 +706,10 @@ function captureSnapshot() {
 
     const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
 
-    // Lưu vào input hidden
     document.getElementById('capturedImageInput').value = dataUrl;
-    // Reset file input nếu có
     const fileInput = document.getElementById('fileAttachmentInput');
     if (fileInput) fileInput.value = '';
 
-    // Hiển thị preview
     document.getElementById('previewImage').src = dataUrl;
     document.getElementById('previewStatusText').textContent = '📸 Đã chụp ảnh thành công từ Camera:';
     document.getElementById('previewBox').style.display = 'block';
@@ -624,14 +720,13 @@ function captureSnapshot() {
 function onFileSelected(input) {
     if (input.files && input.files[0]) {
         const file = input.files[0];
-        // Reset dữ liệu chụp camera
         document.getElementById('capturedImageInput').value = '';
 
         if (file.type.startsWith('image/')) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 document.getElementById('previewImage').src = e.target.result;
-                document.getElementById('previewStatusText').textContent = `📁 Đã chọn file ảnh: ${file.name} (${Math.round(file.size / 1024)} KB)`;
+                document.getElementById('previewStatusText').textContent = `📁 Đã chọn ảnh: ${file.name} (${Math.round(file.size / 1024)} KB)`;
                 document.getElementById('previewBox').style.display = 'block';
             };
             reader.readAsDataURL(file);
@@ -738,16 +833,15 @@ function captureAvatarSnapshot() {
 function viewTicketDetail(ticket) {
     document.getElementById('dtlCode').textContent = ticket.ticket_code;
     
-    // Trạng thái
     const badgeBox = document.getElementById('dtlStatusBadge');
     if (ticket.status === 'resolved') {
-        badgeBox.innerHTML = '<span style="background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;">✓ Đã giải quyết</span>';
+        badgeBox.innerHTML = '<span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">✓ Đã giải quyết</span>';
     } else if (ticket.status === 'in_progress') {
-        badgeBox.innerHTML = '<span style="background: #fef3c7; color: #b45309; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;">⏳ Đang xử lý</span>';
+        badgeBox.innerHTML = '<span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">⏳ Đang xử lý</span>';
     } else if (ticket.status === 'closed' && ticket.closed_reason === 'cancelled') {
-        badgeBox.innerHTML = '<span style="background: #fee2e2; color: #b91c1c; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;">✕ Đã hủy bởi sinh viên</span>';
+        badgeBox.innerHTML = '<span class="px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">✕ Đã hủy bởi sinh viên</span>';
     } else {
-        badgeBox.innerHTML = '<span style="background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 700;">● Mới tạo (Chờ tiếp nhận)</span>';
+        badgeBox.innerHTML = '<span class="px-3 py-1 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200">● Mới tạo (Chờ KTV)</span>';
     }
 
     document.getElementById('dtlCategory').textContent = ticket.category_name || 'Hỗ trợ kỹ thuật';
@@ -757,7 +851,6 @@ function viewTicketDetail(ticket) {
     document.getElementById('dtlTitle').textContent = ticket.title;
     document.getElementById('dtlDesc').textContent = ticket.description;
 
-    // Minh chứng đính kèm
     const attachBox = document.getElementById('dtlAttachmentBox');
     if (ticket.attachment_path) {
         const fileUrl = '<?= $appBase ?>' + ticket.attachment_path;
@@ -765,16 +858,16 @@ function viewTicketDetail(ticket) {
         
         let html = '';
         if (isImg) {
-            html += `<div style="margin-bottom: 10px; text-align: center;">
-                        <img src="${fileUrl}" alt="Minh chứng lỗi" style="max-width: 100%; max-height: 260px; border-radius: 6px; border: 1px solid #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.08); object-fit: contain;">
+            html += `<div class="mb-2 text-center">
+                        <img src="${fileUrl}" alt="Minh chứng lỗi" class="max-h-56 mx-auto rounded-xl border border-slate-200 shadow-sm object-contain">
                      </div>`;
         }
-        html += `<a href="${fileUrl}" target="_blank" download style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 6px; font-size: 12.5px; font-weight: 600; text-decoration: none; transition: background 0.2s;">
-                    📥 Tải xuống / Mở tệp minh chứng gốc
+        html += `<a href="${fileUrl}" target="_blank" download class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl text-xs font-bold transition">
+                    📥 Mở / Tải về tệp minh chứng gốc
                  </a>`;
         attachBox.innerHTML = html;
     } else {
-        attachBox.innerHTML = '<span style="color: #94a3b8; font-style: italic; font-size: 12.5px;">(Phiếu này không đính kèm tệp hay ảnh chụp màn hình lỗi)</span>';
+        attachBox.innerHTML = '<span class="text-slate-400 italic text-xs">(Phiếu này không đính kèm tệp hay ảnh chụp màn hình lỗi)</span>';
     }
 
     // Kiểm tra quyền hủy phiếu trong 1 giờ khi trạng thái còn là 'new'
@@ -820,11 +913,8 @@ function applyTicketFilter() {
         const rowDate = row.getAttribute('data-date') || '';
         const rowStatus = row.getAttribute('data-status') || '';
 
-        // Khớp từ khóa: tìm theo mã phiếu HOẶC tiêu đề sự cố
         const matchKeyword = !keyword || code.includes(keyword) || title.includes(keyword);
-        // Khớp ngày tháng: so sánh theo ngày YYYY-MM-DD
         const matchDate = !selectedDate || rowDate === selectedDate;
-        // Khớp trạng thái: new, in_progress, resolved, cancelled
         const matchStatus = !selectedStatus || rowStatus === selectedStatus;
 
         if (matchKeyword && matchDate && matchStatus) {
@@ -835,23 +925,19 @@ function applyTicketFilter() {
         }
     });
 
-    // Cập nhật số lượng phiếu hiển thị
     const countBadge = document.getElementById('filterResultCount');
     if (countBadge) {
         countBadge.textContent = `${visibleCount} / ${rows.length} phiếu`;
     }
 
-    // Hiển thị dòng thông báo khi không có kết quả nào khớp
     const emptyRow = document.getElementById('filterEmptyRow');
     if (emptyRow) {
         emptyRow.style.display = (visibleCount === 0 && rows.length > 0) ? '' : 'none';
     }
 
-    // Hiển thị các nhãn đang lọc để người dùng dễ theo dõi
     const tags = [];
     if (keyword) tags.push(`Từ khóa: "${keyword}"`);
     if (selectedDate) {
-        // Định dạng ngày hiển thị dd/mm/yyyy
         const parts = selectedDate.split('-');
         const dateFormatted = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : selectedDate;
         tags.push(`Ngày: ${dateFormatted}`);
@@ -884,131 +970,146 @@ function resetTicketFilter() {
 }
 </script>
 
-<!-- Modal Xem Chi Tiết Phiếu Hỗ Trợ Đã Gửi -->
-<div id="modalTicketDetail" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 9999; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(2px);" onclick="if(event.target === this) closeTicketDetailModal()">
-    <div style="background: #fff; border-radius: 12px; max-width: 620px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); display: flex; flex-direction: column;">
+<!-- MODAL XEM CHI TIẾT PHIẾU HỖ TRỢ -->
+<div id="modalTicketDetail" style="display: none;" 
+     class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4 transition-all" 
+     onclick="if(event.target === this) closeTicketDetailModal()">
+    <div class="bg-white border border-slate-200 rounded-3xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl overflow-hidden flex flex-col">
         <!-- Modal Header -->
-        <div style="background: linear-gradient(135deg, var(--navy-dark) 0%, #1e293b 100%); color: #fff; padding: 16px 22px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 10;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 18px;">📄</span>
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 flex items-center justify-between border-b-2 border-sky-500 sticky top-0 z-10">
+            <div class="flex items-center gap-2.5">
+                <span class="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-300 flex items-center justify-center text-sm font-bold">📄</span>
                 <div>
-                    <h4 style="margin: 0; font-size: 15px; color: #fff;">Chi Tiết Phiếu Hỗ Trợ: <span id="dtlCode" style="color: #38bdf8; font-weight: 700;"></span></h4>
-                    <span style="font-size: 11.5px; color: #94a3b8;">Thông tin chi tiết bạn đã điền và minh chứng đính kèm</span>
+                    <h4 class="font-black text-sm text-white flex items-center gap-1.5">
+                        Chi Tiết Phiếu: <span id="dtlCode" class="text-sky-300 font-mono"></span>
+                    </h4>
+                    <span class="text-[11px] text-slate-400">Thông tin phản ánh và minh chứng đính kèm</span>
                 </div>
             </div>
-            <button type="button" onclick="closeTicketDetailModal()" style="background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; line-height: 1;">✕</button>
+            <button type="button" onclick="closeTicketDetailModal()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition flex items-center justify-center text-sm">
+                ✕
+            </button>
         </div>
 
         <!-- Modal Body -->
-        <div style="padding: 22px; display: flex; flex-direction: column; gap: 16px;">
-            <!-- Hàng thông tin tóm tắt -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <div class="p-6 space-y-4 text-xs">
+            <!-- Grid tóm tắt -->
+            <div class="grid grid-cols-2 gap-3 bg-slate-50 border border-slate-200/80 p-3.5 rounded-2xl">
                 <div>
-                    <div style="font-size: 11.5px; color: #64748b; font-weight: 600;">Trạng thái xử lý:</div>
-                    <div id="dtlStatusBadge" style="margin-top: 4px;"></div>
+                    <span class="text-slate-400 font-bold block mb-1">Trạng thái:</span>
+                    <div id="dtlStatusBadge"></div>
                 </div>
                 <div>
-                    <div style="font-size: 11.5px; color: #64748b; font-weight: 600;">Kỹ thuật viên tiếp nhận:</div>
-                    <div id="dtlAgent" style="font-size: 13px; font-weight: 700; color: #1e293b; margin-top: 4px;"></div>
+                    <span class="text-slate-400 font-bold block mb-1">KTV Tiếp nhận:</span>
+                    <div id="dtlAgent" class="font-extrabold text-slate-900 text-sm"></div>
                 </div>
                 <div>
-                    <div style="font-size: 11.5px; color: #64748b; font-weight: 600;">Nhóm dịch vụ sự cố:</div>
-                    <div id="dtlCategory" style="font-size: 13px; font-weight: 600; color: #0284c7; margin-top: 4px;"></div>
+                    <span class="text-slate-400 font-bold block mb-1">Nhóm Dịch vụ:</span>
+                    <div id="dtlCategory" class="font-bold text-sky-700"></div>
                 </div>
                 <div>
-                    <div style="font-size: 11.5px; color: #64748b; font-weight: 600;">Hệ thống bị ảnh hưởng:</div>
-                    <div id="dtlSystem" style="font-size: 13px; font-weight: 600; color: #334155; margin-top: 4px;"></div>
+                    <span class="text-slate-400 font-bold block mb-1">Hệ thống ảnh hưởng:</span>
+                    <div id="dtlSystem" class="font-semibold text-slate-700"></div>
                 </div>
-                <div style="grid-column: 1 / -1;">
-                    <div style="font-size: 11.5px; color: #64748b; font-weight: 600;">Thời gian nộp phiếu:</div>
-                    <div id="dtlCreatedAt" style="font-size: 12.5px; color: #475569; margin-top: 2px;"></div>
+                <div class="col-span-2 pt-2 border-t border-slate-200/60">
+                    <span class="text-slate-400 font-bold block mb-0.5">Thời gian gửi phiếu:</span>
+                    <div id="dtlCreatedAt" class="font-mono text-slate-600"></div>
                 </div>
             </div>
 
-            <!-- Tiêu đề sự cố -->
+            <!-- Tiêu đề -->
             <div>
-                <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">Tiêu đề sự cố:</label>
-                <div id="dtlTitle" style="padding: 10px 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; font-weight: 700; color: #1e293b; font-size: 13.5px;"></div>
+                <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">Tiêu đề sự cố:</span>
+                <div id="dtlTitle" class="p-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-900 text-sm"></div>
             </div>
 
-            <!-- Mô tả chi tiết -->
+            <!-- Mô tả -->
             <div>
-                <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 4px; text-transform: uppercase;">Nội dung mô tả chi tiết lỗi:</label>
-                <div id="dtlDesc" style="padding: 12px; background: #fff; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; color: #1e293b; line-height: 1.6; white-space: pre-wrap; max-height: 180px; overflow-y: auto;"></div>
+                <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1">Mô tả hiện tượng lỗi:</span>
+                <div id="dtlDesc" class="p-3 bg-white border border-slate-200 rounded-xl font-medium text-slate-700 leading-relaxed whitespace-pre-wrap max-h-44 overflow-y-auto"></div>
             </div>
 
-            <!-- Minh chứng đính kèm -->
+            <!-- Minh chứng -->
             <div>
-                <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase;">Minh chứng đính kèm (Ảnh chụp lỗi / Tệp):</label>
-                <div id="dtlAttachmentBox" style="padding: 12px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px;"></div>
+                <span class="text-slate-500 font-bold uppercase tracking-wider block mb-1.5">Minh chứng đính kèm:</span>
+                <div id="dtlAttachmentBox" class="p-3 bg-slate-50 border border-dashed border-slate-300 rounded-xl"></div>
             </div>
         </div>
 
         <!-- Modal Footer -->
-        <div style="padding: 14px 22px; background: #f8fafc; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
             <div id="dtlCancelBox" style="display: none;">
-                <form method="POST" action="/student/tickets/cancel" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu hỗ trợ này không?');">
+                <form method="POST" action="/student/tickets/cancel" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này không?');">
                     <input type="hidden" name="ticket_id" id="dtlCancelTicketId" value="">
-                    <button type="submit" id="dtlCancelBtn" style="padding: 8px 14px; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; border-radius: 6px; font-size: 12.5px; font-weight: 700; cursor: pointer;">
+                    <button type="submit" id="dtlCancelBtn" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-bold text-xs transition">
                         🚫 Hủy phiếu này
                     </button>
                 </form>
             </div>
-            <button type="button" onclick="closeTicketDetailModal()" style="margin-left: auto; padding: 8px 18px; background: #64748b; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+            <button type="button" onclick="closeTicketDetailModal()" class="ml-auto px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-xl transition">
                 Đóng
             </button>
         </div>
     </div>
 </div>
 
-<!-- Modal cập nhật Ảnh đại diện (Avatar) -->
-<div id="avatarModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); z-index: 9999; align-items: center; justify-content: center; padding: 15px; backdrop-filter: blur(2px);">
-    <div style="background: #fff; border-radius: 12px; max-width: 420px; width: 100%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.25); overflow: hidden;">
-        <div style="background: linear-gradient(135deg, var(--navy-dark) 0%, #1e293b 100%); color: #fff; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary);">
-            <h4 style="margin: 0; font-size: 15px; color: #38bdf8;">📷 Cập Nhật Ảnh Đại Diện (Avatar)</h4>
-            <button type="button" onclick="closeAvatarModal()" style="background: none; border: none; color: #94a3b8; font-size: 18px; cursor: pointer; line-height: 1;">✕</button>
+<!-- MODAL CẬP NHẬT AVATAR -->
+<div id="avatarModal" style="display: none;" 
+     class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 items-center justify-center p-4 transition-all" 
+     onclick="if(event.target === this) closeAvatarModal()">
+    <div class="bg-white border border-slate-200 rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden">
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 flex items-center justify-between border-b-2 border-sky-500">
+            <h4 class="font-black text-sm text-white flex items-center gap-1.5">
+                <span>📷</span> Cập Nhật Ảnh Đại Diện
+            </h4>
+            <button type="button" onclick="closeAvatarModal()" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition flex items-center justify-center text-xs">
+                ✕
+            </button>
         </div>
 
-        <form method="POST" action="/student/avatar" enctype="multipart/form-data" style="padding: 22px;">
-            <div style="text-align: center; margin-bottom: 18px;">
-                <div style="width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 10px; border: 3px solid #38bdf8; overflow: hidden; background: #f1f5f9; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
-                    <img id="avatarPreviewImg" src="<?= !empty($user['avatar_path']) ? '/tickets/attachment?file=' . urlencode($user['avatar_path']) : '' ?>" alt="Xem trước" style="width: 100%; height: 100%; object-fit: cover; <?= empty($user['avatar_path']) ? 'display: none;' : '' ?>">
-                    <span id="avatarPreviewFallback" style="font-size: 42px; font-weight: 700; color: var(--primary); <?= !empty($user['avatar_path']) ? 'display: none;' : '' ?>">
+        <form method="POST" action="/student/avatar" enctype="multipart/form-data" class="p-5 space-y-4">
+            <div class="text-center space-y-2">
+                <div class="w-24 h-24 rounded-full mx-auto border-4 border-sky-400 overflow-hidden bg-slate-100 flex items-center justify-center shadow-lg">
+                    <img id="avatarPreviewImg" src="<?= !empty($user['avatar_path']) ? '/tickets/attachment?file=' . urlencode($user['avatar_path']) : '' ?>" alt="Xem trước" class="w-full h-full object-cover <?= empty($user['avatar_path']) ? 'hidden' : '' ?>">
+                    <span id="avatarPreviewFallback" class="text-4xl font-black text-indigo-700 <?= !empty($user['avatar_path']) ? 'hidden' : '' ?>">
                         <?= mb_substr($user['name'], 0, 1) ?>
                     </span>
                 </div>
-                <div id="avatarStatusText" style="font-size: 12px; color: #64748b;">Xem trước ảnh đại diện của bạn</div>
+                <div id="avatarStatusText" class="text-xs text-slate-500 font-medium">Xem trước ảnh đại diện sinh viên</div>
             </div>
 
-            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap;">
-                <label style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: #f0f9ff; color: #0284c7; border: 1px solid #bae6fd; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                    📁 Tải ảnh từ máy
-                    <input type="file" name="avatar" id="avatarFileInput" accept="image/*" style="display: none;" onchange="onAvatarFileSelected(this)">
+            <div class="flex gap-2 justify-center flex-wrap">
+                <label class="px-3 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-xl text-xs font-bold cursor-pointer transition flex items-center gap-1">
+                    <span>📁</span> Tải ảnh từ máy
+                    <input type="file" name="avatar" id="avatarFileInput" accept="image/*" class="hidden" onchange="onAvatarFileSelected(this)">
                 </label>
-                <button type="button" onclick="startAvatarCamera()" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; background: #fef3c7; color: #b45309; border: 1px solid #fde68a; border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background 0.2s;">
-                    📸 Chụp ảnh Webcam
+                <button type="button" onclick="startAvatarCamera()" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                    <span>📸</span> Chụp Webcam
                 </button>
             </div>
 
-            <!-- Khung chụp ảnh live qua webcam -->
-            <div id="avatarCameraBox" style="display: none; margin-bottom: 14px; padding: 10px; background: #0f172a; border-radius: 8px; text-align: center;">
-                <video id="avatarWebcamVideo" autoplay playsinline style="width: 100%; max-height: 200px; border-radius: 6px; background: #000;"></video>
-                <div style="margin-top: 8px; display: flex; justify-content: center; gap: 8px;">
-                    <button type="button" onclick="captureAvatarSnapshot()" style="padding: 6px 14px; background: #16a34a; color: #fff; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                        📸 Chụp Ngay
+            <div id="avatarCameraBox" style="display: none;" class="p-3 bg-slate-900 rounded-2xl text-center space-y-2">
+                <video id="avatarWebcamVideo" autoplay playsinline class="w-full max-h-48 rounded-lg bg-black"></video>
+                <div class="flex justify-center gap-2">
+                    <button type="button" onclick="captureAvatarSnapshot()" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition">
+                        📸 Bấm Chụp
                     </button>
-                    <button type="button" onclick="stopAvatarCamera()" style="padding: 6px 12px; background: #64748b; color: #fff; border: none; border-radius: 6px; font-size: 12px; cursor: pointer;">
-                        ✕ Đóng Camera
+                    <button type="button" onclick="stopAvatarCamera()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl text-xs transition">
+                        ✕ Tắt
                     </button>
                 </div>
-                <canvas id="avatarSnapshotCanvas" style="display: none;"></canvas>
+                <canvas id="avatarSnapshotCanvas" class="hidden"></canvas>
             </div>
 
             <input type="hidden" name="captured_avatar" id="capturedAvatarInput" value="">
 
-            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 14px;">
-                <button type="button" onclick="closeAvatarModal()" style="padding: 8px 14px; background: #f1f5f9; color: #475569; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">Hủy bỏ</button>
-                <button type="submit" style="padding: 8px 18px; background: var(--primary); color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer;">💾 Lưu Ảnh Đại Diện</button>
+            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <button type="button" onclick="closeAvatarModal()" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs rounded-xl transition">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-4 py-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-sky-500/20 transition">
+                    💾 Lưu Ảnh Avatar
+                </button>
             </div>
         </form>
     </div>
