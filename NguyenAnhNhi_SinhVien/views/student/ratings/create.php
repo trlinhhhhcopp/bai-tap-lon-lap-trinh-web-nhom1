@@ -46,7 +46,7 @@ if (empty($_SESSION['user'])) {
             </div>
         <?php endif; ?>
 
-        <form method="post" action="index.php?action=rating_create" novalidate class="space-y-4 text-xs">
+        <form method="post" action="index.php?action=rating_create" novalidate class="space-y-4 text-xs" onsubmit="return confirmRatingSubmit(this);">
             <div>
                 <label for="ticket_id" class="block font-bold text-slate-700 mb-1">
                     Phiếu Hỗ Trợ Cần Nghiệm Thu: <span class="text-rose-500">*</span>
@@ -117,6 +117,14 @@ if (empty($_SESSION['user'])) {
         </form>
     </div>
 </main>
+
+<script>
+function confirmRatingSubmit(form) {
+    const scoreElem = document.getElementById('score');
+    const scoreText = scoreElem ? scoreElem.options[scoreElem.selectedIndex].text : '';
+    return confirm("Bạn có chắc chắn muốn lưu mức đánh giá này cho Kỹ thuật viên không?\n\n• Mức chọn: " + scoreText + "\n\n(Vui lòng kiểm tra kỹ số sao để tránh bấm nhầm)");
+}
+</script>
 
 <?php require_once __DIR__ . '/../../../../includes/footer.php'; ?>
 </body>

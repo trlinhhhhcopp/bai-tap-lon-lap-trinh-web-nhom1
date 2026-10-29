@@ -379,11 +379,19 @@ $flash   = get_flash();
             <?php if (in_array($ticket['status'], ['resolved', 'closed']) && $isRequester): ?>
                 <div id="csat-box" class="bg-amber-50/40 border border-amber-200/90 rounded-3xl p-6 shadow-sm space-y-4">
                     
-                    <div class="flex items-center gap-2">
-                        <span class="text-amber-500 text-xl font-bold">🌟</span>
-                        <h3 class="text-xs sm:text-sm font-black text-amber-950 uppercase tracking-wide">
-                            NGHIỆM THU KẾT QUẢ XỬ LÝ & ĐÁNH GIÁ CSAT (1 - 5 SAO)
-                        </h3>
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-amber-500 text-xl font-bold">🌟</span>
+                            <h3 class="text-xs sm:text-sm font-black text-amber-950 uppercase tracking-wide">
+                                NGHIỆM THU KẾT QUẢ XỬ LÝ & ĐÁNH GIÁ CSAT (1 - 5 SAO)
+                            </h3>
+                        </div>
+                        <?php if ($currentRating): ?>
+                            <button type="button" onclick="document.getElementById('editRatingContainer').classList.toggle('hidden')" 
+                                    class="px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-xl font-bold transition flex items-center gap-1.5 text-xs shadow-2xs">
+                                <span>✏️</span> Thay Đổi / Chấm Lại Đánh Giá
+                            </button>
+                        <?php endif; ?>
                     </div>
 
                     <?php if ($currentRating): ?>
@@ -400,8 +408,57 @@ $flash   = get_flash();
                             </div>
                             <span class="text-[11px] text-slate-400">Đã nghiệm thu lúc <?php echo htmlspecialchars($currentRating['created_at']); ?></span>
                         </div>
+
+                        <!-- KHUNG THAY ĐỔI ĐÁNH GIÁ (MỞ KHI BẤM NÚT SỬA) -->
+                        <div id="editRatingContainer" class="hidden p-4 bg-white/95 border border-amber-200 rounded-2xl space-y-3">
+                            <div class="font-bold text-amber-950 text-xs flex items-center gap-1.5">
+                                <span>✏️</span> Cập nhật lại số sao và lời góp ý dành cho KTV:
+                            </div>
+                            <form id="csatEditForm" method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-4 text-xs" onsubmit="return handleCsatSubmit(this, event);">
+                                <input type="hidden" name="action" value="rate_ticket" />
+                                
+                                <div>
+                                    <label class="block font-semibold text-slate-800 mb-2.5">
+                                        Chọn lại mức độ hài lòng với hỗ trợ kỹ thuật:
+                                    </label>
+                                    <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                                        <?php 
+                                        $scoreOptions = [
+                                            5 => '5 ★ Rất hài lòng',
+                                            4 => '4 ★ Hài lòng',
+                                            3 => '3 ★ Bình thường',
+                                            2 => '2 ★ Chưa hài lòng',
+                                            1 => '1 ★ Rất thất vọng'
+                                        ];
+                                        foreach ($scoreOptions as $sVal => $sLabel):
+                                            $isChecked = ((int)$currentRating['score'] === $sVal) ? 'checked' : '';
+                                        ?>
+                                            <label class="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:border-amber-400 rounded-full cursor-pointer transition shadow-2xs">
+                                                <input type="radio" name="score" value="<?php echo $sVal; ?>" <?php echo $isChecked; ?> class="text-amber-500 focus:ring-amber-400 cursor-pointer" />
+                                                <span class="font-semibold text-slate-700 text-xs"><?php echo $sLabel; ?></span>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <textarea name="comment" rows="2" placeholder="Góp ý hoặc nhận xét của bạn về thái độ và tốc độ hỗ trợ của KTV (tùy chọn)..." 
+                                              class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-slate-800 text-xs"><?php echo htmlspecialchars($currentRating['comment'] ?? ''); ?></textarea>
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    <button type="submit" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition shadow-md shadow-amber-200 flex items-center gap-1.5 text-xs">
+                                        <span>⭐</span> Lưu Cập Nhật Đánh Giá CSAT
+                                    </button>
+                                    <button type="button" onclick="document.getElementById('editRatingContainer').classList.add('hidden')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-2xl transition text-xs">
+                                        Đóng lại
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     <?php else: ?>
-                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-4 text-xs">
+                        <!-- FORM ĐÁNH GIÁ LẦN ĐẦU -->
+                        <form id="csatNewForm" method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-4 text-xs" onsubmit="return handleCsatSubmit(this, event);">
                             <input type="hidden" name="action" value="rate_ticket" />
                             
                             <div>
@@ -761,8 +818,132 @@ $flash   = get_flash();
     </div>
 </div>
 
+<!-- MODAL XÁC NHẬN ĐÁNH GIÁ CSAT (HỎI CHẮC CHẮN TRÁNH BẤM NHẦM SAO) -->
+<div id="confirmRatingModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-amber-200">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span class="text-amber-500 text-lg">🌟</span> Xác Nhận Lưu Đánh Giá CSAT
+            </h3>
+            <button type="button" onclick="closeConfirmRatingModal()" class="text-slate-400 hover:text-slate-600 font-bold text-xl leading-none">&times;</button>
+        </div>
+        
+        <div class="space-y-3">
+            <p class="text-xs text-slate-700 font-medium leading-relaxed">
+                Bạn có chắc chắn muốn lưu mức đánh giá này cho Kỹ thuật viên không?
+            </p>
+
+            <div class="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-600 font-semibold">Điểm đánh giá đã chọn:</span>
+                    <span id="modalScoreDisplay" class="font-black text-amber-600 text-sm tracking-wide">★★★★★ (5/5 sao)</span>
+                </div>
+                <div class="text-[11.5px] text-slate-600 flex items-center justify-between">
+                    <span class="text-slate-500">Mức độ hài lòng:</span>
+                    <span id="modalScoreDesc" class="font-bold text-slate-800">5 ★ Rất hài lòng</span>
+                </div>
+                <div id="modalCommentRow" class="text-[11px] text-slate-600 border-t border-amber-200/50 pt-1.5 mt-1 hidden">
+                    <span class="text-slate-500 font-medium block mb-0.5">Nội dung góp ý / nhận xét:</span>
+                    <p id="modalCommentText" class="italic text-slate-800 bg-white/80 p-2 rounded-xl border border-amber-100"></p>
+                </div>
+            </div>
+
+            <div class="p-2.5 bg-amber-100/50 rounded-xl border border-amber-200/60 text-[11px] text-amber-900 flex items-start gap-1.5">
+                <span class="text-amber-600 text-sm leading-none">⚠️</span>
+                <span>Vui lòng kiểm tra kỹ số sao để tránh bấm nhầm. Sau khi xác nhận, điểm đánh giá sẽ được ghi nhận vào hồ sơ hỗ trợ của KTV.</span>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2 text-xs">
+            <button type="button" onclick="closeConfirmRatingModal()" class="px-4 py-2.5 border border-slate-300 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition">
+                ❌ Hủy bỏ (Chọn lại)
+            </button>
+            <button type="button" id="btnConfirmRatingSubmit" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-md shadow-amber-200 transition flex items-center gap-1.5">
+                <span>✅</span> Đồng Ý & Lưu Đánh Giá
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
+let currentRatingFormToSubmit = null;
+
+const scoreMap = {
+    '5': { stars: '★★★★★ (5/5 sao)', desc: '5 ★ Rất hài lòng / Xử lý tuyệt vời' },
+    '4': { stars: '★★★★☆ (4/5 sao)', desc: '4 ★ Hài lòng / Đáp ứng yêu cầu' },
+    '3': { stars: '★★★☆☆ (3/5 sao)', desc: '3 ★ Bình thường / Đạt mức chấp nhận' },
+    '2': { stars: '★★☆☆☆ (2/5 sao)', desc: '2 ★ Chưa hài lòng / Cần cải thiện' },
+    '1': { stars: '★☆☆☆☆ (1/5 sao)', desc: '1 ★ Rất thất vọng / Chưa xử lý được' }
+};
+
+function handleCsatSubmit(form, event) {
+    if (form.dataset.confirmed === 'true') {
+        return true;
+    }
+    if (event) {
+        event.preventDefault();
+    }
+    currentRatingFormToSubmit = form;
+
+    const selectedRadio = form.querySelector('input[name="score"]:checked');
+    const scoreVal = selectedRadio ? selectedRadio.value : '5';
+    const commentField = form.querySelector('textarea[name="comment"]');
+    const commentVal = commentField ? commentField.value.trim() : '';
+
+    const scoreInfo = scoreMap[scoreVal] || { stars: scoreVal + ' ★', desc: scoreVal + ' sao' };
+
+    const displayElem = document.getElementById('modalScoreDisplay');
+    const descElem = document.getElementById('modalScoreDesc');
+    const commentRow = document.getElementById('modalCommentRow');
+    const commentText = document.getElementById('modalCommentText');
+
+    if (displayElem) displayElem.textContent = scoreInfo.stars;
+    if (descElem) descElem.textContent = scoreInfo.desc;
+
+    if (commentRow && commentText) {
+        if (commentVal) {
+            commentText.textContent = '"' + commentVal + '"';
+            commentRow.classList.remove('hidden');
+        } else {
+            commentRow.classList.add('hidden');
+        }
+    }
+
+    const modal = document.getElementById('confirmRatingModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    } else {
+        if (confirm("Bạn có chắc chắn muốn lưu mức đánh giá " + scoreVal + " sao cho Kỹ thuật viên không?\n(Tránh bấm nhầm số sao)")) {
+            form.dataset.confirmed = 'true';
+            form.submit();
+        }
+    }
+    return false;
+}
+
+function closeConfirmRatingModal() {
+    const modal = document.getElementById('confirmRatingModal');
+    if (modal) modal.classList.add('hidden');
+    currentRatingFormToSubmit = null;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    const btnConfirm = document.getElementById('btnConfirmRatingSubmit');
+    if (btnConfirm) {
+        btnConfirm.addEventListener('click', function() {
+            if (currentRatingFormToSubmit) {
+                currentRatingFormToSubmit.dataset.confirmed = 'true';
+                currentRatingFormToSubmit.submit();
+            }
+        });
+    }
+
+    // Đóng modal khi bấm phím ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeConfirmRatingModal();
+        }
+    });
     // 1. Xem trước ảnh đính kèm
     const attachInput = document.getElementById('attachmentInput');
     const previewContainer = document.getElementById('imagePreviewContainer');
