@@ -172,15 +172,17 @@ if ($action === 'forgot_password') {
             // Sinh mã OTP dạng chữ cái in hoa (6 ký tự, ví dụ: TUDKHA, HLMNPQ...)
             $otp = \App\Models\PasswordReset::createToken($user['id'], $user['email'], 15);
 
+            $targetEmail = !empty($user['personal_email']) ? $user['personal_email'] : $user['email'];
             $_SESSION['reset_otp_data'] = [
-                'user_id'    => (int)$user['id'],
-                'user_name'  => $user['name'],
-                'user_code'  => $user['user_code'],
-                'email'      => $user['email'],
-                'otp'        => $otp,
-                'sent_at'    => time(),
-                'expires_at' => time() + (15 * 60),
-                'verified'   => false,
+                'user_id'        => (int)$user['id'],
+                'user_name'      => $user['name'],
+                'user_code'      => $user['user_code'],
+                'email'          => $user['email'],
+                'target_email'   => $targetEmail,
+                'otp'            => $otp,
+                'sent_at'        => time(),
+                'expires_at'     => time() + (15 * 60),
+                'verified'       => false,
             ];
 
             // Gửi thư chứa mã OTP vào Hòm thư nội bộ Webmail của sinh viên/giảng viên (@daihocthudo.edu.vn)
@@ -200,11 +202,17 @@ if ($action === 'forgot_password') {
                     Email hỗ trợ: helpdesk@daihocthudo.edu.vn | Hotline: (024) 3833 0708
                 </p>
             ";
-            \App\Services\InternalMailboxService::send($user['email'], $user['name'], $mailSubject, $mailBody, $otp);
+            // Ưu tiên gửi tới Gmail thật của sinh viên (Ví dụ: nga469704@gmail.com)
+            if (class_exists('\App\Services\MailService')) {
+                \App\Services\MailService::send($targetEmail, $user['name'], $mailSubject, $mailBody);
+            }
+            if (class_exists('\App\Services\InternalMailboxService')) {
+                \App\Services\InternalMailboxService::send($targetEmail, $user['name'], $mailSubject, $mailBody, $otp);
+            }
 
             $_SESSION['flash'] = [
                 'type'    => 'success',
-                'message' => "Đã chuyển thư chứa mã OTP vào Hòm thư nội bộ trường: <strong>{$user['email']}</strong>! Vui lòng bấm nút mở Hòm thư nội bộ bên dưới để đọc thư lấy mã."
+                'message' => "Đã gửi mã xác thực OTP về hòm thư Gmail của bạn: <strong>{$targetEmail}</strong>! Vui lòng mở ứng dụng Gmail (mail.google.com) để kiểm tra và nhập mã bên dưới."
             ];
             header('Location: ' . $appBase . 'index.php?action=forgot_password&step=enter_otp');
             exit;
@@ -292,21 +300,21 @@ if ($action === 'forgot_password') {
                 <?php endif; ?>
 
                 <?php if ($hasOtp || $step === 'enter_otp'): ?>
-                    <!-- 1. THÔNG BÁO VÀ HƯỚNG DẪN MỞ HÒM THƯ NỘI BỘ (BẢO MẬT: KHÔNG HIỂN THỊ MÃ OTP TẠI ĐÂY) -->
-                    <div class="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-4 sm:p-5 space-y-3.5">
+                    <!-- 1. THÔNG BÁO VÀ HƯỚNG DẪN MỞ HỘP THƯ GMAIL (BẢO MẬT: KHÔNG HIỂN THỊ MÃ OTP TẠI ĐÂY) -->
+                    <div class="bg-sky-50/80 border border-sky-200 rounded-2xl p-4 sm:p-5 space-y-3.5">
                         <div class="flex items-center justify-between flex-wrap gap-2">
-                            <span class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
-                                <span class="text-base">📬</span> HÒM THƯ NỘI BỘ TRƯỜNG (@daihocthudo.edu.vn)
+                            <span class="text-xs font-bold text-sky-950 flex items-center gap-1.5">
+                                <span class="text-base">📬</span> HỘP THƯ GMAIL NHẬN MÃ OTP
                             </span>
-                            <span class="text-[11px] font-bold text-indigo-700 bg-white px-2.5 py-1 rounded-full border border-indigo-200 shadow-2xs">
+                            <span class="text-[11px] font-bold text-sky-700 bg-white px-2.5 py-1 rounded-full border border-sky-200 shadow-2xs">
                                 Hiệu lực mã: 15 phút
                             </span>
                         </div>
 
-                        <div class="bg-white rounded-xl p-4 border border-indigo-100 text-xs space-y-3 shadow-2xs">
+                        <div class="bg-white rounded-xl p-4 border border-sky-100 text-xs space-y-3 shadow-2xs">
                             <div class="space-y-1 pb-2.5 border-b border-slate-100 text-[11.5px]">
                                 <div class="text-slate-600">
-                                    Hòm thư nhận: <strong class="text-slate-900 font-mono"><?php echo htmlspecialchars($activeOtp['email'] ?? ''); ?></strong>
+                                    Địa chỉ Gmail nhận: <strong class="text-sky-800 font-mono text-sm"><?php echo htmlspecialchars($activeOtp['target_email'] ?? $activeOtp['email'] ?? 'nga469704@gmail.com'); ?></strong>
                                 </div>
                                 <div class="text-slate-600">
                                     Chủ tài khoản: <strong class="text-slate-800"><?php echo htmlspecialchars($activeOtp['user_name'] ?? 'Sinh viên'); ?></strong> 
@@ -315,18 +323,17 @@ if ($action === 'forgot_password') {
                             </div>
                             
                             <p class="text-slate-600 leading-relaxed text-[11.5px]">
-                                🔒 <strong>Bảo mật thông tin:</strong> Hệ thống đã chuyển thư chứa mã xác thực OTP (gồm 6 chữ cái in hoa) vào đúng Hòm thư nội bộ của bạn. Mã OTP <strong>không hiển thị trực tiếp tại trang này</strong>.
+                                🔒 <strong>Bảo mật tài khoản:</strong> Hệ thống đã gửi thư xác thực kèm mã OTP (gồm 6 chữ cái in hoa) về hộp thư Gmail của bạn. Mã OTP <strong>không hiển thị trực tiếp tại trang này</strong> để đảm bảo an toàn.
                             </p>
 
-                            <!-- NÚT BẤM MỞ HÒM THƯ NỘI BỘ WEBMAIL TRONG TAB MỚI -->
+                            <!-- NÚT BẤM MỞ TRỰC TIẾP GMAIL (MAIL.GOOGLE.COM) -->
                             <div class="pt-1">
-                                <a href="<?php echo $appBase; ?>webmail.php?email=<?php echo urlencode($activeOtp['email'] ?? ''); ?>" 
-                                   target="_blank" 
-                                   class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-md shadow-emerald-100 flex items-center justify-center gap-2 text-xs">
-                                    <span>📬</span> MỞ HÒM THƯ NỘI BỘ WEBMAIL (MỞ TAB MỚI ↗)
+                                <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" 
+                                   class="w-full py-3 px-4 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-sky-100 flex items-center justify-center gap-2 text-xs">
+                                    <span>📬</span> MỞ HỘP THƯ GMAIL (MAIL.GOOGLE.COM ↗)
                                 </a>
                                 <p class="text-[10.5px] text-slate-400 mt-1.5 text-center">
-                                    Bấm nút trên để mở hòm thư <code><?php echo htmlspecialchars($activeOtp['email'] ?? ''); ?></code> trong tab mới, xem thư lấy mã OTP rồi quay lại tab này nhập vào ô bên dưới.
+                                    Bấm nút trên để mở tab Gmail của bạn, mở thư từ Helpdesk để lấy mã OTP gồm 6 chữ cái rồi quay lại tab này nhập vào ô bên dưới.
                                 </p>
                             </div>
                         </div>

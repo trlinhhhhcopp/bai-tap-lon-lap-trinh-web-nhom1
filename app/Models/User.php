@@ -23,9 +23,10 @@ class User {
 
     public static function findByEmailOrCode(string $identifier): ?array {
         $pdo = Database::getConnection();
-        $sql = "SELECT * FROM users WHERE email = :id1 OR user_code = :id2 LIMIT 1";
+        $sql = "SELECT * FROM users WHERE email = :id1 OR user_code = :id2 OR personal_email = :id3 LIMIT 1";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([':id1' => trim($identifier), ':id2' => trim($identifier)]);
+        $ident = trim($identifier);
+        $stmt->execute([':id1' => $ident, ':id2' => $ident, ':id3' => $ident]);
         $res = $stmt->fetch();
         return $res ?: null;
     }

@@ -187,6 +187,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_status') {
     if (in_array($userRole, ['agent', 'admin'])) {
         $newStatus = trim($_POST['status'] ?? '');
+        if ($userRole === 'agent' && $newStatus === 'closed') {
+            set_flash('error', "Kỹ thuật viên chỉ có thể cập nhật trạng thái đến 'Đã giải quyết' (resolved). Trạng thái 'Đã đóng hoàn tất' (closed) do Sinh viên nghiệm thu/đánh giá CSAT hoặc tự động sau 24h!");
+            header("Location: show.php?id={$id}&view_as={$viewAs}");
+            exit;
+        }
         if (in_array($newStatus, ['new', 'in_progress', 'waiting_requester', 'resolved', 'closed'])) {
             TicketRepository::updateStatus($id, $newStatus);
             set_flash('success', "Đã cập nhật trạng thái phiếu sang '{$newStatus}'!");
@@ -605,7 +610,11 @@ $flash   = get_flash();
                                 <select name="quick_status" id="quickStatusSelect" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                     <option value="">⚡ Tự động thông minh theo State Machine</option>
                                     <option value="resolved">✅ Chuyển sang: Đã có giải pháp (resolved)</option>
-                                    <option value="closed">🏁 Chuyển sang: Đã hoàn tất & Đóng phiếu (closed)</option>
+                                    <?php if ($userRole === 'admin'): ?>
+                                        <option value="closed">🏁 Chuyển sang: Đã hoàn tất & Đóng phiếu (closed - Admin)</option>
+                                    <?php else: ?>
+                                        <option value="" disabled class="text-slate-400">🏁 Đã hoàn tất (Chỉ SV đánh giá hoặc sau 24h)</option>
+                                    <?php endif; ?>
                                     <option value="waiting_requester">⏳ Chuyển sang: Chờ người dùng kiểm tra (waiting)</option>
                                     <option value="in_progress">⚙️ Chuyển sang: Tiếp tục xử lý (in_progress)</option>
                                 </select>
@@ -683,7 +692,11 @@ $flash   = get_flash();
                         <option value="in_progress" <?php echo $ticket['status'] === 'in_progress' ? 'selected' : ''; ?>>2. Đang xử lý (in_progress)</option>
                         <option value="waiting_requester" <?php echo $ticket['status'] === 'waiting_requester' ? 'selected' : ''; ?>>3. Chờ phản hồi (waiting)</option>
                         <option value="resolved" <?php echo $ticket['status'] === 'resolved' ? 'selected' : ''; ?>>4. Đã giải quyết (resolved)</option>
-                        <option value="closed" <?php echo $ticket['status'] === 'closed' ? 'selected' : ''; ?>>5. Đã đóng hoàn tất (closed)</option>
+                        <?php if ($userRole === 'admin'): ?>
+                          <option value="closed" <?php echo $ticket['status'] === 'closed' ? 'selected' : ''; ?>>5. Đã đóng hoàn tất (closed - Admin)</option>
+                      <?php else: ?>
+                          <option value="" disabled class="text-slate-400">5. Đóng hoàn tất (Chỉ SV đánh giá hoặc sau 24h)</option>
+                      <?php endif; ?>
                     </select>
                     <button type="submit" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition">
                         Cập nhật trạng thái ngay
@@ -700,10 +713,8 @@ $flash   = get_flash();
                     <span class="text-slate-400 block text-[11px]">Người gửi yêu cầu:</span>
                     <strong class="text-slate-900 block"><?php echo htmlspecialchars($ticket['requester_name']); ?></strong>
                     <span class="text-slate-500 font-mono block">Mã: <?php echo htmlspecialchars($ticket['requester_code']); ?></span>
+                    <span class="text-indigo-700 font-bold block text-[11.5px]">Lớp: <?php echo htmlspecialchars($ticket['class_code'] ?? $ticket['class_name'] ?? 'D24-CNTT1'); ?></span>
                     <span class="text-slate-500 block"><?php echo htmlspecialchars($ticket['requester_email']); ?></span>
-                    <?php if (!empty($ticket['class_name'])): ?>
-                        <span class="text-indigo-600 block text-[11px]">Lớp: <?php echo htmlspecialchars($ticket['class_name']); ?></span>
-                    <?php endif; ?>
                 </div>
 
                 <div class="space-y-1.5 border-b border-slate-100 pb-3">

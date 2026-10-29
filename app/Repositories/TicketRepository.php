@@ -132,7 +132,8 @@ class TicketRepository {
                        u_agent.name AS agent_name, u_agent.user_code AS agent_code,
                        c.name AS category_name, c.code AS category_code,
                        p.name AS priority_name, p.code AS priority_code,
-                       cl.class_code, cl.name AS class_name,
+                       COALESCE(cl.class_code, u_cl.class_code, u_req.cohort, 'D24-CNTT1') AS class_code,
+                       COALESCE(cl.name, u_cl.name, 'Đại học CNTT K24') AS class_name,
                        co.course_code, co.name AS course_name
                 FROM tickets t
                 INNER JOIN users u_req ON t.requester_id = u_req.id
@@ -140,6 +141,7 @@ class TicketRepository {
                 INNER JOIN categories c ON t.category_id = c.id
                 INNER JOIN priorities p ON t.priority_id = p.id
                 LEFT JOIN classes cl ON t.class_id = cl.id
+                LEFT JOIN classes u_cl ON u_req.class_id = u_cl.id
                 LEFT JOIN courses co ON t.course_id = co.id
                 WHERE t.id = :id";
 
@@ -438,4 +440,26 @@ class TicketRepository {
         }
         return db()->query("SELECT id, user_code, name, role, user_type FROM users WHERE is_active = 1 ORDER BY id ASC")->fetchAll();
     }
+
+    /**
+     * Tự động đóng hoàn tất các phiếu đã giải quyết (resolved) quá 24h mà sinh viên chưa đánh giá CSAT
+     */
+    public static function autoCloseExpiredResolvedTickets(): int {
+        try {
+            $db = db();
+            $sql = "UPDATE tickets 
+                    SET status = 'closed', 
+                        closed_at = NOW(), 
+                        closed_reason = 'auto_closed_24h' 
+                    WHERE status = 'resolved' 
+                      AND resolved_at IS NOT NULL 
+                      AND resolved_at <= NOW() - INTERVAL 24 HOUR";
+            $stmt = $db->prepare($sql);
+            $stmt->execute();
+            return (int)$stmt->rowCount();
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
 }

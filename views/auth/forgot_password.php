@@ -78,9 +78,9 @@
             </div>
 
             <div class="text-center pt-1">
-                <a href="<?= $appBase ?>webmail.php?email=<?= urlencode($simulatedEmail['email']) ?>" target="_blank" rel="noopener noreferrer" 
+                <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" 
                    class="inline-flex items-center justify-center gap-2 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition">
-                    <span>📬 MỞ HÒM THƯ NỘI BỘ WEBMAIL (MỞ TAB MỚI ↗)</span>
+                    <span>📬 MỞ HỘP THƯ GMAIL (MAIL.GOOGLE.COM ↗)</span>
                 </a>
             </div>
         </div>
