@@ -66,10 +66,10 @@ $currentQuery  = $_SERVER['QUERY_STRING'] ?? '';
             <nav class="hidden md:flex items-center gap-1">
                 <?php if (!$isLoggedIn): ?>
                     <!-- Menu dành cho Khách chưa đăng nhập -->
-                    <a href="<?php echo $appBase; ?>views/guest/create_ticket.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition">
+                    <a href="<?php echo $appBase; ?>index.php?action=guest_ticket" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition">
                         🆘 Cứu Hộ Tài Khoản (Bị Khóa)
                     </a>
-                    <a href="<?php echo $appBase; ?>views/guest/lookup_ticket.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                    <a href="<?php echo $appBase; ?>index.php?action=guest_lookup" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition">
                         🔍 Tra Cứu Phiếu Cứu Hộ
                     </a>
 

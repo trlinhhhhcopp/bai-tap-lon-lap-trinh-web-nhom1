@@ -9,82 +9,72 @@ use RuntimeException;
 
 class AuthService {
     /**
-     * Xác thực Đăng nhập bằng Mã sinh viên / Mã người dùng HOẶC Email trường
-     * & Kiểm tra cơ chế Khóa mềm / Khóa cứng
+     * Xác thực tài khoản đăng nhập (Hỗ trợ cả Bcrypt chuẩn và mật khẩu mặc định 123456)
      */
-    public static function login(string $identifier, string $password): array {
+    public static function authenticate(string $identifier, string $password): array {
         $identifier = trim($identifier);
+        $password   = trim($password);
+
         if (empty($identifier) || empty($password)) {
-            return ['success' => false, 'message' => 'Vui lòng nhập đầy đủ Mã sinh viên (hoặc Email) và Mật khẩu!'];
+            throw new InvalidArgumentException("Vui lòng nhập đầy đủ Mã đăng nhập và Mật khẩu!");
         }
 
         $user = User::findByEmailOrCode($identifier);
+
         if (!$user) {
-            return ['success' => false, 'message' => 'Tài khoản không tồn tại trên hệ thống! Vui lòng kiểm tra lại Mã sinh viên hoặc Email.'];
+            throw new RuntimeException("Tài khoản không tồn tại trên hệ thống Helpdesk!");
         }
 
-        // 1. Kiểm tra Khóa cứng (Do kỷ luật buộc thôi học hoặc hết khóa)
+        // Kiểm tra khóa cứng (kỷ luật hoặc thôi học)
         if ($user['is_active'] == 0) {
             $reason = ($user['lock_reason'] === 'expelled') ? 'kỷ luật Buộc thôi học' : 'hết hạn niên khóa';
-            return [
-                'success' => false, 
-                'message' => "Tài khoản của bạn đã bị KHÓA CỨNG do {$reason}. Vui lòng liên hệ Phòng Đào tạo hoặc gửi phiếu Cứu hộ ngoài trang chủ!",
-                'is_locked' => true,
-            ];
+            throw new RuntimeException("Tài khoản của bạn đã bị KHÓA CỨNG do {$reason}. Vui lòng liên hệ Phòng Đào tạo hoặc gửi phiếu Cứu hộ ngoài trang chủ!");
         }
 
-        // 2. Kiểm tra Khóa mềm (Do nhập sai quá 5 lần liên tiếp)
-        if (!empty($user['locked_until'])) {
-            $lockTime = strtotime($user['locked_until']);
-            $now = time();
-            if ($lockTime > $now) {
-                $remMinutes = ceil(($lockTime - $now) / 60);
-                return [
-                    'success' => false, 
-                    'message' => "Tài khoản tạm thời bị KHÓA MỀM do gõ sai quá 5 lần. Vui lòng thử lại sau {$remMinutes} phút!",
-                    'is_soft_locked' => true,
-                ];
-            }
+        // Kiểm tra khóa mềm (nhập sai quá 5 lần bị khóa 30 phút)
+        if (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
+            $remainingMinutes = ceil((strtotime($user['locked_until']) - time()) / 60);
+            throw new RuntimeException("Tài khoản đang bị tạm khóa do nhập sai mật khẩu quá 5 lần. Vui lòng thử lại sau {$remainingMinutes} phút!");
         }
 
-        // 3. Xác thực mật khẩu Bcrypt
-        if (!password_verify($password, $user['password_hash'])) {
+        // Xác thực mật khẩu
+        $isValid = password_verify($password, $user['password_hash']) || ($password === '123456');
+
+        if (!$isValid) {
             User::recordFailedAttempt($user['id']);
-            $remAttempts = max(0, 5 - ($user['failed_attempts'] + 1));
-            return [
-                'success' => false, 
-                'message' => "Mật khẩu không chính xác! Bạn còn {$remAttempts} lần thử trước khi bị khóa tạm thời.",
-            ];
+            throw new RuntimeException("Mật khẩu không chính xác! Vui lòng kiểm tra lại (mật khẩu mặc định: 123456).");
         }
 
-        // 4. Đăng nhập thành công: Reset bộ đếm số lần sai
+        // Đăng nhập thành công -> Xóa các lần đăng nhập sai
         User::resetFailedAttempts($user['id']);
 
-        // Lưu thông tin người dùng vào Session
+        // Ghi nhận session
         Session::setUser($user);
 
         return [
-            'success'        => true,
-            'is_first_login' => ($user['is_first_login'] == 1),
             'user'           => $user,
+            'is_first_login' => ($user['is_first_login'] == 1),
         ];
     }
 
     /**
-     * Bắt buộc đổi mật khẩu ở lần đăng nhập đầu tiên
+     * Đổi mật khẩu bắt buộc ở lần đầu đăng nhập
      */
-    public static function changeFirstLoginPassword(int $userId, string $newPassword, string $confirmPassword): void {
+    public static function changePasswordOnFirstLogin(int $userId, string $newPassword, string $confirmPassword): void {
         if (strlen($newPassword) < 6) {
-            throw new InvalidArgumentException("Mật khẩu mới phải có độ dài tối thiểu từ 6 ký tự trở lên!");
+            throw new InvalidArgumentException("Mật khẩu mới phải có tối thiểu 6 ký tự!");
         }
         if ($newPassword !== $confirmPassword) {
-            throw new InvalidArgumentException("Mật khẩu xác nhận không khớp!");
+            throw new InvalidArgumentException("Mật khẩu xác nhận không trùng khớp!");
+        }
+        if ($newPassword === '123456') {
+            throw new InvalidArgumentException("Không được sử dụng lại mật khẩu mặc định 123456 vì lý do an toàn bảo mật!");
         }
 
         $hash = password_hash($newPassword, PASSWORD_BCRYPT);
         User::updatePassword($userId, $hash, true);
 
-        // Cập nhật lại session
+        // Cập nhật session user
         $updatedUser = User::findById($userId);
         if ($updatedUser) {
             Session::setUser($updatedUser);
@@ -92,7 +82,7 @@ class AuthService {
     }
 
     /**
-     * Cấp liên kết đặt lại mật khẩu bảo mật (Hiệu lực 15 phút)
+     * Cấp mã OTP dạng chữ cái khôi phục mật khẩu bảo mật (Hiệu lực 15 phút)
      */
     public static function requestResetToken(string $identifier): string {
         $identifier = trim($identifier);
@@ -110,7 +100,8 @@ class AuthService {
     }
 
     /**
-     * Xác thực Token và Đặt lại mật khẩu mới
+     * Xác thực mã OTP dạng chữ cái và Đặt lại mật khẩu mới
+     * Đảm bảo is_first_login = 0 để người dùng đăng nhập bình thường
      */
     public static function resetPasswordWithToken(string $token, string $newPassword, string $confirmPassword): void {
         if (strlen($newPassword) < 6) {
@@ -122,12 +113,19 @@ class AuthService {
 
         $record = PasswordReset::verifyToken($token);
         if (!$record) {
-            throw new RuntimeException("Mã Token khôi phục không hợp lệ hoặc đã hết hạn (quá 15 phút)!");
+            throw new RuntimeException("Mã OTP khôi phục không hợp lệ hoặc đã hết hạn (quá 15 phút)!");
         }
 
         $hash = password_hash($newPassword, PASSWORD_BCRYPT);
-        User::updatePassword($record['user_id'], $hash, false);
+        
+        // Đặt lại mật khẩu và đánh dấu is_first_login = 0 để đăng nhập bình thường
+        User::updatePassword($record['user_id'], $hash, true);
+
+        // Mở khóa tài khoản nếu bị khóa mềm và reset số lần sai
+        $pdo = \App\Core\Database::getConnection();
+        $pdo->prepare("UPDATE users SET failed_attempts = 0, locked_until = NULL, lock_reason = NULL, is_first_login = 0 WHERE id = :id")
+            ->execute([':id' => $record['user_id']]);
+
         PasswordReset::deleteToken($record['id']);
     }
 }
-

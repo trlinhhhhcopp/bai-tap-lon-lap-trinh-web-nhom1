@@ -25,9 +25,21 @@ class Router {
 
     public function dispatch(): void {
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-        $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+        $fullUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 
-        // Chuẩn hóa URI (loại bỏ trailing slash nếu có)
+        // Tự động loại bỏ tiền tố script / thư mục dự án khi chạy trên XAMPP hoặc subfolder
+        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+        $scriptDir  = str_replace('\\', '/', dirname($scriptName));
+
+        $uri = $fullUri;
+        if (!empty($scriptName) && str_starts_with($uri, $scriptName)) {
+            $uri = substr($uri, strlen($scriptName));
+        } elseif (!empty($scriptDir) && $scriptDir !== '/' && str_starts_with($uri, $scriptDir)) {
+            $uri = substr($uri, strlen($scriptDir));
+        }
+
+        // Chuẩn hóa URI
+        $uri = '/' . ltrim($uri, '/');
         $uri = ($uri !== '/' && str_ends_with($uri, '/')) ? rtrim($uri, '/') : $uri;
 
         foreach ($this->routes as $route) {

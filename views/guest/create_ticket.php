@@ -1,4 +1,11 @@
-<?php require __DIR__ . '/../layouts/header.php'; ?>
+<?php 
+require_once __DIR__ . '/../../config/database.php';
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
+    (new \App\Controllers\GuestTicketController())->submit();
+    exit;
+}
+require __DIR__ . '/../layouts/header.php'; 
+?>
 
 <div style="max-width: 650px; margin: 30px auto; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); overflow: hidden;">
     <div style="background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); color: #fff; padding: 22px; text-align: center;">

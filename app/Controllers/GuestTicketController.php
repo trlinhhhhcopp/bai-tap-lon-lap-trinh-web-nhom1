@@ -28,7 +28,7 @@ class GuestTicketController extends Controller {
 
         try {
             $user = User::findByEmailOrCode($userCode);
-            $userId = $user ? $user['id'] : 1; // Gán tạm nếu không có
+            $userId = $user ? $user['id'] : 1; // Gán tạm nếu chưa có tài khoản
             $issueTitle = trim($_POST['issue_title'] ?? 'Yêu cầu mở khóa tài khoản');
 
             $attachmentPath = null;
@@ -42,6 +42,7 @@ class GuestTicketController extends Controller {
             $ticketId = Ticket::create([
                 'requester_id'     => $userId,
                 'requester_name'   => $name,
+                'assigned_to'      => 2, // Phân công ngay cho KTV Nguyễn Văn An (Chuyên trách SSO)
                 'category_id'      => 1, // CAT_SSO: Hỗ trợ tài khoản
                 'priority_id'      => 2, // HIGH
                 'is_guest_ticket'  => 1,
@@ -55,7 +56,7 @@ class GuestTicketController extends Controller {
             $ticket = Ticket::findById($ticketId);
             $ticketCode = $ticket['ticket_code'];
 
-            $this->flash('success', "Đã gửi phiếu cứu hộ thành công! <strong>Mã tra cứu duy nhất của bạn: <span style='font-size:16px; color:#0284c7; letter-spacing:0.5px;'>{$ticketCode}</span></strong>. Vấn đề này dự kiến sẽ được Kỹ thuật viên SSO tiếp nhận và xử lý trong vòng <strong>2 giờ làm việc</strong>. Bạn chỉ cần ghi nhớ mã này để tra cứu tiến độ!");
+            $this->flash('success', "Đã gửi phiếu cứu hộ thành công! <strong>Mã tra cứu duy nhất của bạn: <span style='font-size:16px; color:#0284c7; letter-spacing:0.5px;'>{$ticketCode}</span></strong>. Yêu cầu đã được tự động chuyển đến <strong>KTV Nguyễn Văn An (Chuyên trách SSO)</strong> tiếp nhận xử lý trong vòng <strong>2 giờ làm việc</strong>.");
             $this->redirect("/guest/lookup?code={$ticketCode}");
         } catch (\PDOException $e) {
             $this->flash('danger', 'Hệ thống cơ sở dữ liệu đang bận xử lý hoặc gặp sự cố kết nối. Vui lòng thử lại sau ít phút hoặc liên hệ trực tiếp Trung tâm CNTT!');
@@ -86,4 +87,3 @@ class GuestTicketController extends Controller {
         ]);
     }
 }
-

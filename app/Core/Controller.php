@@ -1,24 +1,9 @@
 <?php
 namespace App\Core;
 
-abstract class Controller {
-    /**
-     * Render một view giao diện
-     * @param string $view Ví dụ: 'auth/login', 'admin/users/index'
-     * @param array $data Dữ liệu truyền sang view
-     */
-    protected function view(string $view, array $data = []): void {
-        extract($data);
-        $flash = Session::getFlash();
-        $currentUser = Session::user();
-
-        $viewFile = __DIR__ . '/../../views/' . str_replace('.', '/', $view) . '.php';
-
-        if (!file_exists($viewFile)) {
-            die("Lỗi: Không tìm thấy tệp giao diện view [{$viewFile}]!");
-        }
-
-        require_once $viewFile;
+class Controller {
+    protected function view(string $viewPath, array $data = []): void {
+        View::render($viewPath, $data);
     }
 
     protected function json(array $data, int $statusCode = 200): void {
@@ -29,6 +14,24 @@ abstract class Controller {
     }
 
     protected function redirect(string $url): void {
+        if (str_starts_with($url, '/')) {
+            $docRoot = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: ($_SERVER['DOCUMENT_ROOT'] ?? ''));
+            $appRoot = str_replace('\\', '/', realpath(__DIR__ . '/../..') ?: dirname(dirname(__DIR__)));
+            $base = '/';
+            if ($docRoot && str_starts_with($appRoot, $docRoot)) {
+                $rel = substr($appRoot, strlen($docRoot));
+                $base = '/' . trim(str_replace('\\', '/', $rel), '/') . '/';
+                $base = str_replace('//', '/', $base);
+            }
+            if ($base !== '/' && !str_starts_with($url, $base)) {
+                $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+                if (str_contains($scriptName, 'public/index.php')) {
+                    $url = rtrim($base, '/') . '/public/index.php' . $url;
+                } else {
+                    $url = rtrim($base, '/') . $url;
+                }
+            }
+        }
         header("Location: {$url}");
         exit;
     }
@@ -41,4 +44,3 @@ abstract class Controller {
         return Session::user();
     }
 }
-

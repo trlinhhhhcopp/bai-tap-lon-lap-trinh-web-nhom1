@@ -4,19 +4,34 @@ namespace App\Models;
 use App\Core\Database;
 
 class PasswordReset {
+    /**
+     * Sinh mã OTP ngẫu nhiên gồm các chữ cái in hoa (loại I, O tránh nhầm với 1, 0)
+     */
+    public static function generateAlphabeticOtp(int $length = 6): string {
+        $letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $otp = '';
+        $max = strlen($letters) - 1;
+        for ($i = 0; $i < $length; $i++) {
+            $otp .= $letters[random_int(0, $max)];
+        }
+        return $otp;
+    }
+
+    /**
+     * Cấp mã OTP dạng chữ cái khôi phục mật khẩu (15 phút)
+     */
     public static function createToken(int $userId, string $email, int $lifetimeMinutes = 15): string {
         $pdo = Database::getConnection();
 
-        // Sinh token ngẫu nhiên và băm SHA-256
-        $rawToken = bin2hex(random_bytes(32));
-        $tokenHash = hash('sha256', $rawToken);
+        // Sinh mã OTP dạng chữ cái in hoa (6 ký tự)
+        $rawToken = self::generateAlphabeticOtp(6);
+        $tokenHash = hash('sha256', strtoupper($rawToken));
         $expiresAt = date('Y-m-d H:i:s', strtotime("+{$lifetimeMinutes} minutes"));
 
         // Xóa các token cũ của user này
         $del = $pdo->prepare("DELETE FROM password_resets WHERE user_id = :uid");
         $del->execute([':uid' => $userId]);
 
-        // Thêm token mới với thời hạn chuẩn ISO tương thích 100% cả MariaDB/MySQL và SQLite
         $ins = $pdo->prepare("INSERT INTO password_resets (user_id, email, token_hash, expires_at) 
                               VALUES (:uid, :email, :hash, :exp)");
         $ins->execute([
@@ -29,9 +44,12 @@ class PasswordReset {
         return $rawToken;
     }
 
+    /**
+     * Xác thực mã OTP dạng chữ cái (không phân biệt hoa thường)
+     */
     public static function verifyToken(string $rawToken): ?array {
         $pdo = Database::getConnection();
-        $tokenHash = hash('sha256', $rawToken);
+        $tokenHash = hash('sha256', strtoupper(trim($rawToken)));
         $now = date('Y-m-d H:i:s');
 
         $sql = "SELECT pr.*, u.user_code, u.name, u.academic_status, u.is_active
@@ -59,4 +77,3 @@ class PasswordReset {
         $stmt->execute([':id' => $id]);
     }
 }
-

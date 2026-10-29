@@ -1,4 +1,22 @@
-<?php require __DIR__ . '/../layouts/header.php'; ?>
+<?php 
+require_once __DIR__ . '/../../config/database.php';
+require __DIR__ . '/../layouts/header.php'; 
+
+$code = $code ?? trim($_GET['code'] ?? '');
+$ticket = $ticket ?? null;
+$isInternalTicket = $isInternalTicket ?? false;
+
+if (empty($ticket) && !empty($code)) {
+    $found = \App\Models\Ticket::findByTicketCode($code);
+    if ($found) {
+        if (empty($found['is_guest_ticket'])) {
+            $isInternalTicket = true;
+        } else {
+            $ticket = $found;
+        }
+    }
+}
+?>
 
 <div style="max-width: 680px; margin: 30px auto; background: #fff; border: 1px solid var(--border-color); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); overflow: hidden;">
     <div style="background: linear-gradient(135deg, var(--navy-dark) 0%, #1e293b 100%); color: #fff; padding: 24px; text-align: center; border-bottom: 3px solid var(--primary);">
@@ -7,7 +25,7 @@
     </div>
 
     <div style="padding: 28px;">
-        <form method="GET" action="<?= $appBase ?>public/index.php/guest/lookup" style="display: flex; gap: 10px; margin-bottom: 24px;">
+        <form method="GET" action="" style="display: flex; gap: 10px; margin-bottom: 24px;">
             <input type="text" name="code" value="<?= htmlspecialchars($code) ?>" required placeholder="Nhập mã phiếu (VD: HD-2026-2910-L0H004)" style="flex:1; padding:12px 16px; border:1.5px solid var(--border-color); border-radius:8px; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
             <button type="submit" style="padding:12px 24px; background:var(--primary); color:#fff; font-weight:700; font-size:14px; border:none; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.2s;">🔍 Tra Cứu Ngay</button>
         </form>
