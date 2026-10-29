@@ -2,7 +2,19 @@
 namespace App\Models;
 
 use App\Core\Database;
+use PDO;
 
+/**
+ * ==============================================================================
+ * BÀI TẬP LỚN LẬP TRÌNH WEB - HỌC KỲ I
+ * TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI (TUD) - KHOA CÔNG NGHỆ THÔNG TIN
+ * CHỦ ĐỀ 9: HỆ THỐNG TIẾP NHẬN & XỬ LÝ HỖ TRỢ CNTT TRỰC TUYẾN (HELPDESK ONLINE)
+ * 
+ * PHÂN HỆ: CORE ARCHITECTURE & AGENT WORKSPACE
+ * THÀNH VIÊN PHỤ TRÁCH ĐỘC QUYỀN: PHẠM THỊ THANH NGÂN (TRƯỞNG NHÓM - MSSV: 224001736)
+ * BẢNG CSDL QUẢN TRỊ: tickets
+ * ==============================================================================
+ */
 class Ticket {
     public static function findById(int $id): ?array {
         $pdo = Database::getConnection();
@@ -10,7 +22,10 @@ class Ticket {
                        c.name AS category_name, 
                        p.name AS priority_name,
                        req.name AS requester_name,
-                       COALESCE(agent.name, 'Đang chờ phân công') AS agent_name
+                       req.user_code AS requester_code,
+                       req.email AS requester_email,
+                       COALESCE(agent.name, 'Đang chờ phân công') AS agent_name,
+                       COALESCE(agent.user_code, '') AS agent_code
                 FROM tickets t
                 JOIN categories c ON c.id = t.category_id
                 JOIN priorities p ON p.id = t.priority_id
@@ -106,6 +121,7 @@ class Ticket {
         $res = $stmt->fetch();
         return $res ?: null;
     }
+<<<<<<< HEAD
 
     public static function findByGuestCodeAndPin(string $code, ?string $pin = null): ?array {
         return self::findByTicketCode($code);
@@ -118,4 +134,40 @@ class Ticket {
         return $stmt->execute([':id' => $id]);
     }
 }
+=======
+>>>>>>> origin/main
 
+    /**
+     * Cập nhật trạng thái phiếu hỗ trợ theo Vòng đời 5 bước (State Machine)
+     */
+    public static function updateStatus(int $id, string $status): bool {
+        $pdo = Database::getConnection();
+        $validStatuses = ['new', 'in_progress', 'waiting_requester', 'resolved', 'closed'];
+        if (!in_array($status, $validStatuses, true)) {
+            return false;
+        }
+
+        $fields = ["status = :status"];
+        $params = [':id' => $id, ':status' => $status];
+
+        if ($status === 'resolved') {
+            $fields[] = "resolved_at = NOW()";
+        } elseif ($status === 'closed') {
+            $fields[] = "closed_at = NOW()";
+        }
+
+        $sql = "UPDATE tickets SET " . implode(', ', $fields) . " WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute($params);
+    }
+
+    /**
+     * Ghi nhận mốc phản hồi đầu tiên của KTV (phục vụ đánh giá SLA First Response)
+     */
+    public static function recordFirstResponse(int $id): bool {
+        $pdo = Database::getConnection();
+        $sql = "UPDATE tickets SET first_response_at = NOW() WHERE id = :id AND first_response_at IS NULL";
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute([':id' => $id]);
+    }
+}

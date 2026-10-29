@@ -98,6 +98,7 @@ erDiagram
     USERS ||--o{ TICKET_REPLIES : "gửi trao đổi"
     USERS ||--o{ TICKET_RATINGS : "chấm CSAT"
     USERS ||--o{ PASSWORD_RESETS : "yêu cầu SSPR"
+    USERS ||--o{ HOLIDAYS : "created_by (Admin cấu hình)"
     USERS }o--|| CATEGORIES : "specialty_category_id (KTV)"
 
     CATEGORIES ||--o{ TICKETS : "category_id"
@@ -222,6 +223,7 @@ erDiagram
         varchar name "Tết, 30/4-1/5, 2/9"
         date start_date "Bắt đầu"
         date end_date "Kết thúc"
+        int created_by FK "Admin tạo lịch"
     }
 ```
 
@@ -336,5 +338,4 @@ erDiagram
    * **Cựu sinh viên hết khóa (D20 tốt nghiệp):** `220001001@daihocthudo.edu.vn` (`graduated`)
    * **Sinh viên TUD D24 bị kỷ luật buộc thôi học:** `224001999@daihocthudo.edu.vn` (`expelled`, Khóa cứng)
 
----
-*Tài liệu được chuẩn hóa bởi Nhóm 1 - Bài tập lớn Lập trình Web - Học kỳ I.*
+

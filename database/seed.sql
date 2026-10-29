@@ -28,8 +28,6 @@ DELETE FROM `priorities`;
 DELETE FROM `categories`;
 DELETE FROM `users`;
 
-SET FOREIGN_KEY_CHECKS = 1;
-
 -- ==============================================================================
 -- 1. SEED DANH MỤC DỊCH VỤ TRỰC TUYẾN (CATEGORIES)
 -- ==============================================================================
@@ -44,10 +42,10 @@ INSERT INTO `categories` (`id`, `code`, `name`, `description`, `default_priority
 -- 2. SEED MỨC ĐỘ ƯU TIÊN (PRIORITIES)
 -- ==============================================================================
 INSERT INTO `priorities` (`id`, `code`, `name`, `sla_factor`, `sort_order`) VALUES
-(1, 'URGENT', 'Khẩn cấp (Giờ thi / Sự cố diện rộng)', 0.25, 1),
-(2, 'HIGH', 'Cao (Đăng ký tín chỉ / Nộp bài tập / Nhập điểm)', 0.50, 2),
-(3, 'MED', 'Trung bình (Mật khẩu / Mail / Wi-Fi thông thường)', 1.00, 3),
-(4, 'LOW', 'Thấp (Hỏi đáp hướng dẫn / Thắc mắc chung)', 1.50, 4);
+(1, 'URGENT', 'Khẩn cấp', 0.25, 1),
+(2, 'HIGH', 'Cao', 0.50, 2),
+(3, 'MED', 'Trung bình', 1.00, 3),
+(4, 'LOW', 'Thấp', 1.50, 4);
 
 -- ==============================================================================
 -- 3. SEED DANH MỤC LỚP HỌC (CLASSES - KHÓA TUD D24)
@@ -71,13 +69,14 @@ INSERT INTO `courses` (`id`, `course_code`, `name`, `credits`, `department`) VAL
 
 -- ==============================================================================
 -- 5. SEED DANH MỤC NGÀY NGHỈ LỄ TRƯỜNG HỌC NĂM 2026 (HOLIDAYS)
+-- Quản trị viên (Admin user_id = 1) cấu hình lịch nghỉ lễ toàn trường
 -- ==============================================================================
-INSERT INTO `holidays` (`id`, `name`, `start_date`, `end_date`, `is_recurring`) VALUES
-(1, 'Tết Dương Lịch 2026', '2026-01-01', '2026-01-01', 1),
-(2, 'Tết Nguyên Đán Bính Ngọ 2026', '2026-02-14', '2026-02-23', 0),
-(3, 'Giỗ Tổ Hùng Vương (10/3 Âm lịch)', '2026-04-26', '2026-04-26', 1),
-(4, 'Ngày Giải phóng Miền Nam & Quốc tế Lao động', '2026-04-30', '2026-05-01', 1),
-(5, 'Quốc khánh nước CHXHCN Việt Nam', '2026-09-01', '2026-09-03', 1);
+INSERT INTO `holidays` (`id`, `name`, `start_date`, `end_date`, `is_recurring`, `created_by`) VALUES
+(1, 'Tết Dương Lịch 2026', '2026-01-01', '2026-01-01', 1, 1),
+(2, 'Tết Nguyên Đán Bính Ngọ 2026', '2026-02-14', '2026-02-23', 0, 1),
+(3, 'Giỗ Tổ Hùng Vương (10/3 Âm lịch)', '2026-04-26', '2026-04-26', 1, 1),
+(4, 'Ngày Giải phóng Miền Nam & Quốc tế Lao động', '2026-04-30', '2026-05-01', 1, 1),
+(5, 'Quốc khánh nước CHXHCN Việt Nam', '2026-09-01', '2026-09-03', 1, 1);
 
 -- ==============================================================================
 -- 6. SEED TÀI KHOẢN NGƯỜI DÙNG (USERS)
@@ -99,23 +98,23 @@ INSERT INTO `users` (
 -- 2. Đội ngũ 5 Kỹ thuật viên (KTV) chuyên trách 5 nhóm dịch vụ
 (2, 'KTV001', 'KTV Nguyễn Văn An (Chuyên trách SSO)', 'ktv1@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ Dịch vụ Định danh & Xác thực', '0911000001', NULL, NULL, 'studying', 1, 5, 1, 1, 1, 'none', 0),
+ 'Tổ Dịch vụ Định danh & Xác thực', '0911000001', NULL, NULL, 'studying', 1, 15, 1, 1, 1, 'none', 0),
 
 (3, 'KTV002', 'KTV Trần Thị Bích (Chuyên trách Mail & M365)', 'ktv2@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ Hạ tầng Đám mây & Email', '0911000002', NULL, NULL, 'studying', 2, 5, 0, 1, 1, 'none', 0),
+ 'Tổ Hạ tầng Đám mây & Email', '0911000002', NULL, NULL, 'studying', 2, 15, 0, 1, 1, 'none', 0),
 
 (4, 'KTV003', 'KTV Lê Văn Cường (Chuyên trách Cổng QLĐT)', 'ktv3@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ Phần mềm & CSDL Đào tạo', '0911000003', NULL, NULL, 'studying', 3, 5, 1, 1, 1, 'none', 0),
+ 'Tổ Phần mềm & CSDL Đào tạo', '0911000003', NULL, NULL, 'studying', 3, 15, 1, 1, 1, 'none', 0),
 
 (5, 'KTV004', 'KTV Phạm Hoàng Dũng (Chuyên trách Canvas LMS)', 'ktv4@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ E-Learning & Lớp học số', '0911000004', NULL, NULL, 'studying', 4, 5, 1, 1, 1, 'none', 0),
+ 'Tổ E-Learning & Lớp học số', '0911000004', NULL, NULL, 'studying', 4, 15, 1, 1, 1, 'none', 0),
 
 (6, 'KTV005', 'KTV Vũ Thị Én (Chuyên trách Mạng & Wi-Fi)', 'ktv5@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ Hạ tầng Mạng & Viễn thông', '0911000005', NULL, NULL, 'studying', 5, 5, 0, 1, 1, 'none', 0),
+ 'Tổ Hạ tầng Mạng & Viễn thông', '0911000005', NULL, NULL, 'studying', 5, 15, 0, 1, 1, 'none', 0),
 
 -- 3. 6 Giảng viên phụ trách 6 môn học trong kỳ (1 lớp học phần chỉ có 1 GV phụ trách)
 (7, 'GV001', 'TS. Nguyễn Văn Giảng', 'nguyenvangiang@daihocthudo.edu.vn', 
@@ -233,7 +232,7 @@ INSERT INTO `tickets` (
  '2026-10-23 08:10:00', NULL, NULL),
 
 -- Phiếu 2: Sinh viên Ngân (TUD D24) báo lỗi nộp bài tập môn Lập trình Web lớp D24-CNTT1
-(2, 'HD-2026-00002', 13, 5, 4, 1, 1, 
+(2, 'HD-2026-00002', 13, 5, 4, 2, 1, 
  1, 1,
  0, NULL, NULL, 
  'Lịch nộp bài tập lớn môn Lập trình Web lớp D24-CNTT1 rơi vào ngày 30/4', 
@@ -286,3 +285,6 @@ INSERT INTO `ticket_replies` (`id`, `ticket_id`, `user_id`, `message`, `is_inter
 -- ==============================================================================
 INSERT INTO `ticket_ratings` (`id`, `ticket_id`, `user_id`, `score`, `comment`, `created_at`) VALUES
 (1, 5, 17, 5, 'KTV hỗ trợ rất nhanh và nhiệt tình, Wi-Fi phòng KTX mình đã bắt được sóng khỏe.', '2026-10-21 11:55:00');
+
+-- Bật lại kiểm tra khóa ngoại
+SET FOREIGN_KEY_CHECKS = 1;
