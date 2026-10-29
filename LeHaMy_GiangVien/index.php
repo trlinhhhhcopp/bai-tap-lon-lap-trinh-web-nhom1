@@ -1,9 +1,18 @@
 <?php
 /**
  * Front Controller – CRUD course_assignments
- * Phần của: Lê Hà My
+ * Phân hệ Giảng viên
  */
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Bắt buộc đăng nhập
+if (empty($_SESSION['user'])) {
+    header('Location: ../index.php');
+    exit;
+}
+
 require_once __DIR__ . '/Controllers/Lecturer/CourseAssignmentController.php';
 
 $action = $_GET['action'] ?? 'index';
@@ -15,4 +24,3 @@ match ($action) {
     'delete' => $controller->delete(),
     default  => $controller->index(),
 };
-?>

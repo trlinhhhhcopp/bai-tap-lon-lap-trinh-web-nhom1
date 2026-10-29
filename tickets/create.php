@@ -1,43 +1,67 @@
 <?php
 // ==============================================================================
-// BÀI 5: TẠO PHIẾU HỖ TRỢ MỚI - ÁP DỤNG POST-REDIRECT-GET (SLIDE 2, 7 & 8)
+// FORM TẠO PHIẾU HỖ TRỢ - CHUẨN ĐẶC TẢ ITIL V4 & AUTO-PRIORITY MAPPING
 // ==============================================================================
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
-$categories = TicketRepository::getCategories();
-$priorities = TicketRepository::getPriorities();
-$users      = TicketRepository::getUsers('requester'); // Lấy danh sách SV & GV
+// Kiểm tra đăng nhập bắt buộc
+if (empty($_SESSION['user'])) {
+    set_flash('danger', 'Vui lòng đăng nhập để gửi yêu cầu hỗ trợ!');
+    header('Location: ../index.php');
+    exit;
+}
+
+$currentUser = $_SESSION['user'];
+$userType    = $currentUser['user_type'] ?? 'student';
+$categories  = TicketRepository::getCategories();
+$priorities  = TicketRepository::getPriorities();
 
 $errors = [];
 
-// XỬ LÝ POST KHI NGƯỜI DÙNG BẤM GỬI FORM (SLIDE 8)
+// XỬ LÝ POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $requesterId    = (int)($_POST['requester_id'] ?? 0);
     $categoryId     = (int)($_POST['category_id'] ?? 0);
-    $priorityId     = (int)($_POST['priority_id'] ?? 0);
     $title          = trim($_POST['title'] ?? '');
     $description    = trim($_POST['description'] ?? '');
     $systemAffected = trim($_POST['system_affected'] ?? 'Canvas LMS');
 
-    // 1. Kiểm tra tính hợp lệ dữ liệu (Validate) - Test case 1 & 2
-    if ($requesterId <= 0) {
-        $errors[] = "Vui lòng chọn người gửi yêu cầu (Sinh viên hoặc Giảng viên).";
+    // Người gửi luôn là tài khoản đang đăng nhập
+    $requesterId = (int)$currentUser['id'];
+
+    // Auto-Priority mapping chuẩn đặc tả PDF theo vai trò
+    if ($userType === 'student') {
+        // Sinh viên: Tự động gán theo Category default_priority_code (Không có trường chọn Priority)
+        $catStmt = db()->prepare("SELECT code, default_priority_code FROM categories WHERE id = :id LIMIT 1");
+        $catStmt->execute(['id' => $categoryId]);
+        $catInfo = $catStmt->fetch();
+        $defCode = $catInfo['default_priority_code'] ?? 'MED';
+        if (str_contains(strtoupper($catInfo['code'] ?? ''), 'QLDT') || str_contains(strtoupper($catInfo['code'] ?? ''), 'CANVAS')) {
+            $defCode = 'HIGH';
+        }
+        $prioStmt = db()->prepare("SELECT id FROM priorities WHERE code = :code LIMIT 1");
+        $prioStmt->execute(['code' => $defCode]);
+        $priorityId = (int)($prioStmt->fetchColumn() ?: 2);
+    } else {
+        // Giảng viên hoặc KTV/Admin: Được phép chọn mức ưu tiên (HIGH hoặc URGENT)
+        $priorityId = (int)($_POST['priority_id'] ?? 2);
     }
+
+    // Validate
     if ($categoryId <= 0) {
         $errors[] = "Vui lòng chọn nhóm dịch vụ gặp sự cố.";
     }
-    if ($priorityId <= 0) {
-        $errors[] = "Vui lòng chọn mức độ ưu tiên.";
-    }
     if (empty($title)) {
-        $errors[] = "Tiêu đề sự cố không được để trống (Test case 1).";
+        $errors[] = "Tiêu đề sự cố không được để trống.";
     }
     if (empty($description)) {
         $errors[] = "Vui lòng nhập nội dung mô tả chi tiết lỗi bạn đang gặp phải.";
     }
 
-    // 2. Nếu không có lỗi -> Gọi Repository thực hiện INSERT (Slide 8)
     if (empty($errors)) {
         try {
             $ticketId = TicketRepository::create([
@@ -49,12 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'system_affected' => $systemAffected,
             ]);
 
-            // 3. POST - Redirect - GET: Gán Flash Message và Chuyển hướng an toàn
-            set_flash('success', "Tạo phiếu hỗ trợ mới thành công! Phiếu đã được chuyển đến KTV chuyên trách.");
-            header('Location: index.php');
+            set_flash('success', "Gửi phiếu hỗ trợ thành công! Mã phiếu của bạn là #HD-" . str_pad($ticketId, 5, '0', STR_PAD_LEFT) . ".");
+            header('Location: ../index.php');
             exit;
         } catch (Exception $e) {
-            $errors[] = "Lỗi hệ thống khi lưu CSDL: " . $e->getMessage();
+            $errors[] = "Lỗi khi lưu phiếu vào CSDL: " . $e->getMessage();
         }
     }
 }
@@ -64,32 +87,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tạo Phiếu Hỗ Trợ Mới - Helpdesk ĐH Thủ Đô</title>
+    <title>Gửi Yêu Cầu Hỗ Trợ - Helpdesk ĐH Thủ Đô</title>
     <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+
 <?php require_once __DIR__ . '/../includes/navbar.php'; ?>
-<div class="flex-1 p-4 md:p-6">
 
+<div class="flex-1 max-w-3xl mx-auto w-full p-4 md:p-6 space-y-6">
 
-<div class="max-w-3xl mx-auto space-y-6">
-
-    <!-- HEADER -->
+    <!-- HEADER FORM -->
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
         <div>
-            <div class="flex items-center gap-2 mb-1">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">ĐH Thủ Đô Hà Nội</span>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">Slide 8: Demo INSERT</span>
-            </div>
-            <h1 class="text-xl font-black text-slate-900 tracking-tight">Tạo Phiếu Hỗ Trợ Sự Cố Kỹ Thuật</h1>
-            <p class="text-xs text-slate-500 mt-0.5">Dữ liệu được bảo vệ 100% bằng PDO Prepared Statement chống SQL Injection</p>
+            <h1 class="text-xl font-black text-slate-900 tracking-tight">Gửi Yêu Cầu Hỗ Trợ Kỹ Thuật</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Tiếp nhận và điều phối sự cố trực tuyến theo chuẩn ITIL v4</p>
         </div>
-        <a href="index.php" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
-            ← Quay lại danh sách
+        <a href="../index.php" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">
+            ← Quay lại
         </a>
     </div>
 
-    <!-- HIỂN THỊ LỖI NẾU CÓ -->
+    <!-- HIỂN THỊ LỖI -->
     <?php if (!empty($errors)): ?>
         <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 space-y-1">
             <div class="font-bold flex items-center gap-1.5">
@@ -103,83 +121,87 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     <?php endif; ?>
 
-    <!-- FORM NHẬP LIỆU (POST METHOD) -->
+    <!-- FORM NHẬP LIỆU -->
     <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <form method="POST" action="create.php" class="space-y-4 text-xs">
             
-            <!-- Người gửi -->
+            <!-- Người gửi (Tự động theo tài khoản đang đăng nhập) -->
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                <div>
+                    <span class="text-slate-400 block text-[11px]">Tài khoản người gửi yêu cầu:</span>
+                    <strong class="text-slate-800 text-xs"><?php echo htmlspecialchars($currentUser['name']); ?></strong>
+                    <span class="text-indigo-600 font-mono text-[11px]">(<?php echo htmlspecialchars($currentUser['user_code']); ?>)</span>
+                </div>
+                <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-[10.5px]">
+                    <?php echo $userType === 'student' ? 'Sinh viên' : 'Giảng viên'; ?>
+                </span>
+            </div>
+
+            <!-- Danh mục sự cố -->
             <div>
-                <label class="block font-bold text-slate-700 mb-1">Người gửi yêu cầu (Sinh viên / Giảng viên): <span class="text-rose-500">*</span></label>
-                <select name="requester_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
-                    <option value="">-- Chọn tài khoản người gửi --</option>
-                    <?php foreach ($users as $u): ?>
-                        <option value="<?php echo $u['id']; ?>" <?php echo (isset($_POST['requester_id']) && (int)$_POST['requester_id'] === (int)$u['id']) || (!isset($_POST['requester_id']) && $u['user_code'] === '224001736') ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($u['name']); ?> (Mã: <?php echo htmlspecialchars($u['user_code']); ?> - <?php echo $u['user_type'] === 'student' ? 'Sinh viên' : 'Giảng viên'; ?>)
+                <label class="block font-bold text-slate-700 mb-1">Dịch vụ đang gặp sự cố: <span class="text-rose-500">*</span></label>
+                <select name="category_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold">
+                    <option value="">-- Chọn dịch vụ đang gặp lỗi --</option>
+                    <?php foreach ($categories as $cat): ?>
+                        <option value="<?php echo $cat['id']; ?>" <?php echo isset($_POST['category_id']) && (int)$_POST['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>>
+                            <?php echo htmlspecialchars($cat['name']); ?> (SLA chuẩn: <?php echo $cat['sla_hours']; ?>h)
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <span class="text-slate-400 text-[11px] mt-0.5 block">Mặc định chọn tài khoản của Trưởng nhóm <strong>Phạm Thị Thanh Ngân (224001736)</strong></span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Danh mục dịch vụ -->
+            <!-- Phân luồng Mức ưu tiên: Sinh viên Auto-Priority, Giảng viên được chọn HIGH/URGENT -->
+            <?php if ($userType === 'student'): ?>
+                <div class="p-3 bg-indigo-50/80 border border-indigo-200 rounded-xl text-indigo-900 text-[11.5px] space-y-1">
+                    <div class="font-bold flex items-center gap-1.5">
+                        <span>⚡</span> Cơ Chế Tự Động Gán Mức Ưu Tiên (Auto-Priority Mapping):
+                    </div>
+                    <p class="text-indigo-800/80 leading-relaxed text-[11px]">
+                        Theo tiêu chuẩn ITIL v4, hệ thống sẽ tự động gán mức ưu tiên khách quan dựa trên loại sự cố bạn chọn (Canvas LMS/QLĐT: <strong>Cao - SLA 2h</strong>; Tài khoản/Email/Wifi: <strong>Trung bình - SLA 2h–4h</strong>) để đảm bảo công bằng cho toàn trường.
+                    </p>
+                </div>
+            <?php else: ?>
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Nhóm dịch vụ gặp sự cố: <span class="text-rose-500">*</span></label>
-                    <select name="category_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
-                        <option value="">-- Chọn danh mục dịch vụ --</option>
-                        <?php foreach ($categories as $cat): ?>
-                            <option value="<?php echo $cat['id']; ?>" <?php echo isset($_POST['category_id']) && (int)$_POST['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($cat['name']); ?> (SLA chuẩn: <?php echo $cat['sla_hours']; ?>h)
-                            </option>
-                        <?php endforeach; ?>
+                    <label class="block font-bold text-slate-700 mb-1">Mức độ ưu tiên (Giảng viên đào tạo):</label>
+                    <select name="priority_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-bold text-rose-700">
+                        <option value="1">Khẩn cấp (URGENT - Giờ giảng dạy / Hạn chốt điểm thi)</option>
+                        <option value="2" selected>Cao (HIGH - Lỗi phòng học trực tuyến Teams / Canvas)</option>
+                        <option value="3">Trung bình (MED - Nghiên cứu khoa học / Cấp bản quyền)</option>
                     </select>
                 </div>
-
-                <!-- Mức ưu tiên -->
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Mức độ ưu tiên: <span class="text-rose-500">*</span></label>
-                    <select name="priority_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
-                        <option value="">-- Chọn mức độ ưu tiên --</option>
-                        <?php foreach ($priorities as $p): ?>
-                            <option value="<?php echo $p['id']; ?>" <?php echo (isset($_POST['priority_id']) && (int)$_POST['priority_id'] === (int)$p['id']) || (!isset($_POST['priority_id']) && $p['code'] === 'MED') ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($p['name']); ?> (<?php echo htmlspecialchars($p['code']); ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
+            <?php endif; ?>
 
             <!-- Hệ thống bị ảnh hưởng -->
             <div>
-                <label class="block font-bold text-slate-700 mb-1">Hệ thống ứng dụng bị ảnh hưởng:</label>
+                <label class="block font-bold text-slate-700 mb-1">Ứng dụng / Hệ thống bị ảnh hưởng:</label>
                 <input type="text" name="system_affected" value="<?php echo htmlspecialchars($_POST['system_affected'] ?? 'Canvas LMS'); ?>" 
-                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
+                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"
                        placeholder="Ví dụ: Canvas LMS, Cổng QLĐT, Wi-Fi Ký túc xá, Microsoft 365..." />
             </div>
 
             <!-- Tiêu đề sự cố -->
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Tiêu đề tóm tắt sự cố: <span class="text-rose-500">*</span></label>
-                <input type="text" name="title" value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>" 
-                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-                       placeholder="Ví dụ: Không thấy mục nộp bài tập lớn môn Lập trình Web lớp D24-CNTT1" />
+                <input type="text" name="title" required value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>" 
+                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"
+                       placeholder="Ví dụ: Không thể đăng nhập vào lớp học phần môn Lập trình Web" />
             </div>
 
-            <!-- Mô tả chi tiết -->
+            <!-- Nội dung mô tả chi tiết -->
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Nội dung mô tả chi tiết: <span class="text-rose-500">*</span></label>
-                <textarea name="description" rows="4" 
-                          class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"
-                          placeholder="Mô tả cụ thể lỗi bạn đang gặp phải, các bước dẫn đến lỗi và mong muốn KTV hỗ trợ..."><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
+                <textarea name="description" rows="4" required
+                          class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"
+                          placeholder="Mô tả cụ thể thông báo lỗi, thời điểm gặp sự cố và mong muốn KTV hỗ trợ..."><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
             </div>
 
-            <!-- Nút bấm -->
+            <!-- Nút gửi -->
             <div class="pt-2 flex items-center justify-end gap-3">
-                <a href="index.php" class="px-4 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-xl transition">
+                <a href="../index.php" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-xl transition">
                     Hủy bỏ
                 </a>
-                <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm shadow-indigo-200 transition">
-                    🚀 Gửi Phiếu Hỗ Trợ
+                <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm">
+                    Gửi Yêu Cầu Hỗ Trợ ➔
                 </button>
             </div>
 
@@ -187,8 +209,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
 </div>
-</div>
+
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>
-

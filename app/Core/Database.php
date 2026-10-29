@@ -21,24 +21,33 @@ class Database {
 
         $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
 
+        $passwords = array_unique([$config['password'], '', 'root', '1234', 'nhi12345']);
+        $connected = false;
+
+        foreach ($passwords as $pwd) {
+            try {
+                self::$instance = new PDO($dsn, $config['username'], $pwd, $config['options']);
+                self::$isFallback = false;
+                $connected = true;
+
+                // Đảm bảo các cột mở rộng luôn tồn tại trên MySQL
+                try {
+                    self::$instance->exec("ALTER TABLE users ADD COLUMN avatar_path VARCHAR(255) NULL;");
+                } catch (PDOException $ex) {}
+                try {
+                    self::$instance->exec("ALTER TABLE tickets ADD COLUMN attachment_path VARCHAR(255) NULL;");
+                } catch (PDOException $ex) {}
+
+                return self::$instance;
+            } catch (PDOException $ex) {
+                // Thử mật khẩu tiếp theo
+            }
+        }
+
         try {
-            self::$instance = new PDO(
-                $dsn,
-                $config['username'],
-                $config['password'],
-                $config['options']
-            );
-            self::$isFallback = false;
-
-            // Đảm bảo các cột mở rộng (avatar_path, attachment_path) luôn tồn tại trên MySQL
-            try {
-                self::$instance->exec("ALTER TABLE users ADD COLUMN avatar_path VARCHAR(255) NULL;");
-            } catch (PDOException $ex) {}
-            try {
-                self::$instance->exec("ALTER TABLE tickets ADD COLUMN attachment_path VARCHAR(255) NULL;");
-            } catch (PDOException $ex) {}
-
-            return self::$instance;
+            if (!$connected) {
+                throw new PDOException("Không thể kết nối MySQL với các mật khẩu mặc định.");
+            }
         } catch (PDOException $e) {
             // Đánh dấu đang chạy chế độ dự phòng SQLite
             self::$isFallback = true;

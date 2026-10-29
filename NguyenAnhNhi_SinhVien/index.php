@@ -1,22 +1,21 @@
 <?php
 /**
- * Front Controller – Student Module
- * Phần của: Nguyễn Ánh Nhi
+ * Front Controller – Student Module (CSAT Ratings & Tickets)
+ * Phân hệ Sinh viên
  */
-session_start();
-require_once __DIR__ . '/Controllers/Student/RatingController.php';
-require_once __DIR__ . '/Controllers/Student/TicketController.php';
-
-$action = $_GET['action'] ?? 'tickets'; // mặc định vào danh sách phiếu
-
-// Giả lập sinh viên đang đăng nhập (để demo)
-if (!isset($_SESSION['user'])) {
-    $_SESSION['user'] = [
-        'id'   => 13,                          // Phạm Thị Thanh Ngân
-        'name' => 'Phạm Thị Thanh Ngân',
-        'role' => 'requester'
-    ];
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
+
+// Bắt buộc đăng nhập
+if (empty($_SESSION['user'])) {
+    header('Location: ../index.php');
+    exit;
+}
+
+require_once __DIR__ . '/Controllers/Student/RatingController.php';
+
+$action = $_GET['action'] ?? 'ratings';
 
 match ($action) {
     // ===== RATING (CSAT) =====
@@ -25,11 +24,10 @@ match ($action) {
     'rating_edit'   => (new RatingController())->edit(),
     'rating_delete' => (new RatingController())->delete(),
 
-    // ===== TICKET (Báo sự cố) =====
-    'tickets'       => (new TicketController())->index(),
-    'ticket_create' => (new TicketController())->create(),
-    'ticket_store'  => (new TicketController())->store(),
-    'ticket_show'   => (new TicketController())->show(),
+    // ===== ĐIỀU HƯỚNG TẬP TRUNG SANG PHÂN HỆ VÉ DUY NHẤT =====
+    'tickets'       => header('Location: ../tickets/index.php') . exit,
+    'ticket_create' => header('Location: ../tickets/create.php') . exit,
+    'ticket_show'   => header('Location: ../tickets/show.php?id=' . (int)($_GET['id'] ?? 1)) . exit,
 
-    default         => (new TicketController())->index(),
+    default         => (new RatingController())->index(),
 };

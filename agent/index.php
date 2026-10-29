@@ -10,8 +10,30 @@ require_once __DIR__ . '/../config/database.php';
 use App\Services\TicketService;
 use App\Models\MasterData;
 
-// Chọn KTV làm việc (Mô phỏng 5 KTV chuyên môn)
-$agentId = (int)($_GET['agent_id'] ?? 2);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Bắt buộc đăng nhập
+if (empty($_SESSION['user'])) {
+    header('Location: ../index.php');
+    exit;
+}
+
+$currentUser = $_SESSION['user'];
+// Chặn người dùng không phải KTV hoặc Admin
+if (!in_array($currentUser['role'], ['agent', 'admin'])) {
+    $_SESSION['flash'] = [
+        'type'    => 'danger',
+        'message' => 'Bạn không có quyền truy cập vào Bàn làm việc Kỹ thuật viên!'
+    ];
+    header('Location: ../index.php');
+    exit;
+}
+
+// Chọn KTV làm việc (Nếu là KTV đăng nhập thì mặc định vào bàn làm việc của chính mình)
+$defaultAgentId = ($currentUser['role'] === 'agent') ? (int)$currentUser['id'] : 2;
+$agentId = (int)($_GET['agent_id'] ?? $defaultAgentId);
 $statusFilter = trim($_GET['status'] ?? '');
 
 $db = db();
@@ -107,23 +129,22 @@ $flash = get_flash();
 
 <div class="max-w-6xl mx-auto space-y-6">
 
-    <!-- BANNER PHÂN HỆ CỦA TRƯỞNG NHÓM -->
     <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-5 shadow-sm border border-indigo-900/40 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <div class="flex items-center gap-2 mb-1">
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
-                    Phân hệ: Core Architecture & Agent Workspace
+                    Bàn Làm Việc Kỹ Thuật Viên
                 </span>
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300">
-                    Thuật Toán Tràn Tải Thông Minh
+                    Hàng đợi SLA: due_at ASC
                 </span>
             </div>
             <h1 class="text-2xl font-black text-white">👨‍💻 BÀN LÀM VIỆC KỸ THUẬT VIÊN (AGENT WORKSPACE)</h1>
-            <p class="text-xs text-indigo-200/80 mt-1">Phụ trách độc quyền: <strong class="text-white">Phạm Thị Thanh Ngân</strong> (MSSV: 224001736 · Khóa TUD D24 · Lớp D24-CNTT1)</p>
+            <p class="text-xs text-indigo-200/80 mt-1">Tiếp nhận, xử lý sự cố kỹ thuật từ xa, ghi chú nội bộ và hoàn tất giải pháp.</p>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
             <a href="../tickets/index.php" class="px-3.5 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition border border-white/20">
-                🎫 Quản lý CRUD Bài 5
+                🎫 Danh sách phiếu
             </a>
             <a href="../index.php" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-sm">
                 🏠 Trang Chủ
@@ -360,6 +381,7 @@ function closeResolveModal() {
 }
 </script>
 
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>
 

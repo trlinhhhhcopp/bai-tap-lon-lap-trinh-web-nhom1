@@ -1,158 +1,136 @@
 <?php
-$pageTitle = 'Danh sách Đánh giá CSAT';
+$pageTitle = 'Đánh Giá Chất Lượng Dịch Vụ (CSAT)';
+require_once __DIR__ . '/../../../../config/database.php';
+if (session_status() === PHP_SESSION_NONE) session_start();
+if (empty($_SESSION['user'])) {
+    header('Location: ../index.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle) ?> | Helpdesk CNTT – ĐH Thủ Đô</title>
-    <style>
-        :root {
-            --primary:#0284c7; --primary-dark:#0369a1; --primary-light:#e0f2fe;
-            --navy:#0f172a; --bg:#f8fafc; --card:#fff; --border:#cbd5e1;
-            --text:#1e293b; --muted:#64748b;
-            --ok-bg:#dcfce7; --ok-text:#15803d; --err-bg:#fee2e2; --err-text:#b91c1c;
-        }
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-        .navbar{background:var(--navy);color:#fff;padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center}
-        .navbar a{color:#fff;text-decoration:none;font-weight:600}
-        .container{max-width:1100px;margin:1.5rem auto;padding:0 1rem}
-        .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-bottom:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-        h1{font-size:1.35rem;margin-bottom:1rem;color:var(--primary-dark)}
-        .btn{display:inline-block;padding:.4rem .9rem;border-radius:6px;border:none;cursor:pointer;font-size:.9rem;text-decoration:none;color:#fff;background:var(--primary)}
-        .btn:hover{background:var(--primary-dark)}
-        .btn-secondary{background:var(--muted)} .btn-danger{background:#dc2626} .btn-sm{padding:.25rem .6rem;font-size:.8rem}
-        table{width:100%;border-collapse:collapse;font-size:.9rem}
-        th,td{padding:.55rem .75rem;text-align:left;border-bottom:1px solid var(--border)}
-        th{background:var(--primary-light);color:var(--primary-dark);font-weight:600}
-        tr:hover td{background:#f1f5f9}
-        .alert{padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:.9rem}
-        .alert-success{background:var(--ok-bg);color:var(--ok-text);border:1px solid #86efac}
-        .alert-danger{background:var(--err-bg);color:var(--err-text);border:1px solid #fca5a5}
-        .search-bar{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-        .search-bar input,.search-bar select{padding:.45rem .7rem;border:1px solid var(--border);border-radius:6px}
-        .pagination{display:flex;gap:.4rem;margin-top:1rem;flex-wrap:wrap}
-        .pagination a,.pagination span{padding:.3rem .65rem;border:1px solid var(--border);border-radius:4px;text-decoration:none;color:var(--text);font-size:.85rem}
-        .pagination .current{background:var(--primary);color:#fff;border-color:var(--primary)}
-        .actions{display:flex;gap:.35rem;flex-wrap:wrap}
-        .text-muted{color:var(--muted);font-size:.85rem}
-        .note{background:var(--primary-light);border-left:4px solid var(--primary);padding:.6rem .9rem;font-size:.875rem;margin-bottom:1rem;border-radius:0 6px 6px 0}
-        .stars{color:#f59e0b;font-weight:600}
-    </style>
+    <title><?= htmlspecialchars($pageTitle) ?> - Helpdesk ĐH Thủ Đô</title>
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body>
-<nav class="navbar">
-    <a href="index.php?action=tickets">Phiếu hỗ trợ</a>
-        <a href="index.php?action=ratings" style="margin-left:1rem;">Đánh giá CSAT</a>
-        <a href="../index.php" style="color:#38bdf8;margin-left:1.5rem;font-size:0.85rem;">← Cổng Tổng Hợp Nhóm 1</a>
-    <span style="color:#94a3b8;font-size:.85rem">Nguyễn Ánh Nhi – ĐH Thủ Đô Hà Nội</span>
-</nav>
-<div class="container">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+<?php require_once __DIR__ . '/../../../../includes/navbar.php'; ?>
+
+<main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER BANNER -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                ⭐ CHỈ SỐ HÀI LÒNG KHÁCH HÀNG (CSAT)
+            </span>
+            <h1 class="text-2xl font-black text-white mt-1">
+                Đánh Giá Chất Lượng Hỗ Trợ Kỹ Thuật
+            </h1>
+            <p class="text-xs text-indigo-200/80">Khảo sát mức độ hài lòng từ 1 đến 5 sao theo chuẩn dịch vụ số ITIL v4.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="../index.php" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">
+                ← Quay lại Cổng Chính
+            </a>
+        </div>
+    </div>
+
     <?php if (!empty($flash)): ?>
-        <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>"><?= htmlspecialchars($flash['msg']) ?></div>
+        <div class="p-3.5 rounded-2xl text-xs font-semibold <?= $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200' ?>">
+            <?= htmlspecialchars($flash['msg']) ?>
+        </div>
     <?php endif; ?>
 
-    <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
-            <h1>Đánh giá CSAT (ticket_ratings)</h1>
-            <a href="index.php?action=create" class="btn">+ Thêm đánh giá</a>
-        </div>
-
-        <div class="note">
-            <strong>Quy tắc:</strong> Mỗi phiếu chỉ được đánh giá <strong>1 lần duy nhất</strong> (1–5 sao).
-        </div>
-
-        <!-- Bộ lọc -->
-        <form method="get" action="index.php" class="search-bar">
-            <input type="hidden" name="action" value="index">
-            <input type="text" name="q" value="<?= htmlspecialchars($keyword) ?>" placeholder="Tìm mã phiếu, tiêu đề, tên SV...">
-            
-            <select name="score">
-                <option value="">-- Tất cả điểm --</option>
-                <?php for ($i = 5; $i >= 1; $i--): ?>
-                    <option value="<?= $i ?>" <?= (isset($_GET['score']) && (int)$_GET['score'] === $i) ? 'selected' : '' ?>>
-                        <?= $i ?> sao
-                    </option>
+    <!-- THANH TÌM KIẾM -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-3 text-xs">
+        <form method="get" action="index.php" class="flex items-center gap-2 flex-1 max-w-lg">
+            <input type="hidden" name="action" value="ratings">
+            <input type="text" name="q" value="<?= htmlspecialchars($keyword) ?>" placeholder="Tìm kiếm theo mã vé, sinh viên, nhận xét..." 
+                   class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
+            <select name="score" class="px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-medium">
+                <option value="">Tất cả số sao</option>
+                <?php for ($s = 5; $s >= 1; $s--): ?>
+                    <option value="<?= $s ?>" <?= ($scoreFilter == $s) ? 'selected' : '' ?>><?= $s ?> sao</option>
                 <?php endfor; ?>
             </select>
-
-            <select name="student_id">
-                <option value="">-- Tất cả sinh viên --</option>
-                <?php foreach ($students as $sv): ?>
-                    <option value="<?= (int)$sv['id'] ?>" <?= (isset($_GET['student_id']) && (int)$_GET['student_id'] === (int)$sv['id']) ? 'selected' : '' ?>>
-                        <?= htmlspecialchars($sv['name']) ?>
-                    </option>
-                <?php endforeach; ?>
-            </select>
-
-            <button type="submit" class="btn">Lọc</button>
-            <a href="index.php?action=index" class="btn btn-secondary">Xóa lọc</a>
+            <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition">
+                Lọc
+            </button>
         </form>
+        <div class="text-slate-500 font-mono text-[11.5px]">
+            Tổng số: <strong class="text-slate-800"><?= $total ?></strong> đánh giá · Trang <?= $page ?>/<?= $totalPages ?>
+        </div>
+    </div>
 
-        <p class="text-muted" style="margin-bottom:.5rem">
-            Tìm thấy <strong><?= $total ?></strong> đánh giá · Trang <?= $page ?>/<?= $totalPages ?>
-        </p>
-
-        <?php if (empty($ratings)): ?>
-            <p class="text-muted">Không có dữ liệu.</p>
-        <?php else: ?>
-            <div style="overflow-x:auto">
-                <table>
-                    <thead>
+    <!-- BẢNG DANH SÁCH -->
+    <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
+                        <th class="py-3.5 px-4">Mã Phiếu</th>
+                        <th class="py-3.5 px-4">Tiêu Đề Sự Cố</th>
+                        <th class="py-3.5 px-4">Người Đánh Giá</th>
+                        <th class="py-3.5 px-4 text-center">Điểm CSAT</th>
+                        <th class="py-3.5 px-4">Nhận Xét / Góp Ý</th>
+                        <th class="py-3.5 px-4 text-center">Thời Gian</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <?php if (empty($ratings)): ?>
                         <tr>
-                            <th>Mã phiếu</th>
-                            <th>Tiêu đề</th>
-                            <th>Sinh viên</th>
-                            <th>Điểm</th>
-                            <th>Nhận xét</th>
-                            <th>Thời gian</th>
-                            <th>Thao tác</th>
+                            <td colspan="6" class="py-8 text-center text-slate-400">Chưa có đánh giá CSAT nào phù hợp.</td>
                         </tr>
-                    </thead>
-                    <tbody>
+                    <?php else: ?>
                         <?php foreach ($ratings as $row): ?>
-                            <tr>
-                                <td><strong><?= htmlspecialchars($row['ticket_code']) ?></strong></td>
-                                <td><?= htmlspecialchars($row['title']) ?></td>
-                                <td>
-                                    <?= htmlspecialchars($row['student_name']) ?><br>
-                                    <span class="text-muted"><?= htmlspecialchars($row['student_email']) ?></span>
+                            <tr class="hover:bg-slate-50/80 transition">
+                                <td class="py-3.5 px-4 font-mono font-bold text-indigo-600">
+                                    <a href="../tickets/show.php?id=<?= $row['ticket_id'] ?>" class="hover:underline">
+                                        <?= htmlspecialchars($row['ticket_code']) ?>
+                                    </a>
                                 </td>
-                                <td class="stars"><?= (int)$row['score'] ?> ★</td>
-                                <td><?= htmlspecialchars($row['comment'] ?? '—') ?></td>
-                                <td class="text-muted"><?= htmlspecialchars($row['created_at']) ?></td>
-                                <td>
-                                    <div class="actions">
-                                        <a href="index.php?action=edit&id=<?= (int)$row['id'] ?>" class="btn btn-sm">Sửa</a>
-                                        <form method="post" action="index.php?action=delete" style="display:inline">
-                                            <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger"
-                                                    onclick="return confirm('Xóa đánh giá này?');">Xóa</button>
-                                        </form>
-                                    </div>
+                                <td class="py-3.5 px-4 font-semibold text-slate-800 max-w-xs truncate">
+                                    <?= htmlspecialchars($row['ticket_title']) ?>
+                                </td>
+                                <td class="py-3.5 px-4">
+                                    <div class="font-bold text-slate-900"><?= htmlspecialchars($row['user_name']) ?></div>
+                                    <div class="text-[11px] text-slate-400 font-mono"><?= htmlspecialchars($row['user_code']) ?></div>
+                                </td>
+                                <td class="py-3.5 px-4 text-center">
+                                    <span class="font-mono font-bold text-amber-500 text-sm">
+                                        <?= str_repeat('★', (int)$row['score']) . str_repeat('☆', 5 - (int)$row['score']) ?>
+                                    </span>
+                                </td>
+                                <td class="py-3.5 px-4 text-slate-600 italic">
+                                    <?= !empty($row['comment']) ? '"' . htmlspecialchars($row['comment']) . '"' : '<span class="text-slate-300">Không có nhận xét</span>' ?>
+                                </td>
+                                <td class="py-3.5 px-4 text-center text-slate-400 font-mono text-[11px]">
+                                    <?= htmlspecialchars($row['created_at']) ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
 
-            <?php if ($totalPages > 1): ?>
-                <div class="pagination">
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <?php if ($i === $page): ?>
-                            <span class="current"><?= $i ?></span>
-                        <?php else: ?>
-                            <a href="index.php?action=index&page=<?= $i ?>&q=<?= urlencode($keyword) ?>&score=<?= $score ?? '' ?>&student_id=<?= $studentId ?? '' ?>"><?= $i ?></a>
-                        <?php endif; ?>
-                    <?php endfor; ?>
-                </div>
-            <?php endif; ?>
+        <?php if ($totalPages > 1): ?>
+            <div class="p-4 border-t border-slate-100 flex items-center justify-center gap-1.5 text-xs">
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="index.php?action=ratings&page=<?= $i ?>&q=<?= urlencode($keyword) ?>&score=<?= urlencode($scoreFilter) ?>" 
+                       class="px-3 py-1.5 rounded-lg border <?= $i == $page ? 'bg-indigo-600 text-white border-indigo-600 font-bold' : 'border-slate-300 text-slate-700 hover:bg-slate-100' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
+            </div>
         <?php endif; ?>
     </div>
-</div>
+
+</main>
+
 <?php require_once __DIR__ . '/../../../../includes/footer.php'; ?>
 </body>
 </html>

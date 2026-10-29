@@ -1,7 +1,17 @@
 <?php
-// ==============================================================================
-// BÀI 5: MÀN HÌNH DANH SÁCH PHIẾU - TÌM KIẾM & PHÂN TRANG (SLIDE 6, 7 & 11)
-// ==============================================================================
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+if (empty($_SESSION['user'])) {
+    header('Location: ../index.php');
+    exit;
+}
+
+$currentUser = $_SESSION['user'];
+$userRole    = $currentUser['role'];
+$userType    = $currentUser['user_type'] ?? 'student';
+$filterReqId = ($userRole === 'requester') ? (int)$currentUser['id'] : 0;
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
@@ -14,14 +24,14 @@ $categoryId = (int)($_GET['category_id'] ?? 0);
 $perPage    = 5; // Hiển thị 5 phiếu / trang
 $page       = max(1, (int)($_GET['page'] ?? 1)); // Ép kiểu số nguyên, tối thiểu là 1
 
-$totalTickets = TicketRepository::countAll($keyword, $status, $categoryId);
+$totalTickets = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId);
 $totalPages   = max(1, (int)ceil($totalTickets / $perPage));
 
 if ($page > $totalPages && $totalTickets > 0) {
     $page = $totalPages;
 }
 
-$tickets = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId);
+$tickets = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId);
 $categories = TicketRepository::getCategories();
 $flash = get_flash();
 ?>
@@ -40,23 +50,22 @@ $flash = get_flash();
 
 <div class="max-w-7xl mx-auto space-y-6">
 
-    <!-- HEADER & ĐIỀU HƯỚNG -->
+    <!-- HEADER & ĐIỀU HƯỚNG CHUYÊN NGHIỆP -->
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <div class="flex items-center gap-2 mb-1">
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">ĐH Thủ Đô Hà Nội • Khóa TUD D24</span>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">Bài 5: CRUD bằng PDO</span>
-            </div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Quản Lý Phiếu Hỗ Trợ (Tickets CRUD)</h1>
-            <p class="text-xs text-slate-500 mt-1">Phân hệ Kỹ thuật viên & Sinh viên — Phụ trách bởi Trưởng nhóm: <strong>Phạm Thị Thanh Ngân</strong></p>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">
+                <?php echo ($userRole === 'requester') ? 'Danh Sách Phiếu Hỗ Trợ Của Bạn' : 'Quản Lý Phiếu Hỗ Trợ Sự Cố'; ?>
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">
+                <?php echo ($userRole === 'requester') 
+                    ? 'Xem danh sách và tiến độ xử lý các phiếu sự cố kỹ thuật bạn đã gửi.' 
+                    : 'Danh sách và trạng thái xử lý sự cố toàn trường theo chuẩn ITIL v4.'; ?>
+            </p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-            <a href="../Thanhngan/cam_nang_toan_bo_csdl_helpdesk.html" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
-                📚 Xem Cẩm Nang 12 Bảng
-            </a>
-            <a href="create.php" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm shadow-indigo-200 transition flex items-center gap-1.5">
-                <span>➕</span> Tạo Phiếu Hỗ Trợ Mới
+            <a href="create.php" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center gap-1.5">
+                <span>➕</span> Gửi Phiếu Sự Cố Mới
             </a>
         </div>
     </div>

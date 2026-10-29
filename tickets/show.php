@@ -3,36 +3,107 @@
 // BÀI 5: XEM CHI TIẾT PHIẾU HỖ TRỢ & HỆ THỐNG PHẢN HỒI HAI CHIỀU (SLIDE 7 & 10)
 // THỰC THỂ: TICKETS & TICKET_REPLIES (MODEL TICKET & MODEL REPLY)
 // Phân hệ: Core Architecture & Agent Workspace
-// Trưởng nhóm phụ trách độc quyền: PHẠM THỊ THANH NGÂN (MSSV: 224001736 - D24-CNTT1)
+// Trưởng nhóm: PHẠM THỊ THANH NGÂN (MSSV: 224001736 - D24-CNTT1)
 // ==============================================================================
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Bắt buộc đăng nhập
+if (empty($_SESSION['user'])) {
+    header('Location: ../index.php');
+    exit;
+}
+
+$currentUser = $_SESSION['user'];
+$userRole    = $currentUser['role'];
+$userType    = $currentUser['user_type'] ?? 'student';
+
 $id = (int)($_GET['id'] ?? 0);
 $ticket = TicketRepository::findById($id);
 
-// Xử lý trường hợp không tìm thấy bản ghi (Slide 7)
 if (!$ticket) {
     set_flash('error', "Không tìm thấy phiếu hỗ trợ với ID #{$id}.");
     header('Location: index.php');
     exit;
 }
 
-// Chế độ góc nhìn người dùng (Persona Simulator để test phân quyền)
-// 'agent': Góc nhìn Kỹ thuật viên / Admin (Thấy tất cả kể cả ghi chú mật 🔒)
-// 'student': Góc nhìn Sinh viên / Giảng viên (Chỉ thấy tin công khai, ghi chú mật bị ẩn 100%)
-$viewAs = $_GET['view_as'] ?? 'agent';
-$canViewInternal = ($viewAs === 'agent');
+// Cách ly dữ liệu: Sinh viên & Giảng viên chỉ được xem phiếu của chính mình
+if ($userRole === 'requester' && (int)$ticket['requester_id'] !== (int)$currentUser['id']) {
+    set_flash('error', "Bạn không có quyền truy cập vào phiếu của tài khoản khác!");
+    header('Location: ../index.php');
+    exit;
+}
 
-// Xử lý thêm tin nhắn trao đổi
+// Quyền xem ghi chú nội bộ KTV: Chỉ KTV hoặc Admin mới thấy
+$canViewInternal = in_array($userRole, ['agent', 'admin']);
+$viewAs = $canViewInternal ? 'agent' : 'student';
+
+// Lấy thông tin đánh giá CSAT của phiếu này (nếu có)
+$ratingStmt = db()->prepare("SELECT r.*, u.name as user_name FROM ticket_ratings r LEFT JOIN users u ON r.user_id = u.id WHERE r.ticket_id = :tid LIMIT 1");
+$ratingStmt->execute(['tid' => $id]);
+$currentRating = $ratingStmt->fetch();
+
+// -----------------------------------------------------------------------------
+// 1. XỬ LÝ GỬI ĐÁNH GIÁ CSAT (SINH VIÊN NGHIỆM THU)
+// -----------------------------------------------------------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'rate_ticket') {
+    $score = (int)($_POST['score'] ?? 5);
+    $comment = trim($_POST['comment'] ?? '');
+    $score = max(1, min(5, $score));
+
+    if ($currentRating) {
+        $upStmt = db()->prepare("UPDATE ticket_ratings SET score = :score, comment = :comment, created_at = NOW() WHERE ticket_id = :tid");
+        $upStmt->execute(['score' => $score, 'comment' => $comment, 'tid' => $id]);
+    } else {
+        $inStmt = db()->prepare("INSERT INTO ticket_ratings (ticket_id, user_id, score, comment, created_at) VALUES (:tid, :uid, :score, :comment, NOW())");
+        $inStmt->execute(['tid' => $id, 'uid' => $currentUser['id'], 'score' => $score, 'comment' => $comment]);
+    }
+
+    // Nếu phiếu đang resolved, tự động đóng hoàn tất phiếu
+    if ($ticket['status'] === 'resolved') {
+        TicketRepository::updateStatus($id, 'closed', 'completed');
+    }
+
+    set_flash('success', "Cảm ơn bạn đã nghiệm thu và đánh giá chất lượng dịch vụ: <strong>{$score} ★</strong>!");
+    header("Location: show.php?id={$id}&view_as={$viewAs}");
+    exit;
+}
+
+// -----------------------------------------------------------------------------
+// 2. XỬ LÝ KHI SINH VIÊN BẤM "CHƯA XONG (YÊU CẦU MỞ LẠI PHIẾU)"
+// -----------------------------------------------------------------------------
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reopen_ticket') {
+    $reopenNote = trim($_POST['reopen_note'] ?? 'Sự cố vẫn chưa được khắc phục triệt để. Kính nhờ Kỹ thuật viên kiểm tra và hỗ trợ tiếp!');
+    TicketRepository::addReply($id, (int)$currentUser['id'], $reopenNote, false, 'in_progress');
+    db()->prepare("UPDATE tickets SET reopen_count = reopen_count + 1 WHERE id = :id")->execute(['id' => $id]);
+    set_flash('info', "Đã gửi yêu cầu hỗ trợ tiếp! Phiếu đã được kích hoạt lại trạng thái <strong>Đang xử lý</strong>.");
+    header("Location: show.php?id={$id}&view_as={$viewAs}");
+    exit;
+}
+
+// -----------------------------------------------------------------------------
+// 3. XỬ LÝ GỬI PHẢN HỒI / GIẢI PHÁP & ĐÍNH KÈM ẢNH
+// -----------------------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reply') {
-    $message        = trim($_POST['message'] ?? '');
-    $userId         = (int)($_POST['user_id'] ?? ($ticket['assigned_to'] ?: 2));
-    $isInternal     = isset($_POST['is_internal']) && $_POST['is_internal'] === '1';
-    $forceStatus    = !empty($_POST['quick_status']) ? trim($_POST['quick_status']) : null;
+    $message = trim($_POST['message'] ?? '');
+    
+    if ($userRole === 'requester') {
+        $userId = (int)$currentUser['id'];
+        $isInternal = false;
+        $forceStatus = null;
+    } else {
+        $userId = (int)($_POST['user_id'] ?? ($ticket['assigned_to'] ?: $currentUser['id']));
+        $isInternal = isset($_POST['is_internal']) && $_POST['is_internal'] === '1';
+        $forceStatus = !empty($_POST['quick_status']) ? trim($_POST['quick_status']) : null;
+    }
+    
     $attachmentPath = null;
 
-    // Xử lý tệp đính kèm (KTV gửi ảnh minh chứng hoặc SV gửi ảnh chụp lỗi)
+    // Xử lý tệp đính kèm hình ảnh (KTV gửi minh chứng kết quả fix, SV gửi ảnh lỗi)
     if (!empty($_FILES['attachment']['name']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
         $fileTmp  = $_FILES['attachment']['tmp_name'];
         $fileName = $_FILES['attachment']['name'];
@@ -65,7 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
     }
 
-    // Cho phép gửi nếu có nội dung tin nhắn, HOẶC có đính kèm ảnh, HOẶC có chọn chuyển trạng thái
     if (!empty($message) || !empty($attachmentPath) || !empty($forceStatus)) {
         if (empty($message)) {
             if (!empty($attachmentPath)) {
@@ -98,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $notice .= " Trạng thái phiếu đã được cập nhật sang: <strong>{$statusLabels[$forceStatus]}</strong>.";
         }
         if ($attachmentPath) {
-            $notice .= " (Đã tải lên tệp ảnh đính kèm thành công)";
+            $notice .= " (Đã tải lên tệp ảnh minh chứng thành công)";
         }
         if ($isInternal) {
             $notice .= " [🔒 Đã lưu làm Ghi chú nội bộ]";
@@ -111,18 +181,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     }
 }
 
-// Xử lý cập nhật nhanh trạng thái
+// -----------------------------------------------------------------------------
+// 4. XỬ LÝ CẬP NHẬT TRẠNG THÁI THỦ CÔNG (KTV / ADMIN)
+// -----------------------------------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_status') {
-    $newStatus = trim($_POST['status'] ?? '');
-    if (in_array($newStatus, ['new', 'in_progress', 'waiting_requester', 'resolved', 'closed'])) {
-        TicketRepository::updateStatus($id, $newStatus);
-        set_flash('success', "Đã cập nhật trạng thái phiếu sang '{$newStatus}'!");
-        header("Location: show.php?id={$id}&view_as={$viewAs}");
-        exit;
+    if (in_array($userRole, ['agent', 'admin'])) {
+        $newStatus = trim($_POST['status'] ?? '');
+        if (in_array($newStatus, ['new', 'in_progress', 'waiting_requester', 'resolved', 'closed'])) {
+            TicketRepository::updateStatus($id, $newStatus);
+            set_flash('success', "Đã cập nhật trạng thái phiếu sang '{$newStatus}'!");
+            header("Location: show.php?id={$id}&view_as={$viewAs}");
+            exit;
+        }
     }
 }
 
-// Lấy danh sách phản hồi (có kiểm soát quyền xem ghi chú nội bộ)
+// Lấy danh sách phản hồi
 $replies = TicketRepository::getReplies($id, $canViewInternal);
 $agents  = TicketRepository::getUsers('agent');
 $flash   = get_flash();
@@ -132,40 +206,22 @@ $flash   = get_flash();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chi Tiết Phiếu <?php echo htmlspecialchars($ticket['ticket_code']); ?> - Trao Đổi Phản Hồi</title>
+    <title>Chi Tiết Phiếu <?php echo htmlspecialchars($ticket['ticket_code']); ?> - Hệ Thống Helpdesk ĐH Thủ Đô</title>
     <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
 <?php require_once __DIR__ . '/../includes/navbar.php'; ?>
-<div class="flex-1 p-4 md:p-6">
 
-
-<div class="max-w-5xl mx-auto space-y-6">
-
-    <!-- BANNER NHIỆM VỤ TRƯỞNG NHÓM -->
-    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-4 shadow-sm border border-indigo-900/40 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
-        <div class="flex items-center gap-3">
-            <span class="p-2 bg-indigo-500/20 text-indigo-300 rounded-xl font-bold text-base">👑</span>
-            <div>
-                <p class="font-bold text-white tracking-wide">PHÂN HỆ: CORE ARCHITECTURE & AGENT WORKSPACE</p>
-                <p class="text-indigo-200/80">Phụ trách độc quyền: <strong class="text-white">Phạm Thị Thanh Ngân</strong> (MSSV: 224001736 · Khóa TUD D24 · Lớp D24-CNTT1)</p>
-            </div>
-        </div>
-        <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 bg-indigo-500/20 text-indigo-300 rounded-lg font-mono font-bold">Model Ticket.php</span>
-            <span class="text-slate-500">•</span>
-            <span class="px-2.5 py-1 bg-emerald-500/20 text-emerald-300 rounded-lg font-mono font-bold">Model Reply.php</span>
-        </div>
-    </div>
+<main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- HEADER PHIẾU -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <div class="flex items-center gap-2 mb-1.5 flex-wrap">
-                <span class="font-mono font-bold text-sm text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-lg border border-indigo-200">
+            <div class="flex items-center gap-2 mb-2 flex-wrap">
+                <span class="font-mono font-bold text-sm text-indigo-600 bg-indigo-50 px-3 py-1 rounded-xl border border-indigo-200">
                     <?php echo htmlspecialchars($ticket['ticket_code']); ?>
                 </span>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
                     <?php echo htmlspecialchars($ticket['category_name']); ?>
                 </span>
                 <?php
@@ -186,90 +242,148 @@ $flash   = get_flash();
                 $sColor = $statusColors[$ticket['status']] ?? 'bg-slate-100 text-slate-700 border-slate-200';
                 $sLabel = $statusLabels[$ticket['status']] ?? $ticket['status'];
                 ?>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border <?php echo $sColor; ?>">
+                <span class="px-3 py-1 rounded-full text-xs font-bold border <?php echo $sColor; ?>">
                     ● <?php echo $sLabel; ?>
                 </span>
+                <?php if ($ticket['reopen_count'] > 0): ?>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        🔄 Mở lại: <?php echo $ticket['reopen_count']; ?> lần
+                    </span>
+                <?php endif; ?>
             </div>
-            <h1 class="text-xl font-black text-slate-900"><?php echo htmlspecialchars($ticket['title']); ?></h1>
-            <p class="text-xs text-slate-500 mt-0.5">Ngày gửi: <?php echo htmlspecialchars($ticket['created_at']); ?> • Hệ thống: <?php echo htmlspecialchars($ticket['system_affected']); ?></p>
+            <h1 class="text-xl md:text-2xl font-black text-slate-900"><?php echo htmlspecialchars($ticket['title']); ?></h1>
+            <p class="text-xs text-slate-500 mt-1">Ngày gửi: <?php echo htmlspecialchars($ticket['created_at']); ?> • Ứng dụng: <strong class="text-slate-700"><?php echo htmlspecialchars($ticket['system_affected']); ?></strong></p>
         </div>
         <div class="flex items-center gap-2 flex-wrap">
-            <a href="edit.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition">
-                ✏️ Sửa phiếu
-            </a>
-            <a href="index.php" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
-                ← Danh sách
+            <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                <a href="edit.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition">
+                    ✏️ Sửa phiếu
+                </a>
+            <?php endif; ?>
+            <a href="index.php" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
+                ← Danh sách phiếu
             </a>
         </div>
     </div>
 
     <!-- FLASH MESSAGE -->
     <?php if ($flash): ?>
-        <div class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'; ?>">
-            <?php echo strip_tags($flash['message'], '<strong><b><em><span>'); ?>
-        </div>
-    <?php endif; ?>
-
-    <!-- THANH ĐIỀU KHIỂN GÓC NHÌN TEST PHÂN QUYỀN (PERSONA TOGGLE) -->
-    <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div class="flex items-center gap-2">
-            <span class="font-bold text-indigo-900 flex items-center gap-1">
-                <span>🛡️</span> Thử Nghiệm Phân Quyền Xem Tin Nhắn:
-            </span>
-            <span class="text-indigo-700">Hiện đang ở góc nhìn:</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <a href="show.php?id=<?php echo $id; ?>&view_as=agent" 
-               class="px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 <?php echo $viewAs === 'agent' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-indigo-700 hover:bg-indigo-100 border border-indigo-200'; ?>">
-                <span>👨‍💻</span> KTV / Admin (Xem cả Ghi chú mật 🔒)
-            </a>
-            <a href="show.php?id=<?php echo $id; ?>&view_as=student" 
-               class="px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 <?php echo $viewAs === 'student' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-indigo-700 hover:bg-indigo-100 border border-indigo-200'; ?>">
-                <span>🎓</span> Sinh Viên (Chỉ xem tin công khai)
-            </a>
-        </div>
-    </div>
-
-    <!-- CẢNH BÁO BẢO MẬT NẾU Ở GÓC NHÌN SINH VIÊN -->
-    <?php if ($viewAs === 'student'): ?>
-        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-center gap-2">
-            <span>🔒</span>
-            <span><strong>Cơ chế bảo mật cách ly:</strong> Sinh viên chỉ có thể đọc các tin nhắn trao đổi công khai. Mọi ghi chú kỹ thuật nội bộ của KTV đều được hệ thống ẩn hoàn toàn để bảo mật thông tin.</span>
+        <div class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : ($flash['type'] === 'info' ? 'bg-blue-50 border border-blue-200 text-blue-800' : 'bg-rose-50 border border-rose-200 text-rose-800'); ?>">
+            <?php echo $flash['message']; ?>
         </div>
     <?php endif; ?>
 
     <!-- NỘI DUNG CHÍNH (2 CỘT) -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
 
-        <!-- CỘT TRÁI: MÔ TẢ & CHAT TIMELINE (8 CỘT) -->
+        <!-- CỘT TRÁI: MÔ TẢ, CSAT, TIMELINE & FORM (8 CỘT) -->
         <div class="md:col-span-8 space-y-6">
             
             <!-- Mô tả sự cố ban đầu -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                         <span>📝</span> Mô Tả Sự Cố Ban Đầu:
                     </h3>
                     <span class="text-[11px] text-slate-400 font-mono">Bởi: <?php echo htmlspecialchars($ticket['requester_name']); ?></span>
                 </div>
-                <div class="p-4 bg-slate-50 rounded-xl text-xs text-slate-800 leading-relaxed whitespace-pre-line border border-slate-200">
+                <div class="p-4 bg-slate-50 rounded-2xl text-xs text-slate-800 leading-relaxed whitespace-pre-line border border-slate-200">
                     <?php echo htmlspecialchars($ticket['description']); ?>
                 </div>
             </div>
 
+            <!-- KHỐI NGHIỆM THU & ĐÁNH GIÁ CHẤT LƯỢNG CSAT (CHO SINH VIÊN KHI RESOLVED / CLOSED) -->
+            <?php if (in_array($ticket['status'], ['resolved', 'closed'])): ?>
+                <div class="bg-gradient-to-br from-amber-50/70 to-yellow-50/50 border border-amber-200 rounded-3xl p-5 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🌟</span>
+                            <h3 class="font-bold text-amber-900 text-xs uppercase tracking-wider">
+                                Nghiệm Thu Kết Quả Xử Lý & Đánh Giá CSAT (1 - 5 Sao)
+                            </h3>
+                        </div>
+                        <?php if ($currentRating): ?>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500 text-white">
+                                Đã chấm: <?php echo $currentRating['score']; ?> ★
+                            </span>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if ($currentRating): ?>
+                        <div class="p-3.5 bg-white rounded-2xl border border-amber-200 text-xs space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-800">Đánh giá của bạn:</span>
+                                <span class="text-amber-500 font-mono font-bold text-sm">
+                                    <?php echo str_repeat('★', (int)$currentRating['score']) . str_repeat('☆', 5 - (int)$currentRating['score']); ?>
+                                </span>
+                                <span class="text-slate-400 text-[11px] font-mono">(<?php echo htmlspecialchars($currentRating['created_at']); ?>)</span>
+                            </div>
+                            <?php if (!empty($currentRating['comment'])): ?>
+                                <p class="text-slate-600 italic">"<?php echo htmlspecialchars($currentRating['comment']); ?>"</p>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($userRole === 'requester' || in_array($userRole, ['agent', 'admin'])): ?>
+                        <!-- Form Đánh Giá hoặc Cập nhật CSAT -->
+                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-3 pt-1">
+                            <input type="hidden" name="action" value="rate_ticket" />
+                            <div class="text-xs text-slate-700">
+                                <label class="block font-semibold mb-1.5">Mức độ hài lòng với hỗ trợ kỹ thuật:</label>
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <?php 
+                                    $curScore = (int)($currentRating['score'] ?? 5);
+                                    $scoreLabels = [
+                                        5 => '5 ★ Rất hài lòng',
+                                        4 => '4 ★ Hài lòng',
+                                        3 => '3 ★ Bình thường',
+                                        2 => '2 ★ Chưa hài lòng',
+                                        1 => '1 ★ Rất thất vọng',
+                                    ];
+                                    foreach ($scoreLabels as $sc => $slabel): 
+                                    ?>
+                                        <label class="inline-flex items-center gap-1 cursor-pointer bg-white px-3 py-1.5 rounded-xl border border-amber-200 hover:border-amber-400 transition text-xs font-semibold text-slate-800">
+                                            <input type="radio" name="score" value="<?php echo $sc; ?>" <?php echo $curScore === $sc ? 'checked' : ''; ?> class="text-amber-500 focus:ring-amber-400" />
+                                            <span><?php echo $slabel; ?></span>
+                                        </label>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+
+                            <div>
+                                <textarea name="comment" rows="2" placeholder="Góp ý hoặc nhận xét của bạn về thái độ và tốc độ hỗ trợ của KTV (tùy chọn)..." 
+                                          class="w-full px-3.5 py-2 bg-white border border-amber-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"><?php echo htmlspecialchars($currentRating['comment'] ?? ''); ?></textarea>
+                            </div>
+
+                            <div class="flex items-center justify-between gap-3 flex-wrap">
+                                <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
+                                    <span>⭐</span> <?php echo $currentRating ? 'Cập Nhật Đánh Giá CSAT' : 'Xác Nhận Đã Xong & Gửi Đánh Giá CSAT'; ?>
+                                </button>
+                                
+                                <?php if ($userRole === 'requester' && $ticket['status'] === 'resolved'): ?>
+                                    <button type="button" onclick="document.getElementById('reopenModal').classList.remove('hidden')" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl text-xs transition border border-rose-200 flex items-center gap-1">
+                                        <span>🔄</span> Chưa xong? (Yêu cầu KTV hỗ trợ tiếp)
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
             <!-- Khung Trao Đổi (Ticket Replies) -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4">
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <span>💬</span> Lịch Sử Phản Hồi & Ghi Chú (<?php echo count($replies); ?> lượt):
+                        <span>💬</span> Lịch Sử Phản Hồi & Giải Pháp (<?php echo count($replies); ?> lượt):
                     </h3>
-                    <span class="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded font-mono font-bold">
+                    <span class="text-[10px] text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg font-mono font-bold">
                         Bảng ticket_replies
                     </span>
                 </div>
 
                 <?php if (empty($replies)): ?>
-                    <div class="text-center py-8 text-slate-400 text-xs italic bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                    <div class="text-center py-8 text-slate-400 text-xs italic bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                         Chưa có phản hồi nào cho phiếu này. Hãy nhập nội dung bên dưới để bắt đầu trao đổi!
                     </div>
                 <?php else: ?>
@@ -278,10 +392,10 @@ $flash   = get_flash();
                             <?php 
                             $isAgent = ($r['user_role'] === 'agent' || $r['user_role'] === 'admin');
                             ?>
-                            <div class="p-4 rounded-xl border text-xs space-y-2 transition <?php echo $r['is_internal'] ? 'bg-amber-50/80 border-amber-300 shadow-sm' : ($isAgent ? 'bg-indigo-50/40 border-indigo-200' : 'bg-slate-50 border-slate-200'); ?>">
+                            <div class="p-4 rounded-2xl border text-xs space-y-2 transition <?php echo $r['is_internal'] ? 'bg-amber-50/80 border-amber-300 shadow-sm' : ($isAgent ? 'bg-indigo-50/40 border-indigo-200' : 'bg-slate-50 border-slate-200'); ?>">
                                 <div class="flex items-center justify-between flex-wrap gap-2">
                                     <div class="flex items-center gap-2">
-                                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white <?php echo $r['is_internal'] ? 'bg-amber-600' : ($isAgent ? 'bg-indigo-600' : 'bg-emerald-600'); ?>">
+                                        <div class="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white <?php echo $r['is_internal'] ? 'bg-amber-600' : ($isAgent ? 'bg-indigo-600' : 'bg-emerald-600'); ?>">
                                             <?php echo mb_substr($r['user_name'], 0, 1); ?>
                                         </div>
                                         <span class="font-bold text-slate-900">
@@ -293,32 +407,32 @@ $flash   = get_flash();
                                     </div>
                                     <div class="flex items-center gap-2">
                                         <?php if ($r['is_internal']): ?>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-300 flex items-center gap-1">
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-300 flex items-center gap-1">
                                                 <span>🔒</span> Ghi chú nội bộ KTV
                                             </span>
                                         <?php else: ?>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-100 text-indigo-700">
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700">
                                                 💬 Công khai
                                             </span>
                                         <?php endif; ?>
                                         <span class="text-slate-400 text-[10px] font-mono"><?php echo htmlspecialchars($r['created_at']); ?></span>
                                     </div>
                                 </div>
-                                <div class="text-slate-700 leading-relaxed pl-8">
-                                    <?php echo nl2br(htmlspecialchars($r['message'])); ?>
+                                <div class="text-slate-700 leading-relaxed pl-9 whitespace-pre-line">
+                                    <?php echo htmlspecialchars($r['message']); ?>
                                 </div>
 
                                 <!-- HIỂN THỊ ẢNH ĐÍNH KÈM NẾU CÓ -->
                                 <?php if (!empty($r['attachment_path'])): ?>
-                                    <div class="mt-2.5 pt-2 border-t border-slate-200/60 pl-8">
+                                    <div class="mt-2.5 pt-2 border-t border-slate-200/60 pl-9">
                                         <div class="flex items-center gap-1 text-[11px] font-bold text-indigo-700 mb-1.5">
                                             <span>📎</span> Tệp ảnh đính kèm:
                                         </div>
                                         <a href="../<?php echo htmlspecialchars($r['attachment_path']); ?>" target="_blank" class="inline-block group">
                                             <img src="../<?php echo htmlspecialchars($r['attachment_path']); ?>" 
-                                                 alt="Ảnh đính kèm" 
-                                                 class="max-h-52 max-w-sm rounded-xl border border-slate-300 shadow-sm group-hover:opacity-90 transition object-contain bg-white p-1" />
-                                            <span class="block text-[10px] text-slate-400 mt-1">Bấm để phóng to ảnh ↗</span>
+                                                 alt="Ảnh minh chứng" 
+                                                 class="max-h-56 max-w-md rounded-2xl border border-slate-300 shadow-sm group-hover:opacity-90 transition object-contain bg-white p-1" />
+                                            <span class="block text-[10.5px] text-slate-400 mt-1">Bấm vào ảnh để xem kích thước đầy đủ ↗</span>
                                         </a>
                                     </div>
                                 <?php endif; ?>
@@ -328,72 +442,87 @@ $flash   = get_flash();
                 <?php endif; ?>
 
                 <!-- Form gửi phản hồi mới -->
-                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" enctype="multipart/form-data" class="pt-4 border-t border-slate-100 space-y-3.5 text-xs">
+                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" enctype="multipart/form-data" class="pt-5 border-t border-slate-100 space-y-4 text-xs">
                     <input type="hidden" name="action" value="reply" />
 
-                    <!-- Chọn người gửi phản hồi (Mô phỏng 2 chiều) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Người gửi phản hồi:</label>
-                            <select name="user_id" id="senderSelect" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <optgroup label="Kỹ thuật viên IT:">
-                                    <?php foreach ($agents as $ag): ?>
-                                        <option value="<?php echo $ag['id']; ?>" <?php echo ($ticket['assigned_to'] == $ag['id'] || ($viewAs === 'agent' && $ag['id'] == 2)) ? 'selected' : ''; ?>>
-                                            KTV: <?php echo htmlspecialchars($ag['name']); ?> (<?php echo htmlspecialchars($ag['user_code']); ?>)
-                                        </option>
-                                    <?php endforeach; ?>
-                                </optgroup>
-                                <optgroup label="Sinh viên / Người tạo phiếu:">
-                                    <option value="<?php echo $ticket['requester_id']; ?>" <?php echo $viewAs === 'student' ? 'selected' : ''; ?>>
-                                        SV: <?php echo htmlspecialchars($ticket['requester_name']); ?> (<?php echo htmlspecialchars($ticket['requester_code']); ?>)
-                                    </option>
-                                </optgroup>
-                            </select>
+                    <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                        <!-- Dành cho Kỹ thuật viên / Quản trị viên: Có đầy đủ công cụ chuyển trạng thái & ghi chú nội bộ -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Người gửi phản hồi:</label>
+                                <select name="user_id" id="senderSelect" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <optgroup label="Kỹ thuật viên IT:">
+                                        <?php foreach ($agents as $ag): ?>
+                                            <option value="<?php echo $ag['id']; ?>" <?php echo ($currentUser['id'] == $ag['id'] || ($ticket['assigned_to'] == $ag['id'])) ? 'selected' : ''; ?>>
+                                                KTV: <?php echo htmlspecialchars($ag['name']); ?> (<?php echo htmlspecialchars($ag['user_code']); ?>)
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </optgroup>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Hành động trạng thái sau phản hồi:</label>
+                                <select name="quick_status" id="quickStatusSelect" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">⚡ Tự động thông minh theo State Machine</option>
+                                    <option value="resolved">✅ Chuyển sang: Đã có giải pháp (resolved)</option>
+                                    <option value="closed">🏁 Chuyển sang: Đã hoàn tất & Đóng phiếu (closed)</option>
+                                    <option value="waiting_requester">⏳ Chuyển sang: Chờ người dùng kiểm tra (waiting)</option>
+                                    <option value="in_progress">⚙️ Chuyển sang: Tiếp tục xử lý (in_progress)</option>
+                                </select>
+                                <p class="text-[11px] text-indigo-600 mt-1 font-medium flex items-center gap-1">
+                                    <span>💡</span> <span>Chọn trạng thái tại đây và bấm <strong>Lưu Phản Hồi</strong> để cập nhật ngay vào CSDL.</span>
+                                </p>
+                            </div>
                         </div>
 
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Hành động trạng thái sau phản hồi:</label>
-                            <select name="quick_status" id="quickStatusSelect" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <option value="">⚡ Tự động thông minh theo State Machine</option>
-                                <option value="resolved">✅ Chuyển sang: Đã có giải pháp (resolved)</option>
-                                <option value="closed">🏁 Chuyển sang: Đã hoàn tất & Đóng phiếu (closed)</option>
-                                <option value="waiting_requester">⏳ Chuyển sang: Chờ người dùng kiểm tra (waiting)</option>
-                                <option value="in_progress">⚙️ Chuyển sang: Tiếp tục xử lý (in_progress)</option>
-                            </select>
-                            <p class="text-[11px] text-indigo-600 mt-1 font-medium flex items-center gap-1">
-                                <span>💡</span> <span>Khi chọn trạng thái tại đây và bấm <strong>Lưu Phản Hồi</strong>, trạng thái của phiếu sẽ <strong>được cập nhật ngay</strong> trong CSDL.</span>
-                            </p>
+                    <?php else: ?>
+                        <!-- Dành cho Sinh viên / Giảng viên: Giao diện gửi tinh gọn -->
+                        <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between text-xs">
+                            <span class="font-bold text-slate-700">Người gửi: <strong class="text-indigo-600"><?php echo htmlspecialchars($currentUser['name']); ?></strong> (<?php echo htmlspecialchars($currentUser['user_code']); ?>)</span>
+                            <span class="text-slate-400 text-[11px]">Phản hồi sẽ tự động kích hoạt vé để KTV xử lý</span>
                         </div>
-                    </div>
+                    <?php endif; ?>
 
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Nội dung trao đổi / Giải pháp kỹ thuật:</label>
-                        <textarea name="message" rows="3" placeholder="Nhập nội dung trao đổi, kết quả xử lý hoặc ghi chú kỹ thuật..." 
-                                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"></textarea>
+                        <label class="block font-bold text-slate-700 mb-1">Nội dung trao đổi / Giải pháp kỹ thuật: <span class="text-rose-500">*</span></label>
+                        <textarea name="message" id="replyMessage" rows="3" placeholder="Nhập nội dung trao đổi, kết quả xử lý hoặc giải pháp kỹ thuật..." 
+                                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"></textarea>
                     </div>
 
-                    <!-- ĐÍNH KÈM TỆP ẢNH (SV GỬI ẢNH LỖI, KTV GỬI ẢNH KẾT QUẢ) -->
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1">📎 Đính kèm tệp ảnh (Ảnh chụp màn hình lỗi / Ảnh minh chứng kết quả fix):</label>
-                        <input type="file" name="attachment" accept="image/png,image/jpeg,image/webp,image/gif" 
-                               class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-300 rounded-xl bg-slate-50 p-1" />
-                        <span class="text-[10.5px] text-slate-400 mt-0.5 block">Định dạng hỗ trợ: JPG, PNG, WEBP, GIF (Tối đa 5MB)</span>
+                    <!-- ĐÍNH KÈM TỆP ẢNH (KTV GỬI MINH CHỨNG, SV GỬI ẢNH LỖI) -->
+                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                        <label class="block font-bold text-slate-700 text-xs">📎 Đính kèm tệp ảnh (Ảnh chụp màn hình lỗi / Minh chứng kết quả sửa):</label>
+                        <input type="file" name="attachment" id="attachmentInput" accept="image/png,image/jpeg,image/webp,image/gif" 
+                               class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-300 rounded-xl bg-white p-1" />
+                        <span class="text-[10.5px] text-slate-400 block">Định dạng hỗ trợ: JPG, PNG, WEBP, GIF (Dung lượng tối đa 5MB)</span>
+                        
+                        <!-- Xem trước ảnh đính kèm -->
+                        <div id="imagePreviewContainer" class="hidden pt-2">
+                            <p class="text-[11px] font-bold text-slate-600 mb-1">Xem trước ảnh:</p>
+                            <img id="imagePreview" src="" alt="Preview" class="max-h-40 rounded-xl border border-slate-300 shadow-sm" />
+                        </div>
                     </div>
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-                        <div class="flex items-center gap-3">
-                            <label class="flex items-center gap-1.5 cursor-pointer text-slate-700 font-semibold" id="internalBox">
-                                <input type="checkbox" name="is_internal" value="1" class="rounded border-slate-300 text-amber-600 focus:ring-amber-500" />
-                                <span class="text-amber-800">🔒 Đặt làm Ghi chú nội bộ KTV (Sinh viên không thấy)</span>
-                            </label>
-                        </div>
-                        <button type="submit" id="btnSubmitReply" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5">
+                        <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                            <div class="flex items-center gap-3">
+                                <label class="flex items-center gap-1.5 cursor-pointer text-slate-700 font-semibold" id="internalBox">
+                                    <input type="checkbox" name="is_internal" value="1" class="rounded border-slate-300 text-amber-600 focus:ring-amber-500" />
+                                    <span class="text-amber-800">🔒 Đặt làm Ghi chú nội bộ KTV (Người dùng không thấy)</span>
+                                </label>
+                            </div>
+                        <?php else: ?>
+                            <div></div>
+                        <?php endif; ?>
+
+                        <button type="submit" id="btnSubmitReply" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1.5">
                             <span id="btnIcon">💾</span> <span id="btnText">Lưu Phản Hồi & Cập Nhật Trạng Thái</span>
                         </button>
                     </div>
 
-                    <div class="p-2.5 bg-slate-50 rounded-xl text-[11px] text-slate-500 leading-relaxed border border-slate-200">
-                        ⚡ <strong>Quy tắc tự động State Machine:</strong> Khi KTV phản hồi công khai, phiếu tự chuyển sang <em>waiting_requester</em>. Khi Sinh viên phản hồi lại, phiếu tự quay về <em>in_progress</em>.
+                    <div class="p-3 bg-slate-50 rounded-2xl text-[11px] text-slate-500 leading-relaxed border border-slate-200">
+                        ⚡ <strong>Quy tắc tự động State Machine:</strong> Khi KTV gửi tin nhắn công khai, phiếu tự chuyển sang <em>waiting_requester</em>. Khi Sinh viên/Giảng viên gửi phản hồi lại, phiếu tự quay về <em>in_progress</em>.
                     </div>
                 </form>
             </div>
@@ -403,11 +532,12 @@ $flash   = get_flash();
         <!-- CỘT PHẢI: THÔNG TIN TRẠNG THÁI & SLA (4 CỘT) -->
         <div class="md:col-span-4 space-y-6">
 
-            <!-- Cập nhật trạng thái thủ công -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 text-xs">
-                <h3 class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Cập Nhật Trạng Thái Thủ Công</h3>
+            <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+            <!-- Cập nhật trạng thái thủ công (Chỉ KTV / Admin) -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3 text-xs">
+                <h3 class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Cập Nhật Trạng Thái Phiếu</h3>
                 
-                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-3">
+                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>" class="space-y-3">
                     <input type="hidden" name="action" value="update_status" />
                     <select name="status" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="new" <?php echo $ticket['status'] === 'new' ? 'selected' : ''; ?>>1. Mới tiếp nhận (new)</option>
@@ -416,20 +546,21 @@ $flash   = get_flash();
                         <option value="resolved" <?php echo $ticket['status'] === 'resolved' ? 'selected' : ''; ?>>4. Đã giải quyết (resolved)</option>
                         <option value="closed" <?php echo $ticket['status'] === 'closed' ? 'selected' : ''; ?>>5. Đã đóng hoàn tất (closed)</option>
                     </select>
-                    <button type="submit" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition">
-                        Cập nhật trạng thái
+                    <button type="submit" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition">
+                        Cập nhật trạng thái ngay
                     </button>
                 </form>
             </div>
+            <?php endif; ?>
 
             <!-- Thông tin người liên quan -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3 text-xs">
-                <h3 class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Thông Tin Liên Quan</h3>
+            <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3 text-xs">
+                <h3 class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Thông Tin Sự Cố</h3>
                 
                 <div class="space-y-1.5 border-b border-slate-100 pb-3">
                     <span class="text-slate-400 block text-[11px]">Người gửi yêu cầu:</span>
                     <strong class="text-slate-900 block"><?php echo htmlspecialchars($ticket['requester_name']); ?></strong>
-                    <span class="text-slate-500 font-mono block">Mã SV/CB: <?php echo htmlspecialchars($ticket['requester_code']); ?></span>
+                    <span class="text-slate-500 font-mono block">Mã: <?php echo htmlspecialchars($ticket['requester_code']); ?></span>
                     <span class="text-slate-500 block"><?php echo htmlspecialchars($ticket['requester_email']); ?></span>
                     <?php if (!empty($ticket['class_name'])): ?>
                         <span class="text-indigo-600 block text-[11px]">Lớp: <?php echo htmlspecialchars($ticket['class_name']); ?></span>
@@ -442,7 +573,7 @@ $flash   = get_flash();
                         <strong class="text-indigo-700 block"><?php echo htmlspecialchars($ticket['agent_name']); ?></strong>
                         <span class="text-slate-500 font-mono block">Mã KTV: <?php echo htmlspecialchars($ticket['agent_code']); ?></span>
                     <?php else: ?>
-                        <span class="text-amber-600 italic block">Chưa được phân công</span>
+                        <span class="text-amber-600 italic block">Đang phân công...</span>
                     <?php endif; ?>
                 </div>
 
@@ -457,7 +588,7 @@ $flash   = get_flash();
                         default  => 'bg-slate-50 text-slate-700 border-slate-200',
                     };
                     ?>
-                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border <?php echo $prioBadgeClass; ?>">
+                    <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold border <?php echo $prioBadgeClass; ?>">
                         <span>●</span>
                         <span><?php echo htmlspecialchars($ticket['priority_name']); ?></span>
                         <span class="text-[10px] opacity-80">(<?php echo htmlspecialchars($ticket['priority_code']); ?>)</span>
@@ -466,7 +597,7 @@ $flash   = get_flash();
             </div>
 
             <!-- Thông số SLA (Thời gian) -->
-            <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-2.5 text-xs">
+            <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-2.5 text-xs">
                 <h3 class="font-bold text-slate-700 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
                     <span>⏱️</span> Tiến Độ SLA Cam Kết
                 </h3>
@@ -500,43 +631,92 @@ $flash   = get_flash();
 
     </div>
 
+</main>
+
+<!-- MODAL YÊU CẦU MỞ LẠI PHIẾU (CHO SINH VIÊN KHI SỰ CỐ CHƯA HẾT) -->
+<div id="reopenModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+        <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <span>🔄</span> Yêu Cầu Kỹ Thuật Viên Tiếp Tục Hỗ Trợ
+            </h3>
+            <button type="button" onclick="document.getElementById('reopenModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-lg">&times;</button>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+            Nếu sự cố của bạn vẫn chưa được khắc phục hoặc tài khoản vẫn chưa đăng nhập được, vui lòng nhập lý do cụ thể để Kỹ thuật viên kiểm tra lại.
+        </p>
+        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-3 text-xs">
+            <input type="hidden" name="action" value="reopen_ticket" />
+            <textarea name="reopen_note" rows="3" required placeholder="Ví dụ: Em đã thử đăng nhập nhưng hệ thống vẫn báo sai mật khẩu..." 
+                      class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500"></textarea>
+            <div class="flex items-center justify-end gap-2 pt-1">
+                <button type="button" onclick="document.getElementById('reopenModal').classList.add('hidden')" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-100">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow-sm">
+                    Gửi Yêu Cầu Mở Lại
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 1. Xem trước ảnh đính kèm
+    const attachInput = document.getElementById('attachmentInput');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+    const previewImg = document.getElementById('imagePreview');
+    if (attachInput && previewContainer && previewImg) {
+        attachInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+        });
+    }
+
+    // 2. Nút bấm động theo trạng thái chọn
     const statusSelect = document.getElementById('quickStatusSelect');
     const btnSubmit = document.getElementById('btnSubmitReply');
     const btnIcon = document.getElementById('btnIcon');
     const btnText = document.getElementById('btnText');
-    const messageArea = document.querySelector('textarea[name="message"]');
+    const messageArea = document.getElementById('replyMessage');
 
     if (statusSelect && btnSubmit) {
         statusSelect.addEventListener('change', function() {
             const val = this.value;
             if (val === 'resolved') {
-                btnSubmit.className = 'px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5 ring-2 ring-emerald-400';
+                btnSubmit.className = 'px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-md shadow-emerald-200 flex items-center justify-center gap-1.5 ring-2 ring-emerald-400';
                 if (btnIcon) btnIcon.textContent = '✅';
-                if (btnText) btnText.textContent = 'Lưu Phản Hồi & Đánh Dấu: ĐÃ CÓ GIẢI PHÁP (resolved)';
+                if (btnText) btnText.textContent = 'Lưu Phản Hồi & Chuyển Sang: ĐÃ CÓ GIẢI PHÁP (resolved)';
                 if (messageArea && !messageArea.value.trim()) {
-                    messageArea.placeholder = "Kỹ thuật viên đã xử lý và cung cấp giải pháp khắc phục sự cố (Nhấn Lưu để áp dụng ngay)...";
+                    messageArea.placeholder = "Kỹ thuật viên đã xử lý và cung cấp giải pháp khắc phục sự cố (Nhấn nút Lưu để áp dụng ngay)...";
                 }
             } else if (val === 'closed') {
-                btnSubmit.className = 'px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5 ring-2 ring-slate-400';
+                btnSubmit.className = 'px-6 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition shadow-md shadow-slate-300 flex items-center justify-center gap-1.5 ring-2 ring-slate-400';
                 if (btnIcon) btnIcon.textContent = '🏁';
                 if (btnText) btnText.textContent = 'Lưu Phản Hồi & ĐÓNG HOÀN TẤT PHIẾU (closed)';
                 if (messageArea && !messageArea.value.trim()) {
-                    messageArea.placeholder = "Kỹ thuật viên đã hoàn tất hỗ trợ và đóng phiếu thành công (Nhấn Lưu để đóng phiếu)...";
+                    messageArea.placeholder = "Kỹ thuật viên đã hoàn tất hỗ trợ và đóng phiếu thành công...";
                 }
             } else if (val === 'waiting_requester') {
-                btnSubmit.className = 'px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5';
+                btnSubmit.className = 'px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition shadow-md shadow-purple-200 flex items-center justify-center gap-1.5';
                 if (btnIcon) btnIcon.textContent = '⏳';
                 if (btnText) btnText.textContent = 'Lưu Phản Hồi & Chuyển: CHỜ NGƯỜI DÙNG KIỂM TRA';
             } else if (val === 'in_progress') {
-                btnSubmit.className = 'px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5';
+                btnSubmit.className = 'px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow-md shadow-amber-200 flex items-center justify-center gap-1.5';
                 if (btnIcon) btnIcon.textContent = '⚙️';
                 if (btnText) btnText.textContent = 'Lưu Phản Hồi & TIẾP TỤC XỬ LÝ (in_progress)';
             } else {
-                btnSubmit.className = 'px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm flex items-center justify-center gap-1.5';
+                btnSubmit.className = 'px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1.5';
                 if (btnIcon) btnIcon.textContent = '💾';
                 if (btnText) btnText.textContent = 'Lưu Phản Hồi & Cập Nhật Trạng Thái';
             }
@@ -544,7 +724,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-</div>
+
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>

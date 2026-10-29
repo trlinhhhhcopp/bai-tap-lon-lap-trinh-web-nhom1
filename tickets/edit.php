@@ -6,6 +6,26 @@
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Bắt buộc đăng nhập
+if (empty($_SESSION['user'])) {
+    header('Location: ../index.php');
+    exit;
+}
+
+$currentUser = $_SESSION['user'];
+$userRole    = $currentUser['role'];
+
+// Chỉ KTV hoặc Quản trị viên mới có quyền sửa thông tin quản trị phiếu
+if (!in_array($userRole, ['agent', 'admin'])) {
+    set_flash('error', "Bạn không có quyền chỉnh sửa thông số quản trị của phiếu hỗ trợ!");
+    header('Location: index.php');
+    exit;
+}
+
 $id = (int)($_GET['id'] ?? 0);
 $ticket = TicketRepository::findById($id);
 
@@ -69,30 +89,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chỉnh Sửa Phiếu <?php echo htmlspecialchars($ticket['ticket_code']); ?> - Helpdesk</title>
+    <title>Chỉnh Sửa Phiếu <?php echo htmlspecialchars($ticket['ticket_code']); ?> - Helpdesk ĐH Thủ Đô</title>
     <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
 <?php require_once __DIR__ . '/../includes/navbar.php'; ?>
-<div class="flex-1 p-4 md:p-6">
 
-
-<div class="max-w-3xl mx-auto space-y-6">
+<main class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- HEADER -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex items-center justify-between">
         <div>
             <div class="flex items-center gap-2 mb-1">
-                <span class="font-mono font-bold text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                <span class="font-mono font-bold text-xs text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200">
                     <?php echo htmlspecialchars($ticket['ticket_code']); ?>
                 </span>
                 <span class="text-xs font-semibold text-slate-500">Chỉnh sửa thông tin phiếu</span>
             </div>
-            <h1 class="text-xl font-black text-slate-900">Cập Nhật Phiếu Hỗ Trợ</h1>
+            <h1 class="text-xl md:text-2xl font-black text-slate-900">Cập Nhật Phiếu Hỗ Trợ</h1>
         </div>
         <div class="flex items-center gap-2">
-            <a href="show.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
-                ← Chi tiết phiếu
+            <a href="show.php?id=<?php echo $ticket['id']; ?>" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
+                ← Quay lại chi tiết
             </a>
         </div>
     </div>
@@ -110,14 +128,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <!-- FORM EDIT -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
         <form method="POST" action="edit.php?id=<?php echo $ticket['id']; ?>" class="space-y-4 text-xs">
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Danh mục -->
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">Nhóm dịch vụ: <span class="text-rose-500">*</span></label>
-                    <select name="category_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select name="category_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
                         <?php foreach ($categories as $cat): ?>
                             <option value="<?php echo $cat['id']; ?>" <?php echo (int)$ticket['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($cat['name']); ?>
@@ -129,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <!-- Mức ưu tiên -->
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">Mức độ ưu tiên: <span class="text-rose-500">*</span></label>
-                    <select name="priority_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <select name="priority_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
                         <?php foreach ($priorities as $p): ?>
                             <option value="<?php echo $p['id']; ?>" <?php echo (int)$ticket['priority_id'] === (int)$p['id'] ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($p['name']); ?> (<?php echo htmlspecialchars($p['code']); ?>)
@@ -154,11 +172,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Phân công KTV -->
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Kỹ thuật viên phụ trách xử lý:</label>
-                <select name="assigned_to" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <select name="assigned_to" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
                     <option value="0">-- Chưa phân công (Để trống) --</option>
                     <?php foreach ($agents as $ag): ?>
                         <option value="<?php echo $ag['id']; ?>" <?php echo (int)$ticket['assigned_to'] === (int)$ag['id'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($ag['name']); ?> (Mã: <?php echo htmlspecialchars($ag['user_code']); ?>)
+                            <?php echo htmlspecialchars($ag['name']); ?> (Mã KTV: <?php echo htmlspecialchars($ag['user_code']); ?>)
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -168,34 +186,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Hệ thống ứng dụng bị ảnh hưởng:</label>
                 <input type="text" name="system_affected" value="<?php echo htmlspecialchars($ticket['system_affected']); ?>" 
-                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" />
             </div>
 
             <!-- Tiêu đề -->
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Tiêu đề sự cố: <span class="text-rose-500">*</span></label>
                 <input type="text" name="title" value="<?php echo htmlspecialchars($ticket['title']); ?>" 
-                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800" />
             </div>
 
             <!-- Mô tả -->
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Nội dung mô tả chi tiết: <span class="text-rose-500">*</span></label>
                 <textarea name="description" rows="4" 
-                          class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"><?php echo htmlspecialchars($ticket['description']); ?></textarea>
+                          class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 leading-relaxed"><?php echo htmlspecialchars($ticket['description']); ?></textarea>
             </div>
 
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-                <!-- Nút Xóa phiếu bằng POST (Slide 7 - Delete an toàn) -->
-                <button type="button" onclick="confirmDelete()" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl transition">
+            <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
+                <button type="button" onclick="confirmDelete()" class="px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl transition border border-rose-200">
                     🗑️ Xóa Phiếu Này
                 </button>
 
                 <div class="flex items-center gap-3">
-                    <a href="show.php?id=<?php echo $ticket['id']; ?>" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 rounded-xl text-slate-700 font-semibold transition">
-                        Hủy
+                    <a href="show.php?id=<?php echo $ticket['id']; ?>" class="px-5 py-2.5 border border-slate-300 hover:bg-slate-100 rounded-xl text-slate-700 font-semibold transition">
+                        Hủy bỏ
                     </a>
-                    <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5">
+                    <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-100 transition flex items-center gap-1.5">
                         <span>💾</span> Lưu Thay Đổi
                     </button>
                 </div>
@@ -209,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 
-</div>
+</main>
 
 <script>
 function confirmDelete() {
@@ -219,5 +236,6 @@ function confirmDelete() {
 }
 </script>
 
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>

@@ -1,144 +1,139 @@
 <?php
-$pageTitle = 'Danh sách Phân công giảng dạy';
+$pageTitle = 'Quản Lý Phân Công Giảng Dạy (course_assignments)';
+require_once __DIR__ . '/../../../../config/database.php';
+if (session_status() === PHP_SESSION_NONE) session_start();
+if (empty($_SESSION['user'])) {
+    header('Location: ../index.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($pageTitle) ?> | Helpdesk CNTT – ĐH Thủ Đô</title>
-    <style>
-        :root {
-            --primary:#0284c7; --primary-dark:#0369a1; --primary-light:#e0f2fe;
-            --navy:#0f172a; --bg:#f8fafc; --card:#fff; --border:#cbd5e1;
-            --text:#1e293b; --muted:#64748b;
-            --ok-bg:#dcfce7; --ok-text:#15803d; --err-bg:#fee2e2; --err-text:#b91c1c;
-        }
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
-        .navbar{background:var(--navy);color:#fff;padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center}
-        .navbar a{color:#fff;text-decoration:none;font-weight:600}
-        .container{max-width:1100px;margin:1.5rem auto;padding:0 1rem}
-        .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-bottom:1.25rem;box-shadow:0 1px 3px rgba(0,0,0,.06)}
-        h1{font-size:1.35rem;margin-bottom:1rem;color:var(--primary-dark)}
-        .btn{display:inline-block;padding:.4rem .9rem;border-radius:6px;border:none;cursor:pointer;font-size:.9rem;text-decoration:none;color:#fff;background:var(--primary)}
-        .btn:hover{background:var(--primary-dark)}
-        .btn-secondary{background:var(--muted)} .btn-danger{background:#dc2626} .btn-sm{padding:.25rem .6rem;font-size:.8rem}
-        table{width:100%;border-collapse:collapse;font-size:.9rem}
-        th,td{padding:.55rem .75rem;text-align:left;border-bottom:1px solid var(--border)}
-        th{background:var(--primary-light);color:var(--primary-dark);font-weight:600}
-        tr:hover td{background:#f1f5f9}
-        .alert{padding:.75rem 1rem;border-radius:6px;margin-bottom:1rem;font-size:.9rem}
-        .alert-success{background:var(--ok-bg);color:var(--ok-text);border:1px solid #86efac}
-        .alert-danger{background:var(--err-bg);color:var(--err-text);border:1px solid #fca5a5}
-        .search-bar{display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap}
-        .search-bar input{flex:1;min-width:200px;padding:.45rem .7rem;border:1px solid var(--border);border-radius:6px}
-        .pagination{display:flex;gap:.4rem;margin-top:1rem;flex-wrap:wrap}
-        .pagination a,.pagination span{padding:.3rem .65rem;border:1px solid var(--border);border-radius:4px;text-decoration:none;color:var(--text);font-size:.85rem}
-        .pagination .current{background:var(--primary);color:#fff;border-color:var(--primary)}
-        .actions{display:flex;gap:.35rem;flex-wrap:wrap}
-        .text-muted{color:var(--muted);font-size:.85rem}
-        .note{background:var(--primary-light);border-left:4px solid var(--primary);padding:.6rem .9rem;font-size:.875rem;margin-bottom:1rem;border-radius:0 6px 6px 0}
-    </style>
+    <title><?= htmlspecialchars($pageTitle) ?> - Helpdesk ĐH Thủ Đô</title>
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body>
-<nav class="navbar">
-    <a href="index.php?action=index">Helpdesk CNTT · Phân công giảng dạy</a>
-        <a href="../index.php" style="color:#38bdf8;margin-left:1.5rem;font-size:0.85rem;">← Cổng Tổng Hợp Nhóm 1</a>
-    <span style="color:#94a3b8;font-size:.85rem">Lê Hà My – ĐH Thủ Đô Hà Nội</span>
-</nav>
-<div class="container">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+<?php require_once __DIR__ . '/../../../../includes/navbar.php'; ?>
+
+<main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- HEADER BANNER -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                📚 QUẢN LÝ PHÂN CÔNG ĐÀO TẠO
+            </span>
+            <h1 class="text-2xl font-black text-white mt-1">
+                Phân Công Giảng Dạy Lớp Học Phần
+            </h1>
+            <p class="text-xs text-indigo-200/80">Quy tắc đào tạo ITIL v4: Mỗi lớp học phần có duy nhất 1 giảng viên phụ trách.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="index.php?action=create" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
+                <span>➕</span> Thêm Phân Công
+            </a>
+            <a href="../index.php" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">
+                ← Cổng Chính
+            </a>
+        </div>
+    </div>
+
     <?php if (!empty($flash)): ?>
-        <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>"><?= htmlspecialchars($flash['msg']) ?></div>
+        <div class="p-3.5 rounded-2xl text-xs font-semibold <?= $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200' ?>">
+            <?= htmlspecialchars($flash['msg']) ?>
+        </div>
     <?php endif; ?>
 
-    <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem">
-            <h1>Phân công giảng dạy (course_assignments)</h1>
-            <a href="index.php?action=create" class="btn">+ Thêm phân công</a>
-        </div>
-
-        <div class="note">
-            <strong>Quy tắc:</strong> Mỗi lớp học phần chỉ có <strong>duy nhất 1 giảng viên</strong> phụ trách.
-        </div>
-
-        <form method="get" action="index.php" class="search-bar">
+    <!-- THANH TÌM KIẾM -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-3 text-xs">
+        <form method="get" action="index.php" class="flex items-center gap-2 flex-1 max-w-lg">
             <input type="hidden" name="action" value="index">
-            <input type="text" name="q" value="<?= htmlspecialchars($keyword) ?>" placeholder="Tìm theo lớp, môn, giảng viên, học kỳ...">
-            <button type="submit" class="btn">Tìm kiếm</button>
+            <input type="text" name="q" value="<?= htmlspecialchars($keyword) ?>" placeholder="Tìm kiếm theo mã lớp, môn học, giảng viên..." 
+                   class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
+            <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition">
+                Tìm
+            </button>
             <?php if ($keyword !== ''): ?>
-                <a href="index.php?action=index" class="btn btn-secondary">Xóa lọc</a>
+                <a href="index.php?action=index" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition">
+                    Xóa lọc
+                </a>
             <?php endif; ?>
         </form>
+        <div class="text-slate-500 font-mono text-[11.5px]">
+            Tổng số: <strong class="text-slate-800"><?= $total ?></strong> bản ghi · Trang <?= $page ?>/<?= $totalPages ?>
+        </div>
+    </div>
 
-        <p class="text-muted" style="margin-bottom:.5rem">
-            Tìm thấy <strong><?= $total ?></strong> phân công
-            <?php if ($keyword !== ''): ?> khớp với “<?= htmlspecialchars($keyword) ?>”<?php endif; ?>
-            · Trang <?= $page ?>/<?= $totalPages ?>
-        </p>
-
-        <?php if (empty($assignments)): ?>
-            <p class="text-muted">Không có dữ liệu.</p>
-        <?php else: ?>
-            <div style="overflow-x:auto">
-                <table>
-                    <thead>
+    <!-- BẢNG DANH SÁCH -->
+    <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
+                        <th class="py-3.5 px-4">Lớp Học</th>
+                        <th class="py-3.5 px-4">Môn Học</th>
+                        <th class="py-3.5 px-4">Giảng Viên Phụ Trách</th>
+                        <th class="py-3.5 px-4 text-center">Học Kỳ</th>
+                        <th class="py-3.5 px-4 text-center">Năm Học</th>
+                        <th class="py-3.5 px-4 text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <?php if (empty($assignments)): ?>
                         <tr>
-                            <th>Lớp</th>
-                            <th>Môn học</th>
-                            <th>Giảng viên phụ trách</th>
-                            <th>Học kỳ</th>
-                            <th>Năm học</th>
-                            <th>Thao tác</th>
+                            <td colspan="6" class="py-8 text-center text-slate-400">Không có dữ liệu phân công giảng dạy nào.</td>
                         </tr>
-                    </thead>
-                    <tbody>
+                    <?php else: ?>
                         <?php foreach ($assignments as $row): ?>
-                            <tr>
-                                <td>
-                                    <strong><?= htmlspecialchars($row['class_code']) ?></strong><br>
-                                    <span class="text-muted"><?= htmlspecialchars($row['class_name']) ?></span>
+                            <tr class="hover:bg-slate-50/80 transition">
+                                <td class="py-3.5 px-4">
+                                    <strong class="font-mono text-indigo-600 font-bold"><?= htmlspecialchars($row['class_code']) ?></strong>
+                                    <div class="text-[11px] text-slate-500"><?= htmlspecialchars($row['class_name']) ?></div>
                                 </td>
-                                <td>
-                                    <strong><?= htmlspecialchars($row['course_code']) ?></strong><br>
-                                    <span class="text-muted"><?= htmlspecialchars($row['course_name']) ?></span>
+                                <td class="py-3.5 px-4 font-semibold text-slate-800">
+                                    <?= htmlspecialchars($row['course_name']) ?>
+                                    <div class="text-[11px] text-slate-400 font-mono"><?= htmlspecialchars($row['course_code']) ?></div>
                                 </td>
-                                <td>
-                                    <?= htmlspecialchars($row['lecturer_name']) ?><br>
-                                    <span class="text-muted"><?= htmlspecialchars($row['lecturer_email']) ?></span>
+                                <td class="py-3.5 px-4">
+                                    <div class="font-bold text-slate-900"><?= htmlspecialchars($row['lecturer_name']) ?></div>
+                                    <div class="text-[11px] text-slate-400 font-mono"><?= htmlspecialchars($row['lecturer_email']) ?></div>
                                 </td>
-                                <td><?= htmlspecialchars($row['semester']) ?></td>
-                                <td><?= htmlspecialchars($row['academic_year']) ?></td>
-                                <td>
-                                    <div class="actions">
-                                        <a href="index.php?action=edit&id=<?= (int)$row['id'] ?>" class="btn btn-sm">Sửa</a>
-                                        <form method="post" action="index.php?action=delete" style="display:inline">
-                                            <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
-                                            <button type="submit" class="btn btn-sm btn-danger"
-                                                    onclick="return confirm('Bạn chắc chắn muốn xóa phân công này?');">Xóa</button>
-                                        </form>
+                                <td class="py-3.5 px-4 text-center font-mono"><?= htmlspecialchars($row['semester']) ?></td>
+                                <td class="py-3.5 px-4 text-center font-mono text-slate-600"><?= htmlspecialchars($row['academic_year']) ?></td>
+                                <td class="py-3.5 px-4 text-center">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <a href="index.php?action=edit&id=<?= $row['id'] ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition text-[11px]">
+                                            Sửa
+                                        </a>
+                                        <a href="index.php?action=delete&id=<?= $row['id'] ?>" onclick="return confirm('Bạn có chắc muốn xóa phân công này?');" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition text-[11px]">
+                                            Xóa
+                                        </a>
                                     </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
 
-            <?php if ($totalPages > 1): ?>
-                <div class="pagination">
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <?php if ($i === $page): ?>
-                            <span class="current"><?= $i ?></span>
-                        <?php else: ?>
-                            <a href="index.php?action=index&page=<?= $i ?>&q=<?= urlencode($keyword) ?>"><?= $i ?></a>
-                        <?php endif; ?>
-                    <?php endfor; ?>
-                </div>
-            <?php endif; ?>
+        <?php if ($totalPages > 1): ?>
+            <div class="p-4 border-t border-slate-100 flex items-center justify-center gap-1.5 text-xs">
+                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                    <a href="index.php?action=index&page=<?= $i ?>&q=<?= urlencode($keyword) ?>" 
+                       class="px-3 py-1.5 rounded-lg border <?= $i == $page ? 'bg-indigo-600 text-white border-indigo-600 font-bold' : 'border-slate-300 text-slate-700 hover:bg-slate-100' ?>">
+                        <?= $i ?>
+                    </a>
+                <?php endfor; ?>
+            </div>
         <?php endif; ?>
     </div>
-</div>
+
+</main>
+
 <?php require_once __DIR__ . '/../../../../includes/footer.php'; ?>
 </body>
 </html>

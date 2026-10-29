@@ -1,4 +1,15 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+if (empty($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+    $_SESSION['flash'] = [
+        'type'    => 'danger',
+        'message' => 'Bạn phải đăng nhập với vai trò Quản trị viên (Admin) để truy cập chức năng này!'
+    ];
+    header('Location: ../index.php');
+    exit;
+}
 /**
  * ==============================================================================
  * BÀI TẬP LỚN LẬP TRÌNH WEB - BÀI 5: PHP–MYSQL BẰNG PDO VÀ XÂY DỰNG CRUD

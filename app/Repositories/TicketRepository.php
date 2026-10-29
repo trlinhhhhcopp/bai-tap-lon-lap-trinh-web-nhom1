@@ -78,7 +78,7 @@ class TicketRepository {
     /**
      * Đếm tổng số phiếu thỏa mãn điều kiện để tính tổng số trang (Slide 11)
      */
-    public static function countAll(string $keyword = '', string $status = '', int $categoryId = 0): int {
+    public static function countAll(string $keyword = '', string $status = '', int $categoryId = 0, int $requesterId = 0): int {
         $db = db();
         $conditions = [];
         $params = [];
