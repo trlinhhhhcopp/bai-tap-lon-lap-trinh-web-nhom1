@@ -145,6 +145,7 @@ class AuthController extends Controller {
             $emailSubject = "[Helpdesk TUD] Hướng dẫn đặt lại mật khẩu tài khoản sinh viên";
             $emailHtml = self::buildResetEmailTemplate($userName, $email, $fullLink, $nowTime, $expireTime);
             $sentReal = MailService::send($email, $userName, $emailSubject, $emailHtml);
+            \App\Services\InternalMailboxService::send($email, $userName, $emailSubject, $emailHtml, $rawToken);
 
             // Lưu thông tin hòm thư vào session
             $_SESSION['simulated_reset_email'] = [
