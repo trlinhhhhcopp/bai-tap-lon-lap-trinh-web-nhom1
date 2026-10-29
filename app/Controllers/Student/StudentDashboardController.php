@@ -48,6 +48,7 @@ class StudentDashboardController extends Controller {
 
             $ticketId = Ticket::create([
                 'requester_id'    => $user['id'],
+                'requester_name'  => $user['name'] ?? null,
                 'category_id'     => $categoryId,
                 'priority_id'     => 3, // MED
                 'class_id'        => $user['class_id'] ?? null,
