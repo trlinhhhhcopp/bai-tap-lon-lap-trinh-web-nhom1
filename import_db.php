@@ -7,7 +7,7 @@
 $host = '127.0.0.1';
 $db   = 'helpdesk_thudo';
 $user = 'root';
-$pass = '1234';   // mật khẩu MySQL của bạn
+$pass = 'nhi12345';   // mật khẩu MySQL của bạn
 $port = 3306;
 
 /**
