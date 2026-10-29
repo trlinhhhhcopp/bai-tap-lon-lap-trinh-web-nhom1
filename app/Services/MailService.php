@@ -45,10 +45,18 @@ class MailService {
             self::$lastError = "Mật khẩu ứng dụng của Google có độ dài 16 chữ cái. Mật khẩu hiện tại bạn điền chỉ có " . strlen($password) . " chữ cái, hãy kiểm tra lại nhé!";
         }
 
-        $socketHost = ($encryption === 'ssl') ? "ssl://{$host}" : $host;
-        $timeout    = 8;
+        $socketHost = ($encryption === 'ssl') ? "ssl://{$host}" : (($encryption === 'tls') ? "tcp://{$host}" : "tcp://{$host}");
+        $timeout    = 10;
 
-        $socket = @fsockopen($socketHost, $port, $errno, $errstr, $timeout);
+        $context = stream_context_create([
+            'ssl' => [
+                'verify_peer'       => false,
+                'verify_peer_name'  => false,
+                'allow_self_signed' => true,
+            ]
+        ]);
+
+        $socket = @stream_socket_client("{$socketHost}:{$port}", $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT, $context);
         if (!$socket) {
             self::$lastError = "Không thể kết nối đến máy chủ Google ({$socketHost}:{$port}): {$errstr} ({$errno})";
             error_log("MailService Connect Failed: " . self::$lastError);
@@ -179,4 +187,3 @@ class MailService {
         return (substr($resp, 0, 3) === '250');
     }
 }
-

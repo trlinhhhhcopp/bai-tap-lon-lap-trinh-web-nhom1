@@ -172,7 +172,8 @@ if ($action === 'forgot_password') {
             // Sinh mã OTP dạng chữ cái in hoa (6 ký tự, ví dụ: TUDKHA, HLMNPQ...)
             $otp = \App\Models\PasswordReset::createToken($user['id'], $user['email'], 15);
 
-            $targetEmail = !empty($user['personal_email']) ? $user['personal_email'] : $user['email'];
+            // Gửi OTP về đúng Email trường của sinh viên/người dùng
+            $targetEmail = $user['email'];
             $_SESSION['reset_otp_data'] = [
                 'user_id'        => (int)$user['id'],
                 'user_name'      => $user['name'],
@@ -185,7 +186,7 @@ if ($action === 'forgot_password') {
                 'verified'       => false,
             ];
 
-            // Gửi thư chứa mã OTP vào Hòm thư nội bộ Webmail của sinh viên/giảng viên (@daihocthudo.edu.vn)
+            // Gửi thư chứa mã OTP đến Email trường của sinh viên/giảng viên (@daihocthudo.edu.vn)
             $mailSubject = "[TUD-Helpdesk] Mã OTP xác nhận khôi phục mật khẩu tài khoản học thuật";
             $mailBody = "
                 <p>Kính gửi bạn <strong>{$user['name']}</strong> (Mã định danh: <code>{$user['user_code']}</code>),</p>
@@ -202,7 +203,8 @@ if ($action === 'forgot_password') {
                     Email hỗ trợ: helpdesk@daihocthudo.edu.vn | Hotline: (024) 3833 0708
                 </p>
             ";
-            // Ưu tiên gửi tới Gmail thật của sinh viên (Ví dụ: nga469704@gmail.com)
+            
+            // Gửi mail thực tế qua SMTP Gmail đến đúng email trường của người dùng
             if (class_exists('\App\Services\MailService')) {
                 \App\Services\MailService::send($targetEmail, $user['name'], $mailSubject, $mailBody);
             }
@@ -212,7 +214,7 @@ if ($action === 'forgot_password') {
 
             $_SESSION['flash'] = [
                 'type'    => 'success',
-                'message' => "Đã gửi mã xác thực OTP về hòm thư Gmail của bạn: <strong>{$targetEmail}</strong>! Vui lòng mở ứng dụng Gmail (mail.google.com) để kiểm tra và nhập mã bên dưới."
+                'message' => "Đã gửi mã xác thực OTP về hòm thư trường của bạn: <strong>{$targetEmail}</strong>! Vui lòng kiểm tra hộp thư đến (hoặc mục Thư rác/Spam) và nhập mã bên dưới."
             ];
             header('Location: ' . $appBase . 'index.php?action=forgot_password&step=enter_otp');
             exit;
@@ -304,7 +306,7 @@ if ($action === 'forgot_password') {
                     <div class="bg-sky-50 border border-sky-200 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm">
                         <div class="flex items-center justify-between flex-wrap gap-2">
                             <span class="text-xs font-bold text-sky-950 flex items-center gap-1.5">
-                                <span class="text-base">📬</span> HỘP THƯ NHẬN MÃ XÁC THỰC OTP
+                                <span class="text-base">📬</span> HỘP THƯ TRƯỜNG NHẬN MÃ XÁC THỰC OTP
                             </span>
                             <span class="text-[11px] font-bold text-sky-800 bg-white px-2.5 py-1 rounded-full border border-sky-200 shadow-2xs">
                                 Hiệu lực mã: 15 phút
@@ -318,24 +320,14 @@ if ($action === 'forgot_password') {
                                     (Mã: <code class="text-indigo-600 font-bold"><?php echo htmlspecialchars($activeOtp['user_code'] ?? ''); ?></code>)
                                 </div>
                                 <div class="text-slate-600">
-                                    Hòm thư nhận mã xác thực: <strong class="text-sky-800 font-mono text-sm"><?php echo htmlspecialchars($activeOtp['target_email'] ?? $activeOtp['email'] ?? 'nga469704@gmail.com'); ?></strong>
+                                    Hòm thư trường nhận mã xác thực: <strong class="text-sky-800 font-mono text-sm"><?php echo htmlspecialchars($activeOtp['target_email'] ?? $activeOtp['email'] ?? ''); ?></strong>
                                 </div>
                             </div>
                             
                             <p class="text-slate-600 leading-relaxed text-[11.5px]">
-                                🔒 <strong>Bảo mật tài khoản:</strong> Hệ thống đã gửi thư xác thực kèm mã OTP gồm <strong>6 chữ cái in hoa</strong> đến địa chỉ hòm thư trên. Bạn hãy mở ứng dụng hòm thư (hộp thư đến hoặc mục Thư rác/Spam), lấy đúng 6 chữ cái và nhập vào ô xác thực bên dưới.
+                                🔒 <strong>Bảo mật tài khoản:</strong> Hệ thống đã gửi thư xác thực kèm mã OTP gồm <strong>6 chữ cái in hoa</strong> đến hòm thư trường trên. Bạn hãy mở hòm thư của mình (hộp thư đến hoặc mục Thư rác/Spam), lấy đúng 6 chữ cái và nhập vào ô xác thực bên dưới.
                             </p>
                         </div>
-
-                        <!-- Hộp dự phòng kiểm thử nội bộ (chỉ bung ra khi cần) -->
-                        <details class="text-[11px] text-slate-500 bg-sky-100/60 rounded-xl p-2.5 border border-sky-200">
-                            <summary class="cursor-pointer font-semibold hover:text-slate-700 select-none">
-                                🛠️ Hỗ trợ kiểm thử (Bấm vào đây để xem mã dự phòng nếu chưa kết nối SMTP Gmail)
-                            </summary>
-                            <div class="mt-2 p-2 bg-slate-900 rounded-lg text-center text-amber-400 font-mono font-black tracking-widest text-lg">
-                                <?php echo htmlspecialchars($activeOtp['otp'] ?? 'ABCXYZ'); ?>
-                            </div>
-                        </details>
                     </div>
 
                     <!-- 2. FORM NHẬP MÃ OTP CHỮ CÁI -->
