@@ -6,6 +6,11 @@ use PDOException;
 
 class Database {
     private static ?PDO $instance = null;
+    private static bool $isFallback = false;
+
+    public static function isFallback(): bool {
+        return self::$isFallback;
+    }
 
     public static function getConnection(): PDO {
         if (self::$instance !== null) {
@@ -23,8 +28,21 @@ class Database {
                 $config['password'],
                 $config['options']
             );
+            self::$isFallback = false;
+
+            // Đảm bảo các cột mở rộng (avatar_path, attachment_path) luôn tồn tại trên MySQL
+            try {
+                self::$instance->exec("ALTER TABLE users ADD COLUMN avatar_path VARCHAR(255) NULL;");
+            } catch (PDOException $ex) {}
+            try {
+                self::$instance->exec("ALTER TABLE tickets ADD COLUMN attachment_path VARCHAR(255) NULL;");
+            } catch (PDOException $ex) {}
+
             return self::$instance;
         } catch (PDOException $e) {
+            // Đánh dấu đang chạy chế độ dự phòng SQLite
+            self::$isFallback = true;
+
             // Fallback sang CSDL SQLite cục bộ nếu MySQL chưa bật
             $sqlitePath = __DIR__ . '/../../storage/helpdesk_local.sqlite';
             if (!is_dir(dirname($sqlitePath))) {
@@ -42,7 +60,18 @@ class Database {
 
     private static function initLocalSqlite(PDO $pdo): void {
         $check = $pdo->query("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")->fetch();
-        if ($check) return;
+        if ($check) {
+            try {
+                $pdo->exec("ALTER TABLE tickets ADD COLUMN attachment_path TEXT;");
+            } catch (\PDOException $e) {}
+            try {
+                $pdo->exec("ALTER TABLE tickets ADD COLUMN closed_reason TEXT;");
+            } catch (\PDOException $e) {}
+            try {
+                $pdo->exec("ALTER TABLE users ADD COLUMN avatar_path TEXT;");
+            } catch (\PDOException $e) {}
+            return;
+        }
 
         $pdo->exec("
             CREATE TABLE classes (
@@ -118,6 +147,7 @@ class Database {
                 title TEXT NOT NULL,
                 description TEXT NOT NULL,
                 system_affected TEXT NOT NULL,
+                attachment_path TEXT,
                 status TEXT NOT NULL DEFAULT 'new',
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 due_at TEXT

@@ -134,7 +134,17 @@ class TicketService {
         $pdo = Database::getConnection();
 
         $categoryId = (int)$data['category_id'];
-        $priorityId = (int)($data['priority_id'] ?? 3);
+        $priorityId = (int)($data['priority_id'] ?? 0);
+        if ($priorityId <= 0) {
+            // Tự động xác định mức ưu tiên theo Danh mục (Auto-Priority Mapping chuẩn ITIL PDF)
+            $catPrioStmt = $pdo->prepare("SELECT default_priority_code FROM categories WHERE id = :cat_id");
+            $catPrioStmt->execute([':cat_id' => $categoryId]);
+            $defCode = $catPrioStmt->fetchColumn() ?: 'MED';
+
+            $prioStmt = $pdo->prepare("SELECT id FROM priorities WHERE code = :code");
+            $prioStmt->execute([':code' => $defCode]);
+            $priorityId = (int)($prioStmt->fetchColumn() ?: 3);
+        }
 
         // 1. Chạy thuật toán phân công KTV
         $dispatch = self::dispatchAgent($categoryId);

@@ -3,7 +3,15 @@
 *.sqlite3
 *.db
 
+# Cấu hình chứa mật khẩu cá nhân / App Password bảo mật
+config/mail.php
+
+# Thư mục lưu trữ tệp đính kèm do người dùng tải lên
+storage/uploads/*
+!storage/uploads/.gitkeep
+
 # Hệ điều hành & IDE rác
 .DS_Store
 Thumbs.db
+
 

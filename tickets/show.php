@@ -441,8 +441,21 @@ $flash   = get_flash();
                 </div>
 
                 <div class="space-y-1">
-                    <span class="text-slate-400 block text-[11px]">Mức độ ưu tiên:</span>
-                    <strong class="text-rose-600 block"><?php echo htmlspecialchars($ticket['priority_name']); ?></strong>
+                    <span class="text-slate-400 block text-[11px]">Mức độ ưu tiên (Auto-Priority):</span>
+                    <?php 
+                    $prioBadgeClass = match($ticket['priority_code']) {
+                        'URGENT' => 'bg-rose-50 text-rose-700 border-rose-200',
+                        'HIGH'   => 'bg-amber-50 text-amber-800 border-amber-200',
+                        'MED'    => 'bg-blue-50 text-blue-700 border-blue-200',
+                        'LOW'    => 'bg-slate-50 text-slate-700 border-slate-200',
+                        default  => 'bg-slate-50 text-slate-700 border-slate-200',
+                    };
+                    ?>
+                    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border <?php echo $prioBadgeClass; ?>">
+                        <span>●</span>
+                        <span><?php echo htmlspecialchars($ticket['priority_name']); ?></span>
+                        <span class="text-[10px] opacity-80">(<?php echo htmlspecialchars($ticket['priority_code']); ?>)</span>
+                    </div>
                 </div>
             </div>
 

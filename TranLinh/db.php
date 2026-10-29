@@ -31,13 +31,16 @@ function db(): PDO {
     }
 
     // 1. Cấu hình kết nối MySQL chuẩn của Bài tập lớn nhóm 1
-    $host     = '127.0.0.1';
-    $dbname   = 'helpdesk_thudo';
-    $username = 'root';
-    $password = '';
-    $charset  = 'utf8mb4';
+    $cfgFile  = __DIR__ . '/../config/database.php';
+    $cfg      = file_exists($cfgFile) ? (require $cfgFile) : [];
+    $host     = $cfg['host'] ?? '127.0.0.1';
+    $port     = $cfg['port'] ?? 3306;
+    $dbname   = $cfg['database'] ?? 'helpdesk_thudo';
+    $username = $cfg['username'] ?? 'root';
+    $password = $cfg['password'] ?? '';
+    $charset  = $cfg['charset'] ?? 'utf8mb4';
 
-    $dsn = "mysql:host={$host};dbname={$dbname};charset={$charset}";
+    $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset={$charset}";
 
     $options = [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Ném Exception khi có lỗi SQL

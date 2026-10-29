@@ -302,6 +302,9 @@ $flash = get_flash();
         <div class="header-title">
             <h1>BÀI 5: QUẢN TRỊ NGƯỜI DÙNG & BẢO MẬT BẰNG PDO CRUD</h1>
             <p>Hệ thống Helpdesk CNTT Trực tuyến Trường Đại học Thủ Đô Hà Nội (Chủ đề 9)</p>
+            <div style="margin-top: 8px;">
+                <a href="../index.php" style="color:#38bdf8;text-decoration:none;font-size:12.5px;font-weight:bold;">← Quay lại Cổng Tổng Hợp Nhóm 1</a>
+            </div>
         </div>
         <div class="student-badge">
             Sinh viên phụ trách: <strong>Trần Thục Linh</strong><br>

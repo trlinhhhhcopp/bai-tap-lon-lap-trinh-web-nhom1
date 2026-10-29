@@ -124,6 +124,16 @@ class User {
         ]);
     }
 
+    public static function updateAvatar(int $id, string $avatarPath): bool {
+        $pdo = Database::getConnection();
+        $sql = "UPDATE users SET avatar_path = :avatar WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute([
+            ':avatar' => $avatarPath,
+            ':id'     => $id,
+        ]);
+    }
+
     public static function updatePassword(int $id, string $newPasswordHash, bool $markFirstLoginDone = true): bool {
         $pdo = Database::getConnection();
         $sql = "UPDATE users SET password_hash = :hash, is_first_login = :first WHERE id = :id";

@@ -11,6 +11,14 @@
 
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 
+// Hỗ trợ PHP Built-in Server: nếu là file tĩnh có sẵn (css, js, ảnh) thì để server phục vụ trực tiếp
+if (php_sapi_name() === 'cli-server') {
+    $path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+    if ($path !== '/' && file_exists(__DIR__ . $path)) {
+        return false;
+    }
+}
+
 // 1. Bộ nạp tự động PSR-4 cho không gian tên App\...
 spl_autoload_register(function ($class) {
     $prefix = 'App\\';
@@ -53,6 +61,7 @@ $router->post('/first-login', [AuthController::class, 'changeFirstLogin']);
 // Quên mật khẩu SSPR qua Email (15 phút)
 $router->get('/forgot-password', [AuthController::class, 'showForgotPassword']);
 $router->post('/forgot-password', [AuthController::class, 'sendResetLink']);
+$router->post('/api/send-reset-email', [AuthController::class, 'apiSendResetEmail']);
 $router->get('/reset-password', [AuthController::class, 'showResetPassword']);
 $router->post('/reset-password', [AuthController::class, 'resetPassword']);
 
@@ -64,6 +73,9 @@ $router->get('/guest/lookup', [GuestTicketController::class, 'showLookup']);
 // --- PHÂN HỆ CỔNG SINH VIÊN (STUDENT PORTAL - CÁCH LY THÔNG TIN) ---
 $router->get('/student/dashboard', [StudentDashboardController::class, 'index'], [AuthMiddleware::class]);
 $router->post('/student/tickets/create', [StudentDashboardController::class, 'createTicket'], [AuthMiddleware::class]);
+$router->post('/student/tickets/cancel', [StudentDashboardController::class, 'cancelTicket'], [AuthMiddleware::class]);
+$router->post('/student/avatar', [StudentDashboardController::class, 'updateAvatar'], [AuthMiddleware::class]);
+$router->get('/tickets/attachment', [StudentDashboardController::class, 'downloadAttachment']);
 
 // --- PHÂN HỆ QUẢN TRỊ VIÊN ADMIN (ADMIN CENTER - TRẦN THỤC LINH PHỤ TRÁCH USER CRUD) ---
 $router->get('/admin/users', [AdminUserController::class, 'index'], [AdminMiddleware::class]);

@@ -16,8 +16,9 @@ class PasswordReset {
         $del = $pdo->prepare("DELETE FROM password_resets WHERE user_id = :uid");
         $del->execute([':uid' => $userId]);
 
-        // Thêm token mới
-        $ins = $pdo->prepare("INSERT INTO password_resets (user_id, email, token_hash, expires_at) VALUES (:uid, :email, :hash, :exp)");
+        // Thêm token mới với thời hạn chuẩn ISO tương thích 100% cả MariaDB/MySQL và SQLite
+        $ins = $pdo->prepare("INSERT INTO password_resets (user_id, email, token_hash, expires_at) 
+                              VALUES (:uid, :email, :hash, :exp)");
         $ins->execute([
             ':uid'   => $userId,
             ':email' => $email,
@@ -31,18 +32,22 @@ class PasswordReset {
     public static function verifyToken(string $rawToken): ?array {
         $pdo = Database::getConnection();
         $tokenHash = hash('sha256', $rawToken);
+        $now = date('Y-m-d H:i:s');
 
         $sql = "SELECT pr.*, u.user_code, u.name, u.academic_status, u.is_active
                 FROM password_resets pr
                 INNER JOIN users u ON u.id = pr.user_id
                 WHERE pr.token_hash = :hash 
-                  AND pr.expires_at > datetime('now', 'localtime')
+                  AND pr.expires_at > :now
                   AND u.is_active = 1
                   AND u.academic_status != 'expelled'
                 LIMIT 1";
 
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([':hash' => $tokenHash]);
+        $stmt->execute([
+            ':hash' => $tokenHash,
+            ':now'  => $now,
+        ]);
         $res = $stmt->fetch();
 
         return $res ?: null;

@@ -44,7 +44,9 @@ $pageTitle = 'Danh sách Đánh giá CSAT';
 </head>
 <body>
 <nav class="navbar">
-    <a href="index.php?action=index">Helpdesk CNTT · Đánh giá CSAT</a>
+    <a href="index.php?action=tickets">Phiếu hỗ trợ</a>
+        <a href="index.php?action=ratings" style="margin-left:1rem;">Đánh giá CSAT</a>
+        <a href="../index.php" style="color:#38bdf8;margin-left:1.5rem;font-size:0.85rem;">← Cổng Tổng Hợp Nhóm 1</a>
     <span style="color:#94a3b8;font-size:.85rem">Nguyễn Ánh Nhi – ĐH Thủ Đô Hà Nội</span>
 </nav>
 <div class="container">
