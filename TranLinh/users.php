@@ -295,6 +295,7 @@ $flash = get_flash();
     </style>
 </head>
 <body>
+<?php require_once __DIR__ . '/../includes/navbar.php'; ?>
 
 <div class="container">
     <!-- Header -->
@@ -589,6 +590,7 @@ window.onclick = function(event) {
 }
 </script>
 
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>
 

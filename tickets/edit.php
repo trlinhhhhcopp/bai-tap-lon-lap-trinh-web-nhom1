@@ -72,7 +72,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Chỉnh Sửa Phiếu <?php echo htmlspecialchars($ticket['ticket_code']); ?> - Helpdesk</title>
     <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen p-4 md:p-6">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+<?php require_once __DIR__ . '/../includes/navbar.php'; ?>
+<div class="flex-1 p-4 md:p-6">
+
 
 <div class="max-w-3xl mx-auto space-y-6">
 

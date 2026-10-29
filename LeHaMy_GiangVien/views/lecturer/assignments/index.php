@@ -139,5 +139,6 @@ $pageTitle = 'Danh sách Phân công giảng dạy';
         <?php endif; ?>
     </div>
 </div>
+<?php require_once __DIR__ . '/../../../../includes/footer.php'; ?>
 </body>
 </html>
