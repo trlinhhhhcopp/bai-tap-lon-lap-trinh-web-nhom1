@@ -4,6 +4,7 @@
  * Bảng: course_assignments
  * Quy tắc: Mỗi lớp học phần chỉ có DUY NHẤT 1 giảng viên phụ trách
  * Phần của: Lê Hà My
+ * Tất cả truy vấn đều dùng prepared statement
  */
 require_once __DIR__ . '/../config/database.php';
 
@@ -77,7 +78,8 @@ class CourseAssignment
                 JOIN classes cl ON ca.class_id = cl.id
                 JOIN courses co ON ca.course_id = co.id
                 JOIN users u ON ca.lecturer_id = u.id
-                WHERE ca.id = :id LIMIT 1";
+                WHERE ca.id = :id
+                LIMIT 1";
         $stmt = db()->prepare($sql);
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch();
@@ -87,7 +89,9 @@ class CourseAssignment
     public static function exists(int $classId, int $courseId, string $semester, ?int $excludeId = null): bool
     {
         $sql = "SELECT COUNT(*) AS c FROM course_assignments
-                WHERE class_id = :class_id AND course_id = :course_id AND semester = :semester";
+                WHERE class_id = :class_id
+                  AND course_id = :course_id
+                  AND semester = :semester";
         $params = [
             'class_id'  => $classId,
             'course_id' => $courseId,
@@ -106,7 +110,8 @@ class CourseAssignment
     {
         $sql = "INSERT INTO course_assignments
                 (class_id, course_id, lecturer_id, semester, academic_year)
-                VALUES (:class_id, :course_id, :lecturer_id, :semester, :academic_year)";
+                VALUES
+                (:class_id, :course_id, :lecturer_id, :semester, :academic_year)";
         $stmt = db()->prepare($sql);
         $stmt->execute([
             'class_id'      => $data['class_id'],
@@ -121,8 +126,10 @@ class CourseAssignment
     public static function update(int $id, array $data): bool
     {
         $sql = "UPDATE course_assignments SET
-                    class_id = :class_id, course_id = :course_id,
-                    lecturer_id = :lecturer_id, semester = :semester,
+                    class_id      = :class_id,
+                    course_id     = :course_id,
+                    lecturer_id   = :lecturer_id,
+                    semester      = :semester,
                     academic_year = :academic_year
                 WHERE id = :id";
         $stmt = db()->prepare($sql);
@@ -142,21 +149,30 @@ class CourseAssignment
         return $stmt->execute(['id' => $id]);
     }
 
+    /** Danh mục – cũng dùng prepare cho đồng bộ */
     public static function getAllClasses(): array
     {
-        return db()->query("SELECT id, class_code, name FROM classes ORDER BY class_code")->fetchAll();
+        $stmt = db()->prepare("SELECT id, class_code, name FROM classes ORDER BY class_code");
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     public static function getAllCourses(): array
     {
-        return db()->query("SELECT id, course_code, name FROM courses ORDER BY course_code")->fetchAll();
+        $stmt = db()->prepare("SELECT id, course_code, name FROM courses ORDER BY course_code");
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 
     public static function getAllLecturers(): array
     {
-        return db()->query("SELECT id, name, email, user_code FROM users
-                            WHERE user_type = 'lecturer' AND is_active = 1
-                            ORDER BY name")->fetchAll();
+        $stmt = db()->prepare(
+            "SELECT id, name, email, user_code FROM users
+             WHERE user_type = 'lecturer' AND is_active = 1
+             ORDER BY name"
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
 }
 ?>

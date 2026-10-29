@@ -1,17 +1,18 @@
 # 5 Test Case – CRUD Phân công giảng dạy (course_assignments)
-**Sinh viên:** Lê Hà My (224001737)  
+
+**Sinh viên:** Lê Hà My  
 **Bảng:** `course_assignments`  
-**Quy tắc nghiệp vụ:** Mỗi lớp học phần (class_id + course_id + semester) chỉ có **duy nhất 1 giảng viên** phụ trách.
+**Quy tắc:** Mỗi lớp học phần (class_id + course_id + semester) chỉ có **1 giảng viên** phụ trách.
 
 ---
 
 ## Test Case 1 – Thêm phân công thành công (dữ liệu hợp lệ)
 
-| Trường | Giá trị nhập |
-|--------|--------------|
-| Lớp học | D24-CNTT2 |
-| Môn học | NET201 – Quản trị Mạng & An toàn Hệ thống |
-| Giảng viên | ThS. Trần Thị Hạnh (GV002) |
+| Trường | Giá trị |
+|--------|---------|
+| Lớp học | Chọn 1 lớp có sẵn (vd: D24-CNTT2) |
+| Môn học | Chọn 1 môn (vd: NET201) |
+| Giảng viên | Chọn 1 giảng viên |
 | Học kỳ | 2026_1 |
 | Năm học | 2026-2027 |
 
@@ -23,26 +24,24 @@
 
 ## Test Case 2 – Trùng phân công (vi phạm UNIQUE)
 
-| Trường | Giá trị nhập |
-|--------|--------------|
-| Lớp học | D24-CNTT1 |
-| Môn học | WEB101 – Lập trình Web & Ứng dụng |
+| Trường | Giá trị |
+|--------|---------|
+| Lớp + Môn + Học kỳ | Trùng với 1 phân công đã có |
 | Giảng viên | Bất kỳ |
-| Học kỳ | 2026_1 |
 
 **Kết quả mong đợi:**  
-- Báo lỗi: “Lớp học phần này đã có giảng viên phụ trách. Mỗi lớp học phần chỉ được 1 giảng viên.”  
+- Báo lỗi: “Lớp học phần này đã có giảng viên phụ trách…”  
 - Không tạo bản ghi mới.
 
 ---
 
 ## Test Case 3 – Bỏ trống trường bắt buộc
 
-| Trường | Giá trị nhập |
-|--------|--------------|
-| Lớp học | (không chọn) |
-| Môn học | (không chọn) |
-| Giảng viên | (không chọn) |
+| Trường | Giá trị |
+|--------|---------|
+| Lớp học | -- Chọn lớp -- |
+| Môn học | -- Chọn môn học -- |
+| Giảng viên | -- Chọn giảng viên -- |
 
 **Kết quả mong đợi:**  
 - Báo lỗi: “Vui lòng chọn Lớp học.”  
@@ -55,12 +54,12 @@
 
 | Hành động | Giá trị |
 |-----------|---------|
-| Gõ từ khóa tìm kiếm | `WEB101` hoặc `Nguyễn Văn Giảng` |
-| Chuyển trang | Nếu có nhiều hơn 8 bản ghi |
+| Ô tìm kiếm | `WEB101` hoặc tên giảng viên |
+| Phân trang | Nếu > 8 bản ghi |
 
 **Kết quả mong đợi:**  
-- Chỉ hiển thị các dòng khớp từ khóa.  
-- Phân trang hoạt động đúng (nếu đủ dữ liệu).
+- Chỉ hiện dòng khớp từ khóa.  
+- Phân trang hoạt động đúng.
 
 ---
 
@@ -68,23 +67,23 @@
 
 | Hành động | Chi tiết |
 |-----------|----------|
-| Chọn một phân công | Bấm nút **Xóa** |
-| Xác nhận hộp thoại | Đồng ý |
+| Bấm nút **Xóa** | Xác nhận hộp thoại |
 
 **Kết quả mong đợi:**  
-- Request gửi bằng phương thức **POST** (không phải GET).  
+- Request gửi bằng **POST** (không phải GET).  
 - Thông báo “Đã xóa phân công giảng dạy.”  
 - Bản ghi biến mất khỏi danh sách.
 
 ---
 
-## Checklist tiêu chí bài tập
+## Checklist tiêu chí
 
 | Tiêu chí | Đạt |
 |----------|-----|
 | CRUD chạy đúng | ✅ |
-| Không có SQL trong file giao diện | ✅ |
+| Không SQL trong view | ✅ |
 | Xóa bằng POST | ✅ |
-| Có dữ liệu mẫu để chạy thử | ✅ (seed.sql) |
-| Tìm kiếm hoặc phân trang | ✅ (cả hai) |
-| 5 test case nhập đúng/sai | ✅ |
+| Có dữ liệu mẫu | ✅ |
+| Tìm kiếm + phân trang | ✅ |
+| Mọi truy vấn có input dùng prepare | ✅ |
+| 5 test case | ✅ |
