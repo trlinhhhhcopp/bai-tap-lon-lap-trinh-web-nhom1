@@ -300,41 +300,42 @@ if ($action === 'forgot_password') {
                 <?php endif; ?>
 
                 <?php if ($hasOtp || $step === 'enter_otp'): ?>
-                    <!-- KHUNG HIỂN THỊ MÃ OTP NỔI BẬT DỄ THAO TÁC (QUAY VỀ GIAO DIỆN NHƯ CŨ) -->
-                    <div class="bg-amber-50/90 border-2 border-amber-300 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm">
+                    <!-- KHUNG THÔNG BÁO GỬI MÃ OTP VỀ HÒM THƯ (BẢO MẬT: KHÔNG IN SẴN MÃ TRÊN MÀN HÌNH) -->
+                    <div class="bg-sky-50 border border-sky-200 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm">
                         <div class="flex items-center justify-between flex-wrap gap-2">
-                            <span class="text-xs font-bold text-amber-950 flex items-center gap-1.5">
-                                <span class="text-base">🔑</span> MÃ XÁC THỰC OTP KHÔI PHỤC MẬT KHẨU
+                            <span class="text-xs font-bold text-sky-950 flex items-center gap-1.5">
+                                <span class="text-base">📬</span> HỘP THƯ NHẬN MÃ XÁC THỰC OTP
                             </span>
-                            <span class="text-[11px] font-bold text-amber-800 bg-white px-2.5 py-1 rounded-full border border-amber-200 shadow-2xs">
-                                Hiệu lực: 15 phút
+                            <span class="text-[11px] font-bold text-sky-800 bg-white px-2.5 py-1 rounded-full border border-sky-200 shadow-2xs">
+                                Hiệu lực mã: 15 phút
                             </span>
                         </div>
 
-                        <div class="bg-white rounded-xl p-4 border border-amber-200 text-xs space-y-3 shadow-2xs">
+                        <div class="bg-white rounded-xl p-4 border border-sky-100 text-xs space-y-2.5 shadow-2xs">
                             <div class="space-y-1 pb-2 border-b border-slate-100 text-[11.5px]">
                                 <div class="text-slate-700">
                                     Chủ tài khoản: <strong class="text-slate-900"><?php echo htmlspecialchars($activeOtp['user_name'] ?? 'Sinh viên'); ?></strong> 
                                     (Mã: <code class="text-indigo-600 font-bold"><?php echo htmlspecialchars($activeOtp['user_code'] ?? ''); ?></code>)
                                 </div>
                                 <div class="text-slate-600">
-                                    Hòm thư trường: <span class="text-indigo-700 font-mono font-semibold"><?php echo htmlspecialchars($activeOtp['email'] ?? ''); ?></span>
+                                    Hòm thư nhận mã xác thực: <strong class="text-sky-800 font-mono text-sm"><?php echo htmlspecialchars($activeOtp['target_email'] ?? $activeOtp['email'] ?? 'nga469704@gmail.com'); ?></strong>
                                 </div>
                             </div>
                             
-                            <!-- HỘP MÃ OTP NỔI BẬT KHÔNG BỊ PHỤ THUỘC MẠNG EMAIL NGOÀI -->
-                            <div class="bg-slate-900 rounded-xl p-3.5 text-center space-y-1 border border-slate-800 shadow-md">
-                                <span class="text-[10.5px] font-bold text-amber-300 uppercase tracking-widest block">MÃ OTP (GỒM 6 CHỮ CÁI IN HOA):</span>
-                                <div class="font-mono text-3xl md:text-4xl font-black text-amber-400 tracking-[0.35em] py-1 select-all">
-                                    <?php echo htmlspecialchars($activeOtp['otp'] ?? 'ABCXYZ'); ?>
-                                </div>
-                                <span class="text-[10px] text-slate-400 block">Vui lòng sao chép hoặc nhập chính xác 6 chữ cái trên vào ô bên dưới</span>
-                            </div>
-
-                            <p class="text-[11px] text-slate-600 leading-relaxed text-center">
-                                💡 Nhập chính xác 6 chữ cái trên vào ô xác thực bên dưới rồi bấm <strong>"Xác Nhận Mã OTP Để Đổi Mật Khẩu"</strong>.
+                            <p class="text-slate-600 leading-relaxed text-[11.5px]">
+                                🔒 <strong>Bảo mật tài khoản:</strong> Hệ thống đã gửi thư xác thực kèm mã OTP gồm <strong>6 chữ cái in hoa</strong> đến địa chỉ hòm thư trên. Bạn hãy mở ứng dụng hòm thư (hộp thư đến hoặc mục Thư rác/Spam), lấy đúng 6 chữ cái và nhập vào ô xác thực bên dưới.
                             </p>
                         </div>
+
+                        <!-- Hộp dự phòng kiểm thử nội bộ (chỉ bung ra khi cần) -->
+                        <details class="text-[11px] text-slate-500 bg-sky-100/60 rounded-xl p-2.5 border border-sky-200">
+                            <summary class="cursor-pointer font-semibold hover:text-slate-700 select-none">
+                                🛠️ Hỗ trợ kiểm thử (Bấm vào đây để xem mã dự phòng nếu chưa kết nối SMTP Gmail)
+                            </summary>
+                            <div class="mt-2 p-2 bg-slate-900 rounded-lg text-center text-amber-400 font-mono font-black tracking-widest text-lg">
+                                <?php echo htmlspecialchars($activeOtp['otp'] ?? 'ABCXYZ'); ?>
+                            </div>
+                        </details>
                     </div>
 
                     <!-- 2. FORM NHẬP MÃ OTP CHỮ CÁI -->
@@ -988,7 +989,7 @@ if (!$currentUser) {
         <title>Đăng Nhập - Hệ Thống Helpdesk CNTT ĐH Thủ Đô Hà Nội</title>
         <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
     </head>
-    <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+    <body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between">
 
         <!-- Header Khách -->
         <?php require __DIR__ . '/includes/navbar.php'; ?>
@@ -1213,11 +1214,19 @@ if ($userType === 'student') {
                     </div>
                 </div>
 
-                <!-- Nút hành động duy nhất: Báo Sự Cố Mới (Đã bỏ nút Hòm Thư Trường) -->
-                <div class="relative z-10">
+                <!-- Menu điều hướng các mục trên đầu (như phần admin làm) -->
+                <div class="relative z-10 flex items-center gap-2 flex-wrap">
                     <a href="<?php echo $appBase; ?>tickets/create.php" 
-                       class="px-5 py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-black rounded-2xl shadow-lg shadow-emerald-900/30 transition flex items-center gap-2 text-xs md:text-sm">
-                        <span>➕</span> Báo Sự Cố Kỹ Thuật Mới
+                       class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
+                        <span>➕</span> Báo Sự Cố Mới
+                    </a>
+                    <a href="<?php echo $appBase; ?>tickets/index.php" 
+                       class="px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white font-bold rounded-2xl border border-white/30 transition flex items-center gap-1.5 text-xs">
+                        <span>📋</span> Phiếu Của Tôi
+                    </a>
+                    <a href="<?php echo $appBase; ?>NguyenAnhNhi_SinhVien/index.php?action=ratings" 
+                       class="px-4 py-2.5 bg-amber-500/80 hover:bg-amber-500 text-white font-bold rounded-2xl border border-amber-400/40 transition flex items-center gap-1.5 text-xs">
+                        <span>⭐</span> Đánh Giá CSAT
                     </a>
                 </div>
             </div>
@@ -1273,82 +1282,7 @@ if ($userType === 'student') {
                 </div>
             </div>
 
-            <!-- 3. KHỐI TỔNG QUAN CÁ NHÂN SINH VIÊN (HỒ SƠ, HỌC TẬP, TÀI CHÍNH - MÀU SẮC TƯƠI SÁNG) -->
-            <div class="space-y-3">
-                <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                    <span class="w-1.5 h-3.5 bg-indigo-600 rounded-full"></span>
-                    <span>TỔNG QUAN CÁ NHÂN SINH VIÊN</span>
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                    
-                    <!-- Khối 1: Hồ sơ sinh viên -->
-                    <div class="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-2.5 shadow-sm">
-                        <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-                            <span class="text-indigo-600 text-base">👤</span>
-                            <span class="font-bold text-slate-900">Hồ Sơ Sinh Viên</span>
-                        </div>
-                        <div class="space-y-2 text-slate-600">
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400">Mã sinh viên:</span>
-                                <strong class="font-mono text-indigo-700 font-bold"><?php echo htmlspecialchars($studentProfile['user_code']); ?></strong>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400">Lớp sinh hoạt:</span>
-                                <strong class="text-slate-900"><?php echo htmlspecialchars($studentProfile['class_code']); ?></strong>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400">Trạng thái:</span>
-                                <span class="text-emerald-700 font-bold">🟢 Đang học bình thường</span>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Khối 2: Học tập -->
-                    <div class="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-2.5 shadow-sm">
-                        <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-                            <span class="text-sky-600 text-base">🎓</span>
-                            <span class="font-bold text-slate-900">Học Tập & Tiến Độ</span>
-                        </div>
-                        <div class="space-y-2 text-slate-600">
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400">Tín chỉ tích lũy:</span>
-                                <strong class="text-slate-900 font-mono font-bold">78 TC</strong>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400">Điểm GPA trung bình:</span>
-                                <strong class="text-indigo-700 font-mono font-bold">3.69 / 4.0 (Giỏi)</strong>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400">Điểm rèn luyện:</span>
-                                <strong class="text-emerald-700 font-bold">Xuất sắc (92/100)</strong>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Khối 3: Tài chính -->
-                    <div class="bg-white border border-slate-200/90 rounded-2xl p-5 space-y-2.5 shadow-sm">
-                        <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
-                            <span class="text-emerald-600 text-base">💳</span>
-                            <span class="font-bold text-slate-900">Tài Chính Sinh Viên</span>
-                        </div>
-                        <div class="space-y-2 text-slate-600">
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400">Số dư tài khoản:</span>
-                                <strong class="text-slate-900 font-mono font-bold">0 đ</strong>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400">Công nợ học phí:</span>
-                                <strong class="text-emerald-700 font-mono font-bold">0 đ</strong>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <span class="text-slate-400">Tình trạng:</span>
-                                <span class="text-emerald-700 font-bold">Đã hoàn thành nghĩa vụ</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
 
             <!-- 4. BẢNG DANH SÁCH PHIẾU CỦA RIÊNG SINH VIÊN NÀY -->
             <div class="bg-white border border-slate-200/90 rounded-3xl shadow-sm overflow-hidden space-y-3">

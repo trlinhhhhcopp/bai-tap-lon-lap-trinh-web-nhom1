@@ -46,7 +46,7 @@ $userType    = $currentUser['user_type'] ?? 'guest';
 <!-- NAVBAR CHÍNH CHIỀU NGANG ĐỒNG BỘ TOÀN DỰ ÁN -->
 <header class="bg-slate-900 border-b border-slate-800 text-slate-100 sticky top-0 z-50 shadow-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between min-h-14 py-2 flex-wrap gap-2.5">
+        <div class="flex items-center justify-between h-14">
             
             <!-- Logo & Tên hệ thống -->
             <div class="flex items-center gap-3 shrink-0">
@@ -60,7 +60,7 @@ $userType    = $currentUser['user_type'] ?? 'guest';
             </div>
 
             <!-- Menu phân quyền theo vai trò (LUÔN DẠNG NGANG GỌN ĐẸP) -->
-            <nav class="flex items-center flex-wrap gap-1 md:gap-1.5 text-xs">
+            <nav class="hidden md:flex items-center gap-1 text-xs">
                 <?php if (!$isLoggedIn): ?>
                     <!-- Menu dành cho Khách chưa đăng nhập -->
                     <a href="<?php echo $appBase; ?>index.php?action=guest_ticket" class="px-3 py-1.5 rounded-lg font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition">
