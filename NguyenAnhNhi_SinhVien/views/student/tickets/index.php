@@ -46,6 +46,7 @@ $pageTitle = 'Phiếu của tôi';
         <a href="index.php?action=tickets">Phiếu của tôi</a>
         <a href="index.php?action=ticket_create">Báo sự cố</a>
         <a href="index.php?action=ratings">Đánh giá CSAT</a>
+        <a href="../index.php" style="color:#38bdf8;margin-left:1.5rem;font-size:0.85rem;">← Cổng Tổng Hợp Nhóm 1</a>
     </div>
     <span style="color:#94a3b8;font-size:.85rem"><?= htmlspecialchars($_SESSION['user']['name']) ?></span>
 </nav>

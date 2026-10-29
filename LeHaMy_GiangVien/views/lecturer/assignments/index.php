@@ -44,6 +44,7 @@ $pageTitle = 'Danh sách Phân công giảng dạy';
 <body>
 <nav class="navbar">
     <a href="index.php?action=index">Helpdesk CNTT · Phân công giảng dạy</a>
+        <a href="../index.php" style="color:#38bdf8;margin-left:1.5rem;font-size:0.85rem;">← Cổng Tổng Hợp Nhóm 1</a>
     <span style="color:#94a3b8;font-size:.85rem">Lê Hà My – ĐH Thủ Đô Hà Nội</span>
 </nav>
 <div class="container">
