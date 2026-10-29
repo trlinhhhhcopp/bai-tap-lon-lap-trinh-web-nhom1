@@ -667,7 +667,7 @@ if ($action === 'guest_ticket') {
                         </div>
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Họ và tên người yêu cầu: <span class="text-rose-500">*</span></label>
-                            <input type="text" name="name" required placeholder="VD: Phạm Thị Thanh Ngân" 
+                            <input type="text" name="name" required placeholder="VD: Nguyễn Văn A" 
                                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-xs font-semibold" />
                         </div>
                     </div>
@@ -1142,7 +1142,7 @@ $userType = $currentUser['user_type'] ?? 'student';
 // PHÂN HỆ 1: CỔNG SINH VIÊN (STUDENT PORTAL)
 // =============================================================================
 if ($userType === 'student') {
-    // Truy vấn chi tiết hồ sơ sinh viên kèm thông tin lớp & học thuật (Trần Thục Linh)
+    // Truy vấn chi tiết hồ sơ sinh viên kèm thông tin lớp & học thuật
     $studentStmt = $pdo->prepare("
         SELECT u.*, COALESCE(c.name, 'Chưa phân lớp') AS class_name, COALESCE(c.class_code, 'N/A') AS class_code 
         FROM users u 
@@ -1153,8 +1153,8 @@ if ($userType === 'student') {
     $studentProfile = $studentStmt->fetch() ?: $currentUser;
 
     // Thống kê riêng của sinh viên này
-    $myTicketsCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId}")->fetchColumn();
-    $myActiveCount  = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId} AND status IN ('new', 'in_progress', 'waiting_requester')")->fetchColumn();
+    $myTicketsCount  = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId}")->fetchColumn();
+    $myActiveCount   = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId} AND status IN ('new', 'in_progress', 'waiting_requester')")->fetchColumn();
     $myResolvedCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId} AND status IN ('resolved', 'closed')")->fetchColumn();
 
     // Lấy danh sách phiếu của riêng sinh viên này
@@ -1176,143 +1176,239 @@ if ($userType === 'student') {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Cổng Sinh Viên - Helpdesk ĐH Thủ Đô</title>
+        <title>Cổng Sinh Viên - Helpdesk Đại Học Thủ Đô Hà Nội</title>
         <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
     </head>
-    <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+    <body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between">
         
         <?php require __DIR__ . '/includes/navbar.php'; ?>
 
         <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-            <!-- Banner Chào Mừng Sinh Viên -->
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div class="space-y-1">
-                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                        🎓 CỔNG SINH VIÊN (STUDENT PORTAL)
-                    </span>
-                    <h1 class="text-2xl font-black text-white">
-                        Xin chào, <?php echo htmlspecialchars($currentUser['name']); ?>!
-                    </h1>
-                    <p class="text-xs text-indigo-200/80">Mã sinh viên: <strong class="text-white"><?php echo htmlspecialchars($currentUser['user_code']); ?></strong> • Email: <?php echo htmlspecialchars($currentUser['email']); ?></p>
+            <!-- 1. BANNER CHÀO MỪNG SINH VIÊN (GIAO DIỆN ĐỒNG NHẤT ẢNH 2 & ẢNH 3) -->
+            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-indigo-950 text-white rounded-3xl p-6 shadow-xl border border-slate-700/80 relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-5">
+                <div class="absolute -right-10 -bottom-10 w-44 h-44 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="flex items-center gap-4 relative z-10">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 via-indigo-600 to-sky-400 text-white flex items-center justify-center text-2xl font-black shadow-lg shrink-0 border border-sky-400/30">
+                        🎓
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                                🏛️ CỔNG THÔNG TIN SINH VIÊN
+                            </span>
+                            <span class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                                ● Tài khoản đang hoạt động
+                            </span>
+                        </div>
+                        <h1 class="text-xl md:text-2xl font-black text-white tracking-tight">
+                            Xin chào, <?php echo htmlspecialchars($currentUser['name']); ?>
+                        </h1>
+                        <p class="text-xs text-slate-300">
+                            Mã SV: <strong class="text-sky-300 font-mono"><?php echo htmlspecialchars($currentUser['user_code']); ?></strong> · 
+                            Lớp: <strong class="text-indigo-300"><?php echo htmlspecialchars($studentProfile['class_code']); ?></strong> · 
+                            Khóa: <span class="text-slate-300">Đại học chính quy 2024</span>
+                        </p>
+                        <p class="text-[11px] text-slate-400">
+                            Ngành/Khoa: Khoa Công Nghệ Thông Tin · Trường Đại Học Thủ Đô Hà Nội
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <a href="<?php echo $appBase; ?>tickets/create.php" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-2 text-xs">
-                        <span>➕</span> Gửi Phiếu Sự Cố Mới (Auto-Priority)
+
+                <div class="flex items-center gap-2.5 relative z-10 flex-wrap">
+                    <a href="<?php echo $appBase; ?>tickets/create.php" 
+                       class="px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl shadow-lg shadow-emerald-900/30 transition flex items-center gap-2 text-xs">
+                        <span>➕</span> Báo Sự Cố Mới
+                    </a>
+                    <a href="<?php echo $appBase; ?>webmail.php?email=<?php echo urlencode($currentUser['email']); ?>" target="_blank"
+                       class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-sky-300 hover:text-white border border-slate-700 rounded-xl font-bold transition flex items-center gap-2 text-xs shadow-sm">
+                        <span>📬</span> Hòm Thư Trường (@daihocthudo.edu.vn)
                     </a>
                 </div>
             </div>
 
+            <!-- 2. MENU ĐIỀU HƯỚNG DẠNG NGANG (THAY VÌ ĐỂ HÀNG DỌC KHÓ NHÌN) -->
+            <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-2.5 shadow-md flex items-center gap-2 overflow-x-auto text-xs font-bold scrollbar-none">
+                <a href="<?php echo $appBase; ?>index.php" class="px-3.5 py-2 rounded-xl bg-sky-500 text-white flex items-center gap-1.5 shrink-0 shadow-sm">
+                    <span>🏠</span> Trang Chủ Cổng SV
+                </a>
+                <a href="#danh-sach-phieu" class="px-3.5 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/80 transition flex items-center gap-1.5 shrink-0">
+                    <span>📋</span> Phiếu Hỗ Trợ Của Tôi
+                    <span class="px-1.5 py-0.5 rounded-full bg-slate-700 text-sky-300 text-[10px] font-mono"><?php echo $myTicketsCount; ?></span>
+                </a>
+                <a href="<?php echo $appBase; ?>tickets/create.php" class="px-3.5 py-2 rounded-xl text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/40 transition flex items-center gap-1.5 shrink-0">
+                    <span>➕</span> Gửi Phiếu Sự Cố Mới
+                </a>
+                <a href="<?php echo $appBase; ?>NguyenAnhNhi_SinhVien/index.php?action=ratings" class="px-3.5 py-2 rounded-xl text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 transition flex items-center gap-1.5 shrink-0">
+                    <span>⭐</span> Đánh Giá Dịch Vụ (CSAT)
+                </a>
+                <a href="<?php echo $appBase; ?>webmail.php?email=<?php echo urlencode($currentUser['email']); ?>" target="_blank" class="px-3.5 py-2 rounded-xl text-sky-300 hover:text-sky-200 hover:bg-sky-950/40 transition flex items-center gap-1.5 shrink-0">
+                    <span>📬</span> Hòm Thư (@daihocthudo.edu.vn)
+                </a>
+                <a href="#tong-quan-ca-nhan" class="px-3.5 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/80 transition flex items-center gap-1.5 shrink-0">
+                    <span>👤</span> Hồ Sơ Cá Nhân
+                </a>
+                <a href="#tien-do-hoc-tap" class="px-3.5 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/80 transition flex items-center gap-1.5 shrink-0">
+                    <span>📚</span> Tiến Độ Học Tập (78 TC)
+                </a>
+                <a href="#tai-chinh" class="px-3.5 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-700/80 transition flex items-center gap-1.5 shrink-0">
+                    <span>💳</span> Tài Chính (0 đ)
+                </a>
+            </div>
+
             <?php if ($flash): ?>
-                <div class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'; ?>">
+                <div class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-950/80 text-emerald-200 border border-emerald-800' : 'bg-rose-950/80 text-rose-200 border border-rose-800'; ?>">
                     <?php echo $flash['message']; ?>
                 </div>
             <?php endif; ?>
 
-            <!-- THÔNG TIN HỒ SƠ SINH VIÊN & ĐỊNH DANH HỌC THUẬT (PHÂN HỆ TRẦN THỤC LINH) -->
-            <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
-                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-sm">
-                            👤
-                        </span>
-                        <div>
-                            <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                                HỒ SƠ SINH VIÊN & ĐỊNH DANH HỌC THUẬT
-                            </h2>
-                            <p class="text-[11px] text-slate-500">Phân hệ Quản trị User & Vòng đời tài khoản học thuật (Trần Thục Linh - Bài 4)</p>
+            <!-- 3. BA THẺ CHỈ SỐ NHANH (KẾT HỢP ẢNH 3 & THỐNG KÊ HELPDESK) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Thông Báo & Yêu Cầu</span>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black text-white"><?php echo $myTicketsCount; ?></span>
+                            <span class="text-xs text-sky-400 font-semibold">phiếu hỗ trợ</span>
+                        </div>
+                        <span class="text-[11px] text-slate-400 block mt-1">0 thông báo mới chưa đọc</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/30 text-sky-400 flex items-center justify-center text-xl shrink-0">
+                        🔔
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-amber-400 uppercase tracking-wider block mb-1">Phiếu Đang Xử Lý & Công Nợ</span>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black text-amber-400"><?php echo $myActiveCount; ?></span>
+                            <span class="text-xs text-amber-300 font-semibold">đang khắc phục</span>
+                        </div>
+                        <span class="text-[11px] text-slate-400 block mt-1">0 đ công nợ cần xử lý</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center text-xl shrink-0">
+                        ⏳
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider block mb-1">Đã Giải Quyết & Tiến Độ</span>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black text-emerald-400"><?php echo $myResolvedCount; ?></span>
+                            <span class="text-xs text-emerald-300 font-semibold">đã hoàn tất</span>
+                        </div>
+                        <span class="text-[11px] text-slate-400 block mt-1">78 TC tiến độ học tập (3.69 GPA)</span>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl shrink-0">
+                        ✅
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. KHỐI TỔNG QUAN CÁ NHÂN THEO ẢNH 3 (HỒ SƠ, HỌC TẬP, TÀI CHÍNH) -->
+            <div id="tong-quan-ca-nhan" class="space-y-3">
+                <h2 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-1.5 h-3.5 bg-sky-500 rounded-full"></span>
+                    <span>TỔNG QUAN CÁ NHÂN SINH VIÊN</span>
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    
+                    <!-- Khối 1: Hồ sơ sinh viên -->
+                    <div class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 space-y-2.5">
+                        <div class="flex items-center gap-2 border-b border-slate-700/80 pb-2">
+                            <span class="text-sky-400 text-base">👤</span>
+                            <span class="font-bold text-white">Hồ Sơ Sinh Viên</span>
+                        </div>
+                        <div class="space-y-1.5 text-slate-300">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Mã sinh viên:</span>
+                                <strong class="font-mono text-sky-300"><?php echo htmlspecialchars($studentProfile['user_code']); ?></strong>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Lớp sinh hoạt:</span>
+                                <strong class="text-white"><?php echo htmlspecialchars($studentProfile['class_code']); ?></strong>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Trạng thái:</span>
+                                <span class="text-emerald-400 font-bold">🟢 Đang học bình thường</span>
+                            </div>
                         </div>
                     </div>
-                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold <?php echo ($studentProfile['is_active'] == 1) ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'; ?>">
-                        ● <?php echo ($studentProfile['is_active'] == 1) ? 'Tài khoản hoạt động' : 'Tài khoản bị khóa'; ?>
-                    </span>
-                </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
-                        <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Mã Sinh Viên (MSSV)</span>
-                        <span class="font-mono font-bold text-indigo-700 text-sm block"><?php echo htmlspecialchars($studentProfile['user_code']); ?></span>
+                    <!-- Khối 2: Học tập -->
+                    <div id="tien-do-hoc-tap" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 space-y-2.5">
+                        <div class="flex items-center gap-2 border-b border-slate-700/80 pb-2">
+                            <span class="text-indigo-400 text-base">🎓</span>
+                            <span class="font-bold text-white">Học Tập & Tiến Độ</span>
+                        </div>
+                        <div class="space-y-1.5 text-slate-300">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Tín chỉ tích lũy:</span>
+                                <strong class="text-white font-mono">78 TC</strong>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Điểm GPA trung bình:</span>
+                                <strong class="text-amber-400 font-mono">3.69 / 4.0 (Giỏi)</strong>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Điểm rèn luyện:</span>
+                                <strong class="text-emerald-400">Xuất sắc (92/100)</strong>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
-                        <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Họ và Tên</span>
-                        <span class="font-bold text-slate-900 text-sm block"><?php echo htmlspecialchars($studentProfile['name']); ?></span>
-                    </div>
-                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
-                        <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Lớp Sinh Hoạt</span>
-                        <span class="font-bold text-indigo-900 text-sm block"><?php echo htmlspecialchars($studentProfile['class_code']); ?></span>
-                        <span class="text-[10px] text-slate-400 block truncate"><?php echo htmlspecialchars($studentProfile['class_name']); ?></span>
-                    </div>
-                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
-                        <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Trạng Thái Học Tập</span>
-                        <?php 
-                        $academicStatus = $studentProfile['academic_status'] ?? 'studying';
-                        $statusText = match($academicStatus) {
-                            'studying'  => '🟢 Đang học bình thường',
-                            'suspended' => '🟡 Tạm đình chỉ',
-                            'expelled'  => '🔴 Buộc thôi học',
-                            default     => '🟢 Đang học bình thường',
-                        };
-                        ?>
-                        <span class="font-bold text-slate-800 text-xs block"><?php echo $statusText; ?></span>
-                    </div>
-                </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-1">
-                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-0.5">
-                        <span class="text-[11px] text-slate-400 font-bold block">Email Nhà Trường Cấp:</span>
-                        <span class="font-medium text-slate-800 break-all"><?php echo htmlspecialchars($studentProfile['email']); ?></span>
+                    <!-- Khối 3: Tài chính -->
+                    <div id="tai-chinh" class="bg-slate-800/80 border border-slate-700/80 rounded-2xl p-4 space-y-2.5">
+                        <div class="flex items-center gap-2 border-b border-slate-700/80 pb-2">
+                            <span class="text-emerald-400 text-base">💳</span>
+                            <span class="font-bold text-white">Tài Chính Sinh Viên</span>
+                        </div>
+                        <div class="space-y-1.5 text-slate-300">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Số dư tài khoản:</span>
+                                <strong class="text-white font-mono">0 đ</strong>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Công nợ học phí:</span>
+                                <strong class="text-emerald-400 font-mono">0 đ</strong>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-400">Tình trạng:</span>
+                                <span class="text-emerald-400 font-bold">Đã hoàn thành nghĩa vụ</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-0.5">
-                        <span class="text-[11px] text-slate-400 font-bold block">Khoa Chuyên Môn / Khóa:</span>
-                        <span class="font-medium text-slate-800">Khoa CNTT · Khóa D24 (2024 - 2028)</span>
-                    </div>
-                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-0.5">
-                        <span class="text-[11px] text-slate-400 font-bold block">Cơ Chế Bảo Mật & SSPR:</span>
-                        <span class="font-medium text-emerald-700">Bcrypt Hash + Token khôi phục 15 phút</span>
-                    </div>
+
                 </div>
             </div>
 
-            <!-- 3 Thẻ chỉ số cá nhân của Sinh viên -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                    <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Tổng Số Phiếu Đã Gửi</span>
-                    <span class="text-2xl font-black text-slate-900"><?php echo $myTicketsCount; ?></span>
-                    <span class="text-[11px] text-slate-400 block mt-1">Sự cố kỹ thuật cá nhân</span>
-                </div>
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                    <span class="text-[11px] font-bold text-amber-600 uppercase tracking-wider block mb-1">Phiếu Đang Xử Lý</span>
-                    <span class="text-2xl font-black text-amber-600"><?php echo $myActiveCount; ?></span>
-                    <span class="text-[11px] text-slate-400 block mt-1">KTV đang tiếp nhận & khắc phục</span>
-                </div>
-                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                    <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block mb-1">Phiếu Đã Giải Quyết</span>
-                    <span class="text-2xl font-black text-emerald-600"><?php echo $myResolvedCount; ?></span>
-                    <span class="text-[11px] text-slate-400 block mt-1">Đã có giải pháp & hoàn tất</span>
-                </div>
-            </div>
-
-            <!-- BẢNG DANH SÁCH PHIẾU CỦA RIÊNG SINH VIÊN NÀY -->
-            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-3">
-                <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <!-- 5. BẢNG DANH SÁCH PHIẾU CỦA RIÊNG SINH VIÊN NÀY -->
+            <div id="danh-sach-phieu" class="bg-slate-800/90 border border-slate-700/80 rounded-3xl shadow-xl overflow-hidden space-y-3">
+                <div class="p-5 border-b border-slate-700/80 flex items-center justify-between flex-wrap gap-3">
                     <div>
-                        <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
                             <span>🎫</span> MỤC PHIẾU HỖ TRỢ RIÊNG CỦA TÔI (CÁCH LY DỮ LIỆU)
                         </h2>
-                        <p class="text-[11.5px] text-slate-500 mt-0.5">Sinh viên chỉ xem và trao đổi trên các phiếu do chính mình gửi, bảo mật tuyệt đối.</p>
+                        <p class="text-[11.5px] text-slate-400 mt-0.5">Sinh viên chỉ xem và trao đổi trên các phiếu do chính mình gửi, bảo mật tuyệt đối.</p>
                     </div>
+                    <a href="<?php echo $appBase; ?>tickets/create.php" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                        <span>➕</span> Gửi Phiếu Mới
+                    </a>
                 </div>
 
                 <?php if (empty($myTickets)): ?>
-                    <div class="p-8 text-center text-slate-400 text-xs space-y-2">
+                    <div class="p-10 text-center text-slate-400 text-xs space-y-2">
                         <span class="text-3xl block">📭</span>
-                        <p>Hiện bạn chưa gửi yêu cầu hỗ trợ nào. Khi gặp sự cố kỹ thuật, hãy nhấn nút <strong>"Gửi Phiếu Sự Cố Mới"</strong> bên trên nhé!</p>
+                        <p class="text-sm font-bold text-slate-300">Hiện bạn chưa gửi yêu cầu hỗ trợ nào.</p>
+                        <p class="text-[11.5px] text-slate-400">Khi gặp sự cố kỹ thuật phòng máy, phần mềm hoặc tài khoản, hãy nhấn nút <strong>"Gửi Phiếu Mới"</strong> bên trên nhé!</p>
                     </div>
                 <?php else: ?>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
-                                <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
+                                <tr class="bg-slate-900/80 text-slate-300 font-bold border-b border-slate-700 text-[11px]">
                                     <th class="py-3 px-4">Mã Vé</th>
                                     <th class="py-3 px-4">Tiêu Đề Sự Cố</th>
                                     <th class="py-3 px-4">Chuyên Mục</th>
@@ -1322,15 +1418,15 @@ if ($userType === 'student') {
                                     <th class="py-3 px-4 text-center">Thao Tác</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-slate-100">
+                            <tbody class="divide-y divide-slate-700/60">
                                 <?php foreach ($myTickets as $t): ?>
                                     <?php
                                     $statusBadges = [
-                                        'new'               => 'bg-blue-50 text-blue-700 border-blue-200',
-                                        'in_progress'       => 'bg-amber-50 text-amber-700 border-amber-200',
-                                        'waiting_requester' => 'bg-purple-50 text-purple-700 border-purple-200',
-                                        'resolved'          => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                        'closed'            => 'bg-slate-100 text-slate-700 border-slate-300',
+                                        'new'               => 'bg-sky-500/15 text-sky-300 border-sky-500/30',
+                                        'in_progress'       => 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+                                        'waiting_requester' => 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+                                        'resolved'          => 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+                                        'closed'            => 'bg-slate-700/60 text-slate-300 border-slate-600',
                                     ];
                                     $statusLabels = [
                                         'new'               => 'Mới tiếp nhận',
@@ -1340,50 +1436,50 @@ if ($userType === 'student') {
                                         'closed'            => 'Đã đóng hoàn tất',
                                     ];
                                     ?>
-                                    <tr class="hover:bg-slate-50/80 transition">
-                                        <td class="py-3 px-4 font-mono font-bold text-indigo-600">
+                                    <tr class="hover:bg-slate-700/40 transition">
+                                        <td class="py-3.5 px-4 font-mono font-bold text-sky-400">
                                             <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:underline">
                                                 <?php echo htmlspecialchars($t['ticket_code']); ?>
                                             </a>
                                         </td>
-                                        <td class="py-3 px-4 font-semibold text-slate-800">
-                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:text-indigo-600 transition block max-w-sm truncate">
+                                        <td class="py-3.5 px-4 font-semibold text-white">
+                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:text-sky-300 transition block max-w-sm truncate">
                                                 <?php echo htmlspecialchars($t['title']); ?>
                                             </a>
                                             <div class="flex items-center gap-2 mt-0.5">
                                                 <span class="text-[10.5px] text-slate-400 font-normal">Gửi lúc: <?php echo htmlspecialchars($t['created_at']); ?></span>
                                                 <?php if (!empty($t['attachment_path'])): ?>
-                                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-sky-300 bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-800">
                                                         📎 Có minh chứng
                                                     </span>
                                                 <?php endif; ?>
                                             </div>
                                         </td>
-                                        <td class="py-3 px-4 text-slate-600">
+                                        <td class="py-3.5 px-4 text-slate-300">
                                             <?php echo htmlspecialchars($t['category_name']); ?>
                                         </td>
-                                        <td class="py-3 px-4 text-center">
-                                            <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border <?php echo $statusBadges[$t['status']] ?? 'bg-slate-100 text-slate-600 border-slate-200'; ?>">
+                                        <td class="py-3.5 px-4 text-center">
+                                            <span class="px-2.5 py-1 rounded-full text-[10.5px] font-bold border <?php echo $statusBadges[$t['status']] ?? 'bg-slate-800 text-slate-400 border-slate-700'; ?>">
                                                 ● <?php echo $statusLabels[$t['status']] ?? $t['status']; ?>
                                             </span>
                                         </td>
-                                        <td class="py-3 px-4 text-slate-600">
+                                        <td class="py-3.5 px-4 text-slate-300">
                                             <?php echo htmlspecialchars($t['agent_name'] ?: 'Đang phân công...'); ?>
                                         </td>
-                                        <td class="py-3 px-4 text-center">
+                                        <td class="py-3.5 px-4 text-center">
                                             <?php if ($t['rating_score']): ?>
-                                                <span class="font-bold text-amber-500 font-mono"><?php echo $t['rating_score']; ?> ★</span>
+                                                <span class="font-bold text-amber-400 font-mono text-sm"><?php echo $t['rating_score']; ?> ★</span>
                                             <?php elseif ($t['status'] === 'resolved' || $t['status'] === 'closed'): ?>
                                                 <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>#csat-box" 
-                                                   class="px-2 py-0.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-lg text-[10.5px] font-bold transition">
+                                                   class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg text-[10.5px] font-bold transition inline-block">
                                                     Chấm sao ★
                                                 </a>
                                             <?php else: ?>
-                                                <span class="text-slate-300 text-[11px]">—</span>
+                                                <span class="text-slate-500 text-[11px]">—</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="py-3 px-4 text-center">
-                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition inline-block">
+                                        <td class="py-3.5 px-4 text-center">
+                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-xl transition inline-block text-xs">
                                                 Chi tiết & Chat →
                                             </a>
                                         </td>
@@ -1404,9 +1500,6 @@ if ($userType === 'student') {
     exit;
 }
 
-// =============================================================================
-// PHÂN HỆ 2: CỔNG GIẢNG VIÊN (LECTURER PORTAL)
-// =============================================================================
 if ($userType === 'lecturer') {
     // Thống kê của giảng viên
     $myTicketsCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId}")->fetchColumn();

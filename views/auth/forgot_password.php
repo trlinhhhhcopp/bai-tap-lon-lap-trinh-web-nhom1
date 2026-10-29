@@ -69,7 +69,7 @@
             <div class="bg-white/90 p-4 rounded-2xl text-xs text-slate-700 space-y-2.5 border border-indigo-100 leading-relaxed shadow-2xs">
                 <p class="font-bold text-slate-900">🔒 Bảo mật tài khoản học thuật:</p>
                 <p class="text-slate-600">
-                    Hệ thống đã gửi thư xác thực kèm liên kết đổi mật khẩu an toàn đến đúng Hòm thư điện tử nội bộ <strong><?= htmlspecialchars($simulatedEmail['email']) ?></strong>.
+                    Hệ thống đã gửi thư xác thực từ hệ thống (<strong>nga469704@gmail.com</strong>) đến đúng Hòm thư điện tử nội bộ <strong><?= htmlspecialchars($simulatedEmail['email']) ?></strong>.
                     Vì nguyên tắc bảo mật, liên kết khôi phục <strong>không hiển thị trực tiếp tại trang này</strong>.
                 </p>
                 <div class="p-2.5 bg-indigo-50 text-indigo-900 rounded-xl text-[11px] border border-indigo-200">

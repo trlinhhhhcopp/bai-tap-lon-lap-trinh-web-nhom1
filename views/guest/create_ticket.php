@@ -50,7 +50,7 @@ require __DIR__ . '/../layouts/header.php';
                         </label>
                         <input type="text" name="name" required 
                                class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"
-                               placeholder="VD: Trần Thục Linh">
+                               placeholder="VD: Nguyễn Văn A">
                     </div>
                 </div>
 

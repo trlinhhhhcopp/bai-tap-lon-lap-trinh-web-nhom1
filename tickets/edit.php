@@ -1,7 +1,7 @@
 <?php
 // ==============================================================================
 // BÀI 5: CHỈNH SỬA PHIẾU HỖ TRỢ (SLIDE 7 - EDIT & UPDATE)
-// Trưởng nhóm phụ trách: Phạm Thị Thanh Ngân (224001736 - D24-CNTT1)
+// Hệ Thống Helpdesk CNTT - Trường Đại Học Thủ Đô Hà Nội
 // ==============================================================================
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';

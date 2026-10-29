@@ -48,7 +48,7 @@ $flash = get_flash();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bài 5: CRUD Users bằng PDO - Trần Thục Linh (224001729)</title>
+    <title>Quản Trị Người Dùng & Phân Quyền - Đại Học Thủ Đô Hà Nội</title>
     <style>
         :root {
             --primary: #0284c7;
@@ -310,18 +310,18 @@ $flash = get_flash();
 
 <div class="container">
     <!-- Header -->
-    <div class="header-card">
+    <div class="header-card" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
         <div class="header-title">
-            <h1>BÀI 5: QUẢN TRỊ NGƯỜI DÙNG & BẢO MẬT BẰNG PDO CRUD</h1>
-            <p>Hệ thống Helpdesk CNTT Trực tuyến Trường Đại học Thủ Đô Hà Nội (Chủ đề 9)</p>
-            <div style="margin-top: 8px;">
-                <a href="../index.php" style="color:#38bdf8;text-decoration:none;font-size:12.5px;font-weight:bold;">← Quay lại Cổng Tổng Hợp Nhóm 1</a>
-            </div>
+            <span style="display:inline-block; padding:3px 10px; border-radius:9999px; font-size:11px; font-weight:700; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); margin-bottom:6px;">
+                🛡️ QUẢN TRỊ HỆ THỐNG
+            </span>
+            <h1 style="margin:0; font-size:20px; font-weight:800; color:#fff;">QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN TRUY CẬP</h1>
+            <p style="margin:4px 0 0; font-size:12px; color:#94a3b8;">Hệ thống Quản lý Người dùng, Vai trò & Khóa bảo mật tài khoản - Trường Đại học Thủ Đô Hà Nội</p>
         </div>
-        <div class="student-badge">
-            Sinh viên phụ trách: <strong>Trần Thục Linh</strong><br>
-            Mã SV: <strong>224001729</strong> · Lớp: Toán Ứng Dụng D2024
+        <div>
+            <a href="../index.php" class="btn btn-secondary" style="font-size:12px; padding:8px 16px; border-radius:8px;">← Quay lại Cổng Quản Trị</a>
         </div>
+    </div>
     </div>
 
     <!-- Flash Message (Slide 2 & 8) -->

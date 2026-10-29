@@ -32,7 +32,7 @@ class InternalMailboxService {
             'to_email'    => strtolower(trim($toEmail)),
             'to_name'     => $toName,
             'from_name'   => 'Trung tâm CNTT - Trường ĐH Thủ Đô Hà Nội',
-            'from_email'  => 'helpdesk@daihocthudo.edu.vn',
+            'from_email'  => 'nga469704@gmail.com',
             'subject'     => $subject,
             'body_html'   => $bodyHtml,
             'otp_code'    => strtoupper(trim($otpCode)),

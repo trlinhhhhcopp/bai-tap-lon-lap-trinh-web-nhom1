@@ -40,7 +40,7 @@ if (!$user) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hồ sơ người dùng: <?= htmlspecialchars($user['name']) ?> - Trần Thục Linh</title>
+    <title>Hồ sơ người dùng: <?= htmlspecialchars($user['name']) ?> - Helpdesk ĐH Thủ Đô</title>
     <style>
         :root {
             --primary: #0284c7;
@@ -188,7 +188,7 @@ if (!$user) {
 
             <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 16px;">
                 <a href="users.php" class="btn btn-secondary">← Quay lại Danh sách</a>
-                <span style="font-size: 12px; color: var(--text-muted);">Phân hệ User Management · Sinh viên Trần Thục Linh</span>
+                <span style="font-size: 12px; color: var(--text-muted);">Hệ thống Quản lý Người dùng & Phân quyền · ĐH Thủ Đô Hà Nội</span>
             </div>
         </div>
     </div>

@@ -40,7 +40,7 @@ $pageTitle = 'Báo sự cố CNTT';
         <a href="index.php?action=ticket_create">Báo sự cố</a>
         <a href="index.php?action=ratings">Đánh giá CSAT</a>
     </div>
-    <span style="color:#94a3b8;font-size:.85rem">Nguyễn Ánh Nhi – Sinh viên</span>
+    <span style="color:#94a3b8;font-size:.85rem">Cổng dịch vụ sinh viên</span>
 </nav>
 <div class="container">
     <div class="card">
