@@ -110,7 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'attachment_path' => $attachmentPath,
             ]);
 
-            set_flash('success', "Gửi phiếu hỗ trợ thành công! KTV phụ trách chuyên môn sẽ tiếp nhận và phản hồi sớm nhất.");
+            $newCode = db()->query("SELECT ticket_code FROM tickets WHERE id = " . (int)$ticketId)->fetchColumn() ?: ("HD-" . $ticketId);
+            set_flash('success', "Gửi phiếu hỗ trợ thành công! Mã phiếu bảo mật của bạn là: <strong>" . htmlspecialchars($newCode) . "</strong>. KTV sẽ tiếp nhận và xử lý sớm nhất.");
             header('Location: ../index.php');
             exit;
         } catch (Exception $e) {

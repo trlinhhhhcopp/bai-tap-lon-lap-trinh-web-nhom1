@@ -1,90 +1,123 @@
 <?php require __DIR__ . '/../layouts/header.php'; ?>
 
-<style>
-    .auth-container {
-        max-width: 460px;
-        margin: 35px auto;
-        background: var(--bg-card);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-        overflow: hidden;
-    }
-    .auth-header {
-        background: linear-gradient(135deg, var(--navy-dark) 0%, #1e293b 100%);
-        color: #fff;
-        padding: 24px;
-        text-align: center;
-        border-bottom: 3px solid var(--primary);
-    }
-    .auth-header h2 { font-size: 18px; color: #38bdf8; text-transform: uppercase; margin-bottom: 4px; }
-    .auth-header p { font-size: 12.5px; color: #94a3b8; }
-    .auth-body { padding: 25px; }
-    .form-group { margin-bottom: 16px; }
-    .form-label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; }
-    .form-control {
-        width: 100%;
-        padding: 10px 14px;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        font-size: 14px;
-        outline: none;
-        transition: border 0.2s;
-    }
-    .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
-    .btn-login {
-        width: 100%;
-        padding: 11px;
-        background: var(--primary);
-        color: #fff;
-        font-size: 14.5px;
-        font-weight: 700;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    .btn-login:hover { background: var(--primary-dark); }
-    .auth-links {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 18px;
-        font-size: 12.5px;
-        gap: 10px;
-    }
-    .auth-links a { color: var(--primary); text-decoration: none; font-weight: 600; }
-    .auth-links a:hover { text-decoration: underline; }
-    .helper-text { font-size: 11.5px; color: #64748b; margin-top: 4px; display: block; }
-</style>
+<div class="my-auto py-8 flex items-center justify-center">
+    <div class="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl shadow-2xl shadow-indigo-950/10 overflow-hidden transition-all">
+        <!-- Header Card -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 md:p-8 text-center border-b-2 border-sky-500 relative overflow-hidden">
+            <div class="absolute -right-12 -top-12 w-32 h-32 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="relative z-10 space-y-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+                    🏛️ ĐẠI HỌC THỦ ĐÔ HÀ NỘI
+                </span>
+                <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">
+                    CỔNG ĐĂNG NHẬP XÁC THỰC
+                </h2>
+                <p class="text-xs text-slate-300">
+                    Hệ Thống Tiếp Nhận & Xử Lý Hỗ Trợ CNTT Trực Tuyến
+                </p>
+            </div>
+        </div>
 
-<div class="auth-container">
-    <div class="auth-header">
-        <h2>Cổng Đăng Nhập Xác Thực</h2>
-        <p>Hệ thống Tiếp nhận & Xử lý Hỗ trợ CNTT Trực tuyến</p>
-    </div>
+        <!-- Body Form -->
+        <div class="p-6 md:p-8 space-y-5">
+            <form method="POST" action="<?= $appBase ?>login" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                        Mã sinh viên / Email trường cấp (*):
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                            👤
+                        </span>
+                        <input type="text" name="identifier" id="identifier" required autofocus
+                               class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"
+                               placeholder="VD: 224001729 hoặc 224001729@daihocthudo.edu.vn">
+                    </div>
+                    <span class="text-[11px] text-slate-500 mt-1 block">Sinh viên nhập MSV (VD: 224001729) hoặc Email trường</span>
+                </div>
 
-    <div class="auth-body">
-        <form method="POST" action="/login">
-            <div class="form-group">
-                <label class="form-label">Mã sinh viên / Mã tài khoản:</label>
-                <input type="text" name="identifier" id="identifier" class="form-control" required placeholder="VD: 224001729 hoặc ADM001" autofocus>
-                <span class="helper-text">Sinh viên nhập Mã sinh viên (VD: 224001729) hoặc Email trường cấp</span>
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                            Mật khẩu (*):
+                        </label>
+                        <a href="<?= $appBase ?>forgot-password" class="text-xs text-sky-600 hover:text-sky-700 font-bold hover:underline transition">
+                            Quên mật khẩu?
+                        </a>
+                    </div>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
+                            🔒
+                        </span>
+                        <input type="password" name="password" id="password" required
+                               class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"
+                               placeholder="Nhập mật khẩu (Mặc định: 123456)">
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 text-sm">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit" 
+                        class="w-full mt-2 py-3.5 px-6 bg-gradient-to-r from-sky-500 via-sky-600 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-sky-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+                    <span>Đăng Nhập Cổng CNTT</span>
+                    <span>➔</span>
+                </button>
+            </form>
+
+            <!-- Đường dẫn bổ trợ cứu hộ -->
+            <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
+                <a href="<?= $appBase ?>guest/ticket" class="text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1 hover:underline">
+                    <span>🆘</span> Báo cứu hộ khi bị khóa tài khoản
+                </a>
+                <a href="<?= $appBase ?>guest/lookup" class="text-slate-500 hover:text-slate-700 font-semibold flex items-center gap-1 hover:underline">
+                    <span>🔍</span> Tra cứu tiến độ cứu hộ
+                </a>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">Mật khẩu:</label>
-                <input type="password" name="password" id="password" class="form-control" required placeholder="Nhập mật khẩu (mặc định: 123456)">
+            <!-- Hộp chọn nhanh tài khoản kiểm thử đồ án -->
+            <div class="mt-4 pt-3 border-t border-dashed border-slate-200">
+                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 text-center">
+                    ⚡ Điền nhanh tài khoản kiểm thử:
+                </span>
+                <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                    <button type="button" onclick="fillLogin('224001729', '123456')" 
+                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
+                        🎓 SV Thục Linh (224001729)
+                    </button>
+                    <button type="button" onclick="fillLogin('224001736', '123456')" 
+                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
+                        👑 SV Thanh Ngân (224001736)
+                    </button>
+                    <button type="button" onclick="fillLogin('KTV001', '123456')" 
+                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
+                        👨‍💻 KTV An (SSO)
+                    </button>
+                    <button type="button" onclick="fillLogin('ADM001', '123456')" 
+                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
+                        🛡️ Quản Trị Viên (Admin)
+                    </button>
+                </div>
             </div>
-
-            <button type="submit" class="btn-login">Đăng Nhập Ngay ➔</button>
-
-            <div class="auth-links">
-                <a href="/forgot-password">🔑 Quên mật khẩu?</a>
-                <a href="/guest/ticket" style="color: #dc2626;">🆘 Báo cứu hộ tài khoản (Bị khóa)?</a>
-            </div>
-        </form>
+        </div>
     </div>
 </div>
+
+<script>
+function fillLogin(user, pass) {
+    document.getElementById('identifier').value = user;
+    document.getElementById('password').value = pass;
+    document.getElementById('identifier').focus();
+}
+
+function togglePasswordVisibility() {
+    const input = document.getElementById('password');
+    if (input.type === 'password') {
+        input.type = 'text';
+    } else {
+        input.type = 'password';
+    }
+}
+</script>
 
 <?php require __DIR__ . '/../layouts/footer.php'; ?>

@@ -199,7 +199,7 @@ class TicketRepository {
     public static function create(array $data): int {
         $db = db();
 
-        // Tự sinh mã phiếu ngẫu nhiên HD-2026-xxxxx
+        // Tự sinh mã phiếu bảo mật theo định dạng chuẩn HD-YYYY-DDMM-xxxBxxd
         $ticketCode = !empty($data['ticket_code']) ? $data['ticket_code'] : self::generateTicketCode();
 
         // Lấy SLA của danh mục để tính hạn deadline tự động
