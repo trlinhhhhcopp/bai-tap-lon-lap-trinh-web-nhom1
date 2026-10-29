@@ -19,28 +19,48 @@ class Database {
 
         $config = require __DIR__ . '/../../config/database.php';
 
-        $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
-
-        $passwords = array_unique([$config['password'], '', 'root', '1234', 'nhi12345']);
+        $ports     = array_unique([(int)($config['port'] ?? 3306), 3306, 3307]);
+        $passwords = array_unique([$config['password'] ?? '', '', 'root', '1234', '123456', 'admin', 'nhi12345']);
         $connected = false;
 
-        foreach ($passwords as $pwd) {
-            try {
-                self::$instance = new PDO($dsn, $config['username'], $pwd, $config['options']);
-                self::$isFallback = false;
-                $connected = true;
-
-                // Đảm bảo các cột mở rộng luôn tồn tại trên MySQL
+        foreach ($ports as $port) {
+            $dsn = "mysql:host={$config['host']};port={$port};dbname={$config['database']};charset={$config['charset']}";
+            foreach ($passwords as $pwd) {
                 try {
-                    self::$instance->exec("ALTER TABLE users ADD COLUMN avatar_path VARCHAR(255) NULL;");
-                } catch (PDOException $ex) {}
-                try {
-                    self::$instance->exec("ALTER TABLE tickets ADD COLUMN attachment_path VARCHAR(255) NULL;");
-                } catch (PDOException $ex) {}
+                    self::$instance = new PDO($dsn, $config['username'], $pwd, $config['options']);
+                    self::$isFallback = false;
+                    $connected = true;
 
-                return self::$instance;
-            } catch (PDOException $ex) {
-                // Thử mật khẩu tiếp theo
+                    // Đảm bảo các bảng và cột mở rộng luôn tự động tồn tại trên mọi máy tính trong nhóm
+                    try {
+                        self::$instance->exec("
+                            CREATE TABLE IF NOT EXISTS `password_resets` (
+                                `id` int(11) NOT NULL AUTO_INCREMENT,
+                                `user_id` int(11) NOT NULL,
+                                `email` varchar(150) NOT NULL,
+                                `token` varchar(255) NOT NULL,
+                                `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+                                `expires_at` timestamp NOT NULL,
+                                PRIMARY KEY (`id`),
+                                KEY `token` (`token`),
+                                KEY `user_id` (`user_id`)
+                            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+                        ");
+                    } catch (\PDOException $ex) {}
+
+                    try { self::$instance->exec("ALTER TABLE users ADD COLUMN avatar_path VARCHAR(255) NULL;"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE users ADD COLUMN academic_status ENUM('active','graduated','suspended','expelled') NOT NULL DEFAULT 'active';"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE users ADD COLUMN is_first_login TINYINT(1) NOT NULL DEFAULT 0;"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE users ADD COLUMN failed_attempts INT NOT NULL DEFAULT 0;"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE users ADD COLUMN locked_until DATETIME NULL;"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE users ADD COLUMN lock_reason VARCHAR(255) NULL;"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE tickets ADD COLUMN attachment_path VARCHAR(255) NULL;"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE tickets ADD COLUMN is_assigned_transfer TINYINT(1) NOT NULL DEFAULT 0;"); } catch (\PDOException $ex) {}
+
+                    return self::$instance;
+                } catch (PDOException $ex) {
+                    // Thử mật khẩu / cổng tiếp theo
+                }
             }
         }
 

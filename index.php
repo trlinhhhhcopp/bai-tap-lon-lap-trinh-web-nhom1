@@ -1397,11 +1397,15 @@ if ($userType === 'lecturer') {
     $myTicketsCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId}")->fetchColumn();
     $myCoursesCount = (int)$pdo->query("SELECT COUNT(*) FROM course_assignments WHERE lecturer_id = {$userId}")->fetchColumn();
 
-    // Lấy danh sách lớp học phần phụ trách
+    // Lấy danh sách lớp học phần phụ trách (kèm thông tin Lớp và Môn học)
     $myCourses = $pdo->query("
-        SELECT ca.*, u.name AS lecturer_name
+        SELECT ca.*, u.name AS lecturer_name,
+               cl.class_code, cl.name AS class_name,
+               co.course_code, co.name AS course_name
         FROM course_assignments ca
         JOIN users u ON ca.lecturer_id = u.id
+        JOIN classes cl ON ca.class_id = cl.id
+        JOIN courses co ON ca.course_id = co.id
         WHERE ca.lecturer_id = {$userId}
         ORDER BY ca.semester DESC, ca.id DESC
     ")->fetchAll();
@@ -1447,6 +1451,28 @@ if ($userType === 'lecturer') {
                     <a href="<?php echo $appBase; ?>tickets/create.php" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
                         <span>🚨</span> Báo Sự Cố Khẩn Cấp (HIGH / URGENT)
                     </a>
+                </div>
+            </div>
+
+            <!-- Thống Kê Nhanh Phân Hệ Giảng Viên -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-500 uppercase">Lớp Học Phần Đang Phụ Trách</div>
+                        <div class="text-2xl font-black text-indigo-600 mt-1"><?php echo $myCoursesCount; ?> lớp</div>
+                    </div>
+                    <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl">
+                        📚
+                    </div>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-500 uppercase">Phiếu Sự Cố Đã Gửi</div>
+                        <div class="text-2xl font-black text-amber-600 mt-1"><?php echo $myTicketsCount; ?> phiếu</div>
+                    </div>
+                    <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center text-xl">
+                        🎫
+                    </div>
                 </div>
             </div>
 
