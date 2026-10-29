@@ -186,17 +186,15 @@ class TicketRepository {
      * Cập nhật thông tin phiếu (Slide 7 - Edit)
      */
     public static function update(int $id, array $data): bool {
-        $sql = "UPDATE tickets 
-                SET title = :title, 
-                    description = :description, 
-                    system_affected = :system_affected,
-                    category_id = :category_id, 
-                    priority_id = :priority_id,
-                    assigned_to = :assigned_to
-                WHERE id = :id";
-
-        $stmt = db()->prepare($sql);
-        return $stmt->execute([
+        $fields = [
+            'title = :title',
+            'description = :description',
+            'system_affected = :system_affected',
+            'category_id = :category_id',
+            'priority_id = :priority_id',
+            'assigned_to = :assigned_to',
+        ];
+        $params = [
             'id'              => $id,
             'title'           => trim($data['title']),
             'description'     => trim($data['description']),
@@ -204,26 +202,45 @@ class TicketRepository {
             'category_id'     => (int)$data['category_id'],
             'priority_id'     => (int)$data['priority_id'],
             'assigned_to'     => !empty($data['assigned_to']) ? (int)$data['assigned_to'] : null,
-        ]);
+        ];
+
+        // Nếu có cập nhật trạng thái
+        if (!empty($data['status'])) {
+            $fields[] = 'status = :status';
+            $params['status'] = $data['status'];
+            if ($data['status'] === 'resolved') {
+                $fields[] = 'resolved_at = IF(resolved_at IS NULL, NOW(), resolved_at)';
+            } elseif ($data['status'] === 'closed') {
+                $fields[] = 'closed_at = IF(closed_at IS NULL, NOW(), closed_at)';
+            }
+        }
+
+        $sql = "UPDATE tickets SET " . implode(', ', $fields) . " WHERE id = :id";
+        $stmt = db()->prepare($sql);
+        return $stmt->execute($params);
     }
 
     /**
      * Cập nhật trạng thái phiếu (Slide 7)
      */
     public static function updateStatus(int $id, string $status, ?string $closedReason = null): bool {
-        $sql = "UPDATE tickets 
-                SET status = :status,
-                    closed_reason = :closed_reason,
-                    resolved_at = IF(:status = 'resolved', NOW(), resolved_at),
-                    closed_at = IF(:status = 'closed', NOW(), closed_at)
-                WHERE id = :id";
+        $fields = ['status = :status'];
+        $params = [
+            'id'     => $id,
+            'status' => $status,
+        ];
 
+        if ($status === 'resolved') {
+            $fields[] = 'resolved_at = IF(resolved_at IS NULL, NOW(), resolved_at)';
+        } elseif ($status === 'closed') {
+            $fields[] = 'closed_at = IF(closed_at IS NULL, NOW(), closed_at)';
+            $fields[] = 'closed_reason = :closed_reason';
+            $params['closed_reason'] = $closedReason ?: 'completed';
+        }
+
+        $sql = "UPDATE tickets SET " . implode(', ', $fields) . " WHERE id = :id";
         $stmt = db()->prepare($sql);
-        return $stmt->execute([
-            'id'            => $id,
-            'status'        => $status,
-            'closed_reason' => $closedReason,
-        ]);
+        return $stmt->execute($params);
     }
 
     /**
@@ -259,26 +276,28 @@ class TicketRepository {
     }
 
     /**
-     * Thêm tin nhắn phản hồi và tự động luân chuyển trạng thái vé (State Machine)
+     * Thêm tin nhắn phản hồi, hỗ trợ đính kèm ảnh và tự động luân chuyển trạng thái vé (State Machine)
      */
     public static function addReply(
         int $ticketId, 
         int $userId, 
         string $message, 
         bool $isInternal = false, 
-        ?string $forceStatus = null
+        ?string $forceStatus = null,
+        ?string $attachmentPath = null
     ): bool {
         $db = db();
 
         // 1. Thêm phản hồi vào bảng ticket_replies
-        $sql = "INSERT INTO ticket_replies (ticket_id, user_id, message, is_internal, created_at)
-                VALUES (:ticket_id, :user_id, :message, :is_internal, NOW())";
+        $sql = "INSERT INTO ticket_replies (ticket_id, user_id, message, attachment_path, is_internal, created_at)
+                VALUES (:ticket_id, :user_id, :message, :attachment_path, :is_internal, NOW())";
         $stmt = $db->prepare($sql);
         $ok = $stmt->execute([
-            'ticket_id'   => $ticketId,
-            'user_id'     => $userId,
-            'message'     => trim($message),
-            'is_internal' => $isInternal ? 1 : 0,
+            'ticket_id'       => $ticketId,
+            'user_id'         => $userId,
+            'message'         => trim($message),
+            'attachment_path' => $attachmentPath,
+            'is_internal'     => $isInternal ? 1 : 0,
         ]);
 
         if (!$ok) {

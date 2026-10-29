@@ -1,6 +1,7 @@
 <?php
 // ==============================================================================
 // BÀI 5: CHỈNH SỬA PHIẾU HỖ TRỢ (SLIDE 7 - EDIT & UPDATE)
+// Trưởng nhóm phụ trách: Phạm Thị Thanh Ngân (224001736 - D24-CNTT1)
 // ==============================================================================
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
@@ -27,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoryId     = (int)($_POST['category_id'] ?? 0);
     $priorityId     = (int)($_POST['priority_id'] ?? 0);
     $assignedTo     = (int)($_POST['assigned_to'] ?? 0);
+    $status         = trim($_POST['status'] ?? $ticket['status']);
 
     if (empty($title)) {
         $errors[] = "Tiêu đề sự cố không được để trống.";
@@ -50,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'category_id'     => $categoryId,
                 'priority_id'     => $priorityId,
                 'assigned_to'     => $assignedTo > 0 ? $assignedTo : null,
+                'status'          => $status,
             ]);
 
             set_flash('success', "Cập nhật phiếu {$ticket['ticket_code']} thành công!");
@@ -80,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <span class="font-mono font-bold text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
                     <?php echo htmlspecialchars($ticket['ticket_code']); ?>
                 </span>
-                <span class="text-xs font-semibold text-slate-500">Chỉnh sửa thông tin</span>
+                <span class="text-xs font-semibold text-slate-500">Chỉnh sửa thông tin phiếu</span>
             </div>
             <h1 class="text-xl font-black text-slate-900">Cập Nhật Phiếu Hỗ Trợ</h1>
         </div>
@@ -107,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
         <form method="POST" action="edit.php?id=<?php echo $ticket['id']; ?>" class="space-y-4 text-xs">
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Danh mục -->
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">Nhóm dịch vụ: <span class="text-rose-500">*</span></label>
@@ -129,6 +132,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <?php echo htmlspecialchars($p['name']); ?>
                             </option>
                         <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Trạng thái phiếu -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Trạng thái phiếu:</label>
+                    <select name="status" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="new" <?php echo $ticket['status'] === 'new' ? 'selected' : ''; ?>>Mới tiếp nhận (new)</option>
+                        <option value="in_progress" <?php echo $ticket['status'] === 'in_progress' ? 'selected' : ''; ?>>Đang xử lý (in_progress)</option>
+                        <option value="waiting_requester" <?php echo $ticket['status'] === 'waiting_requester' ? 'selected' : ''; ?>>Chờ phản hồi (waiting)</option>
+                        <option value="resolved" <?php echo $ticket['status'] === 'resolved' ? 'selected' : ''; ?>>Đã giải quyết (resolved)</option>
+                        <option value="closed" <?php echo $ticket['status'] === 'closed' ? 'selected' : ''; ?>>Đã đóng hoàn tất (closed)</option>
                     </select>
                 </div>
             </div>
@@ -177,8 +192,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <a href="show.php?id=<?php echo $ticket['id']; ?>" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 rounded-xl text-slate-700 font-semibold transition">
                         Hủy
                     </a>
-                    <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition">
-                        💾 Lưu Thay Đổi
+                    <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition flex items-center gap-1.5">
+                        <span>💾</span> Lưu Thay Đổi
                     </button>
                 </div>
             </div>
@@ -203,4 +218,3 @@ function confirmDelete() {
 
 </body>
 </html>
-

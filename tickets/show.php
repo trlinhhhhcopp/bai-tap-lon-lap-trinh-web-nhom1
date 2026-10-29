@@ -26,15 +26,56 @@ $canViewInternal = ($viewAs === 'agent');
 
 // Xử lý thêm tin nhắn trao đổi
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reply') {
-    $message     = trim($_POST['message'] ?? '');
-    $userId      = (int)($_POST['user_id'] ?? ($ticket['assigned_to'] ?: 2));
-    $isInternal  = isset($_POST['is_internal']) && $_POST['is_internal'] === '1';
-    $forceStatus = !empty($_POST['quick_status']) ? trim($_POST['quick_status']) : null;
+    $message        = trim($_POST['message'] ?? '');
+    $userId         = (int)($_POST['user_id'] ?? ($ticket['assigned_to'] ?: 2));
+    $isInternal     = isset($_POST['is_internal']) && $_POST['is_internal'] === '1';
+    $forceStatus    = !empty($_POST['quick_status']) ? trim($_POST['quick_status']) : null;
+    $attachmentPath = null;
 
-    if (!empty($message)) {
-        TicketRepository::addReply($id, $userId, $message, $isInternal, $forceStatus);
+    // Xử lý tệp đính kèm (KTV gửi ảnh minh chứng hoặc SV gửi ảnh chụp lỗi)
+    if (!empty($_FILES['attachment']['name']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+        $fileTmp  = $_FILES['attachment']['tmp_name'];
+        $fileName = $_FILES['attachment']['name'];
+        $fileSize = $_FILES['attachment']['size'];
+        $ext      = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $allowed  = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
+        if (!in_array($ext, $allowed, true)) {
+            set_flash('error', "Chỉ hỗ trợ tệp đính kèm dạng hình ảnh (JPG, PNG, WEBP, GIF)!");
+            header("Location: show.php?id={$id}&view_as={$viewAs}");
+            exit;
+        }
+
+        if ($fileSize > 5 * 1024 * 1024) {
+            set_flash('error', "Kích thước ảnh vượt quá dung lượng tối đa 5MB!");
+            header("Location: show.php?id={$id}&view_as={$viewAs}");
+            exit;
+        }
+
+        $uploadDir = __DIR__ . '/../uploads/replies/';
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0777, true);
+        }
+
+        $safeName   = 'reply_' . $id . '_' . time() . '_' . bin2hex(random_bytes(3)) . '.' . $ext;
+        $targetFile = $uploadDir . $safeName;
+
+        if (move_uploaded_file($fileTmp, $targetFile)) {
+            $attachmentPath = 'uploads/replies/' . $safeName;
+        }
+    }
+
+    if (!empty($message) || !empty($attachmentPath)) {
+        if (empty($message)) {
+            $message = "Đã gửi kèm 1 tệp hình ảnh minh chứng.";
+        }
+
+        TicketRepository::addReply($id, $userId, $message, $isInternal, $forceStatus, $attachmentPath);
         
         $notice = "Đã gửi phản hồi thành công!";
+        if ($attachmentPath) {
+            $notice .= " (Đã tải lên tệp ảnh đính kèm thành công)";
+        }
         if ($isInternal) {
             $notice = "Đã lưu 🔒 Ghi chú nội bộ thành công (Người gửi phiếu sẽ không nhìn thấy)!";
         }
@@ -42,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
     } else {
-        set_flash('error', "Nội dung phản hồi không được để trống!");
+        set_flash('error', "Vui lòng nhập nội dung trao đổi hoặc chọn tệp ảnh đính kèm!");
     }
 }
 
@@ -239,13 +280,28 @@ $flash   = get_flash();
                                 <div class="text-slate-700 leading-relaxed pl-8">
                                     <?php echo nl2br(htmlspecialchars($r['message'])); ?>
                                 </div>
+
+                                <!-- HIỂN THỊ ẢNH ĐÍNH KÈM NẾU CÓ -->
+                                <?php if (!empty($r['attachment_path'])): ?>
+                                    <div class="mt-2.5 pt-2 border-t border-slate-200/60 pl-8">
+                                        <div class="flex items-center gap-1 text-[11px] font-bold text-indigo-700 mb-1.5">
+                                            <span>📎</span> Tệp ảnh đính kèm:
+                                        </div>
+                                        <a href="../<?php echo htmlspecialchars($r['attachment_path']); ?>" target="_blank" class="inline-block group">
+                                            <img src="../<?php echo htmlspecialchars($r['attachment_path']); ?>" 
+                                                 alt="Ảnh đính kèm" 
+                                                 class="max-h-52 max-w-sm rounded-xl border border-slate-300 shadow-sm group-hover:opacity-90 transition object-contain bg-white p-1" />
+                                            <span class="block text-[10px] text-slate-400 mt-1">Bấm để phóng to ảnh ↗</span>
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
 
                 <!-- Form gửi phản hồi mới -->
-                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="pt-4 border-t border-slate-100 space-y-3.5 text-xs">
+                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" enctype="multipart/form-data" class="pt-4 border-t border-slate-100 space-y-3.5 text-xs">
                     <input type="hidden" name="action" value="reply" />
 
                     <!-- Chọn người gửi phản hồi (Mô phỏng 2 chiều) -->
@@ -281,8 +337,16 @@ $flash   = get_flash();
 
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Nội dung trao đổi / Giải pháp kỹ thuật:</label>
-                        <textarea name="message" rows="3" required placeholder="Nhập nội dung trao đổi, kết quả xử lý hoặc ghi chú kỹ thuật..." 
+                        <textarea name="message" rows="3" placeholder="Nhập nội dung trao đổi, kết quả xử lý hoặc ghi chú kỹ thuật..." 
                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"></textarea>
+                    </div>
+
+                    <!-- ĐÍNH KÈM TỆP ẢNH (SV GỬI ẢNH LỖI, KTV GỬI ẢNH KẾT QUẢ) -->
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">📎 Đính kèm tệp ảnh (Ảnh chụp màn hình lỗi / Ảnh minh chứng kết quả fix):</label>
+                        <input type="file" name="attachment" accept="image/png,image/jpeg,image/webp,image/gif" 
+                               class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-300 rounded-xl bg-slate-50 p-1" />
+                        <span class="text-[10.5px] text-slate-400 mt-0.5 block">Định dạng hỗ trợ: JPG, PNG, WEBP, GIF (Tối đa 5MB)</span>
                     </div>
 
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
