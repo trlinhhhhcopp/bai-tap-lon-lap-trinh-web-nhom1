@@ -38,10 +38,10 @@ INSERT INTO `categories` (`id`, `code`, `name`, `description`, `default_priority
 -- 2. SEED MỨC ĐỘ ƯU TIÊN (PRIORITIES)
 -- ==============================================================================
 INSERT INTO `priorities` (`id`, `code`, `name`, `sla_factor`, `sort_order`) VALUES
-(1, 'URGENT', 'Khẩn cấp (Giờ thi / Sự cố diện rộng)', 0.25, 1),
-(2, 'HIGH', 'Cao (Đăng ký tín chỉ / Nộp bài tập / Nhập điểm)', 0.50, 2),
-(3, 'MED', 'Trung bình (Mật khẩu / Mail / Wi-Fi thông thường)', 1.00, 3),
-(4, 'LOW', 'Thấp (Hỏi đáp hướng dẫn / Thắc mắc chung)', 1.50, 4);
+(1, 'URGENT', 'Khẩn cấp', 0.25, 1),
+(2, 'HIGH', 'Cao', 0.50, 2),
+(3, 'MED', 'Trung bình', 1.00, 3),
+(4, 'LOW', 'Thấp', 1.50, 4);
 
 -- ==============================================================================
 -- 3. SEED DANH MỤC LỚP HỌC (CLASSES - KHÓA TUD D24)
@@ -228,7 +228,7 @@ INSERT INTO `tickets` (
  '2026-10-23 08:10:00', NULL, NULL),
 
 -- Phiếu 2: Sinh viên Ngân (TUD D24) báo lỗi nộp bài tập môn Lập trình Web lớp D24-CNTT1
-(2, 'HD-2026-00002', 13, 5, 4, 1, 1, 
+(2, 'HD-2026-00002', 13, 5, 4, 2, 1, 
  1, 1,
  0, NULL, NULL, 
  'Lịch nộp bài tập lớn môn Lập trình Web lớp D24-CNTT1 rơi vào ngày 30/4', 

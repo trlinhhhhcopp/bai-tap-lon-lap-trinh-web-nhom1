@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $res = TicketService::createTicketWithAutoDispatch([
             'requester_id'    => 13, // SV Thanh Ngân
             'category_id'     => $catId,
-            'priority_id'     => 2,  // HIGH
+            // Tự động gán Auto-Priority theo Category (PDF spec)
             'title'           => "[TEST DISPATCH] Yêu cầu hỗ trợ hệ thống lúc " . date('H:i:s'),
             'description'     => "Phiếu thử nghiệm cơ chế tự động phân công KTV chuyên trách & kiểm tra tràn tải (Auto-Overflow).",
             'system_affected' => 'Hệ thống ĐH Thủ Đô',
@@ -270,8 +270,16 @@ $flash = get_flash();
                                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
                                             <?php echo htmlspecialchars($t['category_name']); ?>
                                         </span>
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                                            Ưu tiên: <?php echo htmlspecialchars($t['priority_name']); ?>
+                                        <?php
+                                        $prioBadgeAgent = match($t['priority_code']) {
+                                            'URGENT' => 'bg-rose-50 text-rose-700 border-rose-200',
+                                            'HIGH'   => 'bg-amber-50 text-amber-800 border-amber-200',
+                                            'MED'    => 'bg-blue-50 text-blue-700 border-blue-200',
+                                            default  => 'bg-slate-50 text-slate-700 border-slate-200',
+                                        };
+                                        ?>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold border <?php echo $prioBadgeAgent; ?>">
+                                            Ưu tiên: <?php echo htmlspecialchars($t['priority_name']); ?> (<?php echo htmlspecialchars($t['priority_code']); ?>)
                                         </span>
                                     </div>
                                     <span class="px-2.5 py-1 rounded-full text-[11px] <?php echo $timeBadge; ?>">

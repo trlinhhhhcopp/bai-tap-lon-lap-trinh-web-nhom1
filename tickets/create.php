@@ -139,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <option value="">-- Chọn mức độ ưu tiên --</option>
                         <?php foreach ($priorities as $p): ?>
                             <option value="<?php echo $p['id']; ?>" <?php echo (isset($_POST['priority_id']) && (int)$_POST['priority_id'] === (int)$p['id']) || (!isset($_POST['priority_id']) && $p['code'] === 'MED') ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($p['name']); ?>
+                                <?php echo htmlspecialchars($p['name']); ?> (<?php echo htmlspecialchars($p['code']); ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>

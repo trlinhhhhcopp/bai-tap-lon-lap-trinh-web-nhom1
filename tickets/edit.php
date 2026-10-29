@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <select name="priority_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <?php foreach ($priorities as $p): ?>
                             <option value="<?php echo $p['id']; ?>" <?php echo (int)$ticket['priority_id'] === (int)$p['id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($p['name']); ?>
+                                <?php echo htmlspecialchars($p['name']); ?> (<?php echo htmlspecialchars($p['code']); ?>)
                             </option>
                         <?php endforeach; ?>
                     </select>
