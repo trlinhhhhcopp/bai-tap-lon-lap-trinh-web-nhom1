@@ -360,7 +360,7 @@
                             </td>
                             <td>
                                 <?php if (!empty($t['attachment_path'])): ?>
-                                    <a href="/tickets/attachment?file=<?= urlencode($t['attachment_path']) ?>" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: #f0f9ff; color: #0284c7; padding: 3px 8px; border-radius: 4px; text-decoration: none; font-size: 11.5px; font-weight: 600; border: 1px solid #bae6fd;">
+                                    <a href="<?= $appBase ?><?= htmlspecialchars($t['attachment_path']) ?>" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; background: #f0f9ff; color: #0284c7; padding: 3px 8px; border-radius: 4px; text-decoration: none; font-size: 11.5px; font-weight: 600; border: 1px solid #bae6fd;">
                                         📎 Xem file
                                     </a>
                                 <?php else: ?>
@@ -760,7 +760,7 @@ function viewTicketDetail(ticket) {
     // Minh chứng đính kèm
     const attachBox = document.getElementById('dtlAttachmentBox');
     if (ticket.attachment_path) {
-        const fileUrl = '/tickets/attachment?file=' + encodeURIComponent(ticket.attachment_path);
+        const fileUrl = '<?= $appBase ?>' + ticket.attachment_path;
         const isImg = /\.(jpg|jpeg|png|gif|webp)$/i.test(ticket.attachment_path);
         
         let html = '';

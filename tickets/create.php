@@ -1,6 +1,8 @@
 <?php
 // ==============================================================================
 // FORM TẠO PHIẾU HỖ TRỢ - CHUẨN ĐẶC TẢ ITIL V4 & AUTO-PRIORITY MAPPING
+// Phân hệ: Core Architecture & Ticket Dispatch
+// Trưởng nhóm phụ trách: PHẠM THỊ THANH NGÂN (MSSV: 224001736 - D24-CNTT1)
 // ==============================================================================
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -17,7 +19,16 @@ if (empty($_SESSION['user'])) {
 }
 
 $currentUser = $_SESSION['user'];
+$userRole    = $currentUser['role'] ?? 'requester';
 $userType    = $currentUser['user_type'] ?? 'student';
+
+// Kỹ thuật viên không có chức năng tạo phiếu hỗ trợ (chỉ tiếp nhận và xử lý sự cố)
+if ($userRole === 'agent') {
+    set_flash('error', 'Kỹ thuật viên IT không có chức năng tự gửi phiếu hỗ trợ. Nhiệm vụ của bạn là tiếp nhận và giải quyết phiếu sự cố!');
+    header('Location: ../agent/index.php');
+    exit;
+}
+
 $categories  = TicketRepository::getCategories();
 $priorities  = TicketRepository::getPriorities();
 
@@ -47,11 +58,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $prioStmt->execute(['code' => $defCode]);
         $priorityId = (int)($prioStmt->fetchColumn() ?: 2);
     } else {
-        // Giảng viên hoặc KTV/Admin: Được phép chọn mức ưu tiên (HIGH hoặc URGENT)
+        // Giảng viên hoặc Quản trị viên: Được phép chọn mức ưu tiên (HIGH hoặc URGENT)
         $priorityId = (int)($_POST['priority_id'] ?? 2);
     }
 
-    // Validate
+    // Validate dữ liệu
     if ($categoryId <= 0) {
         $errors[] = "Vui lòng chọn nhóm dịch vụ gặp sự cố.";
     }
@@ -60,6 +71,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     if (empty($description)) {
         $errors[] = "Vui lòng nhập nội dung mô tả chi tiết lỗi bạn đang gặp phải.";
+    }
+
+    // Xử lý tệp ảnh / minh chứng sự cố đính kèm
+    $attachmentPath = null;
+    if (!empty($_FILES['attachment']['name']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+        $fileTmp  = $_FILES['attachment']['tmp_name'];
+        $fileName = $_FILES['attachment']['name'];
+        $fileSize = $_FILES['attachment']['size'];
+        $ext      = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+        $allowed  = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'];
+
+        if (!in_array($ext, $allowed, true)) {
+            $errors[] = "Chỉ hỗ trợ tệp đính kèm dạng hình ảnh (JPG, PNG, WEBP, GIF) hoặc tài liệu PDF!";
+        } elseif ($fileSize > 10 * 1024 * 1024) {
+            $errors[] = "Dung lượng tệp đính kèm không được vượt quá 10MB!";
+        } else {
+            $uploadDir = __DIR__ . '/../uploads/attachments/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            $safeName = 'proof_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+            if (move_uploaded_file($fileTmp, $uploadDir . $safeName)) {
+                $attachmentPath = 'uploads/attachments/' . $safeName;
+            }
+        }
     }
 
     if (empty($errors)) {
@@ -71,9 +107,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'title'           => $title,
                 'description'     => $description,
                 'system_affected' => $systemAffected,
+                'attachment_path' => $attachmentPath,
             ]);
 
-            set_flash('success', "Gửi phiếu hỗ trợ thành công! Mã phiếu của bạn là #HD-" . str_pad($ticketId, 5, '0', STR_PAD_LEFT) . ".");
+            set_flash('success', "Gửi phiếu hỗ trợ thành công! KTV phụ trách chuyên môn sẽ tiếp nhận và phản hồi sớm nhất.");
             header('Location: ../index.php');
             exit;
         } catch (Exception $e) {
@@ -94,24 +131,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <?php require_once __DIR__ . '/../includes/navbar.php'; ?>
 
-<div class="flex-1 max-w-3xl mx-auto w-full p-4 md:p-6 space-y-6">
+<main class="flex-1 max-w-3xl mx-auto w-full p-4 md:p-6 space-y-6">
 
     <!-- HEADER FORM -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-xl font-black text-slate-900 tracking-tight">Gửi Yêu Cầu Hỗ Trợ Kỹ Thuật</h1>
-            <p class="text-xs text-slate-500 mt-0.5">Tiếp nhận và điều phối sự cố trực tuyến theo chuẩn ITIL v4</p>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                🎫 TIẾP NHẬN SỰ CỐ ĐA KÊNH
+            </span>
+            <h1 class="text-xl sm:text-2xl font-black text-slate-900 mt-1">
+                Gửi Phiếu Báo Lỗi Kỹ Thuật
+            </h1>
+            <p class="text-xs text-slate-500 mt-0.5">Tiếp nhận sự cố tự động theo chuyên môn ITIL v4 và phân công KTV phụ trách.</p>
         </div>
-        <a href="../index.php" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition">
+        <a href="../index.php" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-2xl transition inline-flex items-center gap-1.5 self-start sm:self-auto">
             ← Quay lại
         </a>
     </div>
 
-    <!-- HIỂN THỊ LỖI -->
+    <!-- THÔNG BÁO LỖI NẾU CÓ -->
     <?php if (!empty($errors)): ?>
         <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 space-y-1">
-            <div class="font-bold flex items-center gap-1.5">
-                <span>⚠️</span> Không thể gửi phiếu do các lỗi sau:
+            <div class="font-bold flex items-center gap-1.5 text-rose-900">
+                <span>⚠️</span> Vui lòng kiểm tra lại các thông tin sau:
             </div>
             <ul class="list-disc pl-5 space-y-0.5">
                 <?php foreach ($errors as $err): ?>
@@ -122,18 +164,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <!-- FORM NHẬP LIỆU -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-        <form method="POST" action="create.php" class="space-y-4 text-xs">
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
+        <form method="POST" action="create.php" enctype="multipart/form-data" class="space-y-4 text-xs">
             
             <!-- Người gửi (Tự động theo tài khoản đang đăng nhập) -->
-            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
                 <div>
                     <span class="text-slate-400 block text-[11px]">Tài khoản người gửi yêu cầu:</span>
                     <strong class="text-slate-800 text-xs"><?php echo htmlspecialchars($currentUser['name']); ?></strong>
                     <span class="text-indigo-600 font-mono text-[11px]">(<?php echo htmlspecialchars($currentUser['user_code']); ?>)</span>
                 </div>
-                <span class="px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 font-bold text-[10.5px]">
-                    <?php echo $userType === 'student' ? 'Sinh viên' : 'Giảng viên'; ?>
+                <span class="px-2.5 py-1 rounded-xl bg-indigo-100 text-indigo-700 font-bold text-[10.5px]">
+                    <?php echo $userType === 'student' ? '🎓 Sinh viên' : '👨‍🏫 Giảng viên'; ?>
                 </span>
             </div>
 
@@ -152,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Phân luồng Mức ưu tiên: Sinh viên Auto-Priority, Giảng viên được chọn HIGH/URGENT -->
             <?php if ($userType === 'student'): ?>
-                <div class="p-3 bg-indigo-50/80 border border-indigo-200 rounded-xl text-indigo-900 text-[11.5px] space-y-1">
+                <div class="p-3.5 bg-indigo-50/80 border border-indigo-200 rounded-2xl text-indigo-900 text-[11.5px] space-y-1">
                     <div class="font-bold flex items-center gap-1.5">
                         <span>⚡</span> Cơ Chế Tự Động Gán Mức Ưu Tiên (Auto-Priority Mapping):
                     </div>
@@ -183,7 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Tiêu đề tóm tắt sự cố: <span class="text-rose-500">*</span></label>
                 <input type="text" name="title" required value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>" 
-                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"
+                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold"
                        placeholder="Ví dụ: Không thể đăng nhập vào lớp học phần môn Lập trình Web" />
             </div>
 
@@ -191,24 +233,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Nội dung mô tả chi tiết: <span class="text-rose-500">*</span></label>
                 <textarea name="description" rows="4" required
-                          class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"
+                          class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs leading-relaxed"
                           placeholder="Mô tả cụ thể thông báo lỗi, thời điểm gặp sự cố và mong muốn KTV hỗ trợ..."><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
+            </div>
+
+            <!-- ĐÍNH KÈM TỆP ẢNH / TÀI LIỆU MINH CHỨNG SỰ CỐ -->
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">📎 Tệp ảnh / Tài liệu minh chứng sự cố (Tùy chọn):</label>
+                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
+                    <input type="file" name="attachment" id="createAttachInput" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf"
+                           class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-300 rounded-xl bg-white p-1" />
+                    <span class="text-[10.5px] text-slate-400 block">Định dạng hỗ trợ: JPG, PNG, WEBP, GIF, PDF (Tối đa 10MB). Đính kèm ảnh chụp màn hình lỗi giúp KTV chẩn đoán và xử lý nhanh hơn 50%.</span>
+                    
+                    <div id="createPreviewBox" class="hidden pt-2">
+                        <p class="text-[11px] font-bold text-slate-600 mb-1">Xem trước tệp minh chứng:</p>
+                        <img id="createPreviewImg" src="" alt="Minh chứng" class="max-h-40 rounded-xl border border-slate-300 shadow-sm object-contain bg-white p-1" />
+                    </div>
+                </div>
             </div>
 
             <!-- Nút gửi -->
             <div class="pt-2 flex items-center justify-end gap-3">
-                <a href="../index.php" class="px-4 py-2 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-xl transition">
+                <a href="../index.php" class="px-5 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-2xl transition">
                     Hủy bỏ
                 </a>
-                <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm">
-                    Gửi Yêu Cầu Hỗ Trợ ➔
+                <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition shadow-md shadow-indigo-100 flex items-center gap-1.5">
+                    <span>🚀</span> Gửi Yêu Cầu Hỗ Trợ
                 </button>
             </div>
 
         </form>
     </div>
 
-</div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const input = document.getElementById('createAttachInput');
+    const box = document.getElementById('createPreviewBox');
+    const img = document.getElementById('createPreviewImg');
+    if (input && box && img) {
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    box.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                box.classList.add('hidden');
+            }
+        });
+    }
+});
+</script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>

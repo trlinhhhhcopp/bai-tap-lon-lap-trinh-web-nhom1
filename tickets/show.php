@@ -50,7 +50,7 @@ $currentRating = $ratingStmt->fetch();
 // -----------------------------------------------------------------------------
 // 1. XỬ LÝ GỬI ĐÁNH GIÁ CSAT (SINH VIÊN NGHIỆM THU)
 // -----------------------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'rate_ticket') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'rate_ticket') {
     $score = (int)($_POST['score'] ?? 5);
     $comment = trim($_POST['comment'] ?? '');
     $score = max(1, min(5, $score));
@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // -----------------------------------------------------------------------------
 // 2. XỬ LÝ KHI SINH VIÊN BẤM "CHƯA XONG (YÊU CẦU MỞ LẠI PHIẾU)"
 // -----------------------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reopen_ticket') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reopen_ticket') {
     $reopenNote = trim($_POST['reopen_note'] ?? 'Sự cố vẫn chưa được khắc phục triệt để. Kính nhờ Kỹ thuật viên kiểm tra và hỗ trợ tiếp!');
     TicketRepository::addReply($id, (int)$currentUser['id'], $reopenNote, false, 'in_progress');
     db()->prepare("UPDATE tickets SET reopen_count = reopen_count + 1 WHERE id = :id")->execute(['id' => $id]);
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // -----------------------------------------------------------------------------
 // 3. XỬ LÝ GỬI PHẢN HỒI / GIẢI PHÁP & ĐÍNH KÈM ẢNH
 // -----------------------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reply') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reply') {
     $message = trim($_POST['message'] ?? '');
     
     if ($userRole === 'requester') {
@@ -184,7 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 // -----------------------------------------------------------------------------
 // 4. XỬ LÝ CẬP NHẬT TRẠNG THÁI THỦ CÔNG (KTV / ADMIN)
 // -----------------------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_status') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'update_status') {
     if (in_array($userRole, ['agent', 'admin'])) {
         $newStatus = trim($_POST['status'] ?? '');
         if (in_array($newStatus, ['new', 'in_progress', 'waiting_requester', 'resolved', 'closed'])) {
@@ -310,6 +310,44 @@ $flash   = get_flash();
                 <div class="p-4 bg-slate-50 rounded-2xl text-xs text-slate-800 leading-relaxed whitespace-pre-line border border-slate-200">
                     <?php echo htmlspecialchars($ticket['description']); ?>
                 </div>
+
+                <!-- HIỂN THỊ FILE MINH CHỨNG SỰ CỐ BAN ĐẦU CỦA SINH VIÊN / GIẢNG VIÊN -->
+                <?php if (!empty($ticket['attachment_path'])): ?>
+                    <?php
+                    $initExt = strtolower(pathinfo($ticket['attachment_path'], PATHINFO_EXTENSION));
+                    $isImg = in_array($initExt, ['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg']);
+                    ?>
+                    <div class="mt-3 p-4 bg-indigo-50/60 rounded-2xl border border-indigo-200 space-y-2">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <span class="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                                <span>📎</span> Tệp / Ảnh Minh Chứng Sự Cố (Do người gửi đính kèm):
+                            </span>
+                            <a href="../<?php echo htmlspecialchars($ticket['attachment_path']); ?>" target="_blank" 
+                               class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1">
+                                <span>🔍</span> Xem kích thước gốc ↗
+                            </a>
+                        </div>
+                        <?php if ($isImg): ?>
+                            <div class="pt-1">
+                                <a href="../<?php echo htmlspecialchars($ticket['attachment_path']); ?>" target="_blank" class="inline-block group">
+                                    <img src="../<?php echo htmlspecialchars($ticket['attachment_path']); ?>" 
+                                         alt="Minh chứng sự cố" 
+                                         class="max-h-72 max-w-full rounded-2xl border border-slate-300 shadow-sm group-hover:opacity-95 transition object-contain bg-white p-1.5" />
+                                </a>
+                            </div>
+                        <?php else: ?>
+                            <div class="flex items-center gap-3 text-xs font-semibold text-slate-700 bg-white p-3 rounded-xl border border-slate-200">
+                                <span class="text-2xl">📄</span>
+                                <div>
+                                    <div class="font-bold text-slate-800"><?php echo basename($ticket['attachment_path']); ?></div>
+                                    <a href="../<?php echo htmlspecialchars($ticket['attachment_path']); ?>" download class="text-indigo-600 text-[11px] hover:underline font-bold">
+                                        ⬇️ Tải tệp tài liệu minh chứng về máy
+                                    </a>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             </div>
 
             <!-- KHỐI NGHIỆM THU & ĐÁNH GIÁ CSAT (IMAGE 2 DESIGN & CHỈ RIÊNG NGƯỜI TẠO PHIẾU THẤY) -->

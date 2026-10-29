@@ -39,8 +39,8 @@ class Rating
         $offset = max(0, ($page - 1) * $perPage);
 
         $sql = "SELECT r.id, r.ticket_id, r.user_id, r.score, r.comment, r.created_at,
-                       t.ticket_code, t.title,
-                       u.name AS student_name, u.email AS student_email
+                       t.ticket_code, t.title AS ticket_title,
+                       u.name AS user_name, u.user_code AS user_code, u.email AS user_email
                 FROM ticket_ratings r
                 JOIN tickets t ON r.ticket_id = t.id
                 JOIN users u ON r.user_id = u.id

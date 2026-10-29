@@ -12,7 +12,8 @@ class RatingController
     public function index(): void
     {
         $keyword   = trim($_GET['q'] ?? '');
-        $score     = isset($_GET['score']) && $_GET['score'] !== '' ? (int)$_GET['score'] : null;
+        $score       = isset($_GET['score']) && $_GET['score'] !== '' ? (int)$_GET['score'] : null;
+        $scoreFilter = $score;
         $userRole = $_SESSION['user']['role'] ?? '';
         $userType = $_SESSION['user']['user_type'] ?? '';
         $isStudent = ($userRole === 'requester' || $userType === 'student');

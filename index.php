@@ -740,7 +740,14 @@ if ($userType === 'student') {
                                             <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:text-indigo-600 transition block max-w-sm truncate">
                                                 <?php echo htmlspecialchars($t['title']); ?>
                                             </a>
-                                            <span class="text-[10.5px] text-slate-400 font-normal">Gửi lúc: <?php echo htmlspecialchars($t['created_at']); ?></span>
+                                            <div class="flex items-center gap-2 mt-0.5">
+                                                <span class="text-[10.5px] text-slate-400 font-normal">Gửi lúc: <?php echo htmlspecialchars($t['created_at']); ?></span>
+                                                <?php if (!empty($t['attachment_path'])): ?>
+                                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                                                        📎 Có minh chứng
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
                                         </td>
                                         <td class="py-3 px-4 text-slate-600">
                                             <?php echo htmlspecialchars($t['category_name']); ?>

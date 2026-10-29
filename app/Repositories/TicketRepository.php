@@ -230,14 +230,15 @@ class TicketRepository {
 
         // Tính số phút xử lý thực tế
         $effectiveMinutes = (int)round($slaHours * $slaFactor * 60);
+        $attachmentPath   = !empty($data['attachment_path']) ? $data['attachment_path'] : null;
 
         $sql = "INSERT INTO tickets (
                     ticket_code, requester_id, category_id, priority_id, 
-                    title, description, system_affected, 
+                    title, description, system_affected, attachment_path,
                     status, created_at, sla_started_at, triage_due_at, due_at
                 ) VALUES (
                     :ticket_code, :requester_id, :category_id, :priority_id,
-                    :title, :description, :system_affected,
+                    :title, :description, :system_affected, :attachment_path,
                     'new', NOW(), NOW(),
                     DATE_ADD(NOW(), INTERVAL 30 MINUTE),
                     DATE_ADD(NOW(), INTERVAL :eff_min MINUTE)
@@ -252,6 +253,7 @@ class TicketRepository {
             'title'           => trim($data['title']),
             'description'     => trim($data['description']),
             'system_affected' => trim($data['system_affected']),
+            'attachment_path' => $attachmentPath,
             'eff_min'         => $effectiveMinutes,
         ]);
 

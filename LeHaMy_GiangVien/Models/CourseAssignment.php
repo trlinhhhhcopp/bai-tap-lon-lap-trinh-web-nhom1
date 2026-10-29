@@ -56,10 +56,6 @@ class CourseAssignment
             $sql .= " AND ca.lecturer_id = :lid";
             $params['lid'] = $lecturerId;
         }
-        if ($lecturerId > 0) {
-            $sql .= " AND ca.lecturer_id = :lid";
-            $params['lid'] = $lecturerId;
-        }
         if ($keyword !== '') {
             $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
                        OR co.course_code LIKE :kw OR co.name LIKE :kw

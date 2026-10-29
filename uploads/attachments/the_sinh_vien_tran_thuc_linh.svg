@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360">
+  <defs>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="50%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background Card -->
+  <rect width="600" height="360" rx="20" fill="url(#cardGrad)" stroke="#38bdf8" stroke-width="2"/>
+  
+  <!-- Header Pattern -->
+  <path d="M 0,0 L 600,0 L 600,75 L 0,85 Z" fill="#0369a1" opacity="0.4"/>
+  
+  <!-- School Logo / Name -->
+  <circle cx="50" cy="45" r="24" fill="#38bdf8"/>
+  <text x="50" y="52" fill="#0f172a" font-family="system-ui, sans-serif" font-size="14" font-weight="900" text-anchor="middle">TUD</text>
+  <text x="86" y="40" fill="#ffffff" font-family="system-ui, sans-serif" font-size="16" font-weight="900" letter-spacing="1">TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI</text>
+  <text x="86" y="58" fill="#93c5fd" font-family="system-ui, sans-serif" font-size="11" font-weight="600">HANOI METROPOLITAN UNIVERSITY • KHOA CNTT</text>
+
+  <!-- Title Badge -->
+  <rect x="360" y="100" width="200" height="30" rx="15" fill="url(#goldGrad)"/>
+  <text x="460" y="120" fill="#ffffff" font-family="system-ui, sans-serif" font-size="12" font-weight="900" text-anchor="middle" letter-spacing="1">THẺ SINH VIÊN</text>
+
+  <!-- Avatar Box -->
+  <rect x="45" y="110" width="130" height="165" rx="12" fill="#ffffff" stroke="#94a3b8" stroke-width="2"/>
+  <circle cx="110" cy="170" r="38" fill="#e0e7ff"/>
+  <text x="110" y="180" fill="#4338ca" font-family="system-ui, sans-serif" font-size="28" font-weight="900" text-anchor="middle">TTL</text>
+  <text x="110" y="245" fill="#64748b" font-family="system-ui, sans-serif" font-size="10" font-weight="700" text-anchor="middle">ẢNH 3x4 HỌC THUẬT</text>
+
+  <!-- Student Info Details -->
+  <g transform="translate(200, 155)" font-family="system-ui, sans-serif">
+    <text x="0" y="0" fill="#94a3b8" font-size="11" font-weight="600">Họ và tên:</text>
+    <text x="80" y="0" fill="#ffffff" font-size="15" font-weight="900">TRẦN THỤC LINH</text>
+
+    <text x="0" y="28" fill="#94a3b8" font-size="11" font-weight="600">Mã sinh viên:</text>
+    <text x="80" y="28" fill="#38bdf8" font-size="14" font-weight="900" font-family="monospace">224001729</text>
+
+    <text x="0" y="56" fill="#94a3b8" font-size="11" font-weight="600">Lớp sinh hoạt:</text>
+    <text x="80" y="56" fill="#e2e8f0" font-size="13" font-weight="700">Toán Ứng Dụng D2024</text>
+
+    <text x="0" y="84" fill="#94a3b8" font-size="11" font-weight="600">Khóa học:</text>
+    <text x="80" y="84" fill="#e2e8f0" font-size="13" font-weight="700">2024 - 2028 (Hệ Chính Quy)</text>
+  </g>
+
+  <!-- Security Chip / Watermark -->
+  <rect x="45" y="295" width="40" height="28" rx="4" fill="#fbbf24" stroke="#d97706" stroke-width="1.5"/>
+  <text x="100" y="313" fill="#64748b" font-family="system-ui, sans-serif" font-size="10">Thẻ xác thực danh tính phục vụ mở khóa tài khoản SSO</text>
+
+  <!-- Barcode -->
+  <g transform="translate(380, 290)">
+    <line x1="0" y1="0" x2="0" y2="30" stroke="#ffffff" stroke-width="3"/>
+    <line x1="6" y1="0" x2="6" y2="30" stroke="#ffffff" stroke-width="1.5"/>
+    <line x1="12" y1="0" x2="12" y2="30" stroke="#ffffff" stroke-width="4"/>
+    <line x1="20" y1="0" x2="20" y2="30" stroke="#ffffff" stroke-width="2"/>
+    <line x1="26" y1="0" x2="26" y2="30" stroke="#ffffff" stroke-width="1"/>
+    <line x1="32" y1="0" x2="32" y2="30" stroke="#ffffff" stroke-width="3"/>
+    <line x1="40" y1="0" x2="40" y2="30" stroke="#ffffff" stroke-width="5"/>
+    <line x1="50" y1="0" x2="50" y2="30" stroke="#ffffff" stroke-width="2"/>
+    <line x1="56" y1="0" x2="56" y2="30" stroke="#ffffff" stroke-width="1.5"/>
+    <line x1="64" y1="0" x2="64" y2="30" stroke="#ffffff" stroke-width="3"/>
+    <line x1="72" y1="0" x2="72" y2="30" stroke="#ffffff" stroke-width="4"/>
+    <line x1="82" y1="0" x2="82" y2="30" stroke="#ffffff" stroke-width="2"/>
+    <line x1="90" y1="0" x2="90" y2="30" stroke="#ffffff" stroke-width="3"/>
+    <line x1="98" y1="0" x2="98" y2="30" stroke="#ffffff" stroke-width="1.5"/>
+    <line x1="106" y1="0" x2="106" y2="30" stroke="#ffffff" stroke-width="4"/>
+    <line x1="116" y1="0" x2="116" y2="30" stroke="#ffffff" stroke-width="2.5"/>
+    <line x1="124" y1="0" x2="124" y2="30" stroke="#ffffff" stroke-width="1.5"/>
+    <line x1="132" y1="0" x2="132" y2="30" stroke="#ffffff" stroke-width="3.5"/>
+    <line x1="142" y1="0" x2="142" y2="30" stroke="#ffffff" stroke-width="2"/>
+    <line x1="150" y1="0" x2="150" y2="30" stroke="#ffffff" stroke-width="4"/>
+    <line x1="160" y1="0" x2="160" y2="30" stroke="#ffffff" stroke-width="1.5"/>
+    <line x1="168" y1="0" x2="168" y2="30" stroke="#ffffff" stroke-width="3"/>
+    <line x1="176" y1="0" x2="176" y2="30" stroke="#ffffff" stroke-width="2"/>
+    <text x="90" y="42" fill="#94a3b8" font-family="monospace" font-size="9" text-anchor="middle">224001729-TUD</text>
+  </g>
+</svg>

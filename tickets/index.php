@@ -95,9 +95,11 @@ $flash      = get_flash();
             </div>
 
             <div class="flex items-center gap-2.5 flex-wrap">
-                <a href="create.php" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
-                    <span>➕</span> Gửi Phiếu Mới
-                </a>
+                <?php if ($userRole !== 'agent'): ?>
+                    <a href="create.php" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
+                        <span>➕</span> Gửi Phiếu Mới
+                    </a>
+                <?php endif; ?>
                 <a href="../index.php" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition text-xs flex items-center gap-1.5">
                     <span>🏠</span> Trang Chủ
                 </a>
