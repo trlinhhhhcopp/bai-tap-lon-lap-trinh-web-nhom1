@@ -34,3 +34,4 @@ Truy cập lại hệ thống tại:
 
 ---
 *Hệ thống đã tích hợp cơ chế tự thích ứng tự động kết nối cả cổng `3306` lẫn `3307` và các mật khẩu phổ biến (`root`, `1234`, `123456`, `admin`,...).*
+

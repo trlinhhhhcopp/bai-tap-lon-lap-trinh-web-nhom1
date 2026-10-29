@@ -10,6 +10,22 @@ echo.
 echo [*] Dang chuyen vao thu muc du an...
 cd /d "%~dp0"
 
+set PHP_BIN=
+where php >nul 2>nul
+if %ERRORLEVEL% equ 0 (
+    set PHP_BIN=php
+) else if exist "C:\New folder\php\php.exe" (
+    set PHP_BIN="C:\New folder\php\php.exe"
+) else if exist "C:\xampp\php\php.exe" (
+    set PHP_BIN="C:\xampp\php\php.exe"
+) else (
+    echo [!] Khong tim thay chuong trinh PHP tren may cua ban!
+    echo [!] Vui long cai dat XAMPP hoac them PHP vao bien moi truong PATH.
+    pause
+    exit /b 1
+)
+
+echo [*] Su dung trinh bien dich PHP tai: %PHP_BIN%
 echo [*] Dang mo trinh duyet den trang chu he thong...
 start "" "http://localhost:8080"
 
@@ -19,7 +35,7 @@ echo [*] De tat may chu, ban chi can nhan: Ctrl + C (hoac dong cua so nay)
 echo =========================================================================
 echo.
 
-C:\xampp\php\php.exe -S localhost:8080 router.php
+%PHP_BIN% -S localhost:8080 router.php
 
 echo.
 echo [*] May chu da dung.
