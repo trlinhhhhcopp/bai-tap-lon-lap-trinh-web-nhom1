@@ -13,7 +13,7 @@
                     KHÔI PHỤC MẬT KHẨU
                 </h2>
                 <p class="text-xs text-slate-300">
-                    Gửi thư xác thực khôi phục mật khẩu vào Hòm thư nội bộ (@daihocthudo.edu.vn)
+                    Nhận liên kết đổi mật khẩu an toàn qua Email trường cấp (@daihocthudo.edu.vn)
                 </p>
             </div>
         </div>
@@ -54,34 +54,32 @@
     </div>
 
     <?php if (!empty($simulatedEmail)): ?>
-        <!-- THÔNG BÁO VÀ HƯỚNG DẪN MỞ HÒM THƯ NỘI BỘ (KHÔNG IN LỘ LINK ĐỔI MẬT KHẨU TẠI ĐÂY) -->
-        <div class="w-full max-w-md mt-6 bg-indigo-50/90 border border-indigo-200 rounded-3xl p-6 shadow-xl shadow-indigo-500/10 space-y-4">
+        <!-- THÔNG BÁO VÀ HƯỚNG DẪN ĐỔI MẬT KHẨU NHANH -->
+        <div class="w-full max-w-md mt-6 bg-amber-50/90 border-2 border-amber-300 rounded-3xl p-6 shadow-xl shadow-amber-500/10 space-y-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl shrink-0">
-                    📬
+                <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shrink-0">
+                    🔑
                 </div>
                 <div>
-                    <h3 class="text-sm font-black text-indigo-950">Đã gửi thư vào Hòm thư nội bộ!</h3>
-                    <p class="text-xs text-indigo-800">Email: <strong class="font-mono"><?= htmlspecialchars($simulatedEmail['email']) ?></strong></p>
+                    <h3 class="text-sm font-black text-amber-950">Mã Xác Thực Đặt Lại Mật Khẩu</h3>
+                    <p class="text-xs text-amber-800">Email: <strong class="font-mono"><?= htmlspecialchars($simulatedEmail['email']) ?></strong></p>
                 </div>
             </div>
 
-            <div class="bg-white/90 p-4 rounded-2xl text-xs text-slate-700 space-y-2.5 border border-indigo-100 leading-relaxed shadow-2xs">
-                <p class="font-bold text-slate-900">🔒 Bảo mật tài khoản học thuật:</p>
+            <div class="bg-white p-4 rounded-2xl text-xs text-slate-700 space-y-2.5 border border-amber-200 leading-relaxed shadow-2xs">
+                <p class="font-bold text-slate-900">Kính gửi bạn <?= htmlspecialchars($simulatedEmail['name']) ?>:</p>
                 <p class="text-slate-600">
-                    Hệ thống đã gửi thư xác thực từ hệ thống (<strong>nga469704@gmail.com</strong>) đến đúng Hòm thư điện tử nội bộ <strong><?= htmlspecialchars($simulatedEmail['email']) ?></strong>.
-                    Vì nguyên tắc bảo mật, liên kết khôi phục <strong>không hiển thị trực tiếp tại trang này</strong>.
+                    Hệ thống đã tạo liên kết đặt lại mật khẩu cho tài khoản sinh viên của bạn. Vui lòng bấm vào nút bên dưới để tiến hành đổi mật khẩu mới:
                 </p>
-                <div class="p-2.5 bg-indigo-50 text-indigo-900 rounded-xl text-[11px] border border-indigo-200">
-                    💡 Bạn vui lòng bấm nút bên dưới để mở Hòm thư nội bộ Webmail, mở thư mới nhận và bấm nút xác nhận đặt lại mật khẩu.
+                <div class="text-center py-1">
+                    <a href="<?= htmlspecialchars($simulatedEmail['link']) ?>" 
+                       class="inline-flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+                        <span>🔑 ĐẶT LẠI MẬT KHẨU NGAY ➔</span>
+                    </a>
                 </div>
-            </div>
-
-            <div class="text-center pt-1">
-                <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" 
-                   class="inline-flex items-center justify-center gap-2 w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition">
-                    <span>📬 MỞ HỘP THƯ GMAIL (MAIL.GOOGLE.COM ↗)</span>
-                </a>
+                <div class="p-2 bg-amber-50 text-amber-900 rounded-xl text-[11px] border border-amber-200 text-center">
+                    ⏱️ Liên kết có hiệu lực trong vòng 15 phút (đến <?= htmlspecialchars($simulatedEmail['expire_time']) ?>).
+                </div>
             </div>
         </div>
     <?php endif; ?>
