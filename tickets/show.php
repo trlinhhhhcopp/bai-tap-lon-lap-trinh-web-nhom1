@@ -65,25 +65,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
     }
 
-    if (!empty($message) || !empty($attachmentPath)) {
+    // Cho phép gửi nếu có nội dung tin nhắn, HOẶC có đính kèm ảnh, HOẶC có chọn chuyển trạng thái
+    if (!empty($message) || !empty($attachmentPath) || !empty($forceStatus)) {
         if (empty($message)) {
-            $message = "Đã gửi kèm 1 tệp hình ảnh minh chứng.";
+            if (!empty($attachmentPath)) {
+                $message = "Đã gửi kèm 1 tệp hình ảnh minh chứng.";
+            } elseif ($forceStatus === 'resolved') {
+                $message = "Kỹ thuật viên đã xử lý và cung cấp giải pháp khắc phục sự cố.";
+            } elseif ($forceStatus === 'closed') {
+                $message = "Kỹ thuật viên đã hoàn tất hỗ trợ và đóng phiếu thành công.";
+            } elseif ($forceStatus === 'waiting_requester') {
+                $message = "Kỹ thuật viên đang chờ phản hồi xác nhận từ người dùng.";
+            } elseif ($forceStatus === 'in_progress') {
+                $message = "Kỹ thuật viên đang tiếp tục tiến hành xử lý yêu cầu.";
+            } else {
+                $message = "Đã cập nhật trạng thái phiếu hỗ trợ.";
+            }
         }
 
         TicketRepository::addReply($id, $userId, $message, $isInternal, $forceStatus, $attachmentPath);
         
+        $statusLabels = [
+            'new'               => 'Mới tiếp nhận (new)',
+            'in_progress'       => 'Đang xử lý (in_progress)',
+            'waiting_requester' => 'Chờ người dùng kiểm tra (waiting)',
+            'resolved'          => 'Đã có giải pháp (resolved)',
+            'closed'            => 'Đã hoàn tất & Đóng phiếu (closed)',
+        ];
+        
         $notice = "Đã gửi phản hồi thành công!";
+        if ($forceStatus && isset($statusLabels[$forceStatus])) {
+            $notice .= " Trạng thái phiếu đã được cập nhật sang: <strong>{$statusLabels[$forceStatus]}</strong>.";
+        }
         if ($attachmentPath) {
             $notice .= " (Đã tải lên tệp ảnh đính kèm thành công)";
         }
         if ($isInternal) {
-            $notice = "Đã lưu 🔒 Ghi chú nội bộ thành công (Người gửi phiếu sẽ không nhìn thấy)!";
+            $notice .= " [🔒 Đã lưu làm Ghi chú nội bộ]";
         }
         set_flash('success', $notice);
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
     } else {
-        set_flash('error', "Vui lòng nhập nội dung trao đổi hoặc chọn tệp ảnh đính kèm!");
+        set_flash('error', "Vui lòng nhập nội dung trao đổi, chọn ảnh đính kèm hoặc chọn hành động trạng thái!");
     }
 }
 
@@ -179,7 +203,7 @@ $flash   = get_flash();
     <!-- FLASH MESSAGE -->
     <?php if ($flash): ?>
         <div class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'; ?>">
-            <?php echo htmlspecialchars($flash['message']); ?>
+            <?php echo strip_tags($flash['message'], '<strong><b><em><span>'); ?>
         </div>
     <?php endif; ?>
 
@@ -330,6 +354,7 @@ $flash   = get_flash();
                                 <option value="">Tự động thông minh theo State Machine</option>
                                 <option value="waiting_requester">Chuyển sang: Chờ người dùng kiểm tra (waiting)</option>
                                 <option value="resolved">Chuyển sang: Đã có giải pháp (resolved)</option>
+                                <option value="closed">Chuyển sang: Đã hoàn tất & Đóng phiếu (closed)</option>
                                 <option value="in_progress">Chuyển sang: Tiếp tục xử lý (in_progress)</option>
                             </select>
                         </div>

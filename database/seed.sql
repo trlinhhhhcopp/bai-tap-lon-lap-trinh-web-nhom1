@@ -1,4 +1,4 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- BÀI TẬP LỚN LẬP TRÌNH WEB - HỌC KỲ I
 -- TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI (TUD) - KHOA CÔNG NGHỆ THÔNG TIN
 -- CHỦ ĐỀ 9: HỆ THỐNG HELPDESK CNTT TRỰC TUYẾN (IT SUPPORT ONLINE)
@@ -94,23 +94,23 @@ INSERT INTO `users` (
 -- 2. Đội ngũ 5 Kỹ thuật viên (KTV) chuyên trách 5 nhóm dịch vụ
 (2, 'KTV001', 'KTV Nguyễn Văn An (Chuyên trách SSO)', 'ktv1@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ Dịch vụ Định danh & Xác thực', '0911000001', NULL, NULL, 'studying', 1, 5, 1, 1, 1, 'none', 0),
+ 'Tổ Dịch vụ Định danh & Xác thực', '0911000001', NULL, NULL, 'studying', 1, 15, 1, 1, 1, 'none', 0),
 
 (3, 'KTV002', 'KTV Trần Thị Bích (Chuyên trách Mail & M365)', 'ktv2@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ Hạ tầng Đám mây & Email', '0911000002', NULL, NULL, 'studying', 2, 5, 0, 1, 1, 'none', 0),
+ 'Tổ Hạ tầng Đám mây & Email', '0911000002', NULL, NULL, 'studying', 2, 15, 0, 1, 1, 'none', 0),
 
 (4, 'KTV003', 'KTV Lê Văn Cường (Chuyên trách Cổng QLĐT)', 'ktv3@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ Phần mềm & CSDL Đào tạo', '0911000003', NULL, NULL, 'studying', 3, 5, 1, 1, 1, 'none', 0),
+ 'Tổ Phần mềm & CSDL Đào tạo', '0911000003', NULL, NULL, 'studying', 3, 15, 1, 1, 1, 'none', 0),
 
 (5, 'KTV004', 'KTV Phạm Hoàng Dũng (Chuyên trách Canvas LMS)', 'ktv4@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ E-Learning & Lớp học số', '0911000004', NULL, NULL, 'studying', 4, 5, 1, 1, 1, 'none', 0),
+ 'Tổ E-Learning & Lớp học số', '0911000004', NULL, NULL, 'studying', 4, 15, 1, 1, 1, 'none', 0),
 
 (6, 'KTV005', 'KTV Vũ Thị Én (Chuyên trách Mạng & Wi-Fi)', 'ktv5@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'agent', 'staff', 
- 'Tổ Hạ tầng Mạng & Viễn thông', '0911000005', NULL, NULL, 'studying', 5, 5, 0, 1, 1, 'none', 0),
+ 'Tổ Hạ tầng Mạng & Viễn thông', '0911000005', NULL, NULL, 'studying', 5, 15, 0, 1, 1, 'none', 0),
 
 -- 3. 6 Giảng viên phụ trách 6 môn học trong kỳ (1 lớp học phần chỉ có 1 GV phụ trách)
 (7, 'GV001', 'TS. Nguyễn Văn Giảng', 'nguyenvangiang@daihocthudo.edu.vn', 

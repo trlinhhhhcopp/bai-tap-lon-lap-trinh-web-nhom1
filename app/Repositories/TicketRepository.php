@@ -233,6 +233,7 @@ class TicketRepository {
         if ($status === 'resolved') {
             $fields[] = 'resolved_at = IF(resolved_at IS NULL, NOW(), resolved_at)';
         } elseif ($status === 'closed') {
+            $fields[] = 'resolved_at = IF(resolved_at IS NULL, NOW(), resolved_at)';
             $fields[] = 'closed_at = IF(closed_at IS NULL, NOW(), closed_at)';
             $fields[] = 'closed_reason = :closed_reason';
             $params['closed_reason'] = $closedReason ?: 'completed';

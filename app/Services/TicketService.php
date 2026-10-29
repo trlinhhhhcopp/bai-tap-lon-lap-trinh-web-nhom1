@@ -25,8 +25,8 @@ class TicketService {
      * 
      * 1. Bước 1: Tìm KTV chuyên trách tương ứng với category_id đang trực (is_on_duty = 1)
      * 2. Bước 2: Kiểm tra số lượng phiếu đang xử lý của KTV chuyên trách đó (active_tickets_count)
-     *    - Nếu < max_capacity (mặc định 5): Phân công cho KTV chuyên trách này.
-     *    - Nếu >= max_capacity: KÍCH HOẠT CƠ CHẾ TRÀN TẢI (Overflow Dispatch)
+     *    - Nếu < max_capacity (mặc định 15 phiếu): Phân công cho KTV chuyên trách này.
+     *    - Nếu >= max_capacity (15 phiếu): KÍCH HOẠT CƠ CHẾ TRÀN TẢI (Overflow Dispatch)
      *      Tìm KTV khác đang trực (is_on_duty = 1) có số phiếu active ít nhất để phân công tạm.
      */
     public static function dispatchAgent(int $categoryId): array {
@@ -49,8 +49,11 @@ class TicketService {
         $stmt->execute([':cat_id' => $categoryId]);
         $primaryAgent = $stmt->fetch();
 
-        // Nếu có KTV chuyên trách và chưa vượt ngưỡng max_capacity (5 phiếu)
-        if ($primaryAgent && $primaryAgent['current_active_count'] < $primaryAgent['max_capacity']) {
+        // Ngưỡng kịch tải cấu hình 15 phiếu
+        $maxCap = !empty($primaryAgent['max_capacity']) ? (int)$primaryAgent['max_capacity'] : 15;
+
+        // Nếu có KTV chuyên trách và chưa vượt ngưỡng kịch tải (15 phiếu)
+        if ($primaryAgent && (int)$primaryAgent['current_active_count'] < $maxCap) {
             return [
                 'agent_id'     => (int)$primaryAgent['id'],
                 'agent_name'   => $primaryAgent['name'],
@@ -274,3 +277,4 @@ class TicketService {
         }
     }
 }
+

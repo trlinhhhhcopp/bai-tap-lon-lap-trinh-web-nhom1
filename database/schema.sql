@@ -107,7 +107,7 @@ CREATE TABLE `users` (
     
     -- Thuộc tính dành cho Kỹ thuật viên (KTV) phục vụ Phân công Chuyên môn & Tràn tải
     `specialty_category_id` INT UNSIGNED NULL, -- 1 đến 5 (CAT_SSO, CAT_MAIL,...)
-    `max_capacity` TINYINT UNSIGNED NOT NULL DEFAULT 5, -- Giới hạn phiếu xử lý tối đa
+    `max_capacity` TINYINT UNSIGNED NOT NULL DEFAULT 15, -- Giới hạn phiếu xử lý tối đa (ngưỡng kích hoạt tràn tải)
     `active_tickets_count` TINYINT UNSIGNED NOT NULL DEFAULT 0, -- Bộ đếm nguyên tử
     `is_on_duty` TINYINT(1) NOT NULL DEFAULT 1, -- Ca trực: 1 (Đang trực), 0 (Nghỉ ca)
     
