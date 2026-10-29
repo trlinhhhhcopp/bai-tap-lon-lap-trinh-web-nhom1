@@ -1,4 +1,12 @@
 <?php
+/**
+ * ==============================================================================
+ * BÀI 5: QUẢN LÝ DANH SÁCH PHIẾU HỖ TRỢ & BỘ LỌC TÌM KIẾM THEO CHUẨN ITIL v4
+ * Phân hệ: Core Architecture & Ticket Management
+ * Trưởng nhóm: PHẠM THỊ THANH NGÂN (MSSV: 224001736 - D24-CNTT1)
+ * ==============================================================================
+ */
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -8,22 +16,22 @@ if (empty($_SESSION['user'])) {
     exit;
 }
 
-$currentUser = $_SESSION['user'];
-$userRole    = $currentUser['role'];
-$userType    = $currentUser['user_type'] ?? 'student';
-$filterReqId = ($userRole === 'requester') ? (int)$currentUser['id'] : 0;
+$currentUser   = $_SESSION['user'];
+$userRole      = $currentUser['role'];
+$userType      = $currentUser['user_type'] ?? 'student';
+$filterReqId   = ($userRole === 'requester') ? (int)$currentUser['id'] : 0;
 $filterAgentId = ($userRole === 'agent') ? (int)$currentUser['id'] : 0;
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
-// 1. Tiếp nhận tham số tìm kiếm & lọc (Làm sạch đầu vào)
+// 1. Tiếp nhận tham số tìm kiếm & lọc an toàn
 $keyword    = trim($_GET['kw'] ?? '');
 $status     = trim($_GET['status'] ?? '');
 $categoryId = (int)($_GET['category_id'] ?? 0);
 
-// 2. Phân trang an toàn (Slide 11)
-$perPage    = 5; // Hiển thị 5 phiếu / trang
-$page       = max(1, (int)($_GET['page'] ?? 1)); // Ép kiểu số nguyên, tối thiểu là 1
+// 2. Phân trang an toàn (5 bản ghi / trang)
+$perPage    = 5;
+$page       = max(1, (int)($_GET['page'] ?? 1));
 
 $totalTickets = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId, $filterAgentId);
 $totalPages   = max(1, (int)ceil($totalTickets / $perPage));
@@ -32,9 +40,9 @@ if ($page > $totalPages && $totalTickets > 0) {
     $page = $totalPages;
 }
 
-$tickets = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId);
+$tickets    = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId);
 $categories = TicketRepository::getCategories();
-$flash = get_flash();
+$flash      = get_flash();
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -44,241 +52,273 @@ $flash = get_flash();
     <title>Danh Sách Phiếu Hỗ Trợ - Helpdesk ĐH Thủ Đô</title>
     <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
-<?php require_once __DIR__ . '/../includes/navbar.php'; ?>
-<div class="flex-1 p-4 md:p-6">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
 
+    <!-- NAVBAR CHÍNH -->
+    <?php require_once __DIR__ . '/../includes/navbar.php'; ?>
 
-<div class="max-w-7xl mx-auto space-y-6">
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-    <!-- HEADER & ĐIỀU HƯỚNG CHUYÊN NGHIỆP -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">
-                <?php 
-                if ($userRole === 'requester') {
-                    echo 'Danh Sách Phiếu Hỗ Trợ Của Bạn';
-                } elseif ($userRole === 'agent') {
-                    echo 'Nhiệm Vụ Kỹ Thuật Được Giao Cho Tôi';
-                } else {
-                    echo 'Quản Lý Phiếu Hỗ Trợ Sự Cố Toàn Trường';
-                }
-                ?>
-            </h1>
-            <p class="text-xs text-slate-500 mt-1">
-                <?php 
-                if ($userRole === 'requester') {
-                    echo 'Xem danh sách và tiến độ xử lý các phiếu sự cố kỹ thuật bạn đã gửi.';
-                } elseif ($userRole === 'agent') {
-                    echo 'Danh sách các sự cố được điều phối phân công cho KTV xử lý theo chuyên môn & SLA.';
-                } else {
-                    echo 'Danh sách và trạng thái xử lý sự cố toàn trường theo chuẩn ITIL v4.';
-                }
-                ?>
-            </p>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-2">
-            <a href="create.php" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition flex items-center gap-1.5">
-                <span>➕</span> Gửi Phiếu Sự Cố Mới
-            </a>
-        </div>
-    </div>
-
-    <!-- FLASH MESSAGE (SLIDE 2 & 8) -->
-    <?php if ($flash): ?>
-        <div class="p-4 rounded-xl text-xs font-semibold flex items-center justify-between <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'; ?>">
-            <div class="flex items-center gap-2">
-                <span><?php echo $flash['type'] === 'success' ? '✅' : '⚠️'; ?></span>
-                <span><?php echo htmlspecialchars($flash['message']); ?></span>
-            </div>
-            <span class="text-slate-400 text-[10px]">Tự động xóa sau khi xem</span>
-        </div>
-    <?php endif; ?>
-
-    <!-- THANH TÌM KIẾM & BỘ LỌC (SLIDE 6) -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-        <form method="GET" action="index.php" class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
-            <!-- Tìm kiếm theo từ khóa -->
-            <div class="md:col-span-5">
-                <label class="block font-semibold text-slate-600 mb-1">🔍 Tìm kiếm mã phiếu / tiêu đề:</label>
-                <input type="text" name="kw" value="<?php echo htmlspecialchars($keyword); ?>" placeholder="Ví dụ: HD-2026, Canvas, Wi-Fi..." 
-                       class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition" />
-            </div>
-
-            <!-- Lọc trạng thái -->
-            <div class="md:col-span-3">
-                <label class="block font-semibold text-slate-600 mb-1">Trạng thái phiếu:</label>
-                <select name="status" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
-                    <option value="">-- Tất cả trạng thái --</option>
-                    <option value="new" <?php echo $status === 'new' ? 'selected' : ''; ?>>Mới tiếp nhận (new)</option>
-                    <option value="in_progress" <?php echo $status === 'in_progress' ? 'selected' : ''; ?>>Đang xử lý (in_progress)</option>
-                    <option value="waiting_requester" <?php echo $status === 'waiting_requester' ? 'selected' : ''; ?>>Chờ người dùng (waiting)</option>
-                    <option value="resolved" <?php echo $status === 'resolved' ? 'selected' : ''; ?>>Đã giải quyết (resolved)</option>
-                    <option value="closed" <?php echo $status === 'closed' ? 'selected' : ''; ?>>Đã đóng (closed)</option>
-                </select>
-            </div>
-
-            <!-- Lọc danh mục -->
-            <div class="md:col-span-3">
-                <label class="block font-semibold text-slate-600 mb-1">Nhóm dịch vụ CNTT:</label>
-                <select name="category_id" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
-                    <option value="0">-- Tất cả danh mục --</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo $cat['id']; ?>" <?php echo $categoryId === (int)$cat['id'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($cat['name']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <!-- Nút Lọc -->
-            <div class="md:col-span-1 flex items-end">
-                <button type="submit" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm">
-                    Lọc
-                </button>
-            </div>
-        </form>
-    </div>
-
-    <!-- BẢNG DANH SÁCH PHIẾU (SLIDE 7 - LIST) -->
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-        <div class="p-4 border-b border-slate-100 flex justify-between items-center text-xs">
-            <span class="font-bold text-slate-700 uppercase tracking-wider">
-                Tìm thấy <strong><?php echo $totalTickets; ?></strong> phiếu hỗ trợ
-            </span>
-            <span class="text-slate-400">Trang <?php echo $page; ?> / <?php echo $totalPages; ?></span>
-        </div>
-
-        <?php if (empty($tickets)): ?>
-            <div class="p-8 text-center text-slate-500 text-xs">
-                <span class="text-3xl block mb-2">📭</span>
-                Không tìm thấy phiếu hỗ trợ nào phù hợp với bộ lọc hiện tại.
-            </div>
-        <?php else: ?>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
-                    <thead>
-                        <tr class="bg-slate-100/80 text-slate-700 font-bold border-b border-slate-200">
-                            <th class="p-3 w-32">Mã Vé</th>
-                            <th class="p-3">Tiêu Đề Sự Cố</th>
-                            <th class="p-3 w-40">Người Gửi (SV/GV)</th>
-                            <th class="p-3 w-36">Danh Mục</th>
-                            <th class="p-3 w-28 text-center">Mức Ưu Tiên</th>
-                            <th class="p-3 w-36">KTV Tiếp Nhận</th>
-                            <th class="p-3 w-28 text-center">Trạng Thái</th>
-                            <th class="p-3 w-32 text-center">Hành Động</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <?php foreach ($tickets as $t): ?>
-                            <?php
-                            ?> <!-- Màu trạng thái
-                            $statusBadge = match($t['status']) {
-                                'new'               => 'bg-blue-100 text-blue-800 border-blue-200',
-                                'in_progress'       => 'bg-amber-100 text-amber-800 border-amber-200',
-                                'waiting_requester' => 'bg-purple-100 text-purple-800 border-purple-200',
-                                'resolved'          => 'bg-emerald-100 text-emerald-800 border-emerald-200',
-                                'closed'            => 'bg-slate-100 text-slate-700 border-slate-200',
-                                default             => 'bg-slate-100 text-slate-700'
-                            };
-
-                            ?> <!-- Màu ưu tiên
-                            $prioBadge = match($t['priority_code']) {
-                                'URGENT' => 'bg-rose-100 text-rose-800 font-bold',
-                                'HIGH'   => 'bg-orange-100 text-orange-800 font-semibold',
-                                'MED'    => 'bg-blue-50 text-blue-700',
-                                default  => 'bg-slate-100 text-slate-600'
-                            };
-                            ?>
-                            <tr class="hover:bg-slate-50/80 transition">
-                                <td class="p-3 font-mono font-bold text-indigo-600">
-                                    <a href="show.php?id=<?php echo $t['id']; ?>" class="hover:underline">
-                                        <?php echo htmlspecialchars($t['ticket_code']); ?>
-                                    </a>
-                                </td>
-                                <td class="p-3">
-                                    <a href="show.php?id=<?php echo $t['id']; ?>" class="font-semibold text-slate-900 hover:text-indigo-600 line-clamp-1">
-                                        <?php echo htmlspecialchars($t['title']); ?>
-                                    </a>
-                                    <span class="text-slate-400 text-[11px] block mt-0.5">
-                                        Hệ thống: <?php echo htmlspecialchars($t['system_affected']); ?> • Hạn SLA: <?php echo htmlspecialchars($t['due_at']); ?>
-                                    </span>
-                                </td>
-                                <td class="p-3">
-                                    <span class="font-medium text-slate-900"><?php echo htmlspecialchars($t['requester_name']); ?></span>
-                                    <span class="text-slate-400 text-[11px] block font-mono"><?php echo htmlspecialchars($t['requester_code']); ?></span>
-                                </td>
-                                <td class="p-3 text-slate-600">
-                                    <?php echo htmlspecialchars($t['category_name']); ?>
-                                </td>
-                                <td class="p-3 text-center">
-                                    <span class="px-2 py-0.5 rounded text-[11px] <?php echo $prioBadge; ?>">
-                                        <?php echo htmlspecialchars($t['priority_name']); ?>
-                                    </span>
-                                </td>
-                                <td class="p-3">
-                                    <?php if ($t['agent_name']): ?>
-                                        <span class="font-semibold text-slate-800"><?php echo htmlspecialchars($t['agent_name']); ?></span>
-                                    <?php else: ?>
-                                        <span class="text-slate-400 italic">Chưa tiếp nhận</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="p-3 text-center">
-                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] border <?php echo $statusBadge; ?>">
-                                        <?php echo htmlspecialchars($t['status']); ?>
-                                    </span>
-                                </td>
-                                <td class="p-3 text-center space-x-1">
-                                    <a href="show.php?id=<?php echo $t['id']; ?>" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-[11px] font-semibold transition" title="Xem chi tiết">
-                                        Xem
-                                    </a>
-                                    <a href="edit.php?id=<?php echo $t['id']; ?>" class="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded text-[11px] font-semibold transition" title="Sửa phiếu">
-                                        Sửa
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
-
-        <!-- PHÂN TRANG (SLIDE 11: offset = (page - 1) * perPage) -->
-        <?php if ($totalPages > 1): ?>
-            <div class="p-4 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-                <span class="text-slate-500">
-                    Hiển thị trang <strong><?php echo $page; ?></strong> trên tổng số <strong><?php echo $totalPages; ?></strong> trang
-                </span>
-                <div class="flex items-center gap-1">
-                    <?php if ($page > 1): ?>
-                        <a href="?page=<?php echo $page - 1; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>" 
-                           class="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 transition">
-                            ← Trước
-                        </a>
-                    <?php endif; ?>
-
-                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="?page=<?php echo $i; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>" 
-                           class="px-3 py-1.5 rounded-lg border <?php echo $i === $page ? 'bg-indigo-600 text-white font-bold border-indigo-600' : 'border-slate-300 hover:bg-slate-100'; ?> transition">
-                            <?php echo $i; ?>
-                        </a>
-                    <?php endfor; ?>
-
-                    <?php if ($page < $totalPages): ?>
-                        <a href="?page=<?php echo $page + 1; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>" 
-                           class="px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 transition">
-                            Sau →
-                        </a>
-                    <?php endif; ?>
+        <!-- BANNER ĐẦU TRANG THEO THIẾT KẾ TRẦN THỤC LINH & CORE NHÓM 1 -->
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="space-y-1.5">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        🎫 QUẢN TRỊ & TRIAGE SỰ CỐ
+                    </span>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        MÃ ĐỊNH DANH THEO NGÀY: HD-YYYY-DDMM-xxxxxx
+                    </span>
                 </div>
+                <h1 class="text-2xl font-black text-white tracking-tight">
+                    <?php 
+                    if ($userRole === 'requester') {
+                        echo 'DANH SÁCH PHIẾU HỖ TRỢ CỦA BẠN';
+                    } elseif ($userRole === 'agent') {
+                        echo 'NHIỆM VỤ ĐIỀU PHỐI KỸ THUẬT CỦA TÔI';
+                    } else {
+                        echo 'TRUNG TÂM TRIAGE & PHÂN PHỐI SỰ CỐ TOÀN TRƯỜNG';
+                    }
+                    ?>
+                </h1>
+                <p class="text-xs text-indigo-200/80 max-w-2xl leading-relaxed">
+                    <?php 
+                    if ($userRole === 'requester') {
+                        echo 'Theo dõi trạng thái, tiến độ giải quyết và trao đổi giải pháp trực tiếp với Kỹ thuật viên phụ trách.';
+                    } elseif ($userRole === 'agent') {
+                        echo 'Hàng đợi nhiệm vụ được phân công theo chuyên môn & ngưỡng điều phối tải trọng tối đa 15 phiếu.';
+                    } else {
+                        echo 'Theo dõi tiếp nhận đa kênh, quy chuẩn ITIL v4, điều phối KTV chuyên trách và nâng mức ưu tiên khẩn cấp.';
+                    }
+                    ?>
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2.5 flex-wrap">
+                <a href="create.php" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
+                    <span>➕</span> Gửi Phiếu Mới
+                </a>
+                <a href="../index.php" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition text-xs flex items-center gap-1.5">
+                    <span>🏠</span> Trang Chủ
+                </a>
+            </div>
+        </div>
+
+        <!-- THÔNG BÁO FLASH MESSAGE -->
+        <?php if ($flash): ?>
+            <div class="p-3.5 rounded-2xl text-xs font-semibold flex items-center justify-between <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'; ?>">
+                <div class="flex items-center gap-2">
+                    <span><?php echo $flash['type'] === 'success' ? '✅' : '⚠️'; ?></span>
+                    <span><?php echo htmlspecialchars($flash['message']); ?></span>
+                </div>
+                <span class="text-slate-400 text-[10px]">Đã cập nhật dữ liệu</span>
             </div>
         <?php endif; ?>
-    </div>
 
-</div>
-</div>
-<?php require_once __DIR__ . '/../includes/footer.php'; ?>
+        <!-- KHUNG BỘ LỌC TÌM KIẾM ĐỒNG NHẤT VỚI BÀI 4 TRẦN THỤC LINH -->
+        <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
+            <div class="flex items-center justify-between text-xs border-b border-slate-100 pb-2.5">
+                <span class="font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>🔍</span> Bộ Lọc & Tìm Kiếm Phiếu Sự Cố (WHERE & LIKE PDO)
+                </span>
+                <span class="text-slate-400 text-[11px]">Tìm thấy: <strong class="text-indigo-600"><?php echo $totalTickets; ?></strong> phiếu</span>
+            </div>
+
+            <form method="GET" action="index.php" class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
+                <!-- Từ khóa -->
+                <div class="md:col-span-5">
+                    <label class="block font-bold text-slate-600 mb-1">Mã phiếu hoặc tiêu đề sự cố:</label>
+                    <input type="text" name="kw" value="<?php echo htmlspecialchars($keyword); ?>" placeholder="Ví dụ: HD-2026-2910, L0H004, Canvas, Wi-Fi..." 
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                </div>
+
+                <!-- Lọc trạng thái -->
+                <div class="md:col-span-3">
+                    <label class="block font-bold text-slate-600 mb-1">Trạng thái phiếu:</label>
+                    <select name="status" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold text-slate-700">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="new" <?php echo $status === 'new' ? 'selected' : ''; ?>>1. Mới tiếp nhận (new)</option>
+                        <option value="in_progress" <?php echo $status === 'in_progress' ? 'selected' : ''; ?>>2. Đang xử lý (in_progress)</option>
+                        <option value="waiting_requester" <?php echo $status === 'waiting_requester' ? 'selected' : ''; ?>>3. Chờ phản hồi (waiting)</option>
+                        <option value="resolved" <?php echo $status === 'resolved' ? 'selected' : ''; ?>>4. Đã giải quyết (resolved)</option>
+                        <option value="closed" <?php echo $status === 'closed' ? 'selected' : ''; ?>>5. Đã đóng hoàn tất (closed)</option>
+                    </select>
+                </div>
+
+                <!-- Lọc chuyên mục -->
+                <div class="md:col-span-3">
+                    <label class="block font-bold text-slate-600 mb-1">Danh mục dịch vụ:</label>
+                    <select name="category_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold text-slate-700">
+                        <option value="0">-- Tất cả danh mục --</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo $cat['id']; ?>" <?php echo $categoryId === (int)$cat['id'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($cat['name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <!-- Nút bấm -->
+                <div class="md:col-span-1 flex items-end">
+                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1">
+                        <span>⚡</span> Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- BẢNG DANH SÁCH PHIẾU CHÍNH XÁC THEO CHUẨN TRẦN THỤC LINH & CORE ARCHITECTURE -->
+        <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-3">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center text-xs">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>📋</span> BẢNG QUẢN LÝ DỮ LIỆU SỰ CỐ
+                    </h2>
+                    <p class="text-[11.5px] text-slate-500 mt-0.5">Dữ liệu kết nối đồng nhất với CSDL <code>helpdesk_thudo</code>.</p>
+                </div>
+                <span class="text-slate-500 font-medium">Trang <strong><?php echo $page; ?></strong> / <strong><?php echo $totalPages; ?></strong></span>
+            </div>
+
+            <?php if (empty($tickets)): ?>
+                <div class="p-12 text-center text-slate-400 text-xs space-y-2">
+                    <span class="text-4xl block">📭</span>
+                    <p class="font-bold text-slate-600">Không tìm thấy phiếu hỗ trợ nào phù hợp với bộ lọc hiện tại.</p>
+                    <p class="text-slate-400">Vui lòng thử lại với từ khóa khác hoặc bấm nút "Tất cả trạng thái".</p>
+                </div>
+            <?php else: ?>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
+                                <th class="py-3.5 px-4">Mã Vé</th>
+                                <th class="py-3.5 px-4">Tiêu Đề Sự Cố</th>
+                                <th class="py-3.5 px-4">Người Gửi (SV/GV)</th>
+                                <th class="py-3.5 px-4">Danh Mục</th>
+                                <th class="py-3.5 px-4 text-center">Mức Ưu Tiên</th>
+                                <th class="py-3.5 px-4">KTV Tiếp Nhận</th>
+                                <th class="py-3.5 px-4 text-center">Trạng Thái</th>
+                                <th class="py-3.5 px-4 text-center">Hành Động</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <?php foreach ($tickets as $t): ?>
+                                <?php
+                                $statusBadge = match($t['status']) {
+                                    'new'               => 'bg-blue-50 text-blue-700 border-blue-200',
+                                    'in_progress'       => 'bg-amber-50 text-amber-700 border-amber-200',
+                                    'waiting_requester' => 'bg-purple-50 text-purple-700 border-purple-200',
+                                    'resolved'          => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                    'closed'            => 'bg-slate-100 text-slate-700 border-slate-300',
+                                    default             => 'bg-slate-100 text-slate-600 border-slate-200'
+                                };
+                                $statusLabel = match($t['status']) {
+                                    'new'               => 'Mới tiếp nhận',
+                                    'in_progress'       => 'Đang xử lý',
+                                    'waiting_requester' => 'Chờ người dùng',
+                                    'resolved'          => 'Đã có giải pháp',
+                                    'closed'            => 'Đã đóng hoàn tất',
+                                    default             => $t['status']
+                                };
+                                $prioBadge = match($t['priority_code']) {
+                                    'URGENT' => 'bg-rose-50 text-rose-700 border-rose-200 font-bold',
+                                    'HIGH'   => 'bg-amber-50 text-amber-800 border-amber-200 font-bold',
+                                    'MED'    => 'bg-blue-50 text-blue-700 border-blue-200',
+                                    'LOW'    => 'bg-slate-50 text-slate-700 border-slate-200',
+                                    default  => 'bg-slate-50 text-slate-700 border-slate-200'
+                                };
+                                ?>
+                                <tr class="hover:bg-slate-50/80 transition">
+                                    <td class="py-3.5 px-4 font-mono font-bold text-indigo-600">
+                                        <a href="show.php?id=<?php echo $t['id']; ?>" class="hover:underline">
+                                            <?php echo htmlspecialchars($t['ticket_code']); ?>
+                                        </a>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <a href="show.php?id=<?php echo $t['id']; ?>" class="font-semibold text-slate-900 hover:text-indigo-600 transition block max-w-sm truncate">
+                                            <?php echo htmlspecialchars($t['title']); ?>
+                                        </a>
+                                        <span class="text-slate-400 text-[11px] block mt-0.5">
+                                            Hệ thống: <strong class="text-slate-600"><?php echo htmlspecialchars($t['system_affected']); ?></strong> • Hạn: <span class="font-mono text-slate-500"><?php echo htmlspecialchars($t['due_at']); ?></span>
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="font-bold text-slate-800 block"><?php echo htmlspecialchars($t['requester_name']); ?></span>
+                                        <span class="text-slate-400 text-[10.5px] font-mono block"><?php echo htmlspecialchars($t['requester_code']); ?></span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-slate-600">
+                                        <?php echo htmlspecialchars($t['category_name']); ?>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-center">
+                                        <span class="px-2.5 py-0.5 rounded text-[10.5px] font-bold border <?php echo $prioBadge; ?>">
+                                            ● <?php echo htmlspecialchars($t['priority_name']); ?>
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <?php if ($t['agent_name']): ?>
+                                            <span class="font-semibold text-slate-800 block"><?php echo htmlspecialchars($t['agent_name']); ?></span>
+                                        <?php else: ?>
+                                            <span class="text-amber-600 italic block text-[11px]">Đang phân công...</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-center">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border <?php echo $statusBadge; ?>">
+                                            ● <?php echo $statusLabel; ?>
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-center space-x-1 whitespace-nowrap">
+                                        <a href="show.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition inline-block">
+                                            Chi Tiết →
+                                        </a>
+                                        <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                                            <a href="edit.php?id=<?php echo $t['id']; ?>" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-medium transition inline-block">
+                                                Sửa
+                                            </a>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- PHÂN TRANG CHUẨN SLIDE 11 -->
+                <?php if ($totalPages > 1): ?>
+                    <div class="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs bg-slate-50/50">
+                        <span class="text-slate-500">
+                            Hiển thị trang <strong><?php echo $page; ?></strong> trên tổng số <strong><?php echo $totalPages; ?></strong> trang
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            <?php if ($page > 1): ?>
+                                <a href="?page=<?php echo $page - 1; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>" 
+                                   class="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 transition text-slate-700 font-semibold shadow-2xs">
+                                    ← Trước
+                                </a>
+                            <?php endif; ?>
+
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <a href="?page=<?php echo $i; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>" 
+                                   class="px-3.5 py-1.5 rounded-xl border font-bold transition <?php echo $i === $page ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-700'; ?>">
+                                    <?php echo $i; ?>
+                                </a>
+                            <?php endfor; ?>
+
+                            <?php if ($page < $totalPages): ?>
+                                <a href="?page=<?php echo $page + 1; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>" 
+                                   class="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 transition text-slate-700 font-semibold shadow-2xs">
+                                    Sau →
+                                </a>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+            <?php endif; ?>
+        </div>
+
+    </main>
+
+    <!-- FOOTER CHUẨN HÓA TOÀN TRƯỜNG -->
+    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
+
 </body>
 </html>
-

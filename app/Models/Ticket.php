@@ -59,40 +59,37 @@ class Ticket {
         $pdo = Database::getConnection();
         $year = date('Y');
         $dayMonth = date('dm'); // Ngày (2 số) + Tháng (2 số), ví dụ ngày 29/10 => '2910'
-
-        // Bảng ký tự chữ hoa rõ ràng, không gây nhầm lẫn thị giác (bỏ O, 0, I, 1)
         $charList = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 
-        // Nếu có tên người dùng, lấy chữ cái đầu đại diện (ví dụ: Linh -> L, Ngân -> N)
-        $userChar = null;
-        if (!empty($userName)) {
-            $words = preg_split('/\s+/u', trim($userName));
-            if (!empty($words)) {
-                $lastWord = end($words);
-                $first = mb_strtoupper(mb_substr($lastWord, 0, 1, 'UTF-8'), 'UTF-8');
-                $firstAscii = @iconv('UTF-8', 'ASCII//TRANSLIT', $first);
-                $cleanChar = preg_replace('/[^A-Z]/', '', strtoupper($firstAscii ?: $first));
-                if (!empty($cleanChar) && strpos($charList, $cleanChar[0]) !== false) {
-                    $userChar = $cleanChar[0];
-                }
-            }
-        }
+        $maxId = (int)$pdo->query("SELECT MAX(id) FROM tickets")->fetchColumn();
+        $seq = $maxId + 1;
+        $numStr = str_pad((string)($seq % 10000), 4, '0', STR_PAD_LEFT);
+        $digits = str_split($numStr);
 
         do {
-            // Định dạng bảo mật cao: HD-YYYY-DDMM-xxxBxxd (Ví dụ: HD-2026-2910-842B19D)
-            // 1. xxx: 3 số ngẫu nhiên
-            $xxx = str_pad((string)random_int(100, 999), 3, '0', STR_PAD_LEFT);
-            // 2. B: Chữ cái thứ 1 (ưu tiên chữ cái tên người dùng hoặc chữ cái ngẫu nhiên)
-            $charB = $userChar ?? $charList[random_int(0, strlen($charList) - 1)];
-            // 3. xx: 2 số ngẫu nhiên
-            $xx = str_pad((string)random_int(10, 99), 2, '0', STR_PAD_LEFT);
-            // 4. d: Chữ cái thứ 2 ngẫu nhiên
-            $charD = $charList[random_int(0, strlen($charList) - 1)];
+            $letters = [
+                $charList[random_int(0, strlen($charList) - 1)],
+                $charList[random_int(0, strlen($charList) - 1)]
+            ];
 
-            $suffix = "{$xxx}{$charB}{$xx}{$charD}";
+            $positions = [0, 1, 2, 3, 4, 5];
+            shuffle($positions);
+            $letterPos = array_slice($positions, 0, 2);
+            sort($letterPos);
+
+            $suffixArr = [];
+            $dIdx = 0;
+            $lIdx = 0;
+            for ($i = 0; $i < 6; $i++) {
+                if (in_array($i, $letterPos, true)) {
+                    $suffixArr[] = $letters[$lIdx++];
+                } else {
+                    $suffixArr[] = $digits[$dIdx++];
+                }
+            }
+            $suffix = implode('', $suffixArr);
             $code = "{$prefix}-{$year}-{$dayMonth}-{$suffix}";
 
-            // Kiểm tra trùng lặp trong CSDL để đảm bảo độc nhất 100% không trùng với bất kỳ ai
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM tickets WHERE ticket_code = :code");
             $stmt->execute([':code' => $code]);
             $exists = (int)$stmt->fetchColumn() > 0;

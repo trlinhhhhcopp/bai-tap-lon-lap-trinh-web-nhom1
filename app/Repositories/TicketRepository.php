@@ -44,6 +44,14 @@ class TicketRepository {
         if ($categoryId > 0) {
             $conditions[] = "t.category_id = :cat_id";
             $params['cat_id'] = $categoryId;
+            if ($requesterId > 0) {
+                $conditions[] = "t.requester_id = :req_id";
+                $params['req_id'] = $requesterId;
+            }
+            if ($assignedTo > 0) {
+                $conditions[] = "t.assigned_to = :assigned_to";
+                $params['assigned_to'] = $assignedTo;
+            }
         }
         if ($requesterId > 0) {
             $conditions[] = "t.requester_id = :req_id";
@@ -104,6 +112,14 @@ class TicketRepository {
         if ($categoryId > 0) {
             $conditions[] = "category_id = :cat_id";
             $params['cat_id'] = $categoryId;
+            if ($requesterId > 0) {
+                $conditions[] = "t.requester_id = :req_id";
+                $params['req_id'] = $requesterId;
+            }
+            if ($assignedTo > 0) {
+                $conditions[] = "t.assigned_to = :assigned_to";
+                $params['assigned_to'] = $assignedTo;
+            }
         }
         if ($requesterId > 0) {
             $conditions[] = "requester_id = :req_id";
@@ -154,11 +170,53 @@ class TicketRepository {
      * Thêm mới một phiếu hỗ trợ (Slide 8 - Demo INSERT)
      * Sinh mã ticket_code tự động dạng HD-2026-xxxxx
      */
+        /**
+     * Sinh mã phiếu chuẩn hóa theo ngày: HD - YYYY - DDMM - xxxxxx
+     * Đuôi 6 ký tự gồm 4 chữ số thứ tự và 2 chữ cái ngẫu nhiên đan xen (Ví dụ: HD-2026-2910-L0H004)
+     */
+    public static function generateTicketCode(int $seq = 0, ?string $date = null): string {
+        $db = db();
+        if ($seq <= 0) {
+            $maxId = (int)$db->query("SELECT MAX(id) FROM tickets")->fetchColumn();
+            $seq = $maxId + 1;
+        }
+        $ts = $date ? strtotime($date) : time();
+        $year = date('Y', $ts);
+        $dayMonth = date('dm', $ts); // e.g. 2910
+
+        // 4 chữ số thứ tự (ví dụ: 0004)
+        $numStr = str_pad((string)($seq % 10000), 4, '0', STR_PAD_LEFT);
+        $digits = str_split($numStr);
+
+        $letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $c1 = $letters[random_int(0, strlen($letters) - 1)];
+        $c2 = $letters[random_int(0, strlen($letters) - 1)];
+
+        // Chọn 2 vị trí ngẫu nhiên trong 6 vị trí (0..5) để đặt 2 chữ cái
+        $positions = [0, 1, 2, 3, 4, 5];
+        shuffle($positions);
+        $pos = array_slice($positions, 0, 2);
+        sort($pos);
+
+        $chars = array_fill(0, 6, '');
+        $chars[$pos[0]] = $c1;
+        $chars[$pos[1]] = $c2;
+
+        $dIdx = 0;
+        for ($i = 0; $i < 6; $i++) {
+            if ($chars[$i] === '') {
+                $chars[$i] = $digits[$dIdx++];
+            }
+        }
+
+        $suffix = implode('', $chars);
+        return "HD-{$year}-{$dayMonth}-{$suffix}";
+    }
     public static function create(array $data): int {
         $db = db();
 
         // Tự sinh mã phiếu ngẫu nhiên HD-2026-xxxxx
-        $ticketCode = 'HD-2026-' . str_pad((string)mt_rand(100, 99999), 5, '0', STR_PAD_LEFT);
+        $ticketCode = !empty($data['ticket_code']) ? $data['ticket_code'] : self::generateTicketCode();
 
         // Lấy SLA của danh mục để tính hạn deadline tự động
         $catStmt = $db->prepare("SELECT sla_hours FROM categories WHERE id = :id");

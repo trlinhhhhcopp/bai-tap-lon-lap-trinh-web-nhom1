@@ -153,8 +153,9 @@ class TicketService {
         // 2. Tính toán mốc thời gian SLA
         $sla = self::calculateSla($categoryId, $priorityId);
 
-        // 3. Tự sinh mã ticket_code HD-2026-xxxxx
-        $ticketCode = 'HD-2026-' . str_pad((string)mt_rand(100, 99999), 5, '0', STR_PAD_LEFT);
+        // 3. Tự sinh mã ticket_code dạng HD-YYYY-DDMM-xxxxxx (chuẩn hóa ITIL mới theo ngày)
+        require_once __DIR__ . '/../Repositories/TicketRepository.php';
+        $ticketCode = !empty($data['ticket_code']) ? $data['ticket_code'] : \TicketRepository::generateTicketCode();
 
         // 4. Lưu vào CSDL trong một Transaction
         $pdo->beginTransaction();

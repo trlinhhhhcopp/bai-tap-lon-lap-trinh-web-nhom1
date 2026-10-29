@@ -8,7 +8,7 @@
 
     <div style="padding: 28px;">
         <form method="GET" action="<?= $appBase ?>public/index.php/guest/lookup" style="display: flex; gap: 10px; margin-bottom: 24px;">
-            <input type="text" name="code" value="<?= htmlspecialchars($code) ?>" required placeholder="Nhập mã phiếu (VD: HD-2026-2910-842B19D)" style="flex:1; padding:12px 16px; border:1.5px solid var(--border-color); border-radius:8px; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
+            <input type="text" name="code" value="<?= htmlspecialchars($code) ?>" required placeholder="Nhập mã phiếu (VD: HD-2026-2910-L0H004)" style="flex:1; padding:12px 16px; border:1.5px solid var(--border-color); border-radius:8px; font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; outline:none; transition:border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
             <button type="submit" style="padding:12px 24px; background:var(--primary); color:#fff; font-weight:700; font-size:14px; border:none; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.2s;">🔍 Tra Cứu Ngay</button>
         </form>
 
