@@ -32,3 +32,4 @@ return [
     'from_name'  => 'Trung tâm CNTT - Trường ĐH Thủ Đô Hà Nội',
     'reply_to'   => 'helpdesk@daihocthudo.edu.vn',
 ];
+

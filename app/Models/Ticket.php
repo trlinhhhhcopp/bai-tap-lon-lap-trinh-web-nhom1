@@ -121,7 +121,6 @@ class Ticket {
         $res = $stmt->fetch();
         return $res ?: null;
     }
-<<<<<<< HEAD
 
     public static function findByGuestCodeAndPin(string $code, ?string $pin = null): ?array {
         return self::findByTicketCode($code);
@@ -133,9 +132,6 @@ class Ticket {
         $stmt = $pdo->prepare($sql);
         return $stmt->execute([':id' => $id]);
     }
-}
-=======
->>>>>>> origin/main
 
     /**
      * Cập nhật trạng thái phiếu hỗ trợ theo Vòng đời 5 bước (State Machine)
