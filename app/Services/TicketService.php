@@ -222,7 +222,7 @@ class TicketService {
 
     /**
      * Lấy hàng đợi phiếu của KTV được sắp xếp theo hạn SLA (due_at ASC)
-     * Ưu tiên phiếu sắp quá hạn xử lý trước
+     * Hỗ trợ 5 nhóm trạng thái (Tất cả, Mới, Đang xử lý, Chờ phản hồi, Đã giải quyết & Đóng)
      */
     public static function getAgentQueue(int $agentId, string $statusFilter = ''): array {
         $pdo = Database::getConnection();
@@ -238,22 +238,51 @@ class TicketService {
                 JOIN priorities p ON t.priority_id = p.id
                 WHERE t.assigned_to = :agent_id";
 
-        if (!empty($statusFilter)) {
-            $sql .= " AND t.status = :status";
-        } else {
-            $sql .= " AND t.status IN ('new', 'in_progress', 'waiting_requester')";
-        }
+        $params = [':agent_id' => $agentId];
 
-        // SẮP XẾP QUAN TRỌNG: due_at ASC (Phiếu sắp quá hạn SLA đứng đầu)
-        $sql .= " ORDER BY t.due_at ASC";
+        if ($statusFilter === 'all') {
+            $sql .= " ORDER BY t.id DESC";
+        } elseif ($statusFilter === 'done' || $statusFilter === 'resolved_closed') {
+            $sql .= " AND t.status IN ('resolved', 'closed') ORDER BY t.id DESC";
+        } elseif (!empty($statusFilter)) {
+            $sql .= " AND t.status = :status ORDER BY t.due_at ASC";
+            $params[':status'] = $statusFilter;
+        } else {
+            // Mặc định: Hàng đợi đang hoạt động
+            $sql .= " AND t.status IN ('new', 'in_progress', 'waiting_requester') ORDER BY t.due_at ASC";
+        }
 
         $stmt = $pdo->prepare($sql);
-        $params = [':agent_id' => $agentId];
-        if (!empty($statusFilter)) {
-            $params[':status'] = $statusFilter;
-        }
         $stmt->execute($params);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Đếm số lượng phiếu theo 5 mục trạng thái cho bàn làm việc KTV
+     */
+    public static function getAgentQueueCounts(int $agentId): array {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("
+            SELECT 
+                COUNT(*) AS total_all,
+                SUM(CASE WHEN status = 'new' THEN 1 ELSE 0 END) AS total_new,
+                SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) AS total_in_progress,
+                SUM(CASE WHEN status = 'waiting_requester' THEN 1 ELSE 0 END) AS total_waiting,
+                SUM(CASE WHEN status IN ('resolved', 'closed') THEN 1 ELSE 0 END) AS total_done,
+                SUM(CASE WHEN status IN ('new', 'in_progress', 'waiting_requester') THEN 1 ELSE 0 END) AS total_active
+            FROM tickets 
+            WHERE assigned_to = :agent_id
+        ");
+        $stmt->execute([':agent_id' => $agentId]);
+        $row = $stmt->fetch();
+        return [
+            'all'         => (int)($row['total_all'] ?? 0),
+            'new'         => (int)($row['total_new'] ?? 0),
+            'in_progress' => (int)($row['total_in_progress'] ?? 0),
+            'waiting'     => (int)($row['total_waiting'] ?? 0),
+            'done'        => (int)($row['total_done'] ?? 0),
+            'active'      => (int)($row['total_active'] ?? 0),
+        ];
     }
 
     /**

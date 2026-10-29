@@ -12,6 +12,7 @@ $currentUser = $_SESSION['user'];
 $userRole    = $currentUser['role'];
 $userType    = $currentUser['user_type'] ?? 'student';
 $filterReqId = ($userRole === 'requester') ? (int)$currentUser['id'] : 0;
+$filterAgentId = ($userRole === 'agent') ? (int)$currentUser['id'] : 0;
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
@@ -24,14 +25,14 @@ $categoryId = (int)($_GET['category_id'] ?? 0);
 $perPage    = 5; // Hiển thị 5 phiếu / trang
 $page       = max(1, (int)($_GET['page'] ?? 1)); // Ép kiểu số nguyên, tối thiểu là 1
 
-$totalTickets = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId);
+$totalTickets = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId, $filterAgentId);
 $totalPages   = max(1, (int)ceil($totalTickets / $perPage));
 
 if ($page > $totalPages && $totalTickets > 0) {
     $page = $totalPages;
 }
 
-$tickets = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId);
+$tickets = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId);
 $categories = TicketRepository::getCategories();
 $flash = get_flash();
 ?>
@@ -54,12 +55,26 @@ $flash = get_flash();
     <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-black text-slate-900 tracking-tight">
-                <?php echo ($userRole === 'requester') ? 'Danh Sách Phiếu Hỗ Trợ Của Bạn' : 'Quản Lý Phiếu Hỗ Trợ Sự Cố'; ?>
+                <?php 
+                if ($userRole === 'requester') {
+                    echo 'Danh Sách Phiếu Hỗ Trợ Của Bạn';
+                } elseif ($userRole === 'agent') {
+                    echo 'Nhiệm Vụ Kỹ Thuật Được Giao Cho Tôi';
+                } else {
+                    echo 'Quản Lý Phiếu Hỗ Trợ Sự Cố Toàn Trường';
+                }
+                ?>
             </h1>
             <p class="text-xs text-slate-500 mt-1">
-                <?php echo ($userRole === 'requester') 
-                    ? 'Xem danh sách và tiến độ xử lý các phiếu sự cố kỹ thuật bạn đã gửi.' 
-                    : 'Danh sách và trạng thái xử lý sự cố toàn trường theo chuẩn ITIL v4.'; ?>
+                <?php 
+                if ($userRole === 'requester') {
+                    echo 'Xem danh sách và tiến độ xử lý các phiếu sự cố kỹ thuật bạn đã gửi.';
+                } elseif ($userRole === 'agent') {
+                    echo 'Danh sách các sự cố được điều phối phân công cho KTV xử lý theo chuyên môn & SLA.';
+                } else {
+                    echo 'Danh sách và trạng thái xử lý sự cố toàn trường theo chuẩn ITIL v4.';
+                }
+                ?>
             </p>
         </div>
 
@@ -158,7 +173,7 @@ $flash = get_flash();
                     <tbody class="divide-y divide-slate-100">
                         <?php foreach ($tickets as $t): ?>
                             <?php
-                            // Màu trạng thái
+                            ?> <!-- Màu trạng thái
                             $statusBadge = match($t['status']) {
                                 'new'               => 'bg-blue-100 text-blue-800 border-blue-200',
                                 'in_progress'       => 'bg-amber-100 text-amber-800 border-amber-200',
@@ -168,7 +183,7 @@ $flash = get_flash();
                                 default             => 'bg-slate-100 text-slate-700'
                             };
 
-                            // Màu ưu tiên
+                            ?> <!-- Màu ưu tiên
                             $prioBadge = match($t['priority_code']) {
                                 'URGENT' => 'bg-rose-100 text-rose-800 font-bold',
                                 'HIGH'   => 'bg-orange-100 text-orange-800 font-semibold',

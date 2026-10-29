@@ -13,7 +13,10 @@ class RatingController
     {
         $keyword   = trim($_GET['q'] ?? '');
         $score     = isset($_GET['score']) && $_GET['score'] !== '' ? (int)$_GET['score'] : null;
-        $studentId = isset($_GET['student_id']) && $_GET['student_id'] !== '' ? (int)$_GET['student_id'] : null;
+        $userRole = $_SESSION['user']['role'] ?? '';
+        $userType = $_SESSION['user']['user_type'] ?? '';
+        $isStudent = ($userRole === 'requester' || $userType === 'student');
+        $studentId = $isStudent ? (int)$_SESSION['user']['id'] : (isset($_GET['student_id']) && $_GET['student_id'] !== '' ? (int)$_GET['student_id'] : null);
         $page      = max(1, (int)($_GET['page'] ?? 1));
 
         $total      = Rating::count($keyword, $score, $studentId);
@@ -33,8 +36,15 @@ class RatingController
     {
         $errors = [];
         $old = ['ticket_id' => '', 'user_id' => '', 'score' => 5, 'comment' => ''];
-        $tickets  = Rating::getAvailableTickets();
-        $students = Rating::getAllStudents();
+        $userRole = $_SESSION['user']['role'] ?? '';
+        $userType = $_SESSION['user']['user_type'] ?? '';
+        $isStudent = ($userRole === 'requester' || $userType === 'student');
+        $myId = $isStudent ? (int)$_SESSION['user']['id'] : null;
+        if ($isStudent) {
+            $old['user_id'] = $myId;
+        }
+        $tickets  = Rating::getAvailableTickets($myId);
+        $students = $isStudent ? [$_SESSION['user']] : Rating::getAllStudents();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $old    = $this->sanitize($_POST);
@@ -69,8 +79,15 @@ class RatingController
 
         $errors = [];
         $old    = $rating;
-        $tickets  = Rating::getAvailableTickets();
-        $students = Rating::getAllStudents();
+        $userRole = $_SESSION['user']['role'] ?? '';
+        $userType = $_SESSION['user']['user_type'] ?? '';
+        $isStudent = ($userRole === 'requester' || $userType === 'student');
+        $myId = $isStudent ? (int)$_SESSION['user']['id'] : null;
+        if ($isStudent) {
+            $old['user_id'] = $myId;
+        }
+        $tickets  = Rating::getAvailableTickets($myId);
+        $students = $isStudent ? [$_SESSION['user']] : Rating::getAllStudents();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $old    = $this->sanitize($_POST);

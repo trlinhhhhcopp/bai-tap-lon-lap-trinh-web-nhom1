@@ -129,15 +129,22 @@ class Rating
         return $stmt->execute(['id' => $id]);
     }
 
-    public static function getAvailableTickets(): array
+    public static function getAvailableTickets(?int $studentId = null): array
     {
         $sql = "SELECT t.id, t.ticket_code, t.title, u.name AS requester_name
                 FROM tickets t
                 JOIN users u ON t.requester_id = u.id
                 LEFT JOIN ticket_ratings r ON t.id = r.ticket_id
-                WHERE t.status IN ('resolved', 'closed') AND r.id IS NULL
-                ORDER BY t.resolved_at DESC";
-        return db()->query($sql)->fetchAll();
+                WHERE t.status IN ('resolved', 'closed') AND r.id IS NULL";
+        $params = [];
+        if ($studentId !== null && $studentId > 0) {
+            $sql .= " AND t.requester_id = :sid";
+            $params['sid'] = $studentId;
+        }
+        $sql .= " ORDER BY t.resolved_at DESC";
+        $stmt = db()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
     }
 
     public static function getAllStudents(): array

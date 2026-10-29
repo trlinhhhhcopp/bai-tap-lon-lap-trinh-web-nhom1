@@ -6,12 +6,18 @@
  * ------------------------------------------------------------------------------
  * FRONT-CONTROLLER & PHÂN LUỒNG TÀI KHOẢN (ROLE-BASED AUTHENTICATION GATE)
  * Kiến trúc chuẩn mực theo Tài liệu Đặc tả ITIL v4:
- * 1. Chưa đăng nhập: Bắt buộc vào màn hình Đăng nhập (Bảo mật tuyệt đối, không lộ dữ liệu)
+ * 1. Chưa đăng nhập: Bắt buộc vào màn hình Đăng nhập hoặc Khôi phục mật khẩu SSPR
  * 2. Đã đăng nhập: Tự động phân luồng theo 4 vai trò (Sinh viên, Giảng viên, KTV, Admin)
  * ==============================================================================
  */
 
 require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/app/Models/User.php';
+require_once __DIR__ . '/app/Models/PasswordReset.php';
+require_once __DIR__ . '/app/Services/AuthService.php';
+
+use App\Services\AuthService;
+use App\Models\PasswordReset;
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -40,10 +46,12 @@ if (!function_exists('get_app_base_url')) {
 }
 $appBase = get_app_base_url();
 
+$action = $_GET['action'] ?? ($_POST['action'] ?? '');
+
 // -----------------------------------------------------------------------------
 // 1. XỬ LÝ ĐĂNG XUẤT (LOGOUT)
 // -----------------------------------------------------------------------------
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+if ($action === 'logout') {
     unset($_SESSION['user']);
     $_SESSION['flash'] = [
         'type'    => 'info',
@@ -56,7 +64,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 // -----------------------------------------------------------------------------
 // 2. XỬ LÝ ĐĂNG NHẬP NHANH THỬ NGHIỆM (QUICK 1-CLICK DEMO LOGIN DÀNH CHO THẦY CÔ)
 // -----------------------------------------------------------------------------
-if (isset($_GET['action']) && $_GET['action'] === 'quick_login') {
+if ($action === 'quick_login') {
     $code = trim($_GET['code'] ?? '');
     $stmt = $pdo->prepare("SELECT * FROM users WHERE user_code = :code LIMIT 1");
     $stmt->execute(['code' => $code]);
@@ -82,7 +90,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'quick_login') {
 // -----------------------------------------------------------------------------
 // 3. XỬ LÝ FORM ĐĂNG NHẬP (STANDARD LOGIN)
 // -----------------------------------------------------------------------------
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'login') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
     $identifier = trim($_POST['identifier'] ?? '');
     $password   = trim($_POST['password'] ?? '');
 
@@ -141,7 +149,222 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // -----------------------------------------------------------------------------
-// 4. KIỂM TRA ĐĂNG NHẬP: NẾU CHƯA ĐĂNG NHẬP -> HIỂN THỊ MÀN HÌNH ĐĂNG NHẬP
+// 4. XỬ LÝ QUÊN MẬT KHẨU (SSPR - TRẦN THỤC LINH)
+// -----------------------------------------------------------------------------
+$ssprTokenSent = false;
+$ssprTokenValue = '';
+$ssprUserEmail = '';
+$ssprUserName = '';
+
+if ($action === 'forgot_password') {
+    $flash = get_flash();
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $identifier = trim($_POST['identifier'] ?? '');
+        try {
+            $token = AuthService::requestResetToken($identifier);
+            $user = \App\Models\User::findByEmailOrCode($identifier);
+            $ssprTokenSent = true;
+            $ssprTokenValue = $token;
+            $ssprUserEmail = $user['email'] ?? '';
+            $ssprUserName = $user['name'] ?? '';
+        } catch (\Exception $e) {
+            $_SESSION['flash'] = [
+                'type' => 'danger',
+                'message' => $e->getMessage()
+            ];
+            header('Location: ' . $appBase . 'index.php?action=forgot_password');
+            exit;
+        }
+    }
+    ?>
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Khôi Phục Mật Khẩu (SSPR) - Helpdesk ĐH Thủ Đô</title>
+        <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    </head>
+    <body class="bg-slate-900 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+        <?php require __DIR__ . '/includes/navbar.php'; ?>
+
+        <div class="flex-1 max-w-xl mx-auto w-full px-4 py-10 flex flex-col justify-center">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-6">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        🔑 SSPR · TỰ PHỤC HỒI MẬT KHẨU HỌC THUẬT
+                    </span>
+                    <h2 class="text-xl font-black text-slate-900 mt-2">Quên Mật Khẩu Tài Khoản</h2>
+                    <p class="text-xs text-slate-500 mt-1">Cơ chế bảo mật xác thực cấp Token an toàn có hiệu lực trong vòng 15 phút (Bài 4 - Trần Thục Linh).</p>
+                </div>
+
+                <?php if ($flash): ?>
+                    <div class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
+                        <?php echo $flash['message']; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($ssprTokenSent): ?>
+                    <!-- Mô phỏng Hòm thư sinh viên nhận email chứa token -->
+                    <div class="bg-indigo-50/80 border border-indigo-200 rounded-2xl p-5 space-y-4">
+                        <div class="flex items-center gap-2 text-indigo-900 font-bold text-xs">
+                            <span class="text-lg">📬</span> HÒM THƯ NỘI BỘ SINH VIÊN (MÔ PHỎNG EMAIL TRƯỜNG CẤP)
+                        </div>
+                        <div class="bg-white rounded-xl p-4 border border-indigo-100 text-xs space-y-2">
+                            <p class="text-slate-500 text-[11px]">Người nhận: <strong class="text-slate-800"><?php echo htmlspecialchars($ssprUserName); ?></strong> &lt;<?php echo htmlspecialchars($ssprUserEmail); ?>&gt;</p>
+                            <p class="text-slate-500 text-[11px]">Tiêu đề: <strong class="text-indigo-700">[TUD-Helpdesk] Yêu cầu khôi phục mật khẩu học thuật</strong></p>
+                            <hr class="border-slate-100 my-2" />
+                            <p class="text-slate-700 leading-relaxed">
+                                Chào bạn <strong><?php echo htmlspecialchars($ssprUserName); ?></strong>, hệ thống đã tạo mã Token xác thực khôi phục mật khẩu. Token này có hiệu lực tối đa trong vòng <strong>15 phút</strong>:
+                            </p>
+                            <div class="p-2.5 bg-slate-50 rounded-lg font-mono text-[11px] text-indigo-700 font-bold break-all border border-slate-200 select-all">
+                                <?php echo htmlspecialchars($ssprTokenValue); ?>
+                            </div>
+                            <div class="pt-2">
+                                <a href="<?php echo $appBase; ?>index.php?action=reset_password&token=<?php echo urlencode($ssprTokenValue); ?>" 
+                                   class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 text-xs">
+                                    👉 Nhấp Vào Đây Để Đặt Lại Mật Khẩu Mới Ngay
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <form method="POST" action="<?php echo $appBase; ?>index.php?action=forgot_password" class="space-y-4 text-xs">
+                        <input type="hidden" name="action" value="forgot_password" />
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Nhập Mã Sinh Viên hoặc Email trường của bạn:</label>
+                            <input type="text" name="identifier" required placeholder="Ví dụ: 224001736 hoặc 224001729@daihocthudo.edu.vn" 
+                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-2">
+                            <span>🚀</span> Gửi Mã Token Xác Thực (15 Phút)
+                        </button>
+                    </form>
+                <?php endif; ?>
+
+                <div class="pt-2 text-center text-xs">
+                    <a href="<?php echo $appBase; ?>index.php" class="text-indigo-600 hover:underline font-semibold">
+                        ← Quay lại màn hình Đăng Nhập
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <?php require __DIR__ . '/includes/footer.php'; ?>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
+// -----------------------------------------------------------------------------
+// 5. XỬ LÝ ĐẶT LẠI MẬT KHẨU MỚI (RESET PASSWORD QUA TOKEN)
+// -----------------------------------------------------------------------------
+if ($action === 'reset_password') {
+    $token = trim($_GET['token'] ?? ($_POST['token'] ?? ''));
+    $flash = get_flash();
+    $tokenRecord = PasswordReset::verifyToken($token);
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $newPass = $_POST['new_password'] ?? '';
+        $confirmPass = $_POST['confirm_password'] ?? '';
+        try {
+            AuthService::resetPasswordWithToken($token, $newPass, $confirmPass);
+            $_SESSION['flash'] = [
+                'type'    => 'success',
+                'message' => '🎉 Đặt lại mật khẩu mới thành công! Vui lòng đăng nhập với mật khẩu mới.'
+            ];
+            header('Location: ' . $appBase . 'index.php');
+            exit;
+        } catch (\Exception $e) {
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => $e->getMessage()
+            ];
+            header('Location: ' . $appBase . 'index.php?action=reset_password&token=' . urlencode($token));
+            exit;
+        }
+    }
+    ?>
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Đặt Lại Mật Khẩu Mới - Helpdesk ĐH Thủ Đô</title>
+        <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    </head>
+    <body class="bg-slate-900 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+        <?php require __DIR__ . '/includes/navbar.php'; ?>
+
+        <div class="flex-1 max-w-md mx-auto w-full px-4 py-10 flex flex-col justify-center">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-6">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        🛡️ ĐỔI MẬT KHẨU MỚI
+                    </span>
+                    <h2 class="text-xl font-black text-slate-900 mt-2">Thiết Lập Mật Khẩu</h2>
+                    <p class="text-xs text-slate-500 mt-1">Mật khẩu mới sẽ được mã hóa an toàn bằng chuẩn Bcrypt.</p>
+                </div>
+
+                <?php if ($flash): ?>
+                    <div class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
+                        <?php echo $flash['message']; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!$tokenRecord): ?>
+                    <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 space-y-2">
+                        <p class="font-bold">⚠️ Mã Token không hợp lệ hoặc đã hết hạn!</p>
+                        <p class="text-[11.5px] leading-relaxed">
+                            Liên kết khôi phục chỉ có hiệu lực trong 15 phút theo quy định an toàn bảo mật. Vui lòng gửi lại yêu cầu mới.
+                        </p>
+                        <div class="pt-2">
+                            <a href="<?php echo $appBase; ?>index.php?action=forgot_password" class="px-4 py-2 bg-rose-600 text-white font-bold rounded-xl inline-block transition hover:bg-rose-700">
+                                Yêu cầu cấp lại Token mới →
+                            </a>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <form method="POST" action="<?php echo $appBase; ?>index.php?action=reset_password" class="space-y-4 text-xs">
+                        <input type="hidden" name="action" value="reset_password" />
+                        <input type="hidden" name="token" value="<?php echo htmlspecialchars($token); ?>" />
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Mật khẩu mới (Tối thiểu 6 ký tự):</label>
+                            <input type="password" name="new_password" required minlength="6" placeholder="Nhập mật khẩu mới..." 
+                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                        </div>
+
+                        <div>
+                            <label class="block font-bold text-slate-700 mb-1">Xác nhận lại mật khẩu mới:</label>
+                            <input type="password" name="confirm_password" required minlength="6" placeholder="Nhập lại mật khẩu mới..." 
+                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                        </div>
+
+                        <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-md shadow-emerald-100 flex items-center justify-center gap-2">
+                            <span>✅</span> Cập Nhật Mật Khẩu Mới
+                        </button>
+                    </form>
+                <?php endif; ?>
+
+                <div class="pt-2 text-center text-xs">
+                    <a href="<?php echo $appBase; ?>index.php" class="text-indigo-600 hover:underline font-semibold">
+                        ← Quay lại màn hình Đăng Nhập
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <?php require __DIR__ . '/includes/footer.php'; ?>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
+// -----------------------------------------------------------------------------
+// 6. KIỂM TRA ĐĂNG NHẬP: NẾU CHƯA ĐĂNG NHẬP -> HIỂN THỊ MÀN HÌNH ĐĂNG NHẬP
 // -----------------------------------------------------------------------------
 $currentUser = $_SESSION['user'] ?? null;
 $flash = get_flash();
@@ -219,14 +442,22 @@ if (!$currentUser) {
                             </div>
                             <input type="password" name="password" required placeholder="Nhập mật khẩu của bạn..." 
                                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                            
+                            <!-- Link Quên mật khẩu SSPR Trần Linh -->
+                            <div class="flex items-center justify-between text-[11px] pt-1.5">
+                                <a href="<?php echo $appBase; ?>index.php?action=forgot_password" class="text-indigo-600 hover:text-indigo-800 font-bold hover:underline flex items-center gap-1">
+                                    <span>🔑</span> Quên mật khẩu? (Khôi phục SSPR)
+                                </a>
+                                <span class="text-slate-400">Token bảo mật 15 phút</span>
+                            </div>
                         </div>
 
-                        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-200 text-xs flex items-center justify-center gap-1.5">
-                            <span>🔑</span> Đăng Nhập Vào Hệ Thống
+                        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1.5 text-xs">
+                            <span>🔐</span> Đăng Nhập Hệ Thống
                         </button>
                     </form>
 
-                    <!-- TIỆN ÍCH ĐĂNG NHẬP NHANH 1-CLICK DÀNH CHO KIỂM THỬ ĐỒ ÁN -->
+                    <!-- Danh sách tài khoản thử nghiệm 1-Click (Phục vụ chấm bài) -->
                     <div class="pt-4 border-t border-slate-100 space-y-2.5">
                         <div class="flex items-center justify-between text-[11px]">
                             <span class="font-bold text-slate-600 uppercase tracking-wider">⚡ Đăng Nhập Nhanh Để Kiểm Thử (1-Click Login):</span>
@@ -291,7 +522,7 @@ if (!$currentUser) {
 }
 
 // -----------------------------------------------------------------------------
-// 5. KHI ĐÃ ĐĂNG NHẬP: HỆ THỐNG PHÂN LUỒNG TỰ ĐỘNG THEO VAI TRÒ (4 VAI TRÒ CHUẨN PDF)
+// 7. KHI ĐÃ ĐĂNG NHẬP: HỆ THỐNG PHÂN LUỒNG TỰ ĐỘNG THEO VAI TRÒ (4 VAI TRÒ CHUẨN PDF)
 // -----------------------------------------------------------------------------
 $userId   = (int)$currentUser['id'];
 $userRole = $currentUser['role'];
@@ -301,6 +532,16 @@ $userType = $currentUser['user_type'] ?? 'student';
 // PHÂN HỆ 1: CỔNG SINH VIÊN (STUDENT PORTAL)
 // =============================================================================
 if ($userType === 'student') {
+    // Truy vấn chi tiết hồ sơ sinh viên kèm thông tin lớp & học thuật (Trần Thục Linh)
+    $studentStmt = $pdo->prepare("
+        SELECT u.*, COALESCE(c.name, 'Chưa phân lớp') AS class_name, COALESCE(c.class_code, 'N/A') AS class_code 
+        FROM users u 
+        LEFT JOIN classes c ON u.class_id = c.id 
+        WHERE u.id = :id
+    ");
+    $studentStmt->execute([':id' => $userId]);
+    $studentProfile = $studentStmt->fetch() ?: $currentUser;
+
     // Thống kê riêng của sinh viên này
     $myTicketsCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId}")->fetchColumn();
     $myActiveCount  = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId} AND status IN ('new', 'in_progress', 'waiting_requester')")->fetchColumn();
@@ -358,6 +599,70 @@ if ($userType === 'student') {
                 </div>
             <?php endif; ?>
 
+            <!-- THÔNG TIN HỒ SƠ SINH VIÊN & ĐỊNH DANH HỌC THUẬT (PHÂN HỆ TRẦN THỤC LINH) -->
+            <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div class="flex items-center gap-2.5">
+                        <span class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-sm">
+                            👤
+                        </span>
+                        <div>
+                            <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">
+                                HỒ SƠ SINH VIÊN & ĐỊNH DANH HỌC THUẬT
+                            </h2>
+                            <p class="text-[11px] text-slate-500">Phân hệ Quản trị User & Vòng đời tài khoản học thuật (Trần Thục Linh - Bài 4)</p>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold <?php echo ($studentProfile['is_active'] == 1) ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'; ?>">
+                        ● <?php echo ($studentProfile['is_active'] == 1) ? 'Tài khoản hoạt động' : 'Tài khoản bị khóa'; ?>
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
+                        <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Mã Sinh Viên (MSSV)</span>
+                        <span class="font-mono font-bold text-indigo-700 text-sm block"><?php echo htmlspecialchars($studentProfile['user_code']); ?></span>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
+                        <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Họ và Tên</span>
+                        <span class="font-bold text-slate-900 text-sm block"><?php echo htmlspecialchars($studentProfile['name']); ?></span>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
+                        <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Lớp Sinh Hoạt</span>
+                        <span class="font-bold text-indigo-900 text-sm block"><?php echo htmlspecialchars($studentProfile['class_code']); ?></span>
+                        <span class="text-[10px] text-slate-400 block truncate"><?php echo htmlspecialchars($studentProfile['class_name']); ?></span>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
+                        <span class="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">Trạng Thái Học Tập</span>
+                        <?php 
+                        $academicStatus = $studentProfile['academic_status'] ?? 'studying';
+                        $statusText = match($academicStatus) {
+                            'studying'  => '🟢 Đang học bình thường',
+                            'suspended' => '🟡 Tạm đình chỉ',
+                            'expelled'  => '🔴 Buộc thôi học',
+                            default     => '🟢 Đang học bình thường',
+                        };
+                        ?>
+                        <span class="font-bold text-slate-800 text-xs block"><?php echo $statusText; ?></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs pt-1">
+                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-0.5">
+                        <span class="text-[11px] text-slate-400 font-bold block">Email Nhà Trường Cấp:</span>
+                        <span class="font-medium text-slate-800 break-all"><?php echo htmlspecialchars($studentProfile['email']); ?></span>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-0.5">
+                        <span class="text-[11px] text-slate-400 font-bold block">Khoa Chuyên Môn / Khóa:</span>
+                        <span class="font-medium text-slate-800">Khoa CNTT · Khóa D24 (2024 - 2028)</span>
+                    </div>
+                    <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-0.5">
+                        <span class="text-[11px] text-slate-400 font-bold block">Cơ Chế Bảo Mật & SSPR:</span>
+                        <span class="font-medium text-emerald-700">Bcrypt Hash + Token khôi phục 15 phút</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- 3 Thẻ chỉ số cá nhân của Sinh viên -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
@@ -378,13 +683,13 @@ if ($userType === 'student') {
             </div>
 
             <!-- BẢNG DANH SÁCH PHIẾU CỦA RIÊNG SINH VIÊN NÀY -->
-            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden space-y-3">
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-3">
                 <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                            <span>📋</span> DANH SÁCH PHIẾU SỰ CỐ CỦA BẠN
+                            <span>🎫</span> MỤC PHIẾU HỖ TRỢ RIÊNG CỦA TÔI (CÁCH LY DỮ LIỆU)
                         </h2>
-                        <p class="text-[11.5px] text-slate-500 mt-0.5">Theo dõi tiến độ, trao đổi với Kỹ thuật viên và chấm điểm hài lòng sau khi hoàn tất.</p>
+                        <p class="text-[11.5px] text-slate-500 mt-0.5">Sinh viên chỉ xem và trao đổi trên các phiếu do chính mình gửi, bảo mật tuyệt đối.</p>
                     </div>
                 </div>
 
@@ -452,7 +757,7 @@ if ($userType === 'student') {
                                             <?php if ($t['rating_score']): ?>
                                                 <span class="font-bold text-amber-500 font-mono"><?php echo $t['rating_score']; ?> ★</span>
                                             <?php elseif ($t['status'] === 'resolved' || $t['status'] === 'closed'): ?>
-                                                <a href="<?php echo $appBase; ?>NguyenAnhNhi_SinhVien/index.php?action=rating_create&ticket_id=<?php echo $t['id']; ?>" 
+                                                <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>#csat-box" 
                                                    class="px-2 py-0.5 bg-yellow-50 hover:bg-yellow-100 text-yellow-700 border border-yellow-200 rounded-lg text-[10.5px] font-bold transition">
                                                     Chấm sao ★
                                                 </a>
@@ -462,7 +767,7 @@ if ($userType === 'student') {
                                         </td>
                                         <td class="py-3 px-4 text-center">
                                             <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition inline-block">
-                                                Trao đổi →
+                                                Chi tiết & Chat →
                                             </a>
                                         </td>
                                     </tr>
@@ -550,7 +855,7 @@ if ($userType === 'lecturer') {
             <?php endif; ?>
 
             <!-- BẢNG LỚP HỌC PHẦN PHỤ TRÁCH (1 LỚP HP = 1 GIẢNG VIÊN) -->
-            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden space-y-3">
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-3">
                 <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -559,7 +864,7 @@ if ($userType === 'lecturer') {
                         <p class="text-[11.5px] text-slate-500 mt-0.5">Mỗi lớp học phần chỉ có duy nhất 1 giảng viên phụ trách theo nguyên tắc đào tạo.</p>
                     </div>
                     <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=index" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition">
-                        Quản Lý Chi Tiết →
+                        Xem Tất Cả Lớp Phụ Trách →
                     </a>
                 </div>
 
@@ -596,13 +901,13 @@ if ($userType === 'lecturer') {
             </div>
 
             <!-- BẢNG PHIẾU ĐÃ BÁO CỦA GIẢNG VIÊN -->
-            <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden space-y-3">
+            <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-3">
                 <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                            <span>📋</span> YÊU CẦU HỖ TRỢ ĐÀO TẠO ĐÃ GỬI
+                            <span>🎫</span> PHIẾU YÊU CẦU HỖ TRỢ ĐÃ GỬI
                         </h2>
-                        <p class="text-[11.5px] text-slate-500 mt-0.5">Các sự cố giảng dạy khẩn cấp được đẩy lên đầu hàng đợi KTV.</p>
+                        <p class="text-[11.5px] text-slate-500 mt-0.5">Theo dõi phản hồi kỹ thuật từ Đội ngũ KTV trực ca.</p>
                     </div>
                 </div>
 
@@ -611,17 +916,18 @@ if ($userType === 'lecturer') {
                         <thead>
                             <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
                                 <th class="py-3 px-4">Mã Vé</th>
-                                <th class="py-3 px-4">Tiêu Đề Sự Cố</th>
+                                <th class="py-3 px-4">Nội Dung Sự Cố</th>
                                 <th class="py-3 px-4">Chuyên Mục</th>
                                 <th class="py-3 px-4 text-center">Mức Ưu Tiên</th>
                                 <th class="py-3 px-4 text-center">Trạng Thái</th>
+                                <th class="py-3 px-4">KTV Phụ Trách</th>
                                 <th class="py-3 px-4 text-center">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             <?php if (empty($myTickets)): ?>
                                 <tr>
-                                    <td colspan="6" class="py-6 text-center text-slate-400">Bạn chưa gửi yêu cầu hỗ trợ nào.</td>
+                                    <td colspan="7" class="py-6 text-center text-slate-400">Thầy/Cô chưa gửi yêu cầu hỗ trợ nào.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($myTickets as $t): ?>
@@ -632,13 +938,13 @@ if ($userType === 'lecturer') {
                                             </a>
                                         </td>
                                         <td class="py-3 px-4 font-semibold text-slate-800">
-                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:text-indigo-600 transition">
+                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:text-indigo-600 transition block max-w-sm truncate">
                                                 <?php echo htmlspecialchars($t['title']); ?>
                                             </a>
                                         </td>
                                         <td class="py-3 px-4 text-slate-600"><?php echo htmlspecialchars($t['category_name']); ?></td>
                                         <td class="py-3 px-4 text-center">
-                                            <span class="px-2 py-0.5 rounded text-[10.5px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                            <span class="px-2 py-0.5 rounded text-[10.5px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                                                 <?php echo htmlspecialchars($t['priority_name']); ?>
                                             </span>
                                         </td>
@@ -647,9 +953,10 @@ if ($userType === 'lecturer') {
                                                 ● <?php echo htmlspecialchars($t['status']); ?>
                                             </span>
                                         </td>
+                                        <td class="py-3 px-4 text-slate-600"><?php echo htmlspecialchars($t['agent_name'] ?: 'Đang phân công...'); ?></td>
                                         <td class="py-3 px-4 text-center">
-                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition">
-                                                Xem chi tiết →
+                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition inline-block">
+                                                Chi tiết →
                                             </a>
                                         </td>
                                     </tr>
@@ -670,10 +977,10 @@ if ($userType === 'lecturer') {
 }
 
 // =============================================================================
-// PHÂN HỆ 3: KỸ THUẬT VIÊN (AGENT WORKSPACE)
+// PHÂN HỆ 3: BÀN LÀM VIỆC KỸ THUẬT VIÊN (AGENT WORKSPACE)
 // =============================================================================
 if ($userRole === 'agent') {
-    // Điều hướng trực tiếp vào Bàn làm việc KTV chuyên nghiệp
+    // Tự động chuyển hướng KTV vào bàn làm việc chuyên trách của chính mình
     header('Location: ' . $appBase . 'agent/index.php');
     exit;
 }
@@ -737,14 +1044,17 @@ $recentTickets = $pdo->query("
                 <h1 class="text-2xl font-black text-white">
                     Bảng Điều Hành Hệ Thống Helpdesk
                 </h1>
-                <p class="text-xs text-indigo-200/80">Quản trị người dùng, phân ca trực KTV, Triage phiếu và giám sát tải trọng toàn trường.</p>
+                <p class="text-xs text-indigo-200/80">Quản trị người dùng, phân công đào tạo, nhập dữ liệu Excel hàng loạt và điều phối tràn tải.</p>
             </div>
-            <div class="flex items-center gap-2">
-                <a href="<?php echo $appBase; ?>PhanCongThanh_Admin/index.php" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition text-xs flex items-center gap-1.5">
-                    <span>📅</span> Quản Lý Lịch Nghỉ Lễ
+            <div class="flex items-center gap-2 flex-wrap">
+                <a href="<?php echo $appBase; ?>admin/import_excel.php" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition text-xs flex items-center gap-1.5">
+                    <span>📊</span> Nhập Excel / CSV
+                </a>
+                <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=index" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-2xl shadow-md transition text-xs flex items-center gap-1.5">
+                    <span>📚</span> Phân Công Giảng Dạy
                 </a>
                 <a href="<?php echo $appBase; ?>TranLinh/users.php" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl shadow-md transition text-xs flex items-center gap-1.5">
-                    <span>👥</span> Quản Lý Tài Khoản & Phân Ca
+                    <span>👥</span> Quản Lý Tài Khoản
                 </a>
             </div>
         </div>
@@ -779,7 +1089,7 @@ $recentTickets = $pdo->query("
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
             <!-- Danh sách phiếu gần đây (8 cột) -->
-            <div class="lg:col-span-8 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden space-y-3">
+            <div class="lg:col-span-8 bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-3">
                 <div class="p-5 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -841,7 +1151,7 @@ $recentTickets = $pdo->query("
             </div>
 
             <!-- Tình trạng tải 5 KTV (4 cột) -->
-            <div class="lg:col-span-4 bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-3">
+            <div class="lg:col-span-4 bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                         <span>👨‍💻</span> Giám Sát Tải KTV (Ngưỡng 15 Phiếu)
@@ -856,7 +1166,7 @@ $recentTickets = $pdo->query("
                         $loadPercent = min(100, round(($ag['active_load'] / $maxCapacity) * 100));
                         $isOverloaded = ($ag['active_load'] >= $maxCapacity);
                         ?>
-                        <div class="p-3 rounded-xl border <?php echo $isOverloaded ? 'bg-rose-50/70 border-rose-200' : 'bg-slate-50 border-slate-200'; ?> space-y-1.5">
+                        <div class="p-3 rounded-2xl border <?php echo $isOverloaded ? 'bg-rose-50/70 border-rose-200' : 'bg-slate-50 border-slate-200'; ?> space-y-1.5">
                             <div class="flex items-center justify-between text-xs">
                                 <span class="font-bold text-slate-800"><?php echo htmlspecialchars($ag['name']); ?></span>
                                 <span class="font-mono font-bold <?php echo $isOverloaded ? 'text-rose-600' : 'text-slate-600'; ?>">

@@ -61,19 +61,29 @@ if (empty($_SESSION['user'])) {
                 </select>
             </div>
 
-            <div>
-                <label for="user_id" class="block font-bold text-slate-700 mb-1">
-                    Sinh Viên Đánh Giá: <span class="text-rose-500">*</span>
-                </label>
-                <select id="user_id" name="user_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
-                    <option value="">-- Chọn sinh viên --</option>
-                    <?php foreach ($students as $sv): ?>
-                        <option value="<?= (int)$sv['id'] ?>" <?= ($old['user_id'] == $sv['id']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($sv['name'] . ' (' . $sv['user_code'] . ')') ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
+            <?php if (count($students) === 1): ?>
+                <input type="hidden" name="user_id" value="<?= (int)$students[0]['id'] ?>" />
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Sinh Viên Đánh Giá:</label>
+                    <div class="px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-bold text-indigo-700">
+                        <?= htmlspecialchars($students[0]['name'] . ' (' . $students[0]['user_code'] . ')') ?>
+                    </div>
+                </div>
+            <?php else: ?>
+                <div>
+                    <label for="user_id" class="block font-bold text-slate-700 mb-1">
+                        Sinh Viên Đánh Giá: <span class="text-rose-500">*</span>
+                    </label>
+                    <select id="user_id" name="user_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
+                        <option value="">-- Chọn sinh viên --</option>
+                        <?php foreach ($students as $sv): ?>
+                            <option value="<?= (int)$sv['id'] ?>" <?= ($old['user_id'] == $sv['id']) ? 'selected' : '' ?>>
+                                <?= htmlspecialchars($sv['name'] . ' (' . $sv['user_code'] . ')') ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            <?php endif; ?>
 
             <div>
                 <label for="score" class="block font-bold text-slate-700 mb-1">

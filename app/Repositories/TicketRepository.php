@@ -18,7 +18,9 @@ class TicketRepository {
         int $page = 1,
         int $perPage = 5,
         string $status = '',
-        int $categoryId = 0
+        int $categoryId = 0,
+        int $requesterId = 0,
+        int $assignedTo = 0
     ): array {
         $db = db();
         $offset = ($page - 1) * $perPage;
@@ -42,6 +44,14 @@ class TicketRepository {
         if ($categoryId > 0) {
             $conditions[] = "t.category_id = :cat_id";
             $params['cat_id'] = $categoryId;
+        }
+        if ($requesterId > 0) {
+            $conditions[] = "t.requester_id = :req_id";
+            $params['req_id'] = $requesterId;
+        }
+        if ($assignedTo > 0) {
+            $conditions[] = "t.assigned_to = :assigned_to";
+            $params['assigned_to'] = $assignedTo;
         }
 
         $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
@@ -78,7 +88,7 @@ class TicketRepository {
     /**
      * Đếm tổng số phiếu thỏa mãn điều kiện để tính tổng số trang (Slide 11)
      */
-    public static function countAll(string $keyword = '', string $status = '', int $categoryId = 0, int $requesterId = 0): int {
+    public static function countAll(string $keyword = '', string $status = '', int $categoryId = 0, int $requesterId = 0, int $assignedTo = 0): int {
         $db = db();
         $conditions = [];
         $params = [];
@@ -94,6 +104,14 @@ class TicketRepository {
         if ($categoryId > 0) {
             $conditions[] = "category_id = :cat_id";
             $params['cat_id'] = $categoryId;
+        }
+        if ($requesterId > 0) {
+            $conditions[] = "requester_id = :req_id";
+            $params['req_id'] = $requesterId;
+        }
+        if ($assignedTo > 0) {
+            $conditions[] = "assigned_to = :assigned_to";
+            $params['assigned_to'] = $assignedTo;
         }
 
         $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';

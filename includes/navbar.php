@@ -66,9 +66,6 @@ $currentQuery  = $_SERVER['QUERY_STRING'] ?? '';
             <nav class="hidden md:flex items-center gap-1">
                 <?php if (!$isLoggedIn): ?>
                     <!-- Menu dành cho Khách chưa đăng nhập -->
-                    <a href="<?php echo $appBase; ?>index.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition">
-                        🔑 Đăng Nhập
-                    </a>
                     <a href="<?php echo $appBase; ?>views/guest/create_ticket.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition">
                         🆘 Cứu Hộ Tài Khoản (Bị Khóa)
                     </a>
@@ -82,12 +79,13 @@ $currentQuery  = $_SERVER['QUERY_STRING'] ?? '';
                         <span>🛡️</span> Tổng Quan Quản Trị
                     </a>
                     <a href="<?php echo $appBase; ?>TranLinh/users.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
-                        <span>👥</span> Quản Lý Người Dùng & Ca Trực
+                        <span>👥</span> Quản Lý Tài Khoản & Ca Trực
                     </a>
-                    <a href="<?php echo $appBase; ?>PhanCongThanh_Admin/index.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
-                        <span>📅</span> Quản Lý Lịch Nghỉ Lễ
+                    <a href="<?php echo $appBase; ?>admin/import_excel.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/40 transition flex items-center gap-1.5">
+                        <span>📊</span> Nhập Excel / CSV
                     </a>
-                        <span>👥</span> Quản Lý Người Dùng & Ca Trực
+                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 transition flex items-center gap-1.5">
+                        <span>📚</span> Phân Công Giảng Dạy
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/index.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
                         <span>🎫</span> Triage & Phân Công Phiếu
@@ -102,7 +100,7 @@ $currentQuery  = $_SERVER['QUERY_STRING'] ?? '';
                         <span>👨‍💻</span> Bàn Làm Việc KTV (Agent Workspace)
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/index.php" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
-                        <span>🎫</span> Danh Sách Phiếu Sự Cố
+                        <span>🎫</span> Nhiệm Vụ Được Giao
                     </a>
 
                 <?php elseif ($userType === 'lecturer'): ?>

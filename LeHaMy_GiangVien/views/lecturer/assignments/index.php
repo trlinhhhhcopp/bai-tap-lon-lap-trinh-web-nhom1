@@ -1,5 +1,8 @@
 <?php
-$pageTitle = 'Quản Lý Phân Công Giảng Dạy (course_assignments)';
+$userRole   = $_SESSION['user']['role'] ?? '';
+$userType   = $_SESSION['user']['user_type'] ?? '';
+$isLecturer = ($userType === 'lecturer' && $userRole !== 'admin');
+$pageTitle  = $isLecturer ? 'Lớp Học Phần Tôi Phụ Trách' : 'Quản Lý Phân Công Giảng Dạy (Admin)';
 require_once __DIR__ . '/../../../../config/database.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 if (empty($_SESSION['user'])) {
@@ -32,9 +35,11 @@ if (empty($_SESSION['user'])) {
             <p class="text-xs text-indigo-200/80">Quy tắc đào tạo ITIL v4: Mỗi lớp học phần có duy nhất 1 giảng viên phụ trách.</p>
         </div>
         <div class="flex items-center gap-2">
+            <?php if (!$isLecturer): ?>
             <a href="index.php?action=create" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
                 <span>➕</span> Thêm Phân Công
             </a>
+            <?php endif; ?>
             <a href="../index.php" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">
                 ← Cổng Chính
             </a>

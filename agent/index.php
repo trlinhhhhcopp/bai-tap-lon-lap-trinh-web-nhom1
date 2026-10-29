@@ -32,8 +32,15 @@ if (!in_array($currentUser['role'], ['agent', 'admin'])) {
 }
 
 // Chọn KTV làm việc (Nếu là KTV đăng nhập thì mặc định vào bàn làm việc của chính mình)
-$defaultAgentId = ($currentUser['role'] === 'agent') ? (int)$currentUser['id'] : 2;
-$agentId = (int)($_GET['agent_id'] ?? $defaultAgentId);
+$isAgent = ($currentUser['role'] === 'agent');
+$isAdmin = ($currentUser['role'] === 'admin');
+
+// KTV chỉ được vào bàn làm việc của chính mình, không được xem/sửa bàn của KTV khác
+if ($isAgent) {
+    $agentId = (int)$currentUser['id'];
+} else {
+    $agentId = (int)($_GET['agent_id'] ?? 2);
+}
 $statusFilter = trim($_GET['status'] ?? '');
 
 $db = db();
@@ -112,6 +119,12 @@ $allAgents = $db->query("
 // Lấy hàng đợi phiếu của KTV hiện tại (Sắp xếp theo due_at ASC)
 $queue = TicketService::getAgentQueue($agentId, $statusFilter);
 $categories = $db->query("SELECT * FROM categories ORDER BY id ASC")->fetchAll();
+
+$countAll        = (int)$db->query("SELECT COUNT(*) FROM tickets WHERE assigned_to = {$agentId}")->fetchColumn();
+$countNew        = (int)$db->query("SELECT COUNT(*) FROM tickets WHERE assigned_to = {$agentId} AND status = 'new'")->fetchColumn();
+$countInProgress = (int)$db->query("SELECT COUNT(*) FROM tickets WHERE assigned_to = {$agentId} AND status = 'in_progress'")->fetchColumn();
+$countWaiting    = (int)$db->query("SELECT COUNT(*) FROM tickets WHERE assigned_to = {$agentId} AND status = 'waiting_requester'")->fetchColumn();
+$countResolved   = (int)$db->query("SELECT COUNT(*) FROM tickets WHERE assigned_to = {$agentId} AND status IN ('resolved', 'closed')")->fetchColumn();
 $flash = get_flash();
 ?>
 <!DOCTYPE html>
@@ -159,7 +172,8 @@ $flash = get_flash();
         </div>
     <?php endif; ?>
 
-    <!-- THANH CHUYỂN ĐỔI 5 KTV CHUYÊN TRÁCH & TẢI TRỌNG -->
+    <?php if ($isAdmin): ?>
+    <!-- DÀNH CHO ADMIN: THANH CHUYỂN ĐỔI 5 KTV CHUYÊN TRÁCH & TẢI TRỌNG -->
     <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
         <div class="flex items-center justify-between">
             <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
@@ -196,6 +210,29 @@ $flash = get_flash();
             <?php endforeach; ?>
         </div>
     </div>
+    <?php else: ?>
+    <!-- DÀNH CHO KTV: THẺ NHIỆM VỤ CHUYÊN TRÁCH CỦA TÔI -->
+    <div class="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-3 text-xs">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center text-sm shadow-sm">
+                <?php echo mb_substr($currentAgent['name'], 0, 1); ?>
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-900 text-sm">
+                    <?php echo htmlspecialchars($currentAgent['name']); ?> (<?php echo htmlspecialchars($currentAgent['user_code']); ?>)
+                </h3>
+                <p class="text-indigo-700 font-semibold text-[11.5px]">
+                    🎯 Lĩnh vực chuyên trách: <strong><?php echo htmlspecialchars($currentAgent['specialty_name']); ?></strong> · Hàng đợi SLA: <code>due_at ASC</code>
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-white text-indigo-800 border border-indigo-200 shadow-2xs">
+                Tải hiện tại: <?php echo $currentAgent['active_count']; ?>/<?php echo !empty($currentAgent['max_capacity']) ? $currentAgent['max_capacity'] : 15; ?> phiếu (Ngưỡng tràn tải: 15)
+            </span>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <!-- KHUNG ĐIỀU KHIỂN & TEST TRÀN TẢI -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6">

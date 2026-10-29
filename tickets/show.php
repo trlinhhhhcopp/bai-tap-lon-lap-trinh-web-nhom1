@@ -214,55 +214,75 @@ $flash   = get_flash();
 
 <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-    <!-- HEADER PHIẾU -->
-    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <div class="flex items-center gap-2 mb-2 flex-wrap">
-                <span class="font-mono font-bold text-sm text-indigo-600 bg-indigo-50 px-3 py-1 rounded-xl border border-indigo-200">
-                    <?php echo htmlspecialchars($ticket['ticket_code']); ?>
-                </span>
-                <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-                    <?php echo htmlspecialchars($ticket['category_name']); ?>
-                </span>
-                <?php
-                $statusColors = [
-                    'new'               => 'bg-blue-50 text-blue-700 border-blue-200',
-                    'in_progress'       => 'bg-amber-50 text-amber-700 border-amber-200',
-                    'waiting_requester' => 'bg-purple-50 text-purple-700 border-purple-200',
-                    'resolved'          => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                    'closed'            => 'bg-slate-100 text-slate-700 border-slate-300',
-                ];
-                $statusLabels = [
-                    'new'               => 'Mới tiếp nhận',
-                    'in_progress'       => 'Đang xử lý',
-                    'waiting_requester' => 'Chờ người gửi phản hồi',
-                    'resolved'          => 'Đã có giải pháp',
-                    'closed'            => 'Đã đóng hoàn tất',
-                ];
-                $sColor = $statusColors[$ticket['status']] ?? 'bg-slate-100 text-slate-700 border-slate-200';
-                $sLabel = $statusLabels[$ticket['status']] ?? $ticket['status'];
-                ?>
-                <span class="px-3 py-1 rounded-full text-xs font-bold border <?php echo $sColor; ?>">
-                    ● <?php echo $sLabel; ?>
-                </span>
-                <?php if ($ticket['reopen_count'] > 0): ?>
-                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                        🔄 Mở lại: <?php echo $ticket['reopen_count']; ?> lần
+    <!-- HEADER PHIẾU (IMAGE 1 BANNER DESIGN) -->
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm mb-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-2 flex-wrap">
+                    <!-- Mã định danh vé -->
+                    <span class="font-mono font-bold text-xs text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200/60">
+                        <?php echo htmlspecialchars($ticket['ticket_code']); ?>
                     </span>
-                <?php endif; ?>
+                    <!-- Danh mục -->
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
+                        <?php echo htmlspecialchars($ticket['category_name']); ?>
+                    </span>
+                    <?php
+                    $statusColors = [
+                        'new'               => 'bg-blue-50 text-blue-700 border-blue-200',
+                        'in_progress'       => 'bg-amber-50 text-amber-700 border-amber-200',
+                        'waiting_requester' => 'bg-purple-50 text-purple-700 border-purple-200',
+                        'resolved'          => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                        'closed'            => 'bg-slate-100 text-slate-700 border-slate-300',
+                    ];
+                    $dotColors = [
+                        'new'               => 'bg-blue-500',
+                        'in_progress'       => 'bg-amber-500',
+                        'waiting_requester' => 'bg-purple-500',
+                        'resolved'          => 'bg-emerald-500',
+                        'closed'            => 'bg-slate-500',
+                    ];
+                    $statusLabels = [
+                        'new'               => 'Mới tiếp nhận',
+                        'in_progress'       => 'Đang xử lý',
+                        'waiting_requester' => 'Chờ người gửi phản hồi',
+                        'resolved'          => 'Đã có giải pháp',
+                        'closed'            => 'Đã hoàn tất & đóng',
+                    ];
+                    $sColor = $statusColors[$ticket['status']] ?? 'bg-slate-100 text-slate-700 border-slate-200';
+                    $dColor = $dotColors[$ticket['status']] ?? 'bg-slate-400';
+                    $sLabel = $statusLabels[$ticket['status']] ?? $ticket['status'];
+                    ?>
+                    <span class="px-3 py-1 rounded-full text-xs font-bold border <?php echo $sColor; ?> flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full <?php echo $dColor; ?>"></span>
+                        <span><?php echo $sLabel; ?></span>
+                    </span>
+                    <?php if ($ticket['reopen_count'] > 0): ?>
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                            🔄 Mở lại: <?php echo $ticket['reopen_count']; ?> lần
+                        </span>
+                    <?php endif; ?>
+                </div>
+                
+                <h1 class="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                    <?php echo htmlspecialchars($ticket['title']); ?>
+                </h1>
+                
+                <p class="text-xs text-slate-400 font-medium mt-1">
+                    Ngày gửi: <?php echo htmlspecialchars($ticket['created_at']); ?> · Ứng dụng: <strong class="text-slate-700 font-semibold"><?php echo htmlspecialchars($ticket['system_affected']); ?></strong>
+                </p>
             </div>
-            <h1 class="text-xl md:text-2xl font-black text-slate-900"><?php echo htmlspecialchars($ticket['title']); ?></h1>
-            <p class="text-xs text-slate-500 mt-1">Ngày gửi: <?php echo htmlspecialchars($ticket['created_at']); ?> • Ứng dụng: <strong class="text-slate-700"><?php echo htmlspecialchars($ticket['system_affected']); ?></strong></p>
-        </div>
-        <div class="flex items-center gap-2 flex-wrap">
-            <?php if (in_array($userRole, ['agent', 'admin'])): ?>
-                <a href="edit.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-xl transition">
-                    ✏️ Sửa phiếu
+
+            <div class="flex items-center gap-2 flex-wrap">
+                <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                    <a href="edit.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200 transition">
+                        ✏️ Sửa phiếu
+                    </a>
+                <?php endif; ?>
+                <a href="index.php" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition flex items-center gap-1">
+                    — Danh sách phiếu
                 </a>
-            <?php endif; ?>
-            <a href="index.php" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
-                ← Danh sách phiếu
-            </a>
+            </div>
         </div>
     </div>
 
@@ -292,82 +312,84 @@ $flash   = get_flash();
                 </div>
             </div>
 
-            <!-- KHỐI NGHIỆM THU & ĐÁNH GIÁ CHẤT LƯỢNG CSAT (CHO SINH VIÊN KHI RESOLVED / CLOSED) -->
-            <?php if (in_array($ticket['status'], ['resolved', 'closed'])): ?>
-                <div class="bg-gradient-to-br from-amber-50/70 to-yellow-50/50 border border-amber-200 rounded-3xl p-5 shadow-sm space-y-3">
-                    <div class="flex items-center justify-between flex-wrap gap-2">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl">🌟</span>
-                            <h3 class="font-bold text-amber-900 text-xs uppercase tracking-wider">
-                                Nghiệm Thu Kết Quả Xử Lý & Đánh Giá CSAT (1 - 5 Sao)
-                            </h3>
-                        </div>
-                        <?php if ($currentRating): ?>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500 text-white">
-                                Đã chấm: <?php echo $currentRating['score']; ?> ★
-                            </span>
-                        <?php endif; ?>
+            <!-- KHỐI NGHIỆM THU & ĐÁNH GIÁ CSAT (IMAGE 2 DESIGN & CHỈ RIÊNG NGƯỜI TẠO PHIẾU THẤY) -->
+            <?php 
+            $isRequester = ((int)$currentUser['id'] === (int)$ticket['requester_id']);
+            ?>
+            <?php if (in_array($ticket['status'], ['resolved', 'closed']) && $isRequester): ?>
+                <div class="bg-amber-50/40 border border-amber-200/90 rounded-3xl p-6 shadow-sm space-y-4">
+                    
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-500 text-xl font-bold">🌟</span>
+                        <h3 class="text-xs sm:text-sm font-black text-amber-950 uppercase tracking-wide">
+                            NGHIỆM THU KẾT QUẢ XỬ LÝ & ĐÁNH GIÁ CSAT (1 - 5 SAO)
+                        </h3>
                     </div>
 
                     <?php if ($currentRating): ?>
-                        <div class="p-3.5 bg-white rounded-2xl border border-amber-200 text-xs space-y-1">
-                            <div class="flex items-center gap-2">
+                        <div class="p-4 bg-white/95 border border-amber-200 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs">
+                            <div>
                                 <span class="font-bold text-slate-800">Đánh giá của bạn:</span>
-                                <span class="text-amber-500 font-mono font-bold text-sm">
-                                    <?php echo str_repeat('★', (int)$currentRating['score']) . str_repeat('☆', 5 - (int)$currentRating['score']); ?>
+                                <span class="text-amber-500 font-bold ml-1.5">
+                                    <?php echo str_repeat('★', (int)$currentRating['score']); ?>
+                                    (<?php echo (int)$currentRating['score']; ?>/5 sao)
                                 </span>
-                                <span class="text-slate-400 text-[11px] font-mono">(<?php echo htmlspecialchars($currentRating['created_at']); ?>)</span>
+                                <?php if (!empty($currentRating['comment'])): ?>
+                                    <p class="text-slate-600 mt-1 italic">"<?php echo htmlspecialchars($currentRating['comment']); ?>"</p>
+                                <?php endif; ?>
                             </div>
-                            <?php if (!empty($currentRating['comment'])): ?>
-                                <p class="text-slate-600 italic">"<?php echo htmlspecialchars($currentRating['comment']); ?>"</p>
-                            <?php endif; ?>
+                            <span class="text-[11px] text-slate-400">Đã nghiệm thu lúc <?php echo htmlspecialchars($currentRating['created_at']); ?></span>
                         </div>
-                    <?php endif; ?>
-
-                    <?php if ($userRole === 'requester' || in_array($userRole, ['agent', 'admin'])): ?>
-                        <!-- Form Đánh Giá hoặc Cập nhật CSAT -->
-                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-3 pt-1">
+                    <?php else: ?>
+                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-4 text-xs">
                             <input type="hidden" name="action" value="rate_ticket" />
-                            <div class="text-xs text-slate-700">
-                                <label class="block font-semibold mb-1.5">Mức độ hài lòng với hỗ trợ kỹ thuật:</label>
-                                <div class="flex items-center gap-3 flex-wrap">
-                                    <?php 
-                                    $curScore = (int)($currentRating['score'] ?? 5);
-                                    $scoreLabels = [
-                                        5 => '5 ★ Rất hài lòng',
-                                        4 => '4 ★ Hài lòng',
-                                        3 => '3 ★ Bình thường',
-                                        2 => '2 ★ Chưa hài lòng',
-                                        1 => '1 ★ Rất thất vọng',
-                                    ];
-                                    foreach ($scoreLabels as $sc => $slabel): 
-                                    ?>
-                                        <label class="inline-flex items-center gap-1 cursor-pointer bg-white px-3 py-1.5 rounded-xl border border-amber-200 hover:border-amber-400 transition text-xs font-semibold text-slate-800">
-                                            <input type="radio" name="score" value="<?php echo $sc; ?>" <?php echo $curScore === $sc ? 'checked' : ''; ?> class="text-amber-500 focus:ring-amber-400" />
-                                            <span><?php echo $slabel; ?></span>
-                                        </label>
-                                    <?php endforeach; ?>
+                            
+                            <div>
+                                <label class="block font-semibold text-slate-800 mb-2.5">
+                                    Mức độ hài lòng với hỗ trợ kỹ thuật:
+                                </label>
+                                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                                    <label class="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:border-amber-400 rounded-full cursor-pointer transition shadow-2xs">
+                                        <input type="radio" name="score" value="5" checked class="text-amber-500 focus:ring-amber-400 cursor-pointer" />
+                                        <span class="font-bold text-slate-800 text-xs">5 ★ Rất hài lòng</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:border-amber-400 rounded-full cursor-pointer transition shadow-2xs">
+                                        <input type="radio" name="score" value="4" class="text-amber-500 focus:ring-amber-400 cursor-pointer" />
+                                        <span class="font-semibold text-slate-700 text-xs">4 ★ Hài lòng</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:border-amber-400 rounded-full cursor-pointer transition shadow-2xs">
+                                        <input type="radio" name="score" value="3" class="text-amber-500 focus:ring-amber-400 cursor-pointer" />
+                                        <span class="font-semibold text-slate-700 text-xs">3 ★ Bình thường</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:border-amber-400 rounded-full cursor-pointer transition shadow-2xs">
+                                        <input type="radio" name="score" value="2" class="text-amber-500 focus:ring-amber-400 cursor-pointer" />
+                                        <span class="font-semibold text-slate-700 text-xs">2 ★ Chưa hài lòng</span>
+                                    </label>
+                                    <label class="inline-flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 hover:border-amber-400 rounded-full cursor-pointer transition shadow-2xs">
+                                        <input type="radio" name="score" value="1" class="text-amber-500 focus:ring-amber-400 cursor-pointer" />
+                                        <span class="font-semibold text-slate-700 text-xs">1 ★ Rất thất vọng</span>
+                                    </label>
                                 </div>
                             </div>
 
                             <div>
                                 <textarea name="comment" rows="2" placeholder="Góp ý hoặc nhận xét của bạn về thái độ và tốc độ hỗ trợ của KTV (tùy chọn)..." 
-                                          class="w-full px-3.5 py-2 bg-white border border-amber-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-400"><?php echo htmlspecialchars($currentRating['comment'] ?? ''); ?></textarea>
+                                          class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-amber-400 text-slate-800 text-xs"></textarea>
                             </div>
 
-                            <div class="flex items-center justify-between gap-3 flex-wrap">
-                                <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
-                                    <span>⭐</span> <?php echo $currentRating ? 'Cập Nhật Đánh Giá CSAT' : 'Xác Nhận Đã Xong & Gửi Đánh Giá CSAT'; ?>
+                            <div class="flex items-center justify-start">
+                                <button type="submit" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-2xl transition shadow-md shadow-amber-200 flex items-center gap-1.5 text-xs">
+                                    <span>⭐</span> Xác Nhận Đã Xong & Gửi Đánh Giá CSAT
                                 </button>
-                                
-                                <?php if ($userRole === 'requester' && $ticket['status'] === 'resolved'): ?>
-                                    <button type="button" onclick="document.getElementById('reopenModal').classList.remove('hidden')" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl text-xs transition border border-rose-200 flex items-center gap-1">
+                                <?php if ($ticket['status'] === 'resolved'): ?>
+                                    <button type="button" onclick="document.getElementById('reopenModal').classList.remove('hidden')" class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-2xl text-xs transition border border-rose-200 flex items-center gap-1.5 ml-2">
                                         <span>🔄</span> Chưa xong? (Yêu cầu KTV hỗ trợ tiếp)
                                     </button>
                                 <?php endif; ?>
                             </div>
                         </form>
                     <?php endif; ?>
+
                 </div>
             <?php endif; ?>
 

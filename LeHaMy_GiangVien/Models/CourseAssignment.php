@@ -10,7 +10,7 @@ require_once __DIR__ . '/../config/database.php';
 
 class CourseAssignment
 {
-    public static function count(string $keyword = ''): int
+    public static function count(string $keyword = '', int $lecturerId = 0): int
     {
         $sql = "SELECT COUNT(*) AS total
                 FROM course_assignments ca
@@ -20,6 +20,10 @@ class CourseAssignment
                 WHERE 1=1";
         $params = [];
 
+        if ($lecturerId > 0) {
+            $sql .= " AND ca.lecturer_id = :lid";
+            $params['lid'] = $lecturerId;
+        }
         if ($keyword !== '') {
             $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
                        OR co.course_code LIKE :kw OR co.name LIKE :kw
@@ -32,7 +36,7 @@ class CourseAssignment
         return (int) $stmt->fetch()['total'];
     }
 
-    public static function findAll(string $keyword = '', int $page = 1, int $perPage = 10): array
+    public static function findAll(string $keyword = '', int $page = 1, int $perPage = 10, int $lecturerId = 0): array
     {
         $offset = max(0, ($page - 1) * $perPage);
 
@@ -48,6 +52,14 @@ class CourseAssignment
                 WHERE 1=1";
         $params = [];
 
+        if ($lecturerId > 0) {
+            $sql .= " AND ca.lecturer_id = :lid";
+            $params['lid'] = $lecturerId;
+        }
+        if ($lecturerId > 0) {
+            $sql .= " AND ca.lecturer_id = :lid";
+            $params['lid'] = $lecturerId;
+        }
         if ($keyword !== '') {
             $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
                        OR co.course_code LIKE :kw OR co.name LIKE :kw

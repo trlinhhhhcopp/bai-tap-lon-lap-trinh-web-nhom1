@@ -14,11 +14,16 @@ class CourseAssignmentController
         $keyword = trim($_GET['q'] ?? '');
         $page    = max(1, (int) ($_GET['page'] ?? 1));
 
-        $total      = CourseAssignment::count($keyword);
+        $userRole   = $_SESSION['user']['role'] ?? '';
+        $userType   = $_SESSION['user']['user_type'] ?? '';
+        $isLecturer = ($userType === 'lecturer' && $userRole !== 'admin');
+        $lecturerId = $isLecturer ? (int)$_SESSION['user']['id'] : 0;
+
+        $total      = CourseAssignment::count($keyword, $lecturerId);
         $totalPages = max(1, (int) ceil($total / self::PER_PAGE));
         $page       = min($page, $totalPages);
 
-        $assignments = CourseAssignment::findAll($keyword, $page, self::PER_PAGE);
+        $assignments = CourseAssignment::findAll($keyword, $page, self::PER_PAGE, $lecturerId);
 
         $flash = $_SESSION['flash'] ?? null;
         unset($_SESSION['flash']);
@@ -26,8 +31,13 @@ class CourseAssignmentController
         require __DIR__ . '/../../views/lecturer/assignments/index.php';
     }
 
-    public function create(): void
-    {
+    public function create(): void {
+        $userRole = $_SESSION['user']['role'] ?? '';
+        if ($userRole !== 'admin') {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Chức năng Phân công giảng dạy chỉ dành cho Quản trị viên (Admin)!'];
+            header('Location: index.php?action=index');
+            exit;
+        }
         $errors = [];
         $old = [
             'class_id' => '', 'course_id' => '', 'lecturer_id' => '',
@@ -57,8 +67,13 @@ class CourseAssignmentController
         require __DIR__ . '/../../views/lecturer/assignments/create.php';
     }
 
-    public function edit(): void
-    {
+    public function edit(): void {
+        $userRole = $_SESSION['user']['role'] ?? '';
+        if ($userRole !== 'admin') {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Chức năng Phân công giảng dạy chỉ dành cho Quản trị viên (Admin)!'];
+            header('Location: index.php?action=index');
+            exit;
+        }
         $id = (int) ($_GET['id'] ?? 0);
         $assignment = CourseAssignment::findById($id);
 
@@ -94,8 +109,13 @@ class CourseAssignmentController
         require __DIR__ . '/../../views/lecturer/assignments/edit.php';
     }
 
-    public function delete(): void
-    {
+    public function delete(): void {
+        $userRole = $_SESSION['user']['role'] ?? '';
+        if ($userRole !== 'admin') {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Chức năng Phân công giảng dạy chỉ dành cho Quản trị viên (Admin)!'];
+            header('Location: index.php?action=index');
+            exit;
+        }
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             exit('Method Not Allowed – Chỉ chấp nhận POST');
