@@ -196,6 +196,28 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
     }
 }
 
+// -----------------------------------------------------------------------------
+// 5. XỬ LÝ ĐIỀU PHỐI / PHÂN CÔNG KTV PHỤ TRÁCH (ADMIN / TRIAGE)
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'assign_agent') {
+    if (in_array($userRole, ['agent', 'admin'])) {
+        $newAgentId = (int)($_POST['assigned_to'] ?? 0);
+        if ($newAgentId > 0) {
+            $agStmt = db()->prepare("SELECT name, user_code FROM users WHERE id = :id AND role = 'agent' LIMIT 1");
+            $agStmt->execute(['id' => $newAgentId]);
+            $newAgent = $agStmt->fetch();
+
+            if ($newAgent) {
+                db()->prepare("UPDATE tickets SET assigned_to = :aid WHERE id = :id")->execute(['aid' => $newAgentId, 'id' => $id]);
+                TicketRepository::addReply($id, (int)$currentUser['id'], "Quản trị viên đã phân công phiếu sự cố cho KTV: {$newAgent['name']} ({$newAgent['user_code']}).", true);
+                set_flash('success', "Đã phân công thành công cho KTV: <strong>{$newAgent['name']}</strong>!");
+                header("Location: show.php?id={$id}&view_as={$viewAs}");
+                exit;
+            }
+        }
+    }
+}
+
 // Lấy danh sách phản hồi
 $replies = TicketRepository::getReplies($id, $canViewInternal);
 $agents  = TicketRepository::getUsers('agent');
@@ -633,7 +655,25 @@ $flash   = get_flash();
                         <strong class="text-indigo-700 block"><?php echo htmlspecialchars($ticket['agent_name']); ?></strong>
                         <span class="text-slate-500 font-mono block">Mã KTV: <?php echo htmlspecialchars($ticket['agent_code']); ?></span>
                     <?php else: ?>
-                        <span class="text-amber-600 italic block">Đang phân công...</span>
+                        <span class="text-amber-600 font-bold italic block">⚠️ Đang chờ phân công...</span>
+                    <?php endif; ?>
+
+                    <?php if ($userRole === 'admin'): ?>
+                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="mt-2.5 pt-2 border-t border-slate-100 space-y-2">
+                            <input type="hidden" name="action" value="assign_agent" />
+                            <label class="block text-[11px] font-bold text-slate-700">🎯 Phân công / Điều chuyển KTV:</label>
+                            <select name="assigned_to" required class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500">
+                                <option value="">-- Chọn KTV tiếp nhận --</option>
+                                <?php foreach ($agents as $ag): ?>
+                                    <option value="<?php echo $ag['id']; ?>" <?php echo ((int)$ticket['assigned_to'] === (int)$ag['id']) ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($ag['name']); ?> (<?php echo htmlspecialchars($ag['user_code']); ?>)
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <button type="submit" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition text-[11px] shadow-xs flex items-center justify-center gap-1">
+                                <span>💾</span> Lưu Phân Công
+                            </button>
+                        </form>
                     <?php endif; ?>
                 </div>
 

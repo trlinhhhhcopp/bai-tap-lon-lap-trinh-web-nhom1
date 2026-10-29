@@ -44,14 +44,6 @@ class TicketRepository {
         if ($categoryId > 0) {
             $conditions[] = "t.category_id = :cat_id";
             $params['cat_id'] = $categoryId;
-            if ($requesterId > 0) {
-                $conditions[] = "t.requester_id = :req_id";
-                $params['req_id'] = $requesterId;
-            }
-            if ($assignedTo > 0) {
-                $conditions[] = "t.assigned_to = :assigned_to";
-                $params['assigned_to'] = $assignedTo;
-            }
         }
         if ($requesterId > 0) {
             $conditions[] = "t.requester_id = :req_id";
@@ -112,14 +104,6 @@ class TicketRepository {
         if ($categoryId > 0) {
             $conditions[] = "category_id = :cat_id";
             $params['cat_id'] = $categoryId;
-            if ($requesterId > 0) {
-                $conditions[] = "t.requester_id = :req_id";
-                $params['req_id'] = $requesterId;
-            }
-            if ($assignedTo > 0) {
-                $conditions[] = "t.assigned_to = :assigned_to";
-                $params['assigned_to'] = $assignedTo;
-            }
         }
         if ($requesterId > 0) {
             $conditions[] = "requester_id = :req_id";
@@ -232,12 +216,26 @@ class TicketRepository {
         $effectiveMinutes = (int)round($slaHours * $slaFactor * 60);
         $attachmentPath   = !empty($data['attachment_path']) ? $data['attachment_path'] : null;
 
+        // Cơ chế Smart Auto-Dispatch: Tự động phân công KTV chuyên trách (hoặc tràn tải nếu >= 15 phiếu)
+        $assignedTo = !empty($data['assigned_to']) ? (int)$data['assigned_to'] : null;
+        if (empty($assignedTo)) {
+            require_once __DIR__ . '/../Services/TicketService.php';
+            try {
+                $dispatch = \App\Services\TicketService::dispatchAgent((int)$data['category_id']);
+                if (!empty($dispatch['agent_id'])) {
+                    $assignedTo = (int)$dispatch['agent_id'];
+                }
+            } catch (\Throwable $e) {
+                $assignedTo = null;
+            }
+        }
+
         $sql = "INSERT INTO tickets (
-                    ticket_code, requester_id, category_id, priority_id, 
+                    ticket_code, requester_id, assigned_to, category_id, priority_id, 
                     title, description, system_affected, attachment_path,
                     status, created_at, sla_started_at, triage_due_at, due_at
                 ) VALUES (
-                    :ticket_code, :requester_id, :category_id, :priority_id,
+                    :ticket_code, :requester_id, :assigned_to, :category_id, :priority_id,
                     :title, :description, :system_affected, :attachment_path,
                     'new', NOW(), NOW(),
                     DATE_ADD(NOW(), INTERVAL 30 MINUTE),
@@ -248,6 +246,7 @@ class TicketRepository {
         $stmt->execute([
             'ticket_code'     => $ticketCode,
             'requester_id'    => (int)$data['requester_id'],
+            'assigned_to'     => $assignedTo,
             'category_id'     => (int)$data['category_id'],
             'priority_id'     => (int)$data['priority_id'],
             'title'           => trim($data['title']),
