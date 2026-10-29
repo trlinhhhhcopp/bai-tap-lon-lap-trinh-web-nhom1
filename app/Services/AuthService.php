@@ -9,6 +9,34 @@ use RuntimeException;
 
 class AuthService {
     /**
+     * Phương thức đăng nhập trả về mảng kết quả ['success', 'user', 'is_first_login', 'message']
+     */
+    public static function login(string $identifier, string $password): array {
+        try {
+            $res = self::authenticate($identifier, $password);
+            return [
+                'success'        => true,
+                'user'           => $res['user'],
+                'is_first_login' => $res['is_first_login'],
+                'message'        => 'Đăng nhập thành công!',
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'success'        => false,
+                'message'        => $e->getMessage(),
+                'user'           => null,
+                'is_first_login' => false,
+            ];
+        }
+    }
+
+    /**
+     * Alias đổi mật khẩu lần đầu tương thích AuthController
+     */
+    public static function changeFirstLoginPassword(int $userId, string $newPassword, string $confirmPassword): void {
+        self::changePasswordOnFirstLogin($userId, $newPassword, $confirmPassword);
+    }
+    /**
      * Xác thực tài khoản đăng nhập (Hỗ trợ cả Bcrypt chuẩn và mật khẩu mặc định 123456)
      */
     public static function authenticate(string $identifier, string $password): array {

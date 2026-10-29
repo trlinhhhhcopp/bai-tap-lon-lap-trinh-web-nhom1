@@ -24,3 +24,4 @@ class View {
         require_once $viewFile;
     }
 }
+
