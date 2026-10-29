@@ -90,20 +90,97 @@
         .container { max-width: 1200px; margin: 24px auto; padding: 0 16px; flex: 1; width: 100%; }
         
         .alert {
-            padding: 12px 18px;
-            border-radius: 8px;
+            position: relative;
+            padding: 14px 20px;
+            border-radius: 12px;
             margin-bottom: 20px;
             font-size: 13.5px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            border-left: 5px solid;
-            animation: fadeIn 0.3s ease;
+            gap: 12px;
+            border: 1px solid;
+            overflow: hidden;
+            animation: flashSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .alert-success { background: var(--success-bg); color: var(--success); border-color: var(--success); }
-        .alert-danger  { background: var(--danger-bg);  color: var(--danger);  border-color: var(--danger); }
-        .alert-warning { background: var(--warning-bg); color: var(--warning); border-color: var(--warning); }
-        .alert-info    { background: var(--info-bg);    color: var(--info);    border-color: var(--info); }
+        @keyframes flashSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-12px) scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        .alert-success {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            color: #166534;
+            border-color: #bbf7d0;
+            box-shadow: 0 10px 20px -4px rgba(34, 197, 94, 0.15);
+        }
+        .alert-danger {
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+            color: #991b1b;
+            border-color: #fecaca;
+            box-shadow: 0 10px 20px -4px rgba(239, 68, 68, 0.15);
+        }
+        .alert-warning {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            color: #92400e;
+            border-color: #fde68a;
+            box-shadow: 0 10px 20px -4px rgba(245, 158, 11, 0.15);
+        }
+        .alert-info {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: #075985;
+            border-color: #bae6fd;
+            box-shadow: 0 10px 20px -4px rgba(14, 165, 233, 0.15);
+        }
+
+        .alert-icon-wrapper {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 15px;
+            font-weight: 800;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+        .alert-close-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 0.45;
+            line-height: 1;
+            padding: 4px;
+            border-radius: 50%;
+            transition: all 0.2s;
+            color: inherit;
+            margin-left: 8px;
+        }
+        .alert-close-btn:hover {
+            opacity: 1;
+            background: rgba(0, 0, 0, 0.06);
+        }
+        .alert-progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: currentColor;
+            opacity: 0.3;
+            border-radius: 0 0 12px 12px;
+            animation: alertTimer 3s linear forwards;
+        }
+        @keyframes alertTimer {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
 
         .footer {
             background: #0f172a;
@@ -130,8 +207,13 @@
 
     <div class="navbar-menu">
         <?php if ($currentUser): ?>
-            <div class="user-pill">
-                <span>👤 <?= htmlspecialchars($currentUser['name']) ?></span>
+            <div class="user-pill" style="display: flex; align-items: center; gap: 8px;">
+                <?php if (!empty($currentUser['avatar_path'])): ?>
+                    <img src="/tickets/attachment?file=<?= urlencode($currentUser['avatar_path']) ?>" alt="Avatar" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1.5px solid #38bdf8;">
+                <?php else: ?>
+                    <span>👤</span>
+                <?php endif; ?>
+                <span><?= htmlspecialchars($currentUser['name']) ?></span>
                 <span style="opacity: 0.6;">|</span>
                 <span style="color: #cbd5e1;"><?= strtoupper($currentUser['role']) ?></span>
             </div>
@@ -144,19 +226,66 @@
 
             <a href="/logout" style="color: #f87171;" onclick="return confirm('Bạn có chắc muốn đăng xuất?');">🚪 Đăng xuất</a>
         <?php else: ?>
-            <a href="/guest/ticket">🆘 Báo khóa tài khoản</a>
-            <a href="/guest/lookup">🔍 Tra cứu PIN</a>
+            <a href="/guest/ticket" style="color: #f87171; font-weight: 600;">🆘 Báo cứu hộ tài khoản</a>
+            <a href="/guest/lookup">🔍 Tra cứu phiếu cứu hộ</a>
             <a href="/login" style="background: var(--primary); color: #fff;">🔑 Đăng nhập</a>
         <?php endif; ?>
     </div>
 </nav>
 
 <div class="container">
-    <?php if ($flash): ?>
-        <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
-            <span>📢</span>
-            <div><?= $flash['message'] ?></div>
+    <?php if (\App\Core\Database::isFallback()): ?>
+        <div class="alert alert-warning" style="margin-bottom: 16px;">
+            <div class="alert-icon-wrapper">⚠️</div>
+            <div>
+                <strong>Lưu ý về CSDL:</strong> Bạn đang tạm thời ở <em>Chế độ dữ liệu dự phòng cục bộ</em> do MySQL trong XAMPP chưa được bật. 
+                Để xem lại đầy đủ tất cả các phiếu bạn đã tạo trên phpMyAdmin, bạn chỉ cần mở <strong>XAMPP Control Panel</strong> và bấm <strong>Start tại ô MySQL</strong> rồi nhấn <strong>F5</strong> nhé!
+            </div>
         </div>
+    <?php endif; ?>
+
+    <?php if ($flash): ?>
+        <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>" id="systemFlashAlert">
+            <div class="alert-icon-wrapper">
+                <?php if ($flash['type'] === 'success'): ?>
+                    <span style="color: #16a34a;">✓</span>
+                <?php elseif ($flash['type'] === 'danger'): ?>
+                    <span style="color: #dc2626;">✕</span>
+                <?php elseif ($flash['type'] === 'warning'): ?>
+                    <span>⚠️</span>
+                <?php else: ?>
+                    <span style="color: #0284c7;">ℹ️</span>
+                <?php endif; ?>
+            </div>
+            <div style="flex: 1; font-weight: 500;"><?= $flash['message'] ?></div>
+            <button type="button" onclick="closeSystemFlash()" class="alert-close-btn" title="Đóng thông báo">✕</button>
+            <?php if (empty($flash['message']) || !str_contains($flash['message'], 'resetCountdownBox')): ?>
+                <div class="alert-progress-bar"></div>
+            <?php endif; ?>
+        </div>
+        <script>
+        function closeSystemFlash() {
+            const flash = document.getElementById('systemFlashAlert');
+            if (!flash) return;
+            flash.style.transition = 'opacity 0.4s ease, transform 0.4s ease, margin-bottom 0.4s ease';
+            flash.style.opacity = '0';
+            flash.style.transform = 'translateY(-12px) scale(0.98)';
+            flash.style.marginBottom = '0';
+            setTimeout(function() {
+                if (flash && flash.parentNode) flash.parentNode.removeChild(flash);
+            }, 400);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const flash = document.getElementById('systemFlashAlert');
+            // Nếu không phải là flash message đặc biệt có đồng hồ đếm ngược 15 phút của quên mật khẩu
+            if (flash && !flash.querySelector('#resetCountdownBox')) {
+                setTimeout(function() {
+                    closeSystemFlash();
+                }, 3000); // Tự động biến mất sau đúng 3 giây (3000ms)
+            }
+        });
+        </script>
     <?php endif; ?>
 
     <!-- Nội dung view con sẽ chèn vào đây -->

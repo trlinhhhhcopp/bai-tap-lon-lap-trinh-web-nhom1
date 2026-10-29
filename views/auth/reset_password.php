@@ -3,7 +3,7 @@
 <div style="max-width: 480px; margin: 30px auto; background: #fff; border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); overflow: hidden;">
     <div style="background: linear-gradient(135deg, var(--navy-dark) 0%, #1e293b 100%); color: #fff; padding: 22px; text-align: center; border-bottom: 3px solid var(--primary);">
         <h2 style="font-size: 18px; color: #38bdf8; margin-bottom: 4px;">Đặt Lại Mật Khẩu Mới</h2>
-        <p style="font-size: 12.5px; color: #94a3b8;">Xác thực Token bảo mật SHA-256</p>
+        <p style="font-size: 12.5px; color: #94a3b8;">Nhập mật khẩu mới để bảo vệ an toàn cho tài khoản của bạn</p>
     </div>
 
     <div style="padding: 24px;">

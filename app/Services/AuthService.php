@@ -9,17 +9,18 @@ use RuntimeException;
 
 class AuthService {
     /**
-     * Xác thực Đăng nhập & Kiểm tra cơ chế Khóa mềm / Khóa cứng
+     * Xác thực Đăng nhập bằng Mã sinh viên / Mã người dùng HOẶC Email trường
+     * & Kiểm tra cơ chế Khóa mềm / Khóa cứng
      */
     public static function login(string $identifier, string $password): array {
         $identifier = trim($identifier);
         if (empty($identifier) || empty($password)) {
-            return ['success' => false, 'message' => 'Vui lòng nhập đầy đủ Mã đăng nhập và Mật khẩu!'];
+            return ['success' => false, 'message' => 'Vui lòng nhập đầy đủ Mã sinh viên (hoặc Email) và Mật khẩu!'];
         }
 
         $user = User::findByEmailOrCode($identifier);
         if (!$user) {
-            return ['success' => false, 'message' => 'Tài khoản không tồn tại trên hệ thống!'];
+            return ['success' => false, 'message' => 'Tài khoản không tồn tại trên hệ thống! Vui lòng kiểm tra lại Mã sinh viên hoặc Email.'];
         }
 
         // 1. Kiểm tra Khóa cứng (Do kỷ luật buộc thôi học hoặc hết khóa)
@@ -91,21 +92,21 @@ class AuthService {
     }
 
     /**
-     * Tự phục vụ cấp lại mật khẩu qua Email (SSPR)
+     * Cấp liên kết đặt lại mật khẩu bảo mật (Hiệu lực 15 phút)
      */
-    public static function requestResetToken(string $email): string {
-        $email = trim($email);
-        $user = User::findByEmailOrCode($email);
+    public static function requestResetToken(string $identifier): string {
+        $identifier = trim($identifier);
+        $user = User::findByEmailOrCode($identifier);
 
         if (!$user) {
-            throw new RuntimeException("Không tìm thấy người dùng với email [{$email}]!");
+            throw new RuntimeException("Không tìm thấy tài khoản với thông tin [{$identifier}]! Vui lòng kiểm tra lại Mã sinh viên hoặc Email.");
         }
 
         if ($user['is_active'] == 0 || $user['academic_status'] === 'expelled') {
-            throw new RuntimeException("Tài khoản này đã bị khóa kỷ luật, không thể sử dụng tính năng cấp lại mật khẩu!");
+            throw new RuntimeException("Tài khoản này đã bị khóa kỷ luật, không thể sử dụng tính năng đặt lại mật khẩu! Vui lòng gửi phiếu cứu hộ ngoài trang chủ.");
         }
 
-        return PasswordReset::createToken($user['id'], $email, 15);
+        return PasswordReset::createToken($user['id'], $user['email'], 15);
     }
 
     /**

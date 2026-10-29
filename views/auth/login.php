@@ -3,7 +3,7 @@
 <style>
     .auth-container {
         max-width: 460px;
-        margin: 30px auto;
+        margin: 35px auto;
         background: var(--bg-card);
         border: 1px solid var(--border-color);
         border-radius: 12px;
@@ -48,36 +48,14 @@
     .auth-links {
         display: flex;
         justify-content: space-between;
-        margin-top: 15px;
+        align-items: center;
+        margin-top: 18px;
         font-size: 12.5px;
+        gap: 10px;
     }
     .auth-links a { color: var(--primary); text-decoration: none; font-weight: 600; }
     .auth-links a:hover { text-decoration: underline; }
-    
-    /* Quick Demo Box */
-    .demo-box {
-        margin-top: 20px;
-        padding: 15px;
-        background: #f8fafc;
-        border: 1px dashed var(--border-color);
-        border-radius: 8px;
-        font-size: 12px;
-    }
-    .demo-title { font-weight: 700; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 5px; }
-    .demo-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-    .btn-demo {
-        padding: 5px 8px;
-        background: #fff;
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        font-size: 11px;
-        text-align: left;
-        cursor: pointer;
-        transition: all 0.2s;
-        display: flex;
-        flex-direction: column;
-    }
-    .btn-demo:hover { background: var(--primary-light); border-color: var(--primary); }
+    .helper-text { font-size: 11.5px; color: #64748b; margin-top: 4px; display: block; }
 </style>
 
 <div class="auth-container">
@@ -89,8 +67,9 @@
     <div class="auth-body">
         <form method="POST" action="/login">
             <div class="form-group">
-                <label class="form-label">Mã SV / Mã GV hoặc Email trường:</label>
-                <input type="text" name="identifier" id="identifier" class="form-control" required placeholder="VD: 224001729 hoặc email" autofocus>
+                <label class="form-label">Mã sinh viên / Mã tài khoản:</label>
+                <input type="text" name="identifier" id="identifier" class="form-control" required placeholder="VD: 224001729 hoặc ADM001" autofocus>
+                <span class="helper-text">Sinh viên nhập Mã sinh viên (VD: 224001729) hoặc Email trường cấp</span>
             </div>
 
             <div class="form-group">
@@ -101,42 +80,11 @@
             <button type="submit" class="btn-login">Đăng Nhập Ngay ➔</button>
 
             <div class="auth-links">
-                <a href="/forgot-password">🔑 Quên mật khẩu (SSPR)?</a>
-                <a href="/guest/ticket" style="color: #dc2626;">🆘 Bị khóa tài khoản?</a>
+                <a href="/forgot-password">🔑 Quên mật khẩu?</a>
+                <a href="/guest/ticket" style="color: #dc2626;">🆘 Báo cứu hộ tài khoản (Bị khóa)?</a>
             </div>
         </form>
-
-        <!-- Nút bấm điền nhanh tài khoản kiểm thử cho Thầy Cô & Sinh viên -->
-        <div class="demo-box">
-            <div class="demo-title">💡 Chọn nhanh tài khoản kiểm thử (Demo 1-Click):</div>
-            <div class="demo-btn-grid">
-                <button type="button" class="btn-demo" onclick="fillDemo('224001729', '123456')">
-                    <strong>🎓 SV Trần Thục Linh</strong>
-                    <span>MSV: 224001729</span>
-                </button>
-                <button type="button" class="btn-demo" onclick="fillDemo('admin@daihocthudo.edu.vn', '123456')">
-                    <strong>🏛️ Quản Trị Viên (Admin)</strong>
-                    <span>admin@daihocthudo.edu.vn</span>
-                </button>
-                <button type="button" class="btn-demo" onclick="fillDemo('ktv1@daihocthudo.edu.vn', '123456')">
-                    <strong>🛠️ Kỹ Thuật Viên 1</strong>
-                    <span>KTV Nguyễn Văn An (SSO)</span>
-                </button>
-                <button type="button" class="btn-demo" onclick="fillDemo('224001999', '123456')">
-                    <strong style="color:red;">🔒 SV Bị Kỷ Luật Khóa</strong>
-                    <span>Test chặn khóa cứng</span>
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 
-<script>
-function fillDemo(username, password) {
-    document.getElementById('identifier').value = username;
-    document.getElementById('password').value = password;
-}
-</script>
-
 <?php require __DIR__ . '/../layouts/footer.php'; ?>
-

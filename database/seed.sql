@@ -1,4 +1,4 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- BÀI TẬP LỚN LẬP TRÌNH WEB - HỌC KỲ I
 -- TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI (TUD) - KHOA CÔNG NGHỆ THÔNG TIN
 -- CHỦ ĐỀ 9: HỆ THỐNG HELPDESK CNTT TRỰC TUYẾN (IT SUPPORT ONLINE)
@@ -9,20 +9,24 @@
 
 USE `helpdesk_thudo`;
 
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+SET character_set_connection=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 0;
 
-TRUNCATE TABLE `ticket_ratings`;
-TRUNCATE TABLE `ticket_replies`;
-TRUNCATE TABLE `tickets`;
-TRUNCATE TABLE `password_resets`;
-TRUNCATE TABLE `course_assignments`;
-TRUNCATE TABLE `class_students`;
-TRUNCATE TABLE `courses`;
-TRUNCATE TABLE `classes`;
-TRUNCATE TABLE `holidays`;
-TRUNCATE TABLE `priorities`;
-TRUNCATE TABLE `categories`;
-TRUNCATE TABLE `users`;
+DELETE FROM `ticket_ratings`;
+DELETE FROM `ticket_replies`;
+DELETE FROM `tickets`;
+DELETE FROM `password_resets`;
+DELETE FROM `course_assignments`;
+DELETE FROM `class_students`;
+DELETE FROM `courses`;
+DELETE FROM `classes`;
+DELETE FROM `holidays`;
+DELETE FROM `priorities`;
+DELETE FROM `categories`;
+DELETE FROM `users`;
 
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -50,7 +54,7 @@ INSERT INTO `priorities` (`id`, `code`, `name`, `sla_factor`, `sort_order`) VALU
 -- 1 Lớp sinh hoạt có nhiều sinh viên
 -- ==============================================================================
 INSERT INTO `classes` (`id`, `class_code`, `name`, `cohort`, `faculty`, `academic_year`) VALUES
-(1, 'D24-CNTT1', 'Lớp Công nghệ Thông tin D24-1', 'D24', 'Khoa Công nghệ Thông tin', '2024-2028'),
+(1, 'TUD-D2024', 'Toán Ứng Dụng D2024', 'D2024', 'Khoa: Toán-CNTT', '2024-2028'),
 (2, 'D24-CNTT2', 'Lớp Công nghệ Thông tin D24-2', 'D24', 'Khoa Công nghệ Thông tin', '2024-2028'),
 (3, 'D20-CNTT1', 'Lớp Công nghệ Thông tin D20-1 (Đã tốt nghiệp)', 'D20', 'Khoa Công nghệ Thông tin', '2020-2024');
 

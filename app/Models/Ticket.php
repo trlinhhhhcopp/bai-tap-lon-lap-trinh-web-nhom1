@@ -40,18 +40,36 @@ class Ticket {
         return $stmt->fetchAll();
     }
 
+    public static function generateUniqueTicketCode(string $prefix = 'HD'): string {
+        $pdo = Database::getConnection();
+        $year = date('Y');
+        $dayMonth = date('dm'); // Ngày (2 số) + Tháng (2 số), ví dụ ngày 29/10 => '2910'
+        do {
+            // Sinh mã gồm tiền tố HD, năm, ngày tháng và 6 số ngẫu nhiên bảo mật (Ví dụ: HD-2026-2910-849216)
+            $randomNum = str_pad((string)random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+            $code = "{$prefix}-{$year}-{$dayMonth}-{$randomNum}";
+
+            // Kiểm tra trùng lặp trong CSDL để đảm bảo độc nhất 100% không trùng với bất kỳ ai
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM tickets WHERE ticket_code = :code");
+            $stmt->execute([':code' => $code]);
+            $exists = (int)$stmt->fetchColumn() > 0;
+        } while ($exists);
+
+        return $code;
+    }
+
     public static function create(array $data): int {
         $pdo = Database::getConnection();
-        $ticketCode = 'HD-' . date('Y') . '-' . str_pad((string)rand(1, 99999), 5, '0', STR_PAD_LEFT);
+        $ticketCode = $data['ticket_code'] ?? self::generateUniqueTicketCode('HD');
 
         $sql = "INSERT INTO tickets (
                     ticket_code, requester_id, assigned_to, category_id, priority_id,
                     class_id, course_id, is_guest_ticket, contact_email, lookup_pin,
-                    title, description, system_affected, status, due_at
+                    title, description, system_affected, attachment_path, status, due_at
                 ) VALUES (
                     :ticket_code, :requester_id, :assigned_to, :category_id, :priority_id,
                     :class_id, :course_id, :is_guest, :contact_email, :lookup_pin,
-                    :title, :description, :system_affected, 'new', :due_at
+                    :title, :description, :system_affected, :attachment_path, 'new', :due_at
                 )";
 
         $stmt = $pdo->prepare($sql);
@@ -69,23 +87,35 @@ class Ticket {
             ':title'            => trim($data['title']),
             ':description'      => trim($data['description']),
             ':system_affected'  => trim($data['system_affected'] ?? 'Chung'),
+            ':attachment_path'  => $data['attachment_path'] ?? null,
             ':due_at'           => date('Y-m-d H:i:s', strtotime('+4 hours')),
         ]);
 
         return (int) $pdo->lastInsertId();
     }
 
-    public static function findByGuestCodeAndPin(string $code, string $pin): ?array {
+    public static function findByTicketCode(string $code): ?array {
         $pdo = Database::getConnection();
         $sql = "SELECT t.*, c.name AS category_name, COALESCE(agent.name, 'Đang chờ phân công') AS agent_name
                 FROM tickets t
                 JOIN categories c ON c.id = t.category_id
                 LEFT JOIN users agent ON agent.id = t.assigned_to
-                WHERE t.ticket_code = :code AND t.lookup_pin = :pin LIMIT 1";
+                WHERE UPPER(t.ticket_code) = UPPER(:code) LIMIT 1";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([':code' => trim($code), ':pin' => trim($pin)]);
+        $stmt->execute([':code' => trim($code)]);
         $res = $stmt->fetch();
         return $res ?: null;
+    }
+
+    public static function findByGuestCodeAndPin(string $code, ?string $pin = null): ?array {
+        return self::findByTicketCode($code);
+    }
+
+    public static function cancelTicket(int $id): bool {
+        $pdo = Database::getConnection();
+        $sql = "UPDATE tickets SET status = 'closed', closed_reason = 'cancelled' WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        return $stmt->execute([':id' => $id]);
     }
 }
 
