@@ -38,6 +38,11 @@ class CourseAssignmentController
             header('Location: index.php?action=index');
             exit;
         }
+        if (!empty($_SESSION['assignments_locked'])) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => '🔒 Cơ sở dữ liệu phân công giảng dạy đang bị KHÓA! Quản trị viên cần mở khóa trước khi thêm phân công.'];
+            header('Location: index.php?action=index');
+            exit;
+        }
         $errors = [];
         $old = [
             'class_id' => '', 'course_id' => '', 'lecturer_id' => '',
@@ -71,6 +76,11 @@ class CourseAssignmentController
         $userRole = $_SESSION['user']['role'] ?? '';
         if ($userRole !== 'admin') {
             $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Chức năng Phân công giảng dạy chỉ dành cho Quản trị viên (Admin)!'];
+            header('Location: index.php?action=index');
+            exit;
+        }
+        if (!empty($_SESSION['assignments_locked'])) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => '🔒 Cơ sở dữ liệu phân công giảng dạy đang bị KHÓA! Quản trị viên cần mở khóa trước khi sửa phân công.'];
             header('Location: index.php?action=index');
             exit;
         }
@@ -113,6 +123,11 @@ class CourseAssignmentController
         $userRole = $_SESSION['user']['role'] ?? '';
         if ($userRole !== 'admin') {
             $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Chức năng Phân công giảng dạy chỉ dành cho Quản trị viên (Admin)!'];
+            header('Location: index.php?action=index');
+            exit;
+        }
+        if (!empty($_SESSION['assignments_locked'])) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => '🔒 Cơ sở dữ liệu phân công giảng dạy đang bị KHÓA! Quản trị viên cần mở khóa trước khi xóa phân công.'];
             header('Location: index.php?action=index');
             exit;
         }
@@ -159,5 +174,143 @@ class CourseAssignmentController
         }
         return $errors;
     }
+    public function exportCsv(): void
+    {
+        $userRole   = $_SESSION['user']['role'] ?? '';
+        $userType   = $_SESSION['user']['user_type'] ?? '';
+        $isLecturer = ($userType === 'lecturer' && $userRole !== 'admin');
+        $lecturerId = $isLecturer ? (int)$_SESSION['user']['id'] : 0;
+
+        $rows = CourseAssignment::exportAll($lecturerId);
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="bang_phan_cong_giang_day_helpdesk_' . date('Ymd_His') . '.csv"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $out = fopen('php://output', 'w');
+        // UTF-8 BOM
+        fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
+
+        fputcsv($out, [
+            'STT', 'Mã Lớp Học Phần', 'Tên Lớp', 'Mã Môn Học', 'Tên Môn Học',
+            'Số Tín Chỉ', 'Mã Giảng Viên', 'Họ Tên Giảng Viên', 'Email Giảng Viên',
+            'Học Kỳ', 'Năm Học', 'Thời Gian Gán'
+        ]);
+
+        foreach ($rows as $idx => $r) {
+            fputcsv($out, [
+                $idx + 1,
+                $r['class_code'],
+                $r['class_name'],
+                $r['course_code'],
+                $r['course_name'],
+                $r['credits'] ?? 3,
+                $r['lecturer_code'] ?? '',
+                $r['lecturer_name'],
+                $r['lecturer_email'],
+                $r['semester'],
+                $r['academic_year'],
+                $r['created_at'],
+            ]);
+        }
+        fclose($out);
+        exit;
+    }
+
+    public function toggleLock(): void
+    {
+        $userRole = $_SESSION['user']['role'] ?? '';
+        if ($userRole !== 'admin') {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Chỉ Quản trị viên (Admin) mới có quyền Khóa / Mở khóa CSDL!'];
+            header('Location: index.php?action=index');
+            exit;
+        }
+
+        $_SESSION['assignments_locked'] = !($_SESSION['assignments_locked'] ?? false);
+        $isLocked = $_SESSION['assignments_locked'];
+
+        $_SESSION['flash'] = [
+            'type' => $isLocked ? 'danger' : 'success',
+            'msg'  => $isLocked 
+                ? '🔒 Đã KHÓA cơ sở dữ liệu phân công giảng dạy thành công! (Chế độ chỉ đọc/Freeze)' 
+                : '🔓 Đã MỞ KHÓA cơ sở dữ liệu phân công giảng dạy! Có thể tiếp tục thêm, sửa, xóa.'
+        ];
+        header('Location: index.php?action=index');
+        exit;
+    }
+
+    public function addClass(): void
+    {
+        $userRole = $_SESSION['user']['role'] ?? '';
+        if ($userRole !== 'admin') {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Chỉ Admin mới có quyền thêm lớp học!'];
+            header('Location: index.php?action=index');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!empty($_SESSION['assignments_locked'])) {
+                $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Cơ sở dữ liệu đang bị KHÓA! Vui lòng mở khóa trước khi thêm lớp.'];
+                header('Location: index.php?action=index');
+                exit;
+            }
+
+            $code       = trim($_POST['class_code'] ?? '');
+            $name       = trim($_POST['class_name'] ?? '');
+            $cohort     = trim($_POST['cohort'] ?? 'D24');
+            $department = trim($_POST['department'] ?? 'Khoa Công Nghệ Thông Tin');
+
+            if (!empty($code) && !empty($name)) {
+                try {
+                    CourseAssignment::addClass($code, $name, $cohort, $department);
+                    $_SESSION['flash'] = ['type' => 'success', 'msg' => "Đã thêm lớp học mới: {$code} - {$name} thành công!"];
+                } catch (\Exception $e) {
+                    $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Lỗi thêm lớp học: ' . $e->getMessage()];
+                }
+            } else {
+                $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Vui lòng nhập đầy đủ Mã lớp và Tên lớp học!'];
+            }
+        }
+        $ref = $_POST['redirect_to'] ?? 'index';
+        header('Location: index.php?action=' . $ref);
+        exit;
+    }
+
+    public function addCourse(): void
+    {
+        $userRole = $_SESSION['user']['role'] ?? '';
+        if ($userRole !== 'admin') {
+            $_SESSION['flash'] = ['type' => 'error', 'msg' => 'Chỉ Admin mới có quyền thêm môn học!'];
+            header('Location: index.php?action=index');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!empty($_SESSION['assignments_locked'])) {
+                $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Cơ sở dữ liệu đang bị KHÓA! Vui lòng mở khóa trước khi thêm môn.'];
+                header('Location: index.php?action=index');
+                exit;
+            }
+
+            $code       = trim($_POST['course_code'] ?? '');
+            $name       = trim($_POST['course_name'] ?? '');
+            $credits    = max(1, (int)($_POST['credits'] ?? 3));
+            $department = trim($_POST['department'] ?? 'Khoa Công Nghệ Thông Tin');
+
+            if (!empty($code) && !empty($name)) {
+                try {
+                    CourseAssignment::addCourse($code, $name, $credits, $department);
+                    $_SESSION['flash'] = ['type' => 'success', 'msg' => "Đã thêm môn học mới: {$code} - {$name} ({$credits} tín chỉ) thành công!"];
+                } catch (\Exception $e) {
+                    $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Lỗi thêm môn học: ' . $e->getMessage()];
+                }
+            } else {
+                $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Vui lòng nhập đầy đủ Mã môn và Tên môn học!'];
+            }
+        }
+        $ref = $_POST['redirect_to'] ?? 'index';
+        header('Location: index.php?action=' . $ref);
+        exit;
+    }
 }
-?>

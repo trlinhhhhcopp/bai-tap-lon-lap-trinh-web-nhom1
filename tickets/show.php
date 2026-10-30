@@ -101,39 +101,47 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         $forceStatus = !empty($_POST['quick_status']) ? trim($_POST['quick_status']) : null;
     }
     
+    $uploadedPaths = [];
+    $uploadDir = __DIR__ . '/../uploads/replies/';
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+    $allowed = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf'];
+
+    // Page 6: Hỗ trợ đính kèm tối đa 10 file
+    if (!empty($_FILES['attachments']['name']) && is_array($_FILES['attachments']['name'])) {
+        $countFiles = count($_FILES['attachments']['name']);
+        for ($i = 0; $i < min(10, $countFiles); $i++) {
+            if ($_FILES['attachments']['error'][$i] === UPLOAD_ERR_OK) {
+                $fName = $_FILES['attachments']['name'][$i];
+                $fTmp  = $_FILES['attachments']['tmp_name'][$i];
+                $fSize = $_FILES['attachments']['size'][$i];
+                $ext   = strtolower(pathinfo($fName, PATHINFO_EXTENSION));
+
+                if (in_array($ext, $allowed, true) && $fSize <= 10 * 1024 * 1024) {
+                    $safeName = 'reply_' . $id . '_' . time() . '_' . $i . '_' . bin2hex(random_bytes(3)) . '.' . $ext;
+                    if (move_uploaded_file($fTmp, $uploadDir . $safeName)) {
+                        $uploadedPaths[] = 'uploads/replies/' . $safeName;
+                    }
+                }
+            }
+        }
+    } elseif (!empty($_FILES['attachment']['name']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
+        $fName = $_FILES['attachment']['name'];
+        $fTmp  = $_FILES['attachment']['tmp_name'];
+        $fSize = $_FILES['attachment']['size'];
+        $ext   = strtolower(pathinfo($fName, PATHINFO_EXTENSION));
+        if (in_array($ext, $allowed, true) && $fSize <= 10 * 1024 * 1024) {
+            $safeName = 'reply_' . $id . '_' . time() . '_' . bin2hex(random_bytes(3)) . '.' . $ext;
+            if (move_uploaded_file($fTmp, $uploadDir . $safeName)) {
+                $uploadedPaths[] = 'uploads/replies/' . $safeName;
+            }
+        }
+    }
+
     $attachmentPath = null;
-
-    // Xử lý tệp đính kèm hình ảnh (KTV gửi minh chứng kết quả fix, SV gửi ảnh lỗi)
-    if (!empty($_FILES['attachment']['name']) && $_FILES['attachment']['error'] === UPLOAD_ERR_OK) {
-        $fileTmp  = $_FILES['attachment']['tmp_name'];
-        $fileName = $_FILES['attachment']['name'];
-        $fileSize = $_FILES['attachment']['size'];
-        $ext      = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
-        $allowed  = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
-
-        if (!in_array($ext, $allowed, true)) {
-            set_flash('error', "Chỉ hỗ trợ tệp đính kèm dạng hình ảnh (JPG, PNG, WEBP, GIF)!");
-            header("Location: show.php?id={$id}&view_as={$viewAs}");
-            exit;
-        }
-
-        if ($fileSize > 5 * 1024 * 1024) {
-            set_flash('error', "Kích thước ảnh vượt quá dung lượng tối đa 5MB!");
-            header("Location: show.php?id={$id}&view_as={$viewAs}");
-            exit;
-        }
-
-        $uploadDir = __DIR__ . '/../uploads/replies/';
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0777, true);
-        }
-
-        $safeName   = 'reply_' . $id . '_' . time() . '_' . bin2hex(random_bytes(3)) . '.' . $ext;
-        $targetFile = $uploadDir . $safeName;
-
-        if (move_uploaded_file($fileTmp, $targetFile)) {
-            $attachmentPath = 'uploads/replies/' . $safeName;
-        }
+    if (!empty($uploadedPaths)) {
+        $attachmentPath = json_encode($uploadedPaths, JSON_UNESCAPED_SLASHES);
     }
 
     if (!empty($message) || !empty($attachmentPath) || !empty($forceStatus)) {
@@ -223,6 +231,44 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
     }
 }
 
+// -----------------------------------------------------------------------------
+// 5.5. XỬ LÝ BÁO CÁO SPAM & KHÓA VĨNH VIỄN TÀI KHOẢN (KTV & ADMIN - PAGE 8)
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'report_spam') {
+    if (in_array($userRole, ['agent', 'admin'])) {
+        $reason = trim($_POST['spam_reason'] ?? 'Gửi tin rác / Phá hoại trạm cứu hộ');
+        $lockPermanent = isset($_POST['lock_permanent']) && $_POST['lock_permanent'] === '1';
+
+        $pdo = db();
+        $pdo->prepare("UPDATE tickets SET is_spam = 1, spam_reason = :r WHERE id = :id")->execute(['r' => $reason, 'id' => $id]);
+        TicketRepository::addReply($id, (int)$currentUser['id'], "🚨 [BÁO CÁO SPAM / NGHỊCH TRẠM CỨU HỘ]: {$reason}", true);
+
+        if ($lockPermanent || $userRole === 'admin') {
+            $pdo->prepare("UPDATE users SET is_active = 0, lock_reason = 'banned_rescue_abuse' WHERE id = :uid")
+                ->execute(['uid' => $ticket['requester_id']]);
+            set_flash('success', "Đã ghi nhận báo cáo spam và KHÓA VĨNH VIỄN tài khoản {$ticket['requester_name']} ({$ticket['requester_code']}) - Chặn trạm cứu hộ!");
+        } else {
+            set_flash('success', "Đã gửi báo cáo sinh viên spam lên Quản trị viên (Admin) xem xét khóa tài khoản!");
+        }
+
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// 5.6. XỬ LÝ NGHIỆM THU XONG / HOÀN TẤT KỸ THUẬT (PAGE 8)
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'quick_resolve') {
+    if (in_array($userRole, ['agent', 'admin'])) {
+        TicketRepository::updateStatus($id, 'resolved');
+        TicketRepository::addReply($id, (int)$currentUser['id'], "✅ [BIÊN BẢN NGHIỆM THU KỸ THUẬT]: Kỹ thuật viên đã xử lý và nghiệm thu giải pháp hoàn tất. Kính mời người dùng kiểm tra lại và gửi đánh giá CSAT.", false, 'resolved');
+        set_flash('success', "Đã nghiệm thu xong giải pháp kỹ thuật! Phiếu đã chuyển sang trạng thái ĐÃ CÓ GIẢI PHÁP (resolved).");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
 // Lấy danh sách phản hồi
 $replies = TicketRepository::getReplies($id, $canViewInternal);
 $agents  = TicketRepository::getUsers('agent');
@@ -301,17 +347,53 @@ $flash   = get_flash();
             </div>
 
             <div class="flex items-center gap-2 flex-wrap">
+                <?php if (in_array($userRole, ['agent', 'admin']) && !in_array($ticket['status'], ['resolved', 'closed'])): ?>
+                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Xác nhận nghiệm thu xong giải pháp kỹ thuật cho phiếu này?');">
+                        <input type="hidden" name="action" value="quick_resolve" />
+                        <button type="submit" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-full shadow-sm transition flex items-center gap-1">
+                            <span>✅</span> Nghiệm Thu Xong
+                        </button>
+                    </form>
+                <?php endif; ?>
+
                 <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                    <button type="button" onclick="document.getElementById('reportSpamModal').classList.remove('hidden')" 
+                            class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-full border border-rose-200 transition flex items-center gap-1">
+                        <span>🚨</span> Báo Cáo SV Spam
+                    </button>
                     <a href="edit.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200 transition">
                         ✏️ Sửa phiếu
                     </a>
                 <?php endif; ?>
                 <a href="index.php" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition flex items-center gap-1">
-                    — Danh sách phiếu
+                    ← Danh sách phiếu
                 </a>
             </div>
         </div>
     </div>
+
+    <!-- BANNER CẢNH BÁO SPAM NẾU CÓ (PAGE 8) -->
+    <?php if (!empty($ticket['is_spam'])): ?>
+        <div class="p-4 bg-rose-50 border-2 border-rose-300 rounded-3xl flex items-center justify-between flex-wrap gap-3 text-xs text-rose-900 shadow-sm">
+            <div class="flex items-center gap-2.5">
+                <span class="text-2xl">🚨</span>
+                <div>
+                    <strong class="text-rose-950 text-sm block">PHIẾU ĐÃ BỊ BÁO CÁO SPAM / TIN RÁC / NGHỊCH TRẠM CỨU HỘ</strong>
+                    <span class="text-rose-700">Lý do: <?php echo htmlspecialchars($ticket['spam_reason'] ?? 'Gửi tin rác không đúng mục đích'); ?></span>
+                </div>
+            </div>
+            <?php if ($userRole === 'admin'): ?>
+                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn KHÓA VĨNH VIỄN tài khoản này và chặn vĩnh viễn trạm cứu hộ?');">
+                    <input type="hidden" name="action" value="report_spam" />
+                    <input type="hidden" name="lock_permanent" value="1" />
+                    <input type="hidden" name="spam_reason" value="Admin xử lý báo cáo: Khóa vĩnh viễn do spam/nghịch trạm cứu hộ" />
+                    <button type="submit" class="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-black rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
+                        <span>🔒</span> Khóa Vĩnh Viễn Tài Khoản Này
+                    </button>
+                </form>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
     <!-- FLASH MESSAGE -->
     <?php if ($flash): ?>
@@ -566,18 +648,40 @@ $flash   = get_flash();
                                     <?php echo htmlspecialchars($r['message']); ?>
                                 </div>
 
-                                <!-- HIỂN THỊ ẢNH ĐÍNH KÈM NẾU CÓ -->
+                                <!-- HIỂN THỊ TỆP ĐÍNH KÈM (PAGE 6: HỖ TRỢ TỐI ĐA 10 FILE) -->
                                 <?php if (!empty($r['attachment_path'])): ?>
-                                    <div class="mt-2.5 pt-2 border-t border-slate-200/60 pl-9">
-                                        <div class="flex items-center gap-1 text-[11px] font-bold text-indigo-700 mb-1.5">
-                                            <span>📎</span> Tệp ảnh đính kèm:
+                                    <?php
+                                    $rFiles = [];
+                                    $decoded = json_decode($r['attachment_path'], true);
+                                    if (is_array($decoded)) {
+                                        $rFiles = $decoded;
+                                    } else {
+                                        $rFiles = [$r['attachment_path']];
+                                    }
+                                    ?>
+                                    <div class="mt-2.5 pt-2 border-t border-slate-200/60 pl-9 space-y-2">
+                                        <div class="flex items-center gap-1 text-[11px] font-bold text-indigo-700">
+                                            <span>📎</span> Tệp minh chứng đính kèm (<?php echo count($rFiles); ?> tệp):
                                         </div>
-                                        <a href="../<?php echo htmlspecialchars($r['attachment_path']); ?>" target="_blank" class="inline-block group">
-                                            <img src="../<?php echo htmlspecialchars($r['attachment_path']); ?>" 
-                                                 alt="Ảnh minh chứng" 
-                                                 class="max-h-56 max-w-md rounded-2xl border border-slate-300 shadow-sm group-hover:opacity-90 transition object-contain bg-white p-1" />
-                                            <span class="block text-[10.5px] text-slate-400 mt-1">Bấm vào ảnh để xem kích thước đầy đủ ↗</span>
-                                        </a>
+                                        <div class="flex flex-wrap gap-2.5">
+                                            <?php foreach ($rFiles as $fPath): ?>
+                                                <?php 
+                                                $fExt = strtolower(pathinfo($fPath, PATHINFO_EXTENSION));
+                                                $isImg = in_array($fExt, ['jpg', 'jpeg', 'png', 'webp', 'gif']);
+                                                ?>
+                                                <?php if ($isImg): ?>
+                                                    <a href="../<?php echo htmlspecialchars($fPath); ?>" target="_blank" class="inline-block group">
+                                                        <img src="../<?php echo htmlspecialchars($fPath); ?>" alt="Minh chứng" 
+                                                             class="h-28 w-36 object-cover rounded-xl border border-slate-300 shadow-sm group-hover:opacity-90 transition bg-white p-1" />
+                                                    </a>
+                                                <?php else: ?>
+                                                    <a href="../<?php echo htmlspecialchars($fPath); ?>" target="_blank" download 
+                                                       class="p-2.5 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold text-indigo-700 border border-slate-300 flex items-center gap-1.5 transition">
+                                                        <span>📄</span> <?php echo basename($fPath); ?>
+                                                    </a>
+                                                <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        </div>
                                     </div>
                                 <?php endif; ?>
                             </div>
@@ -638,17 +742,20 @@ $flash   = get_flash();
                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"></textarea>
                     </div>
 
-                    <!-- ĐÍNH KÈM TỆP ẢNH (KTV GỬI MINH CHỨNG, SV GỬI ẢNH LỖI) -->
+                    <!-- ĐÍNH KÈM TỆP ẢNH (PAGE 6: TỐI ĐA 10 FILE) -->
                     <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-                        <label class="block font-bold text-slate-700 text-xs">📎 Đính kèm tệp ảnh (Ảnh chụp màn hình lỗi / Minh chứng kết quả sửa):</label>
-                        <input type="file" name="attachment" id="attachmentInput" accept="image/png,image/jpeg,image/webp,image/gif" 
+                        <div class="flex items-center justify-between">
+                            <label class="block font-bold text-slate-700 text-xs">📎 Đính kèm tệp minh chứng (Tối đa 10 tệp cùng lúc):</label>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">Tối đa 10 tệp</span>
+                        </div>
+                        <input type="file" name="attachments[]" id="attachmentInput" multiple accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" 
                                class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-300 rounded-xl bg-white p-1" />
-                        <span class="text-[10.5px] text-slate-400 block">Định dạng hỗ trợ: JPG, PNG, WEBP, GIF (Dung lượng tối đa 5MB)</span>
+                        <span class="text-[10.5px] text-slate-400 block">Hỗ trợ: JPG, PNG, WEBP, GIF, PDF (Tối đa 10MB/tệp. Có thể giữ Ctrl/Shift để chọn nhiều tệp).</span>
                         
-                        <!-- Xem trước ảnh đính kèm -->
+                        <!-- Xem trước thư viện ảnh đính kèm -->
                         <div id="imagePreviewContainer" class="hidden pt-2">
-                            <p class="text-[11px] font-bold text-slate-600 mb-1">Xem trước ảnh:</p>
-                            <img id="imagePreview" src="" alt="Preview" class="max-h-40 rounded-xl border border-slate-300 shadow-sm" />
+                            <p class="text-[11px] font-bold text-slate-600 mb-1.5">Xem trước danh sách tệp đính kèm (<span id="previewCount">0</span>/10):</p>
+                            <div id="previewGallery" class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1 bg-white rounded-xl border border-slate-200"></div>
                         </div>
                     </div>
 
@@ -771,8 +878,17 @@ $flash   = get_flash();
                 </h3>
                 
                 <div class="p-2.5 bg-slate-50 rounded-xl space-y-1 border border-slate-200">
-                    <span class="text-slate-400 text-[10px] block">Hạn Tiếp Nhận (Triage SLA):</span>
-                    <strong class="font-mono text-slate-800"><?php echo htmlspecialchars($ticket['triage_due_at']); ?></strong>
+                    <span class="text-slate-500 text-[10.5px] block font-bold">Thời gian tiếp nhận của KTV:</span>
+                    <?php if (!empty($ticket['first_response_at'])): ?>
+                        <strong class="font-mono text-emerald-700 block"><?php echo htmlspecialchars($ticket['first_response_at']); ?></strong>
+                        <span class="text-[10px] text-emerald-600 block font-semibold">✓ Đã tiếp nhận & phản hồi</span>
+                    <?php elseif (!empty($ticket['assigned_at'])): ?>
+                        <strong class="font-mono text-indigo-700 block"><?php echo htmlspecialchars($ticket['assigned_at']); ?></strong>
+                        <span class="text-[10px] text-indigo-600 block font-semibold">✓ Đã tiếp nhận phân công</span>
+                    <?php else: ?>
+                        <strong class="font-mono text-amber-700 block"><?php echo htmlspecialchars($ticket['triage_due_at']); ?></strong>
+                        <span class="text-[10px] text-amber-600 block">⏳ Hạn tiếp nhận cam kết (Chờ KTV)</span>
+                    <?php endif; ?>
                 </div>
 
                 <div class="p-2.5 bg-indigo-50/70 rounded-xl space-y-1 border border-indigo-200">
@@ -876,6 +992,58 @@ $flash   = get_flash();
     </div>
 </div>
 
+<!-- MODAL BÁO CÁO SPAM / VI PHẠM (PAGE 8) -->
+<div id="reportSpamModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-rose-200">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-rose-900 flex items-center gap-2">
+                <span class="text-rose-600 text-lg">🚨</span> Báo Cáo Sinh Viên Spam / Phá Hoại
+            </h3>
+            <button type="button" onclick="document.getElementById('reportSpamModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-xl leading-none">&times;</button>
+        </div>
+
+        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-4 text-xs">
+            <input type="hidden" name="action" value="report_spam" />
+
+            <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 leading-relaxed text-[11.5px]">
+                Bạn đang báo cáo tài khoản: <strong><?php echo htmlspecialchars($ticket['requester_name']); ?></strong> (Mã: <code><?php echo htmlspecialchars($ticket['requester_code']); ?></code>).
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Chọn lý do vi phạm: <span class="text-rose-500">*</span></label>
+                <select name="spam_reason" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-rose-500 font-semibold text-slate-800">
+                    <option value="Gửi tin nhắn spam, tin rác nhiều lần">1. Gửi tin nhắn spam, tin rác nhiều lần</option>
+                    <option value="Nghịch trạm cứu hộ, điền thông tin/minh chứng sai sự thật">2. Nghịch trạm cứu hộ, điền thông tin/minh chứng sai sự thật</option>
+                    <option value="Gửi phiếu quấy rối, ngôn từ phản cảm">3. Gửi phiếu quấy rối, ngôn từ phản cảm</option>
+                    <option value="Lợi dụng hệ thống hỗ trợ để quấy phá">4. Lợi dụng hệ thống hỗ trợ để quấy phá</option>
+                </select>
+            </div>
+
+            <?php if ($userRole === 'admin'): ?>
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+                    <label class="flex items-center gap-2 cursor-pointer font-bold text-rose-800 text-xs">
+                        <input type="checkbox" name="lock_permanent" value="1" checked class="rounded border-slate-300 text-rose-600 focus:ring-rose-500" />
+                        <span>🔒 Khóa vĩnh viễn tài khoản & chặn truy cập Trạm cứu hộ ngay</span>
+                    </label>
+                </div>
+            <?php else: ?>
+                <p class="text-[11px] text-slate-500 leading-relaxed">
+                    💡 Báo cáo sẽ được chuyển thẳng đến Quản trị viên (Admin) để khóa vĩnh viễn tài khoản sinh viên này và chặn trạm cứu hộ.
+                </p>
+            <?php endif; ?>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('reportSpamModal').classList.add('hidden')" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-100">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition shadow-sm flex items-center gap-1.5">
+                    <span>🚨</span> Xác Nhận Báo Cáo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 let currentRatingFormToSubmit = null;
 
@@ -955,23 +1123,50 @@ document.addEventListener('DOMContentLoaded', function() {
             closeConfirmRatingModal();
         }
     });
-    // 1. Xem trước ảnh đính kèm
+    // 1. Xem trước danh sách tệp đính kèm (Tối đa 10 tệp - Page 6)
     const attachInput = document.getElementById('attachmentInput');
     const previewContainer = document.getElementById('imagePreviewContainer');
-    const previewImg = document.getElementById('imagePreview');
-    if (attachInput && previewContainer && previewImg) {
+    const previewGallery = document.getElementById('previewGallery');
+    const previewCount = document.getElementById('previewCount');
+
+    if (attachInput && previewContainer && previewGallery) {
         attachInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImg.src = e.target.result;
-                    previewContainer.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            } else {
+            previewGallery.innerHTML = '';
+            const files = Array.from(this.files).slice(0, 10);
+            if (files.length === 0) {
                 previewContainer.classList.add('hidden');
+                return;
             }
+            if (this.files.length > 10) {
+                alert('Hệ thống chỉ cho phép tải tối đa 10 tệp minh chứng. Đã tự động giữ lại 10 tệp đầu tiên.');
+            }
+            if (previewCount) previewCount.textContent = files.length;
+            previewContainer.classList.remove('hidden');
+
+            files.forEach((file, idx) => {
+                const item = document.createElement('div');
+                item.className = 'relative group';
+
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        item.innerHTML = `
+                            <img src="${e.target.result}" alt="Preview" class="h-20 w-24 object-cover rounded-xl border border-slate-300 shadow-2xs bg-white p-0.5" />
+                            <span class="absolute bottom-1 right-1 bg-slate-900/80 text-white text-[9px] px-1 rounded font-mono">#${idx+1}</span>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    item.innerHTML = `
+                        <div class="h-20 w-28 rounded-xl bg-slate-100 border border-slate-300 p-2 flex flex-col justify-between text-[10px] text-slate-700">
+                            <span class="text-base">📄</span>
+                            <span class="truncate font-semibold">${file.name}</span>
+                            <span class="text-[9px] text-slate-400 font-mono">${(file.size / 1024).toFixed(0)} KB</span>
+                        </div>
+                    `;
+                }
+                previewGallery.appendChild(item);
+            });
         });
     }
 

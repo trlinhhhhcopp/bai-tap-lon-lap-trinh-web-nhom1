@@ -57,19 +57,12 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
 <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
 <style>
     body {
-        font-size: 1.0625rem !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
     }
-
-    .text-xs {
-        font-size: 0.875rem !important;
-    }
-
-    .text-sm {
-        font-size: 0.9375rem !important;
-    }
-
-    .text-base {
-        font-size: 1.0625rem !important;
+    table {
+        line-height: 1.45;
     }
 </style>
 <?php if ($hasFixedSidebar): ?>

@@ -30,48 +30,49 @@ $successMsg    = null;
 // Xử lý import khi submit form
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'import_excel') {
     $rows = [];
+    $customCohort = trim($_POST['default_cohort'] ?? '');
 
-    // 1. Nếu tải file lên (.csv, .xlsx, .txt)
+    // Đọc toàn bộ nội dung từ file hoặc ô dán
+    $rawText = '';
     if (!empty($_FILES['excel_file']['name']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
-        $tmpName = $_FILES['excel_file']['tmp_name'];
-        $ext = strtolower(pathinfo($_FILES['excel_file']['name'], PATHINFO_EXTENSION));
-
-        if (in_array($ext, ['csv', 'txt'])) {
-            $handle = fopen($tmpName, 'r');
-            // Bỏ qua BOM nếu có
-            $bom = fread($handle, 3);
-            if ($bom !== "\xEF\xBB\xBF") {
-                rewind($handle);
-            }
-            while (($data = fgetcsv($handle, 1000, ",")) !== false) {
-                // Nếu file dùng dấu chấm phẩy
-                if (count($data) === 1 && str_contains($data[0], ';')) {
-                    $data = explode(';', $data[0]);
-                }
-                $rows[] = array_map('trim', $data);
-            }
-            fclose($handle);
-        } else {
-            // Đọc dạng text cơ bản nếu là xlsx chưa có zip extension
-            $content = file_get_contents($tmpName);
-            $lines = explode("\n", $content);
-            foreach ($lines as $line) {
-                $line = trim($line);
-                if ($line !== '') {
-                    $rows[] = array_map('trim', explode(',', $line));
-                }
-            }
-        }
+        $rawText = file_get_contents($_FILES['excel_file']['tmp_name']);
+    } elseif (!empty($_POST['csv_text'])) {
+        $rawText = $_POST['csv_text'];
     }
 
-    // 2. Nếu dán trực tiếp dữ liệu vào ô textarea
-    if (empty($rows) && !empty($_POST['csv_text'])) {
-        $lines = explode("\n", trim($_POST['csv_text']));
+    if (!empty($rawText)) {
+        // 1. Tự động loại bỏ BOM UTF-8 (\xEF\xBB\xBF) và UTF-16
+        $rawText = preg_replace('/^\xEF\xBB\xBF/', '', $rawText);
+        // Chuẩn hóa xuống dòng Windows/Unix/Mac
+        $rawText = str_replace(["\r\n", "\r"], "\n", $rawText);
+        $lines   = explode("\n", $rawText);
+
+        // 2. Nhận diện dấu phân cách chuẩn: phẩy (,), chấm phẩy (;) hoặc tab (\t)
+        $detectedDelimiter = ',';
+        foreach ($lines as $probe) {
+            $probe = trim($probe);
+            if ($probe !== '') {
+                $semi = substr_count($probe, ';');
+                $comm = substr_count($probe, ',');
+                $tabs = substr_count($probe, "\t");
+                if ($semi > $comm && $semi > $tabs) {
+                    $detectedDelimiter = ';';
+                } elseif ($tabs > $comm && $tabs > $semi) {
+                    $detectedDelimiter = "\t";
+                } else {
+                    $detectedDelimiter = ',';
+                }
+                break;
+            }
+        }
+
+        // 3. Tách từng dòng và từng cột theo chuẩn RFC 4180
         foreach ($lines as $line) {
             $line = trim($line);
-            if ($line !== '') {
-                $delimiter = str_contains($line, "\t") ? "\t" : (str_contains($line, ';') ? ';' : ',');
-                $rows[] = array_map('trim', explode($delimiter, $line));
+            if ($line === '') continue;
+            $data = str_getcsv($line, $detectedDelimiter);
+            if (!empty($data) && count($data) >= 2) {
+                $rows[] = array_map('trim', $data);
             }
         }
     }
@@ -119,7 +120,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $userType   = !empty($r[5]) ? strtolower(trim($r[5])) : 'student';
             $department = !empty($r[6]) ? trim($r[6]) : 'Khoa Công Nghệ Thông Tin';
             $phone      = !empty($r[7]) ? trim($r[7]) : ('09' . str_pad((string)mt_rand(10000000, 99999999), 8, '0'));
-            $cohort     = !empty($r[8]) ? trim($r[8]) : 'D24';
+
+            // Xử lý Niên khóa (Page 7: Sửa lại không mặc định để là D2024 hay D24 cho mọi đối tượng)
+            $cohort = !empty($r[8]) ? trim($r[8]) : $customCohort;
+            if ($cohort === '' && $userType === 'student') {
+                // Nhận diện niên khóa động theo mã sinh viên (VD: 224... -> D24, 223... -> D23, 225... -> D25)
+                if (preg_match('/^2(2\d)/', $userCode, $m)) {
+                    $cohort = 'D' . $m[1];
+                } else {
+                    $cohort = 'D24';
+                }
+            } elseif ($userType !== 'student' && empty($r[8]) && empty($customCohort)) {
+                // Giảng viên, KTV, Admin không ép niên khóa
+                $cohort = null;
+            }
 
             if (empty($userCode) || empty($name)) {
                 $skippedUsers[] = [
@@ -272,6 +286,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     <span class="text-[11px] text-slate-400 block">Hỗ trợ định dạng: .CSV, .TXT (phân cách bằng dấu phẩy hoặc chấm phẩy)</span>
                 </div>
 
+                <!-- Niên khóa tùy chọn (Page 7) -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Niên khóa sinh viên (Tùy chọn, để trống nếu tự động nhận diện theo mã SV):</label>
+                    <input type="text" name="default_cohort" id="defaultCohortInput" placeholder="Ví dụ: D25, D24, D23 (Để trống nếu tự động theo file hoặc mã sinh viên)" 
+                           class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono text-xs" />
+                    <span class="text-[10.5px] text-slate-400 block mt-0.5">💡 Hệ thống tự tách niên khóa theo tiền tố mã SV (224... ➔ D24). Giảng viên/KTV không bị gán niên khóa.</span>
+                </div>
+
                 <!-- Cách 2: Dán trực tiếp -->
                 <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
@@ -280,8 +302,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                             ⚡ Điền dữ liệu mẫu kiểm thử
                         </button>
                     </div>
-                    <textarea name="csv_text" id="csvTextInput" rows="6" placeholder="Mã SV, Họ tên, Email, Mật khẩu, Vai trò, Loại người dùng, Khoa, SĐT, Khóa&#10;224001801, Hoàng Văn An, 224001801@daihocthudo.edu.vn, 123456, requester, student, Khoa CNTT, 0901234801, D24&#10;224001802, Lê Thị Mai, 224001802@daihocthudo.edu.vn, 123456, requester, student, Khoa CNTT, 0901234802, D24" 
+                    <textarea name="csv_text" id="csvTextInput" rows="5" placeholder="Mã SV, Họ tên, Email, Mật khẩu, Vai trò, Loại người dùng, Khoa, SĐT, Khóa&#10;224001801, Hoàng Văn An, 224001801@daihocthudo.edu.vn, 123456, requester, student, Khoa CNTT, 0901234801, D24&#10;224001802, Lê Thị Mai, 224001802@daihocthudo.edu.vn, 123456, requester, student, Khoa CNTT, 0901234802, D24" 
                               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl font-mono text-[11.5px] focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+
+                <!-- Khung xem trước bảng chia cột trực tiếp (Page 7) -->
+                <div id="livePreviewContainer" class="hidden p-3.5 bg-indigo-50/50 border border-indigo-200 rounded-2xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-indigo-900 text-[11px] flex items-center gap-1.5">
+                            <span>👁️</span> Bảng Xem Trước Phân Tách Cột Tự Động (<span id="previewDelimiterBadge" class="font-mono bg-white px-2 py-0.5 rounded border border-indigo-300 text-indigo-700">Dấu phẩy ,</span>):
+                        </span>
+                        <span id="previewRowCount" class="text-[10.5px] font-bold text-indigo-600">0 dòng</span>
+                    </div>
+                    <div class="overflow-x-auto max-h-48 border border-slate-200 rounded-xl bg-white shadow-2xs">
+                        <table class="w-full text-left text-[11px] border-collapse" id="previewTable">
+                            <thead class="bg-slate-100 text-slate-700 sticky top-0">
+                                <tr>
+                                    <th class="p-2 border-b">#</th>
+                                    <th class="p-2 border-b">Mã TK</th>
+                                    <th class="p-2 border-b">Họ & Tên</th>
+                                    <th class="p-2 border-b">Email</th>
+                                    <th class="p-2 border-b">Mật Khẩu</th>
+                                    <th class="p-2 border-b">Vai Trò</th>
+                                    <th class="p-2 border-b">Loại</th>
+                                    <th class="p-2 border-b">Khoa</th>
+                                    <th class="p-2 border-b">SĐT</th>
+                                    <th class="p-2 border-b">Khóa</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100" id="previewTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-between pt-2">
@@ -392,14 +443,105 @@ function fillSampleData() {
 }
 
 function downloadSampleCsv() {
-    const header = "Mã Tài Khoản,Họ và Tên,Email,Mật Khẩu,Vai Trò,Loại Người Dùng,Khoa/Bộ Môn,Số Điện Thoại,Niên Khóa\n";
-    const sampleRows = "224001801,Nguyễn Văn An,224001801@daihocthudo.edu.vn,123456,requester,student,Khoa Công Nghệ Thông Tin,0901234801,D24\n224001802,Trần Thị Mai,224001802@daihocthudo.edu.vn,123456,requester,student,Khoa Công Nghệ Thông Tin,0901234802,D24\n";
+    const header = "Mã Tài Khoản,Họ và Tên,Email,Mật Khẩu,Vai Trò,Loại Người Dùng,Khoa/Bộ Môn,Số Điện Thoại,Niên Khóa\r\n";
+    const sampleRows = "224001801,Nguyễn Văn An,224001801@daihocthudo.edu.vn,123456,requester,student,Khoa Công Nghệ Thông Tin,0901234801,D24\r\n224001802,Trần Thị Mai,224001802@daihocthudo.edu.vn,123456,requester,student,Khoa Công Nghệ Thông Tin,0901234802,D24\r\n";
     const blob = new Blob(["\uFEFF" + header + sampleRows], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = "mau_nhap_lieu_sinh_vien_helpdesk.csv";
     link.click();
 }
+
+function parseAndPreview(text) {
+    const cont = document.getElementById('livePreviewContainer');
+    const tbody = document.getElementById('previewTableBody');
+    const countBadge = document.getElementById('previewRowCount');
+    const delimBadge = document.getElementById('previewDelimiterBadge');
+    if (!cont || !tbody) return;
+
+    text = text.replace(/^\uFEFF/, '').trim();
+    if (!text) {
+        cont.classList.add('hidden');
+        return;
+    }
+
+    const lines = text.split(/\r\n|\n|\r/).filter(l => l.trim() !== '');
+    if (lines.length === 0) {
+        cont.classList.add('hidden');
+        return;
+    }
+
+    // Tự động nhận diện dấu phân cách
+    let delim = ',';
+    const firstLine = lines[0];
+    const semi = (firstLine.match(/;/g) || []).length;
+    const comm = (firstLine.match(/,/g) || []).length;
+    const tabs = (firstLine.match(/\t/g) || []).length;
+    if (semi > comm && semi > tabs) {
+        delim = ';';
+        if (delimBadge) delimBadge.textContent = 'Dấu chấm phẩy ;';
+    } else if (tabs > comm && tabs > semi) {
+        delim = '\t';
+        if (delimBadge) delimBadge.textContent = 'Tab (Khoảng cách)';
+    } else {
+        delim = ',';
+        if (delimBadge) delimBadge.textContent = 'Dấu phẩy ,';
+    }
+
+    tbody.innerHTML = '';
+    let parsedCount = 0;
+
+    lines.slice(0, 15).forEach((line, idx) => {
+        // Tách các cột
+        const cols = line.split(delim).map(c => c.trim().replace(/^["']|["']$/g, ''));
+        if (idx === 0 && (cols[0].toLowerCase().includes('mã') || cols[0].toLowerCase().includes('code'))) {
+            // Dòng tiêu đề
+            return;
+        }
+        parsedCount++;
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        tr.innerHTML = `
+            <td class="p-2 font-mono text-slate-400 border-b">${parsedCount}</td>
+            <td class="p-2 font-mono font-bold text-indigo-700 border-b">${cols[0] || ''}</td>
+            <td class="p-2 font-bold text-slate-900 border-b">${cols[1] || ''}</td>
+            <td class="p-2 font-mono text-slate-600 border-b">${cols[2] || ''}</td>
+            <td class="p-2 font-mono text-slate-400 border-b">${cols[3] || '123456'}</td>
+            <td class="p-2 border-b"><span class="px-1.5 py-0.5 rounded bg-slate-100 font-bold">${cols[4] || 'requester'}</span></td>
+            <td class="p-2 border-b">${cols[5] || 'student'}</td>
+            <td class="p-2 border-b">${cols[6] || 'Khoa CNTT'}</td>
+            <td class="p-2 font-mono border-b">${cols[7] || ''}</td>
+            <td class="p-2 font-mono font-bold text-indigo-600 border-b">${cols[8] || 'Tự động'}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+
+    if (countBadge) countBadge.textContent = lines.length + ' dòng dữ liệu';
+    cont.classList.remove('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('csvTextInput');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            parseAndPreview(this.value);
+        });
+    }
+
+    const fileInput = document.querySelector('input[name="excel_file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    parseAndPreview(e.target.result);
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+        });
+    }
+});
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

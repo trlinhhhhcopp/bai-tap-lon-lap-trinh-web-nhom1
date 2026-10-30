@@ -50,6 +50,14 @@ $appBase = get_app_base_url();
 
 $action = $_GET['action'] ?? ($_POST['action'] ?? '');
 
+// Bắt buộc đổi mật khẩu lần đầu: nếu user có is_first_login == 1 thì không được đi đâu khác ngoài first_login hoặc logout
+if (!empty($_SESSION['user']) && !empty($_SESSION['user']['is_first_login']) && $_SESSION['user']['is_first_login'] == 1) {
+    if (!in_array($action, ['first_login', 'logout'], true)) {
+        header('Location: ' . $appBase . 'index.php?action=first_login');
+        exit;
+    }
+}
+
 // -----------------------------------------------------------------------------
 // 1. XỬ LÝ ĐĂNG XUẤT (LOGOUT)
 // -----------------------------------------------------------------------------
@@ -118,11 +126,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
         exit;
     }
 
-    if ($user['is_active'] == 0) {
-        $reason = ($user['lock_reason'] === 'expelled') ? 'kỷ luật Buộc thôi học' : 'hết hạn niên khóa';
+    // Kiểm tra khóa mềm do nhập sai quá 5 lần (Soft Lock 30 phút theo Page 1)
+    if (!empty($user['locked_until']) && strtotime($user['locked_until']) > time()) {
+        $remainingMin = max(1, (int)ceil((strtotime($user['locked_until']) - time()) / 60));
         $_SESSION['flash'] = [
             'type'    => 'danger',
-            'message' => "Tài khoản bị KHÓA CỨNG do {$reason}. Vui lòng liên hệ Phòng Đào tạo hoặc gửi phiếu cứu hộ!"
+            'message' => "🔒 Tài khoản của bạn đang bị TẠM KHÓA do nhập sai mật khẩu quá 5 lần liên tiếp! Vui lòng thử lại sau <strong>{$remainingMin} phút</strong> hoặc sử dụng tính năng <strong>Quên mật khẩu</strong> / <strong>Cứu hộ tài khoản</strong>."
+        ];
+        header('Location: ' . $appBase . 'index.php');
+        exit;
+    }
+
+    if ($user['is_active'] == 0) {
+        $reason = ($user['lock_reason'] === 'banned_rescue_abuse') 
+            ? 'vi phạm/nghịch trạm cứu hộ (Bị khóa vĩnh viễn)' 
+            : (($user['lock_reason'] === 'expelled') ? 'kỷ luật Buộc thôi học' : 'hết hạn niên khóa hoặc vi phạm quy chế');
+        $_SESSION['flash'] = [
+            'type'    => 'danger',
+            'message' => "⛔ Tài khoản bị KHÓA CỨNG do {$reason}. Vui lòng liên hệ Phòng Đào tạo hoặc Trung tâm CNTT!"
         ];
         header('Location: ' . $appBase . 'index.php');
         exit;
@@ -132,16 +153,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
     $passValid = password_verify($password, $user['password_hash']);
 
     if (!$passValid) {
-        $_SESSION['flash'] = [
-            'type'    => 'danger',
-            'message' => 'Mật khẩu không chính xác! Vui lòng kiểm tra lại hoặc sử dụng tính năng "Quên mật khẩu" bên dưới.'
-        ];
+        $newFailed = (int)($user['failed_attempts'] ?? 0) + 1;
+        if ($newFailed >= 5) {
+            $lockUntil = date('Y-m-d H:i:s', time() + 30 * 60);
+            $pdo->prepare("UPDATE users SET failed_attempts = :f, locked_until = :lu, lock_reason = 'wrong_password_5_times' WHERE id = :id")
+                ->execute(['f' => $newFailed, 'lu' => $lockUntil, 'id' => $user['id']]);
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => '🔒 <strong>BÁO ĐỘNG BẢO MẬT:</strong> Bạn đã nhập sai mật khẩu 5 lần liên tiếp! Tài khoản đã bị <strong>TẠM KHÓA 30 PHÚT</strong>. Vui lòng bấm "Quên mật khẩu" bên dưới để khôi phục hoặc quay lại sau 30 phút.'
+            ];
+        } else {
+            $remaining = 5 - $newFailed;
+            $pdo->prepare("UPDATE users SET failed_attempts = :f WHERE id = :id")
+                ->execute(['f' => $newFailed, 'id' => $user['id']]);
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => "Mật khẩu không chính xác! Bạn còn <strong>{$remaining} lần thử</strong> trước khi tài khoản bị tạm khóa 30 phút."
+            ];
+        }
         header('Location: ' . $appBase . 'index.php');
         exit;
     }
 
-    // Đăng nhập thành công
+    // Đăng nhập thành công -> Reset số lần sai và mở khóa tạm
+    $pdo->prepare("UPDATE users SET failed_attempts = 0, locked_until = NULL WHERE id = :id")->execute(['id' => $user['id']]);
+    $user['failed_attempts'] = 0;
+    $user['locked_until'] = null;
+
     $_SESSION['user'] = $user;
+
+    // Kiểm tra BẮT BUỘC ĐỔI MẬT KHẨU LẦN ĐẦU (Page 1)
+    if (!empty($user['is_first_login']) && $user['is_first_login'] == 1) {
+        $_SESSION['flash'] = [
+            'type'    => 'warning',
+            'message' => '⚠️ Tài khoản đang sử dụng mật khẩu khởi tạo mặc định. Theo quy định an toàn CNTT, <strong>bắt buộc phải đổi mật khẩu mới</strong> để kích hoạt tài khoản!'
+        ];
+        header('Location: ' . $appBase . 'index.php?action=first_login');
+        exit;
+    }
+
     $_SESSION['flash'] = [
         'type'    => 'success',
         'message' => "Chào mừng <strong>{$user['name']}</strong> đã đăng nhập thành công!"
@@ -455,7 +505,7 @@ if ($action === 'reset_password') {
 
             $_SESSION['flash'] = [
                 'type'    => 'success',
-                'message' => '🎉 Đặt lại mật khẩu thành công! Bạn có thể đăng nhập bình thường ngay bây giờ.'
+                'message' => '🎉 Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại bằng mật khẩu mới của bạn để vào hệ thống.'
             ];
             header('Location: ' . $appBase . 'index.php');
             exit;
@@ -546,6 +596,138 @@ if ($action === 'reset_password') {
 }
 
 // -----------------------------------------------------------------------------
+// 5.5. XỬ LÝ BẮT BUỘC ĐỔI MẬT KHẨU KHỞI TẠO LẦN ĐẦU (PAGE 1)
+// -----------------------------------------------------------------------------
+if ($action === 'first_login') {
+    if (empty($_SESSION['user'])) {
+        header('Location: ' . $appBase . 'index.php');
+        exit;
+    }
+
+    $firstUser = $_SESSION['user'];
+    $flash = get_flash();
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $newPass     = $_POST['new_password'] ?? '';
+        $confirmPass = $_POST['confirm_password'] ?? '';
+
+        if (strlen($newPass) < 6) {
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => 'Mật khẩu mới phải có tối thiểu 6 ký tự!'
+            ];
+            header('Location: ' . $appBase . 'index.php?action=first_login');
+            exit;
+        }
+
+        if ($newPass === '123456') {
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => 'Mật khẩu mới không được trùng với mật khẩu mặc định 123456! Vui lòng chọn mật khẩu mới an toàn hơn.'
+            ];
+            header('Location: ' . $appBase . 'index.php?action=first_login');
+            exit;
+        }
+
+        if ($newPass !== $confirmPass) {
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => 'Mật khẩu xác nhận không trùng khớp với mật khẩu mới!'
+            ];
+            header('Location: ' . $appBase . 'index.php?action=first_login');
+            exit;
+        }
+
+        try {
+            $hash = password_hash($newPass, PASSWORD_BCRYPT);
+            $pdo->prepare("UPDATE users SET password_hash = :hash, is_first_login = 0, failed_attempts = 0, locked_until = NULL, lock_reason = NULL WHERE id = :id")
+                ->execute(['hash' => $hash, 'id' => $firstUser['id']]);
+
+            $_SESSION['user']['is_first_login'] = 0;
+            $_SESSION['user']['password_hash']  = $hash;
+
+            $_SESSION['flash'] = [
+                'type'    => 'success',
+                'message' => '🎉 Kích hoạt tài khoản và đổi mật khẩu thành công! Chào mừng bạn đến với Hệ thống Helpdesk ĐH Thủ Đô.'
+            ];
+            header('Location: ' . $appBase . 'index.php');
+            exit;
+        } catch (\Exception $e) {
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => 'Lỗi khi cập nhật mật khẩu: ' . $e->getMessage()
+            ];
+            header('Location: ' . $appBase . 'index.php?action=first_login');
+            exit;
+        }
+    }
+    ?>
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Đổi Mật Khẩu Lần Đầu - Helpdesk ĐH Thủ Đô</title>
+        <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    </head>
+    <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
+        <?php require __DIR__ . '/includes/navbar.php'; ?>
+
+        <div class="flex-1 max-w-md mx-auto w-full px-4 py-10 flex flex-col justify-center">
+            <div class="bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-6">
+                <div>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        🔐 BẮT BUỘC ĐỔI MẬT KHẨU LẦN ĐẦU
+                    </span>
+                    <h2 class="text-xl font-black text-slate-900 mt-2">Kích Hoạt Tài Khoản Học Thuật</h2>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Xin chào <strong><?php echo htmlspecialchars($firstUser['name']); ?></strong> (<code><?php echo htmlspecialchars($firstUser['user_code']); ?></code>).<br>
+                        Tài khoản của bạn đang dùng mật khẩu khởi tạo mặc định (123456). Theo chính sách an toàn thông tin của Trường, bạn cần đổi mật khẩu mới để tiếp tục sử dụng.
+                    </p>
+                </div>
+
+                <?php if ($flash): ?>
+                    <div data-auto-dismiss="4500" class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : ($flash['type'] === 'warning' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'); ?>">
+                        <?php echo $flash['message']; ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="POST" action="<?php echo $appBase; ?>index.php?action=first_login" class="space-y-4 text-xs">
+                    <input type="hidden" name="action" value="first_login" />
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Mật khẩu mới (Tối thiểu 6 ký tự, khác 123456):</label>
+                        <input type="password" name="new_password" required minlength="6" autofocus placeholder="Nhập mật khẩu mới của bạn..."
+                               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Xác nhận lại mật khẩu mới:</label>
+                        <input type="password" name="confirm_password" required minlength="6" placeholder="Nhập lại mật khẩu mới..."
+                               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                    </div>
+
+                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-2">
+                        <span>🔐</span> Lưu Mật Khẩu Mới & Vào Hệ Thống
+                    </button>
+                </form>
+
+                <div class="pt-2 text-center text-xs border-t border-slate-100">
+                    <a href="<?php echo $appBase; ?>index.php?action=logout" class="text-rose-600 hover:underline font-semibold">
+                        🚪 Đăng xuất tài khoản này
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <?php require __DIR__ . '/includes/footer.php'; ?>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
+// -----------------------------------------------------------------------------
 // 6. XỬ LÝ BÁO KHÓA TÀI KHOẢN & CỨU HỘ KHẨN CẤP (GUEST TICKET)
 // -----------------------------------------------------------------------------
 if ($action === 'guest_ticket') {
@@ -559,10 +741,10 @@ if ($action === 'guest_ticket') {
         $issueTitle   = trim($_POST['issue_title'] ?? 'Yêu cầu mở khóa tài khoản');
         $description  = trim($_POST['description'] ?? '');
 
-        if (empty($userCode) || empty($name) || empty($contactEmail) || empty($description)) {
+        if (empty($userCode) || empty($contactEmail) || empty($description)) {
             $_SESSION['flash'] = [
                 'type'    => 'danger',
-                'message' => 'Vui lòng điền đầy đủ Mã SV, Họ tên, Email liên hệ cá nhân và Mô tả sự cố!'
+                'message' => 'Vui lòng điền đầy đủ Mã SV/CB, Email liên hệ cá nhân và Mô tả sự cố!'
             ];
             header('Location: ' . $appBase . 'index.php?action=guest_ticket');
             exit;
@@ -570,6 +752,24 @@ if ($action === 'guest_ticket') {
 
         try {
             $user = \App\Models\User::findByEmailOrCode($userCode);
+            if ($user) {
+                // Kiểm tra tài khoản có bị khóa vĩnh viễn do nghịch trạm cứu hộ/spam không (Page 8)
+                if (($user['lock_reason'] ?? '') === 'banned_rescue_abuse' || ($user['lock_reason'] ?? '') === 'spam') {
+                    $_SESSION['flash'] = [
+                        'type'    => 'danger',
+                        'message' => '⛔ Tài khoản này đã bị KHÓA VĨNH VIỄN do cố tình nghịch trạm cứu hộ hoặc spam vi phạm nội quy. Hệ thống từ chối tiếp nhận phiếu cứu hộ từ tài khoản này!'
+                    ];
+                    header('Location: ' . $appBase . 'index.php?action=guest_ticket');
+                    exit;
+                }
+                if (empty($name)) {
+                    $name = $user['name'];
+                }
+            } else {
+                if (empty($name)) {
+                    $name = 'Sinh viên / Cán bộ ' . $userCode;
+                }
+            }
             $userId = $user ? (int)$user['id'] : 1;
 
             // Xử lý tệp đính kèm nếu có
@@ -669,8 +869,8 @@ if ($action === 'guest_ticket') {
                                    autocomplete="username" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Họ và tên người yêu cầu: <span class="text-rose-500">*</span></label>
-                            <input type="text" name="name" required placeholder="VD: Nguyễn Văn A" 
+                            <label class="block font-bold text-slate-700 mb-1">Họ và tên người yêu cầu: <span class="text-slate-400 font-normal text-xs">(Tự động nhận diện)</span></label>
+                            <input type="text" name="name" placeholder="Để trống hệ thống tự điền theo Mã SV/CB" 
                                    autocomplete="name" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                     </div>
@@ -682,8 +882,8 @@ if ($action === 'guest_ticket') {
                                    autocomplete="email" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Số điện thoại liên hệ: <span class="text-rose-500">*</span></label>
-                            <input type="tel" name="phone" required placeholder="VD: 0912345678" 
+                            <label class="block font-bold text-slate-700 mb-1">Số điện thoại liên hệ: <span class="text-slate-400 font-normal text-xs">(Tùy chọn)</span></label>
+                            <input type="tel" name="phone" placeholder="VD: 0912345678" 
                                    autocomplete="tel" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                     </div>

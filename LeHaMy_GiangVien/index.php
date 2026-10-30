@@ -19,8 +19,12 @@ $action = $_GET['action'] ?? 'index';
 $controller = new CourseAssignmentController();
 
 match ($action) {
-    'create' => $controller->create(),
-    'edit'   => $controller->edit(),
-    'delete' => $controller->delete(),
-    default  => $controller->index(),
+    'create'      => $controller->create(),
+    'edit'        => $controller->edit(),
+    'delete'      => $controller->delete(),
+    'export_csv'  => $controller->exportCsv(),
+    'toggle_lock' => $controller->toggleLock(),
+    'add_class'   => $controller->addClass(),
+    'add_course'  => $controller->addCourse(),
+    default       => $controller->index(),
 };

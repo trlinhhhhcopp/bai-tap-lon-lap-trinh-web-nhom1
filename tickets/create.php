@@ -39,7 +39,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoryId     = (int)($_POST['category_id'] ?? 0);
     $title          = trim($_POST['title'] ?? '');
     $description    = trim($_POST['description'] ?? '');
-    $systemAffected = trim($_POST['system_affected'] ?? 'Canvas LMS');
+    $systemAffected = trim($_POST['system_affected'] ?? '');
+
+    // Tự động điền nếu để trống
+    if (empty($systemAffected) && $categoryId > 0) {
+        $catStmt = db()->prepare("SELECT code FROM categories WHERE id = :id LIMIT 1");
+        $catStmt->execute(['id' => $categoryId]);
+        $cCode = $catStmt->fetchColumn() ?: '';
+        $sysMap = [
+            'CAT_CANVAS' => 'Học tập trực tuyến Canvas LMS & MS Teams',
+            'CAT_QLDT'   => 'Cổng đào tạo QLĐT (qldt.daihocthudo.edu.vn)',
+            'CAT_MAIL'   => 'Microsoft 365 & Email trường (Outlook)',
+            'CAT_WIFI'   => 'Hệ thống Wi-Fi & VPN Trường (HNMU-STUDENT / HNMU-STAFF)',
+            'CAT_SSO'    => 'Cổng xác thực tập trung SSO Portal',
+            'CAT_OTHER'  => 'Dịch vụ CNTT & Thiết bị khác',
+        ];
+        $systemAffected = $sysMap[$cCode] ?? 'Dịch vụ CNTT & Thiết bị khác';
+    }
 
     // Người gửi luôn là tài khoản đang đăng nhập
     $requesterId = (int)$currentUser['id'];
@@ -180,24 +196,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Danh mục sự cố -->
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Dịch vụ đang gặp sự cố: <span class="text-rose-500">*</span></label>
-                <select name="category_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold">
+                <select name="category_id" id="categorySelect" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold">
                     <option value="">-- Chọn dịch vụ đang gặp lỗi --</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?php echo $cat['id']; ?>" <?php echo isset($_POST['category_id']) && (int)$_POST['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>>
+                    <?php 
+                    $sysMapping = [
+                        'CAT_CANVAS' => 'Học tập trực tuyến Canvas LMS & MS Teams',
+                        'CAT_QLDT'   => 'Cổng đào tạo QLĐT (qldt.daihocthudo.edu.vn)',
+                        'CAT_MAIL'   => 'Microsoft 365 & Email trường (Outlook)',
+                        'CAT_WIFI'   => 'Hệ thống Wi-Fi & VPN Trường (HNMU-STUDENT / HNMU-STAFF)',
+                        'CAT_SSO'    => 'Cổng xác thực tập trung SSO Portal',
+                        'CAT_OTHER'  => '',
+                    ];
+                    foreach ($categories as $cat): 
+                        // Page 2: Sinh viên đã đăng nhập vào web KHÔNG còn hiện lỗi xác thực/tài khoản (CAT_SSO) để chọn
+                        if ($userType === 'student' && $cat['code'] === 'CAT_SSO') {
+                            continue;
+                        }
+                        $autoSys = $sysMapping[$cat['code']] ?? '';
+                    ?>
+                        <option value="<?php echo $cat['id']; ?>" 
+                                data-code="<?php echo htmlspecialchars($cat['code']); ?>"
+                                data-system="<?php echo htmlspecialchars($autoSys); ?>"
+                                <?php echo isset($_POST['category_id']) && (int)$_POST['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($cat['name']); ?> (SLA chuẩn: <?php echo $cat['sla_hours']; ?>h)
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
 
-            <!-- Phân luồng Mức ưu tiên: Sinh viên Auto-Priority, Giảng viên được chọn HIGH/URGENT -->
+            <!-- Phân luồng Mức ưu tiên: Sinh viên Auto-Priority, Giảng viên được chọn HIGH/URGENT (Page 2: fix chữ tràn viền) -->
             <?php if ($userType === 'student'): ?>
-                <div class="p-3.5 bg-indigo-50/80 border border-indigo-200 rounded-2xl text-indigo-900 text-[11.5px] space-y-1">
-                    <div class="font-bold flex items-center gap-1.5">
-                        <span>⚡</span> Cơ Chế Tự Động Gán Mức Ưu Tiên (Auto-Priority Mapping):
+                <div class="w-full max-w-full p-4 bg-indigo-50/90 border border-indigo-200 rounded-2xl text-indigo-900 text-xs space-y-1.5 overflow-hidden break-words whitespace-normal shadow-2xs">
+                    <div class="font-bold flex items-center gap-1.5 text-indigo-950 flex-wrap">
+                        <span class="text-base">⚡</span> <span>Cơ Chế Tự Động Gán Mức Ưu Tiên (Auto-Priority Mapping):</span>
                     </div>
-                    <p class="text-indigo-800/80 leading-relaxed text-[11px]">
-                        Theo tiêu chuẩn ITIL v4, hệ thống sẽ tự động gán mức ưu tiên khách quan dựa trên loại sự cố bạn chọn (Canvas LMS/QLĐT: <strong>Cao - SLA 2h</strong>; Tài khoản/Email/Wifi: <strong>Trung bình - SLA 2h–4h</strong>) để đảm bảo công bằng cho toàn trường.
+                    <p class="text-indigo-800/90 leading-relaxed text-[11.5px] break-words">
+                        Theo tiêu chuẩn ITIL v4, hệ thống sẽ tự động gán mức ưu tiên khách quan dựa trên loại sự cố bạn chọn (Canvas LMS/QLĐT: <strong class="text-indigo-950 font-bold">Cao - SLA 2h</strong> | Email/Wifi/Khác: <strong class="text-indigo-950 font-bold">Trung bình - SLA 2h–4h</strong>) để đảm bảo công bằng cho toàn trường.
                     </p>
                 </div>
             <?php else: ?>
@@ -211,12 +245,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
             <?php endif; ?>
 
-            <!-- Hệ thống bị ảnh hưởng -->
+            <!-- Hệ thống bị ảnh hưởng (Page 2: Tự động điền theo thư viện, chỉ nhập tay khi chọn Khác) -->
             <div>
-                <label class="block font-bold text-slate-700 mb-1">Ứng dụng / Hệ thống bị ảnh hưởng:</label>
-                <input type="text" name="system_affected" value="<?php echo htmlspecialchars($_POST['system_affected'] ?? 'Canvas LMS'); ?>" 
-                       class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs"
-                       placeholder="Ví dụ: Canvas LMS, Cổng QLĐT, Wi-Fi Ký túc xá, Microsoft 365..." />
+                <label class="block font-bold text-slate-700 mb-1">
+                    Ứng dụng / Hệ thống bị ảnh hưởng:
+                    <span id="systemAffectedTag" class="ml-1 text-[11px] font-normal text-slate-400">(Tự động điền theo danh mục)</span>
+                </label>
+                <input type="text" name="system_affected" id="systemAffectedInput" 
+                       value="<?php echo htmlspecialchars($_POST['system_affected'] ?? ''); ?>" 
+                       class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold text-slate-700"
+                       placeholder="Chọn dịch vụ gặp sự cố ở trên để hệ thống tự điền..." />
+                <p id="systemAffectedHelp" class="text-[11px] text-slate-400 mt-1 leading-relaxed">
+                    🔒 Thông tin ứng dụng được lấy tự động theo danh mục thư viện sự cố chuẩn.
+                </p>
             </div>
 
             <!-- Tiêu đề sự cố -->
@@ -267,6 +308,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Tự động điền ứng dụng / hệ thống bị ảnh hưởng theo danh mục (Page 2)
+    const catSelect = document.getElementById('categorySelect');
+    const sysInput  = document.getElementById('systemAffectedInput');
+    const sysHelp   = document.getElementById('systemAffectedHelp');
+    const sysTag    = document.getElementById('systemAffectedTag');
+
+    function updateSystemAffected() {
+        if (!catSelect || !sysInput) return;
+        const selected = catSelect.options[catSelect.selectedIndex];
+        if (!selected || !selected.value) {
+            sysInput.value = '';
+            sysInput.readOnly = false;
+            sysInput.placeholder = 'Chọn dịch vụ gặp sự cố ở trên để hệ thống tự điền...';
+            if (sysTag) sysTag.textContent = '(Tự động điền theo danh mục)';
+            if (sysHelp) sysHelp.textContent = '🔒 Thông tin ứng dụng được lấy tự động theo danh mục thư viện sự cố chuẩn.';
+            return;
+        }
+        const catCode = selected.getAttribute('data-code');
+        const autoSys = selected.getAttribute('data-system');
+
+        if (catCode === 'CAT_OTHER') {
+            sysInput.readOnly = false;
+            sysInput.value = '';
+            sysInput.placeholder = 'Vui lòng nhập tên ứng dụng / thiết bị gặp sự cố...';
+            sysInput.classList.remove('bg-slate-100', 'text-slate-700');
+            sysInput.classList.add('bg-white', 'border-indigo-400');
+            sysInput.focus();
+            if (sysTag) sysTag.textContent = '(Nhập tay cho trường hợp Khác)';
+            if (sysHelp) sysHelp.textContent = '✏️ Bạn đã chọn danh mục "Khác": Vui lòng nhập tên ứng dụng / hệ thống cụ thể bị sự cố.';
+        } else {
+            sysInput.readOnly = true;
+            sysInput.value = autoSys || '';
+            sysInput.classList.remove('bg-white', 'border-indigo-400');
+            sysInput.classList.add('bg-slate-100', 'text-slate-700');
+            if (sysTag) sysTag.textContent = '(Hệ thống tự động điền)';
+            if (sysHelp) sysHelp.textContent = '🔒 Thông tin ứng dụng được hệ thống tự động điền theo danh mục chuẩn (ITIL v4).';
+        }
+    }
+
+    if (catSelect) {
+        catSelect.addEventListener('change', updateSystemAffected);
+        if (catSelect.value) {
+            updateSystemAffected();
+        }
+    }
+
     const input = document.getElementById('createAttachInput');
     const box = document.getElementById('createPreviewBox');
     const img = document.getElementById('createPreviewImg');

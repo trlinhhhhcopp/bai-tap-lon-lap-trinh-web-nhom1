@@ -57,7 +57,7 @@ $flash      = get_flash();
     <!-- NAVBAR CHÍNH -->
     <?php require_once __DIR__ . '/../includes/navbar.php'; ?>
 
-    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-8 space-y-6">
 
         <!-- BANNER ĐẦU TRANG THEO THIẾT KẾ TRẦN THỤC LINH & CORE NHÓM 1 -->
         <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -186,17 +186,17 @@ $flash      = get_flash();
                 </div>
             <?php else: ?>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
+                    <table class="w-full min-w-[880px] text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
-                                <th class="py-3.5 px-4">Mã Vé</th>
-                                <th class="py-3.5 px-4">Tiêu Đề Sự Cố</th>
-                                <th class="py-3.5 px-4">Người Gửi (SV/GV)</th>
-                                <th class="py-3.5 px-4">Danh Mục</th>
-                                <th class="py-3.5 px-4 text-center">Mức Ưu Tiên</th>
-                                <th class="py-3.5 px-4">KTV Tiếp Nhận</th>
-                                <th class="py-3.5 px-4 text-center">Trạng Thái</th>
-                                <th class="py-3.5 px-4 text-center">Hành Động</th>
+                            <tr class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-[11px] uppercase tracking-wider">
+                                <th class="py-3.5 px-4 w-32 whitespace-nowrap">Mã Vé</th>
+                                <th class="py-3.5 px-4 min-w-[240px]">Tiêu Đề Sự Cố</th>
+                                <th class="py-3.5 px-4 w-36 whitespace-nowrap">Người Gửi</th>
+                                <th class="py-3.5 px-4 w-36 whitespace-nowrap">Danh Mục</th>
+                                <th class="py-3.5 px-4 w-28 text-center whitespace-nowrap">Mức Ưu Tiên</th>
+                                <th class="py-3.5 px-4 w-32 whitespace-nowrap">KTV Phụ Trách</th>
+                                <th class="py-3.5 px-4 w-32 text-center whitespace-nowrap">Trạng Thái</th>
+                                <th class="py-3.5 px-4 w-24 text-center whitespace-nowrap">Hành Động</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -232,12 +232,12 @@ $flash      = get_flash();
                                             <?php echo htmlspecialchars($t['ticket_code']); ?>
                                         </a>
                                     </td>
-                                    <td class="py-3.5 px-4">
-                                        <a href="show.php?id=<?php echo $t['id']; ?>" class="font-semibold text-slate-900 hover:text-indigo-600 transition block max-w-sm truncate">
+                                    <td class="py-3.5 px-4 min-w-[240px]">
+                                        <a href="show.php?id=<?php echo $t['id']; ?>" class="font-bold text-slate-900 hover:text-indigo-600 transition block line-clamp-2 leading-relaxed">
                                             <?php echo htmlspecialchars($t['title']); ?>
                                         </a>
-                                        <span class="text-slate-400 text-[11px] block mt-0.5">
-                                            Hệ thống: <strong class="text-slate-600"><?php echo htmlspecialchars($t['system_affected']); ?></strong> • Hạn: <span class="font-mono text-slate-500"><?php echo htmlspecialchars($t['due_at']); ?></span>
+                                        <span class="text-slate-400 text-[11px] block mt-1 leading-normal">
+                                            Hệ thống: <strong class="text-slate-700 font-semibold"><?php echo htmlspecialchars($t['system_affected']); ?></strong> · Hạn: <span class="font-mono text-slate-600"><?php echo htmlspecialchars($t['due_at']); ?></span>
                                         </span>
                                     </td>
                                     <td class="py-3.5 px-4">

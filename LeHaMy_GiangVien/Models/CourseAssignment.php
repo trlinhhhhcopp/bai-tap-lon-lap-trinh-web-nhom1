@@ -182,5 +182,39 @@ class CourseAssignment
         $stmt->execute();
         return $stmt->fetchAll();
     }
+    public static function exportAll(int $lecturerId = 0): array
+    {
+        $sql = "SELECT ca.id, cl.class_code, cl.name AS class_name,
+                       co.course_code, co.name AS course_name, co.credits,
+                       u.name AS lecturer_name, u.email AS lecturer_email, u.user_code AS lecturer_code,
+                       ca.semester, ca.academic_year, ca.created_at
+                FROM course_assignments ca
+                JOIN classes cl ON ca.class_id = cl.id
+                JOIN courses co ON ca.course_id = co.id
+                JOIN users u ON ca.lecturer_id = u.id
+                WHERE 1=1";
+        $params = [];
+        if ($lecturerId > 0) {
+            $sql .= " AND ca.lecturer_id = :lid";
+            $params['lid'] = $lecturerId;
+        }
+        $sql .= " ORDER BY ca.semester DESC, cl.class_code, co.course_code";
+        $stmt = db()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public static function addClass(string $code, string $name, string $cohort, string $department): int
+    {
+        $stmt = db()->prepare("INSERT INTO classes (class_code, name, cohort, department) VALUES (:c, :n, :co, :d)");
+        $stmt->execute(['c' => $code, 'n' => $name, 'co' => $cohort, 'd' => $department]);
+        return (int)db()->lastInsertId();
+    }
+
+    public static function addCourse(string $code, string $name, int $credits, string $department): int
+    {
+        $stmt = db()->prepare("INSERT INTO courses (course_code, name, credits, department) VALUES (:c, :n, :cr, :d)");
+        $stmt->execute(['c' => $code, 'n' => $name, 'cr' => $credits, 'd' => $department]);
+        return (int)db()->lastInsertId();
+    }
 }
-?>

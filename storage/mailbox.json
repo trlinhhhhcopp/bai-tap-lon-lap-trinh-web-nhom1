@@ -80,5 +80,20 @@
             "sent_time": "19:38:16 29\/10\/2026",
             "is_read": 0
         }
+    ],
+    "224001746@daihocthudo.edu.vn": [
+        {
+            "id": "msg_1793349895_4a6802",
+            "to_email": "224001746@daihocthudo.edu.vn",
+            "to_name": "Phan Công Thành",
+            "from_name": "Trung tâm CNTT - Trường ĐH Thủ Đô Hà Nội",
+            "from_email": "nga469704@gmail.com",
+            "subject": "[TUD-Helpdesk] Mã OTP xác nhận khôi phục mật khẩu tài khoản học thuật",
+            "body_html": "\n                <p>Kính gửi bạn <strong>Phan Công Thành<\/strong> (Mã định danh: <code>224001746<\/code>),<\/p>\n                <p>Hệ thống Hỗ trợ Kỹ thuật & CNTT - Trường Đại Học Thủ Đô Hà Nội đã tiếp nhận yêu cầu cấp lại mật khẩu cho tài khoản học thuật của bạn.<\/p>\n                <div style='margin: 18px 0; padding: 20px; background: #0f172a; border-radius: 14px; border: 2px solid #f59e0b; text-align: center;'>\n                    <div style='color: #94a3b8; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;'>MÃ XÁC THỰC OTP (GỒM 6 CHỮ CÁI IN HOA):<\/div>\n                    <div style='color: #fbbf24; font-family: monospace; font-size: 36px; font-weight: 900; letter-spacing: 8px; margin: 10px 0;'>YCSEBU<\/div>\n                    <div style='color: #cbd5e1; font-size: 11.5px;'>Hiệu lực mã: 15 phút. Tuyệt đối không chia sẻ mã này cho bất kỳ ai để đảm bảo an toàn tài khoản.<\/div>\n                <\/div>\n                <p>Vui lòng quay lại Cổng Helpdesk và nhập đúng 6 chữ cái trên vào ô xác thực để hoàn tất đổi mật khẩu.<\/p>\n                <p style='margin-top: 24px; color: #64748b; font-size: 11.5px; border-top: 1px solid #e2e8f0; padding-top: 12px;'>\n                    Trân trọng,<br>\n                    <strong>Trung tâm CNTT & Thư viện - Trường Đại Học Thủ Đô Hà Nội<\/strong><br>\n                    Email hỗ trợ: helpdesk@daihocthudo.edu.vn | Hotline: (024) 3833 0708\n                <\/p>\n            ",
+            "otp_code": "YCSEBU",
+            "sent_at": "2026-10-30 09:44:55",
+            "sent_time": "09:44:55 30\/10\/2026",
+            "is_read": 0
+        }
     ]
 }
