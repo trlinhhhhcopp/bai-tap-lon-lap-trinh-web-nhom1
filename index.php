@@ -1672,7 +1672,7 @@ if ($userType === 'lecturer') {
                         </h2>
                         <p class="text-[11.5px] text-slate-500 mt-0.5">Mỗi lớp học phần chỉ có duy nhất 1 giảng viên phụ trách theo nguyên tắc đào tạo.</p>
                     </div>
-                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=index" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition">
+                    <a href="<?php echo $appBase; ?>assignments/index.php" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition">
                         Xem Tất Cả Lớp Phụ Trách →
                     </a>
                 </div>

@@ -278,7 +278,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             <p class="text-xs text-indigo-200/80">Nhập hàng loạt danh sách sinh viên, giảng viên và kỹ thuật viên vào CSDL helpdesk_thudo với mã hóa Bcrypt tự động.</p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="../TranLinh/users.php" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
+            <a href="users.php" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
                 <span>👥</span> Danh Sách Người Dùng
             </a>
         </div>
@@ -297,7 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 <h2 class="font-bold text-emerald-800 uppercase tracking-wider text-xs">
                     ✅ Danh sách <?= count($importedUsers) ?> tài khoản vừa nhập thành công
                 </h2>
-                <a href="../TranLinh/users.php" class="text-indigo-700 underline font-bold">Mở danh sách người dùng</a>
+                <a href="users.php" class="text-indigo-700 underline font-bold">Mở danh sách người dùng</a>
             </div>
             <div class="overflow-x-auto max-h-96 border border-slate-200 rounded-xl">
                 <table class="w-full text-left border-collapse">
