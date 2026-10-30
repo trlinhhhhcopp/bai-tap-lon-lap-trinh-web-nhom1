@@ -30,7 +30,7 @@
                             👤
                         </span>
                         <input type="text" name="identifier" id="identifier" required autofocus
-                               class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"
+                               class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-500"
                                placeholder="VD: 224001729 hoặc 224001729@daihocthudo.edu.vn">
                     </div>
                     <span class="text-[11px] text-slate-500 mt-1 block">Sinh viên nhập MSV (VD: 224001729) hoặc Email trường</span>
@@ -50,7 +50,7 @@
                             🔒
                         </span>
                         <input type="password" name="password" id="password" required autocomplete="current-password"
-                               class="w-full pl-10 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"
+                               class="w-full pl-10 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-500"
                                placeholder="Nhập mật khẩu (Mặc định: 123456)">
                         <button type="button" data-password-toggle aria-controls="password" aria-pressed="false" aria-label="Hiện mật khẩu" class="hidden absolute inset-y-0 right-0 px-3.5 items-center text-slate-500 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-500 rounded-r-xl">
                             <svg data-password-show-icon aria-hidden="true" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>

@@ -1045,7 +1045,7 @@ if (!$currentUser) {
                         <div>
                             <label for="login-identifier" class="block font-bold text-slate-700 mb-1.5">Mã tài khoản hoặc email trường</label>
                             <input id="login-identifier" type="text" name="identifier" required autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Ví dụ: 224001736 hoặc email trường"
-                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-base md:text-sm font-semibold" />
+                                   class="w-full px-4 py-3 text-slate-900 placeholder:text-slate-500 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
 
                         <div>
@@ -1054,7 +1054,7 @@ if (!$currentUser) {
                             </div>
                             <div class="relative">
                                 <input id="login-password" type="password" name="password" required autocomplete="current-password" placeholder="Nhập mật khẩu của bạn"
-                                       class="w-full px-4 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-base md:text-sm font-semibold" />
+                                       class="w-full px-4 pr-12 py-3 text-slate-900 placeholder:text-slate-500 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                                 <button type="button" data-password-toggle aria-controls="login-password" aria-pressed="false" aria-label="Hiện mật khẩu" class="hidden absolute inset-y-0 right-0 px-4 text-slate-500 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 rounded-r-xl">
                                     <svg data-password-show-icon aria-hidden="true" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
                                     <svg data-password-hide-icon aria-hidden="true" class="hidden w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.8M6.2 6.3C3.9 7.8 2.5 12 2.5 12s3.5 6 9.5 6a10.7 10.7 0 0 0 3.3-.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
@@ -1231,54 +1231,7 @@ if ($userType === 'student') {
                 </div>
             <?php endif; ?>
 
-            <!-- 2. BA THẺ CHỈ SỐ NHANH TƯƠI SÁNG (NỀN TRẮNG SÁCH SẼ) -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Thông Báo & Yêu Cầu</span>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-2xl font-black text-slate-900"><?php echo $myTicketsCount; ?></span>
-                            <span class="text-xs text-sky-600 font-bold">phiếu hỗ trợ</span>
-                        </div>
-                        <span class="text-[11px] text-slate-400 block mt-1">0 thông báo mới chưa đọc</span>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl shrink-0">
-                        🔔
-                    </div>
-                </div>
-
-                <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <span class="text-[11px] font-bold text-amber-600 uppercase tracking-wider block mb-1">Phiếu Đang Xử Lý & Công Nợ</span>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-2xl font-black text-amber-600"><?php echo $myActiveCount; ?></span>
-                            <span class="text-xs text-amber-700 font-bold">đang khắc phục</span>
-                        </div>
-                        <span class="text-[11px] text-slate-400 block mt-1">0 đ công nợ cần xử lý</span>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
-                        ⏳
-                    </div>
-                </div>
-
-                <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
-                    <div>
-                        <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block mb-1">Đã Giải Quyết & Tiến Độ</span>
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-2xl font-black text-emerald-600"><?php echo $myResolvedCount; ?></span>
-                            <span class="text-xs text-emerald-700 font-bold">đã hoàn tất</span>
-                        </div>
-                        <span class="text-[11px] text-slate-400 block mt-1">78 TC tiến độ học tập (3.69 GPA)</span>
-                    </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-                        ✅
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- 4. BẢNG DANH SÁCH PHIẾU CỦA RIÊNG SINH VIÊN NÀY -->
+            <!-- BẢNG DANH SÁCH PHIẾU CỦA RIÊNG SINH VIÊN NÀY -->
             <div class="bg-white border border-slate-200/90 rounded-3xl shadow-sm overflow-hidden space-y-3">
                 <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
                     <div>
