@@ -21,14 +21,27 @@ class GuestTicketController extends Controller {
         $phone        = trim($_POST['phone'] ?? '');
         $description  = trim($_POST['description'] ?? '');
 
-        if (empty($userCode) || empty($name) || empty($contactEmail)) {
-            $this->flash('danger', 'Vui lòng điền đầy đủ Mã SV, Họ tên và Email liên hệ cá nhân!');
+        if (empty($userCode) || empty($contactEmail)) {
+            $this->flash('danger', 'Vui lòng điền đầy đủ Mã SV/CB và Email liên hệ cá nhân!');
             $this->redirect('/guest/ticket');
         }
 
         try {
             $user = User::findByEmailOrCode($userCode);
-            $userId = $user ? $user['id'] : 1; // Gán tạm nếu chưa có tài khoản
+            if ($user) {
+                if (($user['lock_reason'] ?? '') === 'banned_rescue_abuse' || ($user['lock_reason'] ?? '') === 'spam') {
+                    $this->flash('danger', '⛔ Tài khoản này đã bị KHÓA VĨNH VIỄN do cố tình nghịch trạm cứu hộ hoặc spam vi phạm nội quy. Hệ thống từ chối tiếp nhận phiếu cứu hộ từ tài khoản này!');
+                    $this->redirect('/guest/ticket');
+                }
+                if (empty($name)) {
+                    $name = $user['name'];
+                }
+            } else {
+                if (empty($name)) {
+                    $name = 'Sinh viên / Cán bộ ' . $userCode;
+                }
+            }
+            $userId = $user ? $user['id'] : 1;
             $issueTitle = trim($_POST['issue_title'] ?? 'Yêu cầu mở khóa tài khoản');
 
             $attachmentPath = null;

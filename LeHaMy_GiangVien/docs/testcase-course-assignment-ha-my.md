@@ -76,6 +76,51 @@
 
 ---
 
+## Test Case 6 – Lọc phân công theo lớp và giảng viên
+
+| Hành động | Giá trị |
+|-----------|---------|
+| Chọn lớp | Một lớp có phân công |
+| Chọn giảng viên | Một giảng viên đang phụ trách lớp |
+| Bấm **Lọc** | Kết hợp với từ khóa nếu cần |
+
+**Kết quả mong đợi:**
+- Chỉ hiện phân công khớp đồng thời với lớp, giảng viên và từ khóa đã chọn.
+- Điều kiện lọc được giữ nguyên khi chuyển trang và khi xuất CSV.
+- Giảng viên chỉ xem được các phân công của chính mình.
+
+---
+
+## Test Case 7 – Trang quản lý danh mục lớp và môn
+
+| Hành động | Chi tiết |
+|-----------|----------|
+| Bấm **Quản Lý Lớp & Môn** | Tại danh sách phân công |
+| Thêm lớp hoặc môn hợp lệ | Tại trang quản lý danh mục |
+
+**Kết quả mong đợi:**
+- Hiển thị trang riêng với biểu mẫu thêm và danh sách lớp/môn hiện có.
+- Sau khi thêm thành công, quay lại trang danh mục và thấy dữ liệu vừa thêm.
+- Không thể thêm danh mục khi cơ sở dữ liệu đang khóa hoặc khi không phải Admin.
+
+---
+
+## Test Case 8 – Import hàng loạt danh mục và phân công
+
+| Hành động | Chi tiết |
+|-----------|----------|
+| Tải mẫu CSV hoặc chuẩn bị Excel `.xlsx` | Dùng tiêu đề cột trong mẫu |
+| Import lớp/môn hoặc phân công | Từ menu tương ứng |
+
+**Kết quả mong đợi:**
+- Dữ liệu hợp lệ được thêm; dòng thiếu dữ liệu, không tìm thấy mã hoặc bị trùng được báo là bỏ qua.
+- Sau khi import có dòng thành công, hiển thị bảng riêng chỉ gồm các dòng vừa import thành công; danh sách tổng tương ứng được thu gọn và có thể mở lại.
+- Áp dụng cùng cách hiển thị cho lớp học, môn học và phân công; nếu tệp có hơn 500 dòng thành công, thông báo số dòng đang hiển thị.
+- Workbook `.xlsx` có định dạng bảng/viền vẫn đọc được giá trị ô.
+- Tệp phân công dùng mã lớp, mã môn, mã giảng viên hoặc email, học kỳ và năm học.
+
+---
+
 ## Checklist tiêu chí
 
 | Tiêu chí | Đạt |
@@ -85,5 +130,8 @@
 | Xóa bằng POST | ✅ |
 | Có dữ liệu mẫu | ✅ |
 | Tìm kiếm + phân trang | ✅ |
+| Lọc theo lớp và giảng viên | ✅ |
+| Trang quản lý danh mục riêng | ✅ |
+| Import CSV/XLSX danh mục và phân công | ✅ |
 | Mọi truy vấn có input dùng prepare | ✅ |
-| 5 test case | ✅ |
+| 8 test case | ✅ |

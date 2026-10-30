@@ -64,8 +64,23 @@ $pageTitle = 'Báo sự cố CNTT';
                 <label for="category_id">Nhóm dịch vụ gặp sự cố <span style="color:#b91c1c">*</span></label>
                 <select id="category_id" name="category_id" required>
                     <option value="">-- Chọn nhóm dịch vụ --</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <option value="<?= (int)$cat['id'] ?>" <?= ($old['category_id'] == $cat['id']) ? 'selected' : '' ?>>
+                    <?php 
+                    $sysMapping = [
+                        'CAT_CANVAS' => 'Học tập trực tuyến Canvas LMS & MS Teams',
+                        'CAT_QLDT'   => 'Cổng đào tạo QLĐT (qldt.daihocthudo.edu.vn)',
+                        'CAT_MAIL'   => 'Microsoft 365 & Email trường (Outlook)',
+                        'CAT_WIFI'   => 'Hệ thống Wi-Fi & VPN Trường (HNMU-STUDENT / HNMU-STAFF)',
+                        'CAT_SSO'    => 'Cổng xác thực tập trung SSO Portal',
+                        'CAT_OTHER'  => '',
+                    ];
+                    foreach ($categories as $cat): 
+                        if (($cat['code'] ?? '') === 'CAT_SSO') continue; // Ẩn CAT_SSO cho SV
+                        $autoSys = $sysMapping[$cat['code']] ?? '';
+                    ?>
+                        <option value="<?= (int)$cat['id'] ?>" 
+                                data-code="<?= htmlspecialchars($cat['code'] ?? '') ?>"
+                                data-system="<?= htmlspecialchars($autoSys) ?>"
+                                <?= ($old['category_id'] == $cat['id']) ? 'selected' : '' ?>>
                             <?= htmlspecialchars($cat['name']) ?> 
                             (SLA <?= $cat['sla_hours'] ?>h – <?= $cat['default_priority_code'] ?>)
                         </option>
@@ -99,16 +114,10 @@ $pageTitle = 'Báo sự cố CNTT';
             </div>
 
             <div class="form-group">
-                <label for="system_affected">Hệ thống bị ảnh hưởng <span style="color:#b91c1c">*</span></label>
-                <select id="system_affected" name="system_affected" required>
-                    <option value="">-- Chọn hệ thống --</option>
-                    <option value="SSO" <?= ($old['system_affected'] ?? '') === 'SSO' ? 'selected' : '' ?>>Tài khoản & SSO</option>
-                    <option value="Email" <?= ($old['system_affected'] ?? '') === 'Email' ? 'selected' : '' ?>>Email & Microsoft 365</option>
-                    <option value="QLĐT" <?= ($old['system_affected'] ?? '') === 'QLĐT' ? 'selected' : '' ?>>Cổng Quản lý Đào tạo</option>
-                    <option value="Canvas LMS" <?= ($old['system_affected'] ?? '') === 'Canvas LMS' ? 'selected' : '' ?>>Canvas LMS / MS Teams</option>
-                    <option value="Wi-Fi" <?= ($old['system_affected'] ?? '') === 'Wi-Fi' ? 'selected' : '' ?>>Wi-Fi / VPN</option>
-                    <option value="Khác" <?= ($old['system_affected'] ?? '') === 'Khác' ? 'selected' : '' ?>>Khác</option>
-                </select>
+                <label for="system_affected">Ứng dụng / Hệ thống bị ảnh hưởng <span id="sysTag" style="font-weight:normal;color:#64748b;font-size:0.8rem">(Tự động điền theo danh mục)</span> <span style="color:#b91c1c">*</span></label>
+                <input type="text" id="system_affected" name="system_affected" value="<?= htmlspecialchars($old['system_affected'] ?? '') ?>" 
+                       style="background-color:#f1f5f9;" placeholder="Chọn nhóm dịch vụ ở trên để hệ thống tự điền..." required>
+                <small id="sysHelp" style="color:#64748b;font-size:0.8rem;display:block;margin-top:0.25rem">🔒 Thông tin ứng dụng được lấy tự động theo danh mục chuẩn (ITIL v4).</small>
             </div>
 
             <div class="form-group">
@@ -130,5 +139,50 @@ $pageTitle = 'Báo sự cố CNTT';
         </form>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const catSelect = document.getElementById('category_id');
+    const sysInput  = document.getElementById('system_affected');
+    const sysTag    = document.getElementById('sysTag');
+    const sysHelp   = document.getElementById('sysHelp');
+
+    function updateSystemAffected() {
+        if (!catSelect || !sysInput) return;
+        const selected = catSelect.options[catSelect.selectedIndex];
+        if (!selected || !selected.value) {
+            sysInput.value = '';
+            sysInput.readOnly = false;
+            sysInput.style.backgroundColor = '#fff';
+            if (sysTag) sysTag.textContent = '(Tự động điền theo danh mục)';
+            return;
+        }
+        const catCode = selected.getAttribute('data-code');
+        const autoSys = selected.getAttribute('data-system');
+
+        if (catCode === 'CAT_OTHER') {
+            sysInput.readOnly = false;
+            sysInput.value = '';
+            sysInput.placeholder = 'Vui lòng nhập tên ứng dụng / thiết bị gặp sự cố...';
+            sysInput.style.backgroundColor = '#fff';
+            sysInput.focus();
+            if (sysTag) sysTag.textContent = '(Nhập tay cho trường hợp Khác)';
+            if (sysHelp) sysHelp.textContent = '✏️ Bạn đã chọn danh mục "Khác": Vui lòng nhập tên ứng dụng / hệ thống cụ thể bị sự cố.';
+        } else {
+            sysInput.readOnly = true;
+            sysInput.value = autoSys || '';
+            sysInput.style.backgroundColor = '#f1f5f9';
+            if (sysTag) sysTag.textContent = '(Hệ thống tự động điền)';
+            if (sysHelp) sysHelp.textContent = '🔒 Thông tin ứng dụng được hệ thống tự động điền theo danh mục chuẩn (ITIL v4).';
+        }
+    }
+
+    if (catSelect) {
+        catSelect.addEventListener('change', updateSystemAffected);
+        if (catSelect.value) {
+            updateSystemAffected();
+        }
+    }
+});
+</script>
 </body>
 </html>

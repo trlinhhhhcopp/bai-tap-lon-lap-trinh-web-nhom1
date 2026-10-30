@@ -89,6 +89,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 // 3. XỬ LÝ GỬI PHẢN HỒI / GIẢI PHÁP & ĐÍNH KÈM ẢNH
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reply') {
+    if ($ticket['status'] === 'closed' || !empty($currentRating)) {
+        set_flash('error', 'Phiếu đã đóng và hoàn tất đánh giá CSAT. Không thể gửi thêm phản hồi!');
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
     $message = trim($_POST['message'] ?? '');
     
     if ($userRole === 'requester') {
@@ -361,6 +366,8 @@ $flash   = get_flash();
                             class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-full border border-rose-200 transition flex items-center gap-1">
                         <span>🚨</span> Báo Cáo SV Spam
                     </button>
+                <?php endif; ?>
+                <?php if ($userRole === 'admin' && !in_array($ticket['status'], ['closed']) && empty($currentRating)): ?>
                     <a href="edit.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200 transition">
                         ✏️ Sửa phiếu
                     </a>
@@ -689,6 +696,22 @@ $flash   = get_flash();
                     </div>
                 <?php endif; ?>
 
+                <?php 
+                $isClosedOrRated = ($ticket['status'] === 'closed' || !empty($currentRating));
+                ?>
+                <?php if ($isClosedOrRated): ?>
+                    <div class="pt-5 border-t border-slate-100">
+                        <div class="p-5 bg-slate-50 border border-slate-200 rounded-2xl text-center space-y-2">
+                            <div class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-200 text-slate-600 text-lg">
+                                🔒
+                            </div>
+                            <div class="font-bold text-slate-800 text-xs">Phiếu đã hoàn tất & khóa phản hồi</div>
+                            <p class="text-[11px] text-slate-500 max-w-md mx-auto">
+                                Người dùng đã đánh giá nghiệm thu dịch vụ. Cuộc hội thoại giữa Kỹ thuật viên và Người yêu cầu đã chính thức kết thúc và được lưu trữ an toàn.
+                            </p>
+                        </div>
+                    </div>
+                <?php else: ?>
                 <!-- Form gửi phản hồi mới -->
                 <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" enctype="multipart/form-data" class="pt-5 border-t border-slate-100 space-y-4 text-xs">
                     <input type="hidden" name="action" value="reply" />
@@ -780,6 +803,7 @@ $flash   = get_flash();
                         ⚡ <strong>Quy tắc tự động State Machine:</strong> Khi KTV gửi tin nhắn công khai, phiếu tự chuyển sang <em>waiting_requester</em>. Khi Sinh viên/Giảng viên gửi phản hồi lại, phiếu tự quay về <em>in_progress</em>.
                     </div>
                 </form>
+                <?php endif; ?>
             </div>
 
         </div>
@@ -787,7 +811,7 @@ $flash   = get_flash();
         <!-- CỘT PHẢI: THÔNG TIN TRẠNG THÁI & SLA (4 CỘT) -->
         <div class="md:col-span-4 space-y-6">
 
-            <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+            <?php if (in_array($userRole, ['agent', 'admin']) && empty($currentRating) && $ticket['status'] !== 'closed'): ?>
             <!-- Cập nhật trạng thái thủ công (Chỉ KTV / Admin) -->
             <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3 text-xs">
                 <h3 class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Cập Nhật Trạng Thái Phiếu</h3>

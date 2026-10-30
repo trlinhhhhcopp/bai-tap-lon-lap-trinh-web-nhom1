@@ -46,30 +46,11 @@ require __DIR__ . '/../layouts/header.php';
                     </div>
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                            Họ và tên (*):
-                        </label>
-                        <input type="text" name="name" required 
-                               class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"
-                               placeholder="VD: Nguyễn Văn A">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
                             Email cá nhân nhận kết quả (Gmail...) (*):
                         </label>
                         <input type="email" name="contact_email" required 
                                class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"
                                placeholder="VD: linh.personal@gmail.com">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                            Số điện thoại liên hệ (*):
-                        </label>
-                        <input type="text" name="phone" required 
-                               class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"
-                               placeholder="VD: 0901234567">
                     </div>
                 </div>
 

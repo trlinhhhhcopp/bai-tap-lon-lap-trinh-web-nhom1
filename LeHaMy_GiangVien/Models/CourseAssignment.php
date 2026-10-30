@@ -10,7 +10,12 @@ require_once __DIR__ . '/../config/database.php';
 
 class CourseAssignment
 {
-    public static function count(string $keyword = '', int $lecturerId = 0): int
+    public static function count(
+        string $keyword = '',
+        int $lecturerId = 0,
+        int $classId = 0,
+        int $lecturerFilterId = 0
+    ): int
     {
         $sql = "SELECT COUNT(*) AS total
                 FROM course_assignments ca
@@ -24,6 +29,14 @@ class CourseAssignment
             $sql .= " AND ca.lecturer_id = :lid";
             $params['lid'] = $lecturerId;
         }
+        if ($classId > 0) {
+            $sql .= " AND ca.class_id = :class_id";
+            $params['class_id'] = $classId;
+        }
+        if ($lecturerFilterId > 0) {
+            $sql .= " AND ca.lecturer_id = :lecturer_filter_id";
+            $params['lecturer_filter_id'] = $lecturerFilterId;
+        }
         if ($keyword !== '') {
             $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
                        OR co.course_code LIKE :kw OR co.name LIKE :kw
@@ -36,7 +49,14 @@ class CourseAssignment
         return (int) $stmt->fetch()['total'];
     }
 
-    public static function findAll(string $keyword = '', int $page = 1, int $perPage = 10, int $lecturerId = 0): array
+    public static function findAll(
+        string $keyword = '',
+        int $page = 1,
+        int $perPage = 10,
+        int $lecturerId = 0,
+        int $classId = 0,
+        int $lecturerFilterId = 0
+    ): array
     {
         $offset = max(0, ($page - 1) * $perPage);
 
@@ -55,6 +75,14 @@ class CourseAssignment
         if ($lecturerId > 0) {
             $sql .= " AND ca.lecturer_id = :lid";
             $params['lid'] = $lecturerId;
+        }
+        if ($classId > 0) {
+            $sql .= " AND ca.class_id = :class_id";
+            $params['class_id'] = $classId;
+        }
+        if ($lecturerFilterId > 0) {
+            $sql .= " AND ca.lecturer_id = :lecturer_filter_id";
+            $params['lecturer_filter_id'] = $lecturerFilterId;
         }
         if ($keyword !== '') {
             $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
@@ -160,14 +188,14 @@ class CourseAssignment
     /** Danh mục – cũng dùng prepare cho đồng bộ */
     public static function getAllClasses(): array
     {
-        $stmt = db()->prepare("SELECT id, class_code, name FROM classes ORDER BY class_code");
+        $stmt = db()->prepare("SELECT id, class_code, name, cohort, faculty AS department FROM classes ORDER BY class_code");
         $stmt->execute();
         return $stmt->fetchAll();
     }
 
     public static function getAllCourses(): array
     {
-        $stmt = db()->prepare("SELECT id, course_code, name FROM courses ORDER BY course_code");
+        $stmt = db()->prepare("SELECT id, course_code, name, credits, department FROM courses ORDER BY course_code");
         $stmt->execute();
         return $stmt->fetchAll();
     }
@@ -182,7 +210,41 @@ class CourseAssignment
         $stmt->execute();
         return $stmt->fetchAll();
     }
-    public static function exportAll(int $lecturerId = 0): array
+
+    public static function findClassIdByCode(string $code): ?int
+    {
+        $stmt = db()->prepare("SELECT id FROM classes WHERE class_code = :code LIMIT 1");
+        $stmt->execute(['code' => $code]);
+        $id = $stmt->fetchColumn();
+        return $id === false ? null : (int) $id;
+    }
+
+    public static function findCourseIdByCode(string $code): ?int
+    {
+        $stmt = db()->prepare("SELECT id FROM courses WHERE course_code = :code LIMIT 1");
+        $stmt->execute(['code' => $code]);
+        $id = $stmt->fetchColumn();
+        return $id === false ? null : (int) $id;
+    }
+
+    public static function findLecturerIdByCode(string $code): ?int
+    {
+        $stmt = db()->prepare(
+            "SELECT id FROM users
+             WHERE user_type = 'lecturer' AND (user_code = :code OR email = :email OR name = :name)
+             ORDER BY is_active DESC, id LIMIT 2"
+        );
+        $stmt->execute(['code' => $code, 'email' => $code, 'name' => $code]);
+        $matches = $stmt->fetchAll(PDO::FETCH_COLUMN);
+        return count($matches) === 1 ? (int) $matches[0] : null;
+    }
+
+    public static function exportAll(
+        int $lecturerId = 0,
+        string $keyword = '',
+        int $classId = 0,
+        int $lecturerFilterId = 0
+    ): array
     {
         $sql = "SELECT ca.id, cl.class_code, cl.name AS class_name,
                        co.course_code, co.name AS course_name, co.credits,
@@ -198,6 +260,20 @@ class CourseAssignment
             $sql .= " AND ca.lecturer_id = :lid";
             $params['lid'] = $lecturerId;
         }
+        if ($classId > 0) {
+            $sql .= " AND ca.class_id = :class_id";
+            $params['class_id'] = $classId;
+        }
+        if ($lecturerFilterId > 0) {
+            $sql .= " AND ca.lecturer_id = :lecturer_filter_id";
+            $params['lecturer_filter_id'] = $lecturerFilterId;
+        }
+        if ($keyword !== '') {
+            $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
+                       OR co.course_code LIKE :kw OR co.name LIKE :kw
+                       OR u.name LIKE :kw OR ca.semester LIKE :kw)";
+            $params['kw'] = '%' . $keyword . '%';
+        }
         $sql .= " ORDER BY ca.semester DESC, cl.class_code, co.course_code";
         $stmt = db()->prepare($sql);
         $stmt->execute($params);
@@ -206,7 +282,7 @@ class CourseAssignment
 
     public static function addClass(string $code, string $name, string $cohort, string $department): int
     {
-        $stmt = db()->prepare("INSERT INTO classes (class_code, name, cohort, department) VALUES (:c, :n, :co, :d)");
+        $stmt = db()->prepare("INSERT INTO classes (class_code, name, cohort, faculty) VALUES (:c, :n, :co, :d)");
         $stmt->execute(['c' => $code, 'n' => $name, 'co' => $cohort, 'd' => $department]);
         return (int)db()->lastInsertId();
     }

@@ -52,9 +52,9 @@ if (empty($_SESSION['user'])) {
                     <label for="class_id" class="font-bold text-slate-700">
                         Lớp Học: <span class="text-rose-500">*</span>
                     </label>
-                    <button type="button" onclick="document.getElementById('modalAddClass').classList.remove('hidden')" class="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] hover:underline flex items-center gap-1">
-                        <span>➕</span> Thêm Lớp Mới
-                    </button>
+                    <a href="index.php?action=manage_catalog" class="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] hover:underline">
+                        Quản lý lớp &amp; môn
+                    </a>
                 </div>
                 <select id="class_id" name="class_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
                     <option value="">-- Chọn lớp học phần --</option>
@@ -71,9 +71,9 @@ if (empty($_SESSION['user'])) {
                     <label for="course_id" class="font-bold text-slate-700">
                         Môn Học / Học Phần: <span class="text-rose-500">*</span>
                     </label>
-                    <button type="button" onclick="document.getElementById('modalAddCourse').classList.remove('hidden')" class="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] hover:underline flex items-center gap-1">
-                        <span>➕</span> Thêm Môn Mới
-                    </button>
+                    <a href="index.php?action=manage_catalog" class="text-indigo-600 hover:text-indigo-800 font-bold text-[11px] hover:underline">
+                        Quản lý lớp &amp; môn
+                    </a>
                 </div>
                 <select id="course_id" name="course_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
                     <option value="">-- Chọn môn học --</option>
@@ -127,88 +127,6 @@ if (empty($_SESSION['user'])) {
         </form>
     </div>
 </main>
-
-<!-- MODAL THÊM LỚP HỌC MỚI (PAGE 3 & PAGE 4) -->
-<div id="modalAddClass" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200 text-xs">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <span>🏫</span> Thêm Lớp Học Mới
-            </h3>
-            <button type="button" onclick="document.getElementById('modalAddClass').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
-        </div>
-        <form method="POST" action="index.php?action=add_class" class="space-y-3">
-            <input type="hidden" name="redirect_to" value="create" />
-            <div>
-                <label class="block font-bold text-slate-700 mb-1">Mã Lớp Học: <span class="text-rose-500">*</span></label>
-                <input type="text" name="class_code" required placeholder="VD: D24-CNTT3, D23-CNTT1..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono font-bold" />
-            </div>
-            <div>
-                <label class="block font-bold text-slate-700 mb-1">Tên Đầy Đủ Lớp Học: <span class="text-rose-500">*</span></label>
-                <input type="text" name="class_name" required placeholder="VD: Lớp Công nghệ Thông tin D24-3..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-semibold" />
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Niên Khóa:</label>
-                    <input type="text" name="cohort" value="D24" placeholder="VD: D24, D25" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono" />
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Khoa / Viện:</label>
-                    <input type="text" name="department" value="Khoa Công Nghệ Thông Tin" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500" />
-                </div>
-            </div>
-            <div class="flex items-center justify-end gap-2 pt-2">
-                <button type="button" onclick="document.getElementById('modalAddClass').classList.add('hidden')" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-100">
-                    Hủy bỏ
-                </button>
-                <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm">
-                    💾 Lưu Lớp Học
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- MODAL THÊM MÔN HỌC MỚI (PAGE 3 & PAGE 4) -->
-<div id="modalAddCourse" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200 text-xs">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-                <span>📖</span> Thêm Môn Học Mới
-            </h3>
-            <button type="button" onclick="document.getElementById('modalAddCourse').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-xl">&times;</button>
-        </div>
-        <form method="POST" action="index.php?action=add_course" class="space-y-3">
-            <input type="hidden" name="redirect_to" value="create" />
-            <div>
-                <label class="block font-bold text-slate-700 mb-1">Mã Môn Học: <span class="text-rose-500">*</span></label>
-                <input type="text" name="course_code" required placeholder="VD: INT1316, CS101, IT3020..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono font-bold" />
-            </div>
-            <div>
-                <label class="block font-bold text-slate-700 mb-1">Tên Môn Học: <span class="text-rose-500">*</span></label>
-                <input type="text" name="course_name" required placeholder="VD: Trí Tuệ Nhân Tạo, Lập Trình Di Động..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-semibold" />
-            </div>
-            <div class="grid grid-cols-2 gap-2">
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Số Tín Chỉ:</label>
-                    <input type="number" name="credits" value="3" min="1" max="10" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono" />
-                </div>
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Khoa / Bộ Môn:</label>
-                    <input type="text" name="department" value="Khoa Công Nghệ Thông Tin" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500" />
-                </div>
-            </div>
-            <div class="flex items-center justify-end gap-2 pt-2">
-                <button type="button" onclick="document.getElementById('modalAddCourse').classList.add('hidden')" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-100">
-                    Hủy bỏ
-                </button>
-                <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-sm">
-                    💾 Lưu Môn Học
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <?php require_once __DIR__ . '/../../../../includes/footer.php'; ?>
 </body>

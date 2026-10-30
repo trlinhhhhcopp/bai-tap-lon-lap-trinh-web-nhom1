@@ -166,7 +166,10 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>admin/import_excel.php" <?php echo $navAttributes(['admin/import_excel.php']); ?>>
                         <span aria-hidden="true">📊</span><span class="sidebar-label">Nhập Excel / CSV</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php" <?php echo $navAttributes(['LeHaMy_GiangVien/index.php']); ?>>
+                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=manage_catalog" <?php echo $navAttributes(['LeHaMy_GiangVien/index.php'], ['manage_catalog']); ?>>
+                        <span aria-hidden="true">🏫</span><span class="sidebar-label">Quản Lý Lớp & Môn</span>
+                    </a>
+                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=index" <?php echo $navAttributes(['LeHaMy_GiangVien/index.php'], ['', 'index', 'create', 'edit', 'delete', 'export_csv', 'toggle_lock', 'import_assignments']); ?>>
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Phân Công Giảng Dạy</span>
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
@@ -193,7 +196,7 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>tickets/create.php" <?php echo $navAttributes(['tickets/create.php']); ?>>
                         <span aria-hidden="true">🚨</span><span class="sidebar-label">Báo Sự Cố Khẩn Cấp</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=index" <?php echo $navAttributes(['LeHaMy_GiangVien/index.php']); ?>>
+                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=index" <?php echo $navAttributes(['LeHaMy_GiangVien/index.php'], ['', 'index', 'create', 'edit', 'delete', 'export_csv', 'toggle_lock', 'import_assignments']); ?>>
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Lớp Học Phần Phụ Trách</span>
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>

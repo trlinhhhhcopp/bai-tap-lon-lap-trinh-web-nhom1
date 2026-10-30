@@ -5,6 +5,57 @@
  */
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../app/Services/SpreadsheetImportService.php';
+
+use App\Services\SpreadsheetImportService;
+
+function normalizeUserImportHeader(string $value): string
+{
+    $value = mb_strtolower($value, 'UTF-8');
+    return preg_replace('/[^\p{L}\p{N}]/u', '', $value);
+}
+
+function findUserImportHeader(array $rows): ?array
+{
+    $aliases = [
+        'code' => ['mataikhoan', 'mãtàikhoản', 'masinhvien', 'mãsinhviên', 'masv', 'mãsv', 'magiaovien', 'mãgiáoviên', 'magv', 'mãgv', 'usercode', 'code'],
+        'name' => ['hovaten', 'họvàtên', 'hoten', 'họtên', 'tensinhvien', 'tênsinhviên', 'tengiangvien', 'têngiảngviên', 'fullname', 'name', 'ten', 'tên'],
+        'email' => ['email', 'emailtruong', 'emailtrường'],
+        'password' => ['matkhau', 'mậtkhẩu', 'password', 'pass'],
+        'role' => ['vaitro', 'vaitrò', 'role'],
+        'user_type' => ['loaitaikhoan', 'loạitàikhoản', 'loainguoidung', 'loạingườidùng', 'loaiuser', 'usertype', 'type'],
+        'department' => ['khoabomon', 'khoabộmôn', 'khoaobomon', 'department', 'faculty', 'khoa'],
+        'phone' => ['sodienthoai', 'sốđiệnthoại', 'sdt', 'phone', 'telephone'],
+    ];
+
+    foreach (array_slice($rows, 0, 10, true) as $rowIndex => $row) {
+        $headerMap = [];
+        foreach ($row as $columnIndex => $cell) {
+            $normalized = normalizeUserImportHeader((string) $cell);
+            foreach ($aliases as $field => $fieldAliases) {
+                $fieldAliases = array_map('normalizeUserImportHeader', $fieldAliases);
+                $matchesHeader = in_array($normalized, $fieldAliases, true);
+                if (!$matchesHeader) {
+                    foreach ($fieldAliases as $alias) {
+                        if (strlen($alias) >= 5 && str_starts_with($normalized, $alias)) {
+                            $matchesHeader = true;
+                            break;
+                        }
+                    }
+                }
+                if ($matchesHeader) {
+                    $headerMap[$field] = $columnIndex;
+                    break;
+                }
+            }
+        }
+        if (isset($headerMap['code'], $headerMap['name'])) {
+            return ['row' => $rowIndex, 'columns' => $headerMap];
+        }
+    }
+
+    return null;
+}
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -30,70 +81,44 @@ $successMsg    = null;
 // Xử lý import khi submit form
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'import_excel') {
     $rows = [];
-    $customCohort = trim($_POST['default_cohort'] ?? '');
-
-    // Đọc toàn bộ nội dung từ file hoặc ô dán
-    $rawText = '';
-    if (!empty($_FILES['excel_file']['name']) && $_FILES['excel_file']['error'] === UPLOAD_ERR_OK) {
-        $rawText = file_get_contents($_FILES['excel_file']['tmp_name']);
-    } elseif (!empty($_POST['csv_text'])) {
-        $rawText = $_POST['csv_text'];
+    try {
+        if (!empty($_FILES['excel_file']['name'])) {
+            if ($_FILES['excel_file']['error'] !== UPLOAD_ERR_OK) {
+                throw new RuntimeException('Không tải được tệp lên (mã lỗi ' . (int) $_FILES['excel_file']['error'] . ').');
+            }
+            $extension = strtolower(pathinfo($_FILES['excel_file']['name'], PATHINFO_EXTENSION));
+            $rows = SpreadsheetImportService::readFile($_FILES['excel_file']['tmp_name'], $extension);
+        } else {
+            throw new RuntimeException('Vui lòng chọn một tệp .xlsx, .csv hoặc .txt để import.');
+        }
+    } catch (RuntimeException $exception) {
+        $errorMsg = $exception->getMessage();
     }
 
-    if (!empty($rawText)) {
-        // 1. Tự động loại bỏ BOM UTF-8 (\xEF\xBB\xBF) và UTF-16
-        $rawText = preg_replace('/^\xEF\xBB\xBF/', '', $rawText);
-        // Chuẩn hóa xuống dòng Windows/Unix/Mac
-        $rawText = str_replace(["\r\n", "\r"], "\n", $rawText);
-        $lines   = explode("\n", $rawText);
-
-        // 2. Nhận diện dấu phân cách chuẩn: phẩy (,), chấm phẩy (;) hoặc tab (\t)
-        $detectedDelimiter = ',';
-        foreach ($lines as $probe) {
-            $probe = trim($probe);
-            if ($probe !== '') {
-                $semi = substr_count($probe, ';');
-                $comm = substr_count($probe, ',');
-                $tabs = substr_count($probe, "\t");
-                if ($semi > $comm && $semi > $tabs) {
-                    $detectedDelimiter = ';';
-                } elseif ($tabs > $comm && $tabs > $semi) {
-                    $detectedDelimiter = "\t";
-                } else {
-                    $detectedDelimiter = ',';
+    if ($errorMsg === null && empty($rows)) {
+        $errorMsg = 'Tệp không có dòng dữ liệu.';
+    } elseif ($errorMsg === null) {
+        $header = findUserImportHeader($rows);
+        if ($header !== null) {
+            $headerColumns = $header['columns'];
+            $dataRows = [];
+            foreach (array_slice($rows, $header['row'] + 1) as $row) {
+                $normalizedRow = array_fill(0, 8, '');
+                $fieldOrder = ['code', 'name', 'email', 'password', 'role', 'user_type', 'department', 'phone'];
+                foreach ($fieldOrder as $columnIndex => $field) {
+                    if (isset($headerColumns[$field])) {
+                        $normalizedRow[$columnIndex] = $row[$headerColumns[$field]] ?? '';
+                    }
                 }
-                break;
+                $dataRows[] = $normalizedRow;
             }
-        }
-
-        // 3. Tách từng dòng và từng cột theo chuẩn RFC 4180
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line === '') continue;
-            $data = str_getcsv($line, $detectedDelimiter);
-            if (!empty($data) && count($data) >= 2) {
-                $rows[] = array_map('trim', $data);
-            }
+            $rows = $dataRows;
+        } elseif (count($rows[0]) < 2) {
+            $errorMsg = 'Không tìm thấy các cột Mã tài khoản và Họ tên. Hãy dùng mẫu import hoặc sắp xếp cột theo hướng dẫn.';
         }
     }
 
-    if (empty($rows)) {
-        $errorMsg = "Vui lòng chọn 1 tệp Excel/CSV hoặc dán danh sách dữ liệu vào ô bên dưới!";
-    } else {
-        // Kiểm tra dòng tiêu đề
-        $firstRow = $rows[0];
-        $isHeader = false;
-        foreach ($firstRow as $col) {
-            $colLower = strtolower($col);
-            if (str_contains($colLower, 'mã') || str_contains($colLower, 'code') || str_contains($colLower, 'tên') || str_contains($colLower, 'name') || str_contains($colLower, 'email')) {
-                $isHeader = true;
-                break;
-            }
-        }
-        if ($isHeader) {
-            array_shift($rows); // Bỏ qua dòng tiêu đề
-        }
-
+    if ($errorMsg === null) {
         $defaultHash = password_hash('123456', PASSWORD_BCRYPT);
 
         foreach ($rows as $index => $r) {
@@ -110,8 +135,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             // 5: Loại người dùng (student, lecturer, agent, staff)
             // 6: Khoa / Bộ môn
             // 7: Số điện thoại
-            // 8: Khóa (D24, D23...)
-
             $userCode   = trim($r[0] ?? '');
             $name       = trim($r[1] ?? '');
             $email      = trim($r[2] ?? '');
@@ -120,20 +143,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $userType   = !empty($r[5]) ? strtolower(trim($r[5])) : 'student';
             $department = !empty($r[6]) ? trim($r[6]) : 'Khoa Công Nghệ Thông Tin';
             $phone      = !empty($r[7]) ? trim($r[7]) : ('09' . str_pad((string)mt_rand(10000000, 99999999), 8, '0'));
-
-            // Xử lý Niên khóa (Page 7: Sửa lại không mặc định để là D2024 hay D24 cho mọi đối tượng)
-            $cohort = !empty($r[8]) ? trim($r[8]) : $customCohort;
-            if ($cohort === '' && $userType === 'student') {
-                // Nhận diện niên khóa động theo mã sinh viên (VD: 224... -> D24, 223... -> D23, 225... -> D25)
-                if (preg_match('/^2(2\d)/', $userCode, $m)) {
-                    $cohort = 'D' . $m[1];
-                } else {
-                    $cohort = 'D24';
-                }
-            } elseif ($userType !== 'student' && empty($r[8]) && empty($customCohort)) {
-                // Giảng viên, KTV, Admin không ép niên khóa
-                $cohort = null;
-            }
 
             if (empty($userCode) || empty($name)) {
                 $skippedUsers[] = [
@@ -153,8 +162,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             if (!in_array($role, ['requester', 'agent', 'admin'])) {
                 $role = 'requester';
             }
+            $userType = match (normalizeUserImportHeader($userType)) {
+                'sinhvien', 'sinhviên' => 'student',
+                'giangvien', 'giảngviên' => 'lecturer',
+                'ktv', 'kythuatvien', 'kỹthuậtviên' => 'agent',
+                'nhanvien', 'nhânviên' => 'staff',
+                default => $userType,
+            };
             if (!in_array($userType, ['student', 'lecturer', 'agent', 'staff'])) {
                 $userType = 'student';
+            }
+
+            $cohort = null;
+            if ($userType === 'student') {
+                if (!preg_match('/^2(2\d)/', $userCode, $cohortMatch)) {
+                    $skippedUsers[] = [
+                        'row' => $index + 1,
+                        'code' => $userCode,
+                        'name' => $name,
+                        'reason' => 'Không xác định được niên khóa từ mã sinh viên',
+                    ];
+                    continue;
+                }
+                $cohort = 'D' . $cohortMatch[1];
             }
 
             $passHash = ($passPlain === '123456') ? $defaultHash : password_hash($passPlain, PASSWORD_BCRYPT);
@@ -203,6 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'email'     => $email,
                     'role'      => $role,
                     'user_type' => $userType,
+                    'cohort'    => $cohort,
                 ];
             } catch (Exception $e) {
                 $skippedUsers[] = [
@@ -256,8 +287,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <?php if ($successMsg): ?>
         <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-900 flex items-center justify-between gap-2">
             <div>✅ <?php echo $successMsg; ?></div>
-            <a href="../TranLinh/users.php" class="text-emerald-700 underline font-bold">Xem danh sách người dùng ➔</a>
+            <a href="#imported-users" class="text-emerald-700 underline font-bold">Xem danh sách vừa nhập ↓</a>
         </div>
+    <?php endif; ?>
+
+    <?php if (!empty($importedUsers)): ?>
+        <section id="imported-users" class="bg-white border border-emerald-200 rounded-3xl p-5 shadow-sm space-y-3 text-xs">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-bold text-emerald-800 uppercase tracking-wider text-xs">
+                    ✅ Danh sách <?= count($importedUsers) ?> tài khoản vừa nhập thành công
+                </h2>
+                <a href="../TranLinh/users.php" class="text-indigo-700 underline font-bold">Mở danh sách người dùng</a>
+            </div>
+            <div class="overflow-x-auto max-h-96 border border-slate-200 rounded-xl">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-emerald-50 text-emerald-900">
+                        <tr class="font-bold border-b border-emerald-200 text-[11px]">
+                            <th class="py-2.5 px-3">ID CSDL</th>
+                            <th class="py-2.5 px-3">Mã sinh viên / tài khoản</th>
+                            <th class="py-2.5 px-3">Họ và tên</th>
+                            <th class="py-2.5 px-3">Email</th>
+                            <th class="py-2.5 px-3">Niên khóa tự nhận diện</th>
+                            <th class="py-2.5 px-3">Vai trò</th>
+                            <th class="py-2.5 px-3">Loại tài khoản</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <?php foreach ($importedUsers as $u): ?>
+                            <tr class="hover:bg-slate-50">
+                                <td class="py-2.5 px-3 font-mono text-slate-400">#<?= htmlspecialchars((string) $u['id']) ?></td>
+                                <td class="py-2.5 px-3 font-mono font-bold text-indigo-700"><?= htmlspecialchars($u['code']) ?></td>
+                                <td class="py-2.5 px-3 font-bold text-slate-900"><?= htmlspecialchars($u['name']) ?></td>
+                                <td class="py-2.5 px-3 font-mono text-slate-600"><?= htmlspecialchars($u['email']) ?></td>
+                                <td class="py-2.5 px-3 font-mono"><?= htmlspecialchars($u['cohort'] ?? '—') ?></td>
+                                <td class="py-2.5 px-3"><?= htmlspecialchars($u['role']) ?></td>
+                                <td class="py-2.5 px-3"><?= htmlspecialchars($u['user_type']) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </section>
     <?php endif; ?>
 
     <?php if ($errorMsg): ?>
@@ -269,70 +339,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <!-- KHUNG IMPORT CHÍNH -->
     <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
 
-        <!-- CỘT TRÁI: FORM TẢI FILE & DÁN DỮ LIỆU (7 CỘT) -->
+        <!-- CỘT TRÁI: FORM TẢI TỆP -->
         <div class="md:col-span-7 bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-5">
             <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                <span>📁</span> Tùy Chọn Tải Lên Danh Sách:
+                <span>📁</span> Import danh sách từ một tệp:
             </h2>
 
             <form method="POST" enctype="multipart/form-data" class="space-y-4 text-xs">
                 <input type="hidden" name="action" value="import_excel" />
 
-                <!-- Cách 1: Tải file lên -->
                 <div class="p-4 bg-slate-50 border border-dashed border-slate-300 rounded-2xl space-y-2">
-                    <label class="block font-bold text-slate-700">Cách 1: Chọn tệp Excel / CSV từ máy tính:</label>
-                    <input type="file" name="excel_file" accept=".csv,.xlsx,.txt" 
+                    <label for="excelFileInput" class="block font-bold text-slate-700">Chọn tệp Excel / CSV từ máy tính:</label>
+                    <input id="excelFileInput" type="file" name="excel_file" accept=".csv,.xlsx,.txt" required
                            class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-300 rounded-xl bg-white p-1" />
-                    <span class="text-[11px] text-slate-400 block">Hỗ trợ định dạng: .CSV, .TXT (phân cách bằng dấu phẩy hoặc chấm phẩy)</span>
-                </div>
-
-                <!-- Niên khóa tùy chọn (Page 7) -->
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Niên khóa sinh viên (Tùy chọn, để trống nếu tự động nhận diện theo mã SV):</label>
-                    <input type="text" name="default_cohort" id="defaultCohortInput" placeholder="Ví dụ: D25, D24, D23 (Để trống nếu tự động theo file hoặc mã sinh viên)" 
-                           class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono text-xs" />
-                    <span class="text-[10.5px] text-slate-400 block mt-0.5">💡 Hệ thống tự tách niên khóa theo tiền tố mã SV (224... ➔ D24). Giảng viên/KTV không bị gán niên khóa.</span>
-                </div>
-
-                <!-- Cách 2: Dán trực tiếp -->
-                <div class="space-y-1.5">
-                    <div class="flex items-center justify-between">
-                        <label class="font-bold text-slate-700">Cách 2: Hoặc dán trực tiếp nội dung CSV vào đây:</label>
-                        <button type="button" onclick="fillSampleData()" class="text-[11px] text-indigo-600 font-bold hover:underline">
-                            ⚡ Điền dữ liệu mẫu kiểm thử
-                        </button>
-                    </div>
-                    <textarea name="csv_text" id="csvTextInput" rows="5" placeholder="Mã SV, Họ tên, Email, Mật khẩu, Vai trò, Loại người dùng, Khoa, SĐT, Khóa&#10;224001801, Hoàng Văn An, 224001801@daihocthudo.edu.vn, 123456, requester, student, Khoa CNTT, 0901234801, D24&#10;224001802, Lê Thị Mai, 224001802@daihocthudo.edu.vn, 123456, requester, student, Khoa CNTT, 0901234802, D24" 
-                              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl font-mono text-[11.5px] focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-                </div>
-
-                <!-- Khung xem trước bảng chia cột trực tiếp (Page 7) -->
-                <div id="livePreviewContainer" class="hidden p-3.5 bg-indigo-50/50 border border-indigo-200 rounded-2xl space-y-2">
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-indigo-900 text-[11px] flex items-center gap-1.5">
-                            <span>👁️</span> Bảng Xem Trước Phân Tách Cột Tự Động (<span id="previewDelimiterBadge" class="font-mono bg-white px-2 py-0.5 rounded border border-indigo-300 text-indigo-700">Dấu phẩy ,</span>):
-                        </span>
-                        <span id="previewRowCount" class="text-[10.5px] font-bold text-indigo-600">0 dòng</span>
-                    </div>
-                    <div class="overflow-x-auto max-h-48 border border-slate-200 rounded-xl bg-white shadow-2xs">
-                        <table class="w-full text-left text-[11px] border-collapse" id="previewTable">
-                            <thead class="bg-slate-100 text-slate-700 sticky top-0">
-                                <tr>
-                                    <th class="p-2 border-b">#</th>
-                                    <th class="p-2 border-b">Mã TK</th>
-                                    <th class="p-2 border-b">Họ & Tên</th>
-                                    <th class="p-2 border-b">Email</th>
-                                    <th class="p-2 border-b">Mật Khẩu</th>
-                                    <th class="p-2 border-b">Vai Trò</th>
-                                    <th class="p-2 border-b">Loại</th>
-                                    <th class="p-2 border-b">Khoa</th>
-                                    <th class="p-2 border-b">SĐT</th>
-                                    <th class="p-2 border-b">Khóa</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-slate-100" id="previewTableBody"></tbody>
-                        </table>
-                    </div>
+                    <span class="text-[11px] text-slate-400 block">Nhận tệp Excel .XLSX có kẻ ô/bảng, .CSV hoặc .TXT (dấu phẩy, chấm phẩy hoặc tab). Không hỗ trợ .XLS cũ.</span>
+                    <span id="xlsxPreviewNotice" class="hidden text-[11px] text-indigo-700 block">Tệp .XLSX sẽ được đọc khi gửi biểu mẫu; trình duyệt không xem trước nội dung workbook.</span>
                 </div>
 
                 <div class="flex items-center justify-between pt-2">
@@ -354,7 +375,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     <span>ℹ️</span> Cấu Trúc Các Cột Dữ Liệu Chuẩn:
                 </h3>
                 <div class="space-y-2 text-slate-600 text-[11.5px] leading-relaxed">
-                    <p>Mỗi dòng trong tệp tương ứng với 1 tài khoản mới theo thứ tự 9 cột:</p>
+                    <p>Mỗi dòng trong tệp tương ứng với 1 tài khoản mới. Có thể đặt cột theo tiêu đề trong mẫu hoặc theo thứ tự 8 cột:</p>
                     <ol class="list-decimal list-inside space-y-1 font-medium bg-slate-50 p-3 rounded-2xl border border-slate-200">
                         <li><strong>Mã tài khoản:</strong> Bắt buộc (VD: <code>224001801</code>)</li>
                         <li><strong>Họ và tên:</strong> Bắt buộc (VD: <code>Nguyễn Thị Hoa</code>)</li>
@@ -364,8 +385,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         <li><strong>Loại tài khoản:</strong> <code>student</code>, <code>lecturer</code>, <code>agent</code></li>
                         <li><strong>Khoa / Bộ môn:</strong> VD: <code>Khoa Công Nghệ Thông Tin</code></li>
                         <li><strong>Số điện thoại:</strong> Tùy chọn (VD: <code>0901234567</code>)</li>
-                        <li><strong>Niên khóa:</strong> Mặc định <code>D24</code></li>
                     </ol>
+                    <p class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-900"><strong>Niên khóa sinh viên được tự nhận diện từ mã SV</strong> (ví dụ: <code>224...</code> → <code>D24</code>). Không cần thêm cột niên khóa vào tệp.</p>
+                    <p class="text-slate-500">Tệp Excel định dạng .xlsx được đọc theo giá trị ô; bảng có kẻ viền, màu nền hoặc độ rộng cột vẫn import bình thường. Mã tài khoản và số điện thoại nên để dạng văn bản để giữ số 0 ở đầu.</p>
                 </div>
 
                 <div class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-[11px] text-amber-900 space-y-1">
@@ -376,45 +398,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         </div>
 
     </div>
-
-    <!-- KẾT QUẢ IMPORT CHI TIẾT (NẾU CÓ) -->
-    <?php if (!empty($importedUsers)): ?>
-        <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-4 text-xs">
-            <h3 class="font-bold text-emerald-700 uppercase tracking-wider text-xs flex items-center gap-1.5">
-                <span>✅</span> Danh Sách <?php echo count($importedUsers); ?> Tài Khoản Đã Nhập Thành Công:
-            </h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
-                            <th class="py-2.5 px-3">ID CSDL</th>
-                            <th class="py-2.5 px-3">Mã Tài Khoản</th>
-                            <th class="py-2.5 px-3">Họ và Tên</th>
-                            <th class="py-2.5 px-3">Email Trường Cấp</th>
-                            <th class="py-2.5 px-3">Vai Trò</th>
-                            <th class="py-2.5 px-3">Loại Tài Khoản</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <?php foreach ($importedUsers as $u): ?>
-                            <tr class="hover:bg-slate-50/80">
-                                <td class="py-2.5 px-3 font-mono text-slate-400">#<?php echo $u['id']; ?></td>
-                                <td class="py-2.5 px-3 font-mono font-bold text-indigo-700"><?php echo htmlspecialchars($u['code']); ?></td>
-                                <td class="py-2.5 px-3 font-bold text-slate-900"><?php echo htmlspecialchars($u['name']); ?></td>
-                                <td class="py-2.5 px-3 font-mono text-slate-600"><?php echo htmlspecialchars($u['email']); ?></td>
-                                <td class="py-2.5 px-3">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 uppercase"><?php echo $u['role']; ?></span>
-                                </td>
-                                <td class="py-2.5 px-3">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700"><?php echo $u['user_type']; ?></span>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    <?php endif; ?>
 
     <?php if (!empty($skippedUsers)): ?>
         <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-3 text-xs">
@@ -437,14 +420,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 </main>
 
 <script>
-function fillSampleData() {
-    const sample = `224001811, Hoàng Anh Tuấn, 224001811@daihocthudo.edu.vn, 123456, requester, student, Khoa CNTT, 0901234811, D24\n224001812, Vũ Mai Phương, 224001812@daihocthudo.edu.vn, 123456, requester, student, Khoa CNTT, 0901234812, D24\n224001813, Đỗ Quốc Bảo, 224001813@daihocthudo.edu.vn, 123456, requester, student, Khoa CNTT, 0901234813, D24`;
-    document.getElementById('csvTextInput').value = sample;
-}
-
 function downloadSampleCsv() {
-    const header = "Mã Tài Khoản,Họ và Tên,Email,Mật Khẩu,Vai Trò,Loại Người Dùng,Khoa/Bộ Môn,Số Điện Thoại,Niên Khóa\r\n";
-    const sampleRows = "224001801,Nguyễn Văn An,224001801@daihocthudo.edu.vn,123456,requester,student,Khoa Công Nghệ Thông Tin,0901234801,D24\r\n224001802,Trần Thị Mai,224001802@daihocthudo.edu.vn,123456,requester,student,Khoa Công Nghệ Thông Tin,0901234802,D24\r\n";
+    const header = '"Mã Tài Khoản","Họ và Tên","Email","Mật Khẩu","Vai Trò","Loại Người Dùng","Khoa/Bộ Môn","Số Điện Thoại"\r\n';
+    const sampleRows = '"224001801","Nguyễn Văn An","224001801@daihocthudo.edu.vn","123456","requester","student","Khoa Công Nghệ Thông Tin","0901234801"\r\n"224001802","Trần Thị Mai","224001802@daihocthudo.edu.vn","123456","requester","student","Khoa Công Nghệ Thông Tin","0901234802"\r\n';
     const blob = new Blob(["\uFEFF" + header + sampleRows], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -452,95 +430,12 @@ function downloadSampleCsv() {
     link.click();
 }
 
-function parseAndPreview(text) {
-    const cont = document.getElementById('livePreviewContainer');
-    const tbody = document.getElementById('previewTableBody');
-    const countBadge = document.getElementById('previewRowCount');
-    const delimBadge = document.getElementById('previewDelimiterBadge');
-    if (!cont || !tbody) return;
-
-    text = text.replace(/^\uFEFF/, '').trim();
-    if (!text) {
-        cont.classList.add('hidden');
-        return;
-    }
-
-    const lines = text.split(/\r\n|\n|\r/).filter(l => l.trim() !== '');
-    if (lines.length === 0) {
-        cont.classList.add('hidden');
-        return;
-    }
-
-    // Tự động nhận diện dấu phân cách
-    let delim = ',';
-    const firstLine = lines[0];
-    const semi = (firstLine.match(/;/g) || []).length;
-    const comm = (firstLine.match(/,/g) || []).length;
-    const tabs = (firstLine.match(/\t/g) || []).length;
-    if (semi > comm && semi > tabs) {
-        delim = ';';
-        if (delimBadge) delimBadge.textContent = 'Dấu chấm phẩy ;';
-    } else if (tabs > comm && tabs > semi) {
-        delim = '\t';
-        if (delimBadge) delimBadge.textContent = 'Tab (Khoảng cách)';
-    } else {
-        delim = ',';
-        if (delimBadge) delimBadge.textContent = 'Dấu phẩy ,';
-    }
-
-    tbody.innerHTML = '';
-    let parsedCount = 0;
-
-    lines.slice(0, 15).forEach((line, idx) => {
-        // Tách các cột
-        const cols = line.split(delim).map(c => c.trim().replace(/^["']|["']$/g, ''));
-        if (idx === 0 && (cols[0].toLowerCase().includes('mã') || cols[0].toLowerCase().includes('code'))) {
-            // Dòng tiêu đề
-            return;
-        }
-        parsedCount++;
-        const tr = document.createElement('tr');
-        tr.className = 'hover:bg-slate-50';
-        tr.innerHTML = `
-            <td class="p-2 font-mono text-slate-400 border-b">${parsedCount}</td>
-            <td class="p-2 font-mono font-bold text-indigo-700 border-b">${cols[0] || ''}</td>
-            <td class="p-2 font-bold text-slate-900 border-b">${cols[1] || ''}</td>
-            <td class="p-2 font-mono text-slate-600 border-b">${cols[2] || ''}</td>
-            <td class="p-2 font-mono text-slate-400 border-b">${cols[3] || '123456'}</td>
-            <td class="p-2 border-b"><span class="px-1.5 py-0.5 rounded bg-slate-100 font-bold">${cols[4] || 'requester'}</span></td>
-            <td class="p-2 border-b">${cols[5] || 'student'}</td>
-            <td class="p-2 border-b">${cols[6] || 'Khoa CNTT'}</td>
-            <td class="p-2 font-mono border-b">${cols[7] || ''}</td>
-            <td class="p-2 font-mono font-bold text-indigo-600 border-b">${cols[8] || 'Tự động'}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-
-    if (countBadge) countBadge.textContent = lines.length + ' dòng dữ liệu';
-    cont.classList.remove('hidden');
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-    const textarea = document.getElementById('csvTextInput');
-    if (textarea) {
-        textarea.addEventListener('input', function() {
-            parseAndPreview(this.value);
-        });
-    }
-
-    const fileInput = document.querySelector('input[name="excel_file"]');
-    if (fileInput) {
-        fileInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    parseAndPreview(e.target.result);
-                };
-                reader.readAsText(file, 'UTF-8');
-            }
-        });
-    }
+    const fileInput = document.getElementById('excelFileInput');
+    const xlsxNotice = document.getElementById('xlsxPreviewNotice');
+    fileInput.addEventListener('change', function() {
+        xlsxNotice.classList.toggle('hidden', !this.files[0] || !this.files[0].name.toLowerCase().endsWith('.xlsx'));
+    });
 });
 </script>
 

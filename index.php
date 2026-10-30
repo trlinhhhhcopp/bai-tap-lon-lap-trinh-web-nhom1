@@ -869,22 +869,9 @@ if ($action === 'guest_ticket') {
                                    autocomplete="username" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Họ và tên người yêu cầu: <span class="text-slate-400 font-normal text-xs">(Tự động nhận diện)</span></label>
-                            <input type="text" name="name" placeholder="Để trống hệ thống tự điền theo Mã SV/CB" 
-                                   autocomplete="name" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
                             <label class="block font-bold text-slate-700 mb-1">Email cá nhân nhận kết quả (Gmail...): <span class="text-rose-500">*</span></label>
                             <input type="email" name="contact_email" required placeholder="VD: thanhngan.personal@gmail.com" 
                                    autocomplete="email" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
-                        </div>
-                        <div>
-                            <label class="block font-bold text-slate-700 mb-1">Số điện thoại liên hệ: <span class="text-slate-400 font-normal text-xs">(Tùy chọn)</span></label>
-                            <input type="tel" name="phone" placeholder="VD: 0912345678" 
-                                   autocomplete="tel" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                     </div>
 

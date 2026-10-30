@@ -18,8 +18,8 @@
 
         <!-- Bộ lọc tab trạng thái nhanh -->
         <div class="flex items-center gap-1.5 flex-wrap text-xs">
-            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=" 
-               class="px-3 py-1.5 rounded-xl font-bold transition <?php echo empty($statusFilter) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'; ?>">
+            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=all" 
+               class="px-3 py-1.5 rounded-xl font-bold transition <?php echo ($statusFilter === 'all' || empty($statusFilter)) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'; ?>">
                 Tất cả (<?php echo $countAll; ?>)
             </a>
             <a href="index.php?agent_id=<?php echo $agentId; ?>&status=in_progress" 
@@ -31,7 +31,7 @@
                 Chờ SV (<?php echo $countWaiting; ?>)
             </a>
             <a href="index.php?agent_id=<?php echo $agentId; ?>&status=resolved" 
-               class="px-3 py-1.5 rounded-xl font-bold transition <?php echo in_array($statusFilter, ['resolved', 'closed']) ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'; ?>">
+               class="px-3 py-1.5 rounded-xl font-bold transition <?php echo in_array($statusFilter, ['resolved', 'closed', 'done']) ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'; ?>">
                 Đã xong (<?php echo $countResolved; ?>)
             </a>
         </div>

@@ -86,7 +86,7 @@ $appBase = get_app_base_url();
 <?php require_once __DIR__ . '/../../includes/navbar.php'; ?>
 
 <!-- NỘI DUNG CHÍNH CỦA TRANG -->
-<div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1 flex flex-col">
+<div class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-8 flex-1 flex flex-col">
 
     <!-- Cảnh báo CSDL dự phòng nếu chưa bật MySQL -->
     <?php if (class_exists('App\Core\Database') && \App\Core\Database::isFallback()): ?>

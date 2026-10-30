@@ -243,14 +243,19 @@ class TicketService {
 
         if ($statusFilter === 'all') {
             $sql .= " ORDER BY t.id DESC";
-        } elseif ($statusFilter === 'done' || $statusFilter === 'resolved_closed') {
+        } elseif (in_array($statusFilter, ['resolved', 'closed', 'done', 'resolved_closed'], true)) {
             $sql .= " AND t.status IN ('resolved', 'closed') ORDER BY t.id DESC";
         } elseif (!empty($statusFilter)) {
             $sql .= " AND t.status = :status ORDER BY t.due_at ASC";
             $params[':status'] = $statusFilter;
         } else {
-            // Mặc định: Hàng đợi đang hoạt động
-            $sql .= " AND t.status IN ('new', 'in_progress', 'waiting_requester') ORDER BY t.due_at ASC";
+            // Mặc định: Nếu có phiếu đang mở thì ưu tiên hàng đợi mở, nếu đã hoàn tất hết thì hiện toàn bộ
+            $hasActive = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE assigned_to = {$agentId} AND status IN ('new', 'in_progress', 'waiting_requester')")->fetchColumn();
+            if ($hasActive > 0) {
+                $sql .= " AND t.status IN ('new', 'in_progress', 'waiting_requester') ORDER BY t.due_at ASC";
+            } else {
+                $sql .= " ORDER BY t.id DESC";
+            }
         }
 
         $stmt = $pdo->prepare($sql);

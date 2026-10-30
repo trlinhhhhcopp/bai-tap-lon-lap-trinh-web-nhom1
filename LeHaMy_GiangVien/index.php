@@ -24,7 +24,12 @@ match ($action) {
     'delete'      => $controller->delete(),
     'export_csv'  => $controller->exportCsv(),
     'toggle_lock' => $controller->toggleLock(),
+    'manage_catalog' => $controller->manageCatalog(),
     'add_class'   => $controller->addClass(),
     'add_course'  => $controller->addCourse(),
+    'import_classes' => $controller->importClasses(),
+    'import_courses' => $controller->importCourses(),
+    'import_assignments' => $controller->importAssignments(),
+    'download_template' => $controller->downloadTemplate(),
     default       => $controller->index(),
 };
