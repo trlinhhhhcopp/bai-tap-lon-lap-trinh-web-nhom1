@@ -31,11 +31,6 @@ if (empty($_SESSION['user'])) {
             </h1>
             <p class="text-xs text-indigo-200/80">Khảo sát mức độ hài lòng từ 1 đến 5 sao theo chuẩn dịch vụ số ITIL v4.</p>
         </div>
-        <div class="flex items-center gap-2">
-            <a href="../index.php" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">
-                ← Quay lại Cổng Chính
-            </a>
-        </div>
     </div>
 
     <?php if (!empty($flash)): ?>

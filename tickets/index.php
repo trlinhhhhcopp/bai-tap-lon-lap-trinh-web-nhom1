@@ -100,9 +100,6 @@ $flash      = get_flash();
                         <span>➕</span> Gửi Phiếu Mới
                     </a>
                 <?php endif; ?>
-                <a href="../index.php" class="px-4 py-2.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl border border-white/20 transition text-xs flex items-center gap-1.5">
-                    <span>🏠</span> Trang Chủ
-                </a>
             </div>
         </div>
 

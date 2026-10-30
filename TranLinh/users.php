@@ -318,9 +318,6 @@ $flash = get_flash();
             <h1 style="margin:0; font-size:20px; font-weight:800; color:#fff;">QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN TRUY CẬP</h1>
             <p style="margin:4px 0 0; font-size:12px; color:#94a3b8;">Hệ thống Quản lý Người dùng, Vai trò & Khóa bảo mật tài khoản - Trường Đại học Thủ Đô Hà Nội</p>
         </div>
-        <div>
-            <a href="../index.php" class="btn btn-secondary" style="font-size:12px; padding:8px 16px; border-radius:8px;">← Quay lại Cổng Quản Trị</a>
-        </div>
     </div>
     </div>
 
@@ -604,4 +601,3 @@ window.onclick = function(event) {
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>
-

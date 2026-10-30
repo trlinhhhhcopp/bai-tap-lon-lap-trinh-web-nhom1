@@ -503,14 +503,26 @@ if ($action === 'reset_password') {
 
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Mật khẩu mới (Tối thiểu 6 ký tự):</label>
-                        <input type="password" name="new_password" required minlength="6" autofocus placeholder="Nhập mật khẩu mới..." 
-                               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-xs font-semibold" />
+                        <div class="relative">
+                            <input id="reset-new-password" type="password" name="new_password" required minlength="6" autofocus autocomplete="new-password" placeholder="Nhập mật khẩu mới..."
+                                   class="w-full px-4 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-base md:text-sm font-semibold" />
+                            <button type="button" data-password-toggle aria-controls="reset-new-password" aria-pressed="false" aria-label="Hiện mật khẩu" class="hidden absolute inset-y-0 right-0 px-4 text-slate-500 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500 rounded-r-xl">
+                                <svg data-password-show-icon aria-hidden="true" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                                <svg data-password-hide-icon aria-hidden="true" class="hidden w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.8M6.2 6.3C3.9 7.8 2.5 12 2.5 12s3.5 6 9.5 6a10.7 10.7 0 0 0 3.3-.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                            </button>
+                        </div>
                     </div>
 
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Xác nhận lại mật khẩu mới:</label>
-                        <input type="password" name="confirm_password" required minlength="6" placeholder="Nhập lại mật khẩu mới..." 
-                               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-xs font-semibold" />
+                        <div class="relative">
+                            <input id="reset-confirm-password" type="password" name="confirm_password" required minlength="6" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới..."
+                                   class="w-full px-4 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition text-base md:text-sm font-semibold" />
+                            <button type="button" data-password-toggle aria-controls="reset-confirm-password" aria-pressed="false" aria-label="Hiện mật khẩu" class="hidden absolute inset-y-0 right-0 px-4 text-slate-500 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500 rounded-r-xl">
+                                <svg data-password-show-icon aria-hidden="true" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                                <svg data-password-hide-icon aria-hidden="true" class="hidden w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.8M6.2 6.3C3.9 7.8 2.5 12 2.5 12s3.5 6 9.5 6a10.7 10.7 0 0 0 3.3-.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                            </button>
+                        </div>
                     </div>
 
                     <button type="submit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-md shadow-emerald-100 flex items-center justify-center gap-2">
@@ -647,19 +659,19 @@ if ($action === 'guest_ticket') {
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="<?php echo $appBase; ?>index.php?action=guest_ticket" enctype="multipart/form-data" class="space-y-4 text-xs">
+                <form method="POST" action="<?php echo $appBase; ?>index.php?action=guest_ticket" enctype="multipart/form-data" class="space-y-4 text-sm">
                     <input type="hidden" name="action" value="guest_ticket" />
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Mã Sinh Viên / Cán Bộ: <span class="text-rose-500">*</span></label>
                             <input type="text" name="user_code" required placeholder="VD: 224001736" 
-                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-xs font-semibold" />
+                                   autocomplete="username" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Họ và tên người yêu cầu: <span class="text-rose-500">*</span></label>
                             <input type="text" name="name" required placeholder="VD: Nguyễn Văn A" 
-                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-xs font-semibold" />
+                                   autocomplete="name" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                     </div>
 
@@ -667,18 +679,18 @@ if ($action === 'guest_ticket') {
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Email cá nhân nhận kết quả (Gmail...): <span class="text-rose-500">*</span></label>
                             <input type="email" name="contact_email" required placeholder="VD: thanhngan.personal@gmail.com" 
-                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-xs font-semibold" />
+                                   autocomplete="email" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                         <div>
                             <label class="block font-bold text-slate-700 mb-1">Số điện thoại liên hệ: <span class="text-rose-500">*</span></label>
                             <input type="tel" name="phone" required placeholder="VD: 0912345678" 
-                                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-xs font-semibold" />
+                                   autocomplete="tel" class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
                     </div>
 
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Chọn sự cố cần cứu hộ: <span class="text-rose-500">*</span></label>
-                        <select name="issue_title" class="w-full px-3.5 py-2.5 bg-rose-50/50 border border-rose-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 text-xs font-bold text-rose-900">
+                        <select name="issue_title" required class="w-full px-3.5 py-3 bg-rose-50/50 border border-rose-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 text-base md:text-sm font-bold text-rose-900">
                             <option value="Tài khoản bị khóa mềm 30 phút do gõ sai mật khẩu quá 5 lần">Tài khoản bị khóa mềm 30 phút do gõ sai mật khẩu quá 5 lần</option>
                             <option value="Quên mật khẩu / Không nhớ mật khẩu tài khoản trường cấp">Quên mật khẩu / Không nhớ mật khẩu tài khoản trường cấp</option>
                             <option value="Tài khoản bị khóa cứng (kỷ luật / hết hạn khóa học)">Tài khoản bị khóa cứng (kỷ luật / hết hạn khóa học)</option>
@@ -690,18 +702,18 @@ if ($action === 'guest_ticket') {
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Mô tả hiện tượng lỗi / Lý do chi tiết: <span class="text-rose-500">*</span></label>
                         <textarea name="description" rows="3" required placeholder="Nhập rõ tình trạng tài khoản của bạn để KTV hỗ trợ mở khóa nhanh nhất..." 
-                                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-xs"></textarea>
+                                  class="w-full px-3.5 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white transition text-base md:text-sm"></textarea>
                     </div>
 
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Tệp ảnh minh chứng (Ảnh thẻ SV, CCCD hoặc ảnh chụp lỗi):</label>
                         <input type="file" name="attachment" accept="image/*,.pdf" 
-                               class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100" />
+                               class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-rose-50 file:text-rose-700 hover:file:bg-rose-100" />
                         <p class="text-[11px] text-slate-400 mt-0.5">Chấp nhận JPG, PNG, PDF (tối đa 5MB). Giúp KTV đối chiếu mở khóa nhanh hơn.</p>
                     </div>
 
                     <div class="pt-2">
-                        <button type="submit" class="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition shadow-md shadow-rose-200 flex items-center justify-center gap-2 text-xs">
+                        <button type="submit" class="w-full py-3 bg-rose-600 hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 text-white font-bold rounded-xl transition shadow-md shadow-rose-200 flex items-center justify-center gap-2 text-sm">
                             <span>🚀</span> Gửi Yêu Cầu Cứu Hộ Ngay Đến KTV SSO
                         </button>
                     </div>
@@ -992,7 +1004,7 @@ if (!$currentUser) {
             <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
                 
                 <!-- Cột giới thiệu hệ thống -->
-                <div class="md:col-span-5 text-white space-y-4">
+                <div class="order-2 md:order-1 md:col-span-5 text-white space-y-4">
                     <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold">
                         🏛️ ĐẠI HỌC THỦ ĐÔ HÀ NỘI
                     </div>
@@ -1013,7 +1025,7 @@ if (!$currentUser) {
                 </div>
 
                 <!-- Cột Form Đăng Nhập -->
-                <div class="md:col-span-7 bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-5">
+                <div class="order-1 md:order-2 md:col-span-7 bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-5">
                     
                     <div>
                         <h2 class="text-xl font-black text-slate-900">Đăng Nhập Tài Khoản</h2>
@@ -1021,50 +1033,55 @@ if (!$currentUser) {
                     </div>
 
                     <?php if ($flash): ?>
-                        <div class="p-3 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
+                        <div role="alert" class="p-3 rounded-xl text-sm font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
                             <?php echo $flash['message']; ?>
                         </div>
                     <?php endif; ?>
 
                     <!-- Form đăng nhập chuẩn -->
-                    <form method="POST" action="<?php echo $appBase; ?>index.php" class="space-y-4 text-xs">
+                    <form method="POST" action="<?php echo $appBase; ?>index.php" class="space-y-5 text-sm">
                         <input type="hidden" name="action" value="login" />
 
                         <div>
-                            <label class="block font-bold text-slate-700 mb-1">Mã tài khoản (Mã SV / Mã GV / Mã KTV / Email):</label>
-                            <input type="text" name="identifier" required placeholder="Ví dụ: 224001736, GV001, KTV004..." 
-                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                            <label for="login-identifier" class="block font-bold text-slate-700 mb-1.5">Mã tài khoản hoặc email trường</label>
+                            <input id="login-identifier" type="text" name="identifier" required autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Ví dụ: 224001736 hoặc email trường"
+                                   class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-base md:text-sm font-semibold" />
                         </div>
 
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <label class="font-bold text-slate-700">Mật khẩu:</label>
-                                <span class="text-[11px] text-indigo-600 font-medium">Mặc định: 123456</span>
+                                <label for="login-password" class="font-bold text-slate-700">Mật khẩu</label>
                             </div>
-                            <input type="password" name="password" required placeholder="Nhập mật khẩu của bạn..." 
-                                   class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                            <div class="relative">
+                                <input id="login-password" type="password" name="password" required autocomplete="current-password" placeholder="Nhập mật khẩu của bạn"
+                                       class="w-full px-4 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-base md:text-sm font-semibold" />
+                                <button type="button" data-password-toggle aria-controls="login-password" aria-pressed="false" aria-label="Hiện mật khẩu" class="hidden absolute inset-y-0 right-0 px-4 text-slate-500 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 rounded-r-xl">
+                                    <svg data-password-show-icon aria-hidden="true" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+                                    <svg data-password-hide-icon aria-hidden="true" class="hidden w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.8M6.2 6.3C3.9 7.8 2.5 12 2.5 12s3.5 6 9.5 6a10.7 10.7 0 0 0 3.3-.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
+                                </button>
+                            </div>
                             
                             <!-- Link Quên mật khẩu SSPR Trần Linh -->
-                            <div class="flex items-center justify-between text-[11px] pt-1.5">
+                            <div class="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 text-xs pt-2">
                                 <a href="<?php echo $appBase; ?>index.php?action=forgot_password" class="text-indigo-600 hover:text-indigo-800 font-bold hover:underline flex items-center gap-1">
-                                    <span>🔑</span> Quên mật khẩu? (Khôi phục SSPR)
+                                    <span aria-hidden="true">🔑</span> Quên mật khẩu?
                                 </a>
-                                <span class="text-slate-400">Token bảo mật 15 phút</span>
+                                <span class="text-slate-500">Khôi phục bằng email trường</span>
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1.5 text-xs">
-                            <span>🔐</span> Đăng Nhập Hệ Thống
+                        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1.5 text-sm">
+                            <span aria-hidden="true">🔐</span> Đăng nhập
                         </button>
                     </form>
 
                     <!-- Danh sách tài khoản thử nghiệm 1-Click (Phục vụ chấm bài) -->
-                    <div class="pt-4 border-t border-slate-100 space-y-2.5">
-                        <div class="flex items-center justify-between text-[11px]">
-                            <span class="font-bold text-slate-600 uppercase tracking-wider">⚡ Đăng Nhập Nhanh Để Kiểm Thử (1-Click Login):</span>
-                        </div>
+                    <details class="pt-4 border-t border-slate-100">
+                        <summary class="cursor-pointer rounded-lg py-2 text-sm font-semibold text-slate-600 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            Tài khoản dùng thử
+                        </summary>
 
-                        <div class="grid grid-cols-2 gap-2 text-[11px]">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 text-sm">
                             <!-- SV Thanh Ngân -->
                             <a href="<?php echo $appBase; ?>index.php?action=quick_login&code=224001736" 
                                class="p-2 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-medium">
@@ -1096,13 +1113,13 @@ if (!$currentUser) {
                                 <span>🛡️</span> <span>Quản Trị Viên (Admin)</span>
                             </a>
                         </div>
-                    </div>
+                    </details>
 
-                    <div class="pt-2 flex items-center justify-between text-[11px] text-slate-400">
-                        <a href="<?php echo $appBase; ?>index.php?action=guest_ticket" class="text-rose-600 hover:underline font-semibold">
+                    <div class="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
+                        <a href="<?php echo $appBase; ?>index.php?action=guest_ticket" class="text-rose-700 hover:underline font-semibold">
                             🆘 Cứu hộ tài khoản khi bị khóa?
                         </a>
-                        <a href="<?php echo $appBase; ?>index.php?action=guest_lookup" class="text-indigo-600 hover:underline">
+                        <a href="<?php echo $appBase; ?>index.php?action=guest_lookup" class="text-indigo-700 hover:underline">
                             🔍 Tra cứu kết quả cứu hộ
                         </a>
                     </div>
@@ -1206,21 +1223,6 @@ if ($userType === 'student') {
                     </div>
                 </div>
 
-                <!-- Menu điều hướng các mục trên đầu (như phần admin làm) -->
-                <div class="relative z-10 flex items-center gap-2 flex-wrap">
-                    <a href="<?php echo $appBase; ?>tickets/create.php" 
-                       class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
-                        <span>➕</span> Báo Sự Cố Mới
-                    </a>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" 
-                       class="px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white font-bold rounded-2xl border border-white/30 transition flex items-center gap-1.5 text-xs">
-                        <span>📋</span> Phiếu Của Tôi
-                    </a>
-                    <a href="<?php echo $appBase; ?>NguyenAnhNhi_SinhVien/index.php?action=ratings" 
-                       class="px-4 py-2.5 bg-amber-500/80 hover:bg-amber-500 text-white font-bold rounded-2xl border border-amber-400/40 transition flex items-center gap-1.5 text-xs">
-                        <span>⭐</span> Đánh Giá CSAT
-                    </a>
-                </div>
             </div>
 
             <?php if ($flash): ?>
@@ -1294,7 +1296,7 @@ if ($userType === 'student') {
                     <div class="p-10 text-center text-slate-400 text-xs space-y-2">
                         <span class="text-3xl block">📭</span>
                         <p class="text-sm font-bold text-slate-600">Hiện bạn chưa gửi yêu cầu hỗ trợ nào.</p>
-                        <p class="text-[11.5px] text-slate-400">Khi gặp sự cố kỹ thuật phòng máy, phần mềm hoặc tài khoản, hãy nhấn nút <strong>"Gửi Phiếu Mới"</strong> bên trên nhé!</p>
+                        <p class="text-[11.5px] text-slate-400">Khi gặp sự cố kỹ thuật phòng máy, phần mềm hoặc tài khoản, hãy chọn <strong>Gửi Yêu Cầu Hỗ Trợ</strong> trên menu dọc.</p>
                     </div>
                 <?php else: ?>
                     <div class="overflow-x-auto">
@@ -1446,11 +1448,6 @@ if ($userType === 'lecturer') {
                         Kính chào Thầy/Cô: <?php echo htmlspecialchars($currentUser['name']); ?>
                     </h1>
                     <p class="text-xs text-indigo-200/80">Mã cán bộ: <strong class="text-white"><?php echo htmlspecialchars($currentUser['user_code']); ?></strong> • Đơn vị: <?php echo htmlspecialchars($currentUser['department'] ?? 'Khoa Công Nghệ Thông Tin'); ?></p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <a href="<?php echo $appBase; ?>tickets/create.php" class="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
-                        <span>🚨</span> Báo Sự Cố Khẩn Cấp (HIGH / URGENT)
-                    </a>
                 </div>
             </div>
 
@@ -1673,17 +1670,6 @@ $recentTickets = $pdo->query("
                     Bảng Điều Hành Hệ Thống Helpdesk
                 </h1>
                 <p class="text-xs text-indigo-200/80">Quản trị người dùng, phân công đào tạo, nhập dữ liệu Excel hàng loạt và điều phối tràn tải.</p>
-            </div>
-            <div class="flex items-center gap-2 flex-wrap">
-                <a href="<?php echo $appBase; ?>admin/import_excel.php" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl shadow-md transition text-xs flex items-center gap-1.5">
-                    <span>📊</span> Nhập Excel / CSV
-                </a>
-                <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=index" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-2xl shadow-md transition text-xs flex items-center gap-1.5">
-                    <span>📚</span> Phân Công Giảng Dạy
-                </a>
-                <a href="<?php echo $appBase; ?>TranLinh/users.php" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl shadow-md transition text-xs flex items-center gap-1.5">
-                    <span>👥</span> Quản Lý Tài Khoản
-                </a>
             </div>
         </div>
 

@@ -62,6 +62,5 @@ class Router {
         // 404 Not Found
         http_response_code(404);
         echo "<h1 style='text-align:center;margin-top:50px;font-family:sans-serif;'>404 - Không tìm thấy trang [{$uri}]</h1>";
-        echo "<p style='text-align:center;'><a href='/'>Quay lại trang chủ</a></p>";
     }
 }

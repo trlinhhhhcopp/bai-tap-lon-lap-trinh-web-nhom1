@@ -1,9 +1,8 @@
 <?php
 /**
  * ==============================================================================
- * THANH ĐIỀU HƯỚNG TỔNG HỢP THEO PHÂN QUYỀN (ROLE-BASED NAVBAR - CHIỀU NGANG)
- * Tự động phân luồng hiển thị menu theo vai trò: Sinh viên, Giảng viên, KTV, Admin
- * Đảm bảo 100% menu hiển thị theo CHIỀU NGANG trên tất cả các trang
+ * THANH ĐIỀU HƯỚNG THEO PHÂN QUYỀN
+ * Menu ngang dành cho khách; người dùng đã đăng nhập dùng sidebar cố định theo vai trò.
  * ==============================================================================
  */
 
@@ -38,104 +37,186 @@ $currentUser = $_SESSION['user'] ?? null;
 $isLoggedIn  = !empty($currentUser);
 $userRole    = $currentUser['role'] ?? 'guest';
 $userType    = $currentUser['user_type'] ?? 'guest';
+$hasFixedSidebar = $isLoggedIn;
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
+$appPath = rtrim((string)(parse_url($appBase, PHP_URL_PATH) ?: '/'), '/');
+$currentPage = ltrim(substr($requestPath, strlen($appPath)), '/');
+$currentAction = (string)($_GET['action'] ?? $_POST['action'] ?? '');
+$navAttributes = static function (array $paths, ?array $actions = null) use ($currentPage, $currentAction): string {
+    $isActive = in_array($currentPage, $paths, true)
+        && ($actions === null || in_array($currentAction, $actions, true));
+    $classes = $isActive
+        ? 'px-3 py-1.5 rounded-lg font-bold text-white bg-slate-800 border-l-2 border-indigo-400 transition flex items-center gap-1.5'
+        : 'px-3 py-1.5 rounded-lg font-semibold text-slate-200 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5';
+
+    return 'class="' . $classes . '"' . ($isActive ? ' aria-current="page"' : '');
+};
 ?>
 
 <!-- Tailwind CSS Engine -->
 <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+<?php if ($hasFixedSidebar): ?>
+<style>
+    body.has-role-sidebar {
+        padding-left: 16rem;
+    }
 
-<!-- NAVBAR CHÍNH CHIỀU NGANG ĐỒNG BỘ TOÀN DỰ ÁN -->
-<header class="bg-slate-900 border-b border-slate-800 text-slate-100 sticky top-0 z-50 shadow-md">
+    .app-role-sidebar {
+        width: 16rem;
+    }
+
+    @media (max-width: 767px) {
+        body.has-role-sidebar {
+            padding-left: 4.5rem;
+        }
+
+        .app-role-sidebar {
+            width: 4.5rem;
+        }
+
+        .app-role-sidebar .sidebar-brand-copy,
+        .app-role-sidebar .sidebar-user-copy {
+            display: none;
+        }
+
+        .app-role-sidebar .sidebar-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .app-role-sidebar > a {
+            justify-content: center;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+    }
+</style>
+<script>
+    document.body.classList.add('has-role-sidebar');
+</script>
+<?php endif; ?>
+
+<!-- Điều hướng ngang cho khách, sidebar cố định cho người dùng đã đăng nhập -->
+<header class="bg-slate-900 border-b border-slate-800 text-slate-100 sticky top-0 z-[70] shadow-md relative">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-14">
+        <div class="flex items-center justify-between min-h-14">
             
             <!-- Logo & Tên hệ thống -->
+            <?php if (!$hasFixedSidebar): ?>
             <div class="flex items-center gap-3 shrink-0">
-                <a href="<?php echo $appBase; ?>index.php" class="flex items-center gap-2.5 text-white hover:opacity-90 transition">
+                <a href="<?php echo $appBase; ?>index.php" aria-label="Helpdesk CNTT Online - Trang chủ" class="flex items-center gap-2.5 text-white hover:opacity-90 transition">
                     <span class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 text-white font-black rounded-lg text-sm shadow-sm">TUD</span>
-                    <div>
+                    <div class="hidden sm:block">
                         <span class="font-bold text-white tracking-wide text-sm block leading-tight">Helpdesk CNTT Online</span>
                         <span class="text-[10.5px] text-slate-400 block leading-tight">Đại Học Thủ Đô Hà Nội</span>
                     </div>
                 </a>
             </div>
+            <?php else: ?>
+            <span class="text-xs font-semibold tracking-wide text-slate-200">Helpdesk CNTT</span>
+            <?php endif; ?>
 
-            <!-- Menu phân quyền theo vai trò (LUÔN DẠNG NGANG GỌN ĐẸP) -->
-            <nav class="hidden md:flex items-center gap-1 text-xs">
+            <!-- Menu phân quyền dạng dọc -->
+            <?php if ($hasFixedSidebar): ?>
+                <nav aria-label="Điều hướng chính" class="app-role-sidebar fixed top-0 bottom-0 left-0 z-[80] flex flex-col overflow-y-auto bg-slate-900 p-4 shadow-2xl ring-1 ring-white/10 items-stretch gap-1 text-sm">
+                    <a href="<?php echo $appBase; ?>index.php" aria-label="Helpdesk CNTT Online - Trang chủ" class="mb-5 flex min-h-12 items-center gap-2.5 border-b border-slate-700/80 pb-4 text-white">
+                        <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-sm font-black text-white shadow-sm">TUD</span>
+                        <span class="sidebar-brand-copy min-w-0">
+                            <span class="block text-sm font-bold leading-tight tracking-wide">Helpdesk CNTT</span>
+                            <span class="block text-[10px] leading-tight text-slate-400">Đại học Thủ Đô Hà Nội</span>
+                        </span>
+                    </a>
+            <?php else: ?>
+                <nav id="primary-navigation" aria-label="Điều hướng chính" class="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-2 text-sm">
+            <?php endif; ?>
                 <?php if (!$isLoggedIn): ?>
                     <!-- Menu dành cho Khách chưa đăng nhập -->
-                    <a href="<?php echo $appBase; ?>index.php?action=guest_ticket" class="px-3 py-1.5 rounded-lg font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 transition">
+                    <a href="<?php echo $appBase; ?>index.php?action=guest_ticket" class="shrink-0 whitespace-nowrap px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-200 hover:text-white hover:bg-slate-800 transition">
                         🆘 Cứu Hộ Tài Khoản (Bị Khóa)
                     </a>
-                    <a href="<?php echo $appBase; ?>index.php?action=guest_lookup" class="px-3 py-1.5 rounded-lg font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition">
+                    <a href="<?php echo $appBase; ?>index.php?action=guest_lookup" class="shrink-0 whitespace-nowrap px-2 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-200 hover:text-white hover:bg-slate-800 transition">
                         🔍 Tra Cứu Phiếu Cứu Hộ
                     </a>
 
                 <?php elseif ($userRole === 'admin'): ?>
                     <!-- Menu Quản trị viên (Admin) -->
-                    <a href="<?php echo $appBase; ?>index.php" class="px-3 py-1.5 rounded-lg font-bold text-white bg-slate-800 transition flex items-center gap-1.5">
-                        <span>🛡️</span> Tổng Quan Quản Trị
+                    <a href="<?php echo $appBase; ?>index.php" <?php echo $navAttributes(['index.php'], ['']); ?>>
+                        <span aria-hidden="true">🛡️</span><span class="sidebar-label">Tổng Quan Quản Trị</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>TranLinh/users.php" class="px-3 py-1.5 rounded-lg font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
-                        <span>👥</span> Quản Lý Tài Khoản & Ca Trực
+                    <a href="<?php echo $appBase; ?>TranLinh/users.php" <?php echo $navAttributes(['TranLinh/users.php', 'TranLinh/user_detail.php']); ?>>
+                        <span aria-hidden="true">👥</span><span class="sidebar-label">Quản Lý Tài Khoản & Ca Trực</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>admin/import_excel.php" class="px-3 py-1.5 rounded-lg font-semibold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/40 transition flex items-center gap-1.5">
-                        <span>📊</span> Nhập Excel / CSV
+                    <a href="<?php echo $appBase; ?>admin/import_excel.php" <?php echo $navAttributes(['admin/import_excel.php']); ?>>
+                        <span aria-hidden="true">📊</span><span class="sidebar-label">Nhập Excel / CSV</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php" class="px-3 py-1.5 rounded-lg font-semibold text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 transition flex items-center gap-1.5">
-                        <span>📚</span> Phân Công Giảng Dạy
+                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php" <?php echo $navAttributes(['LeHaMy_GiangVien/index.php']); ?>>
+                        <span aria-hidden="true">📚</span><span class="sidebar-label">Phân Công Giảng Dạy</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" class="px-3 py-1.5 rounded-lg font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
-                        <span>🎫</span> Triage & Phân Công Phiếu
+                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
+                        <span aria-hidden="true">🎫</span><span class="sidebar-label">Triage & Phân Công Phiếu</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>agent/index.php" class="px-3 py-1.5 rounded-lg font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
-                        <span>👨‍💻</span> Bàn Làm Việc KTV
+                    <a href="<?php echo $appBase; ?>agent/index.php" <?php echo $navAttributes(['agent/index.php']); ?>>
+                        <span aria-hidden="true">👨‍💻</span><span class="sidebar-label">Bàn Làm Việc KTV</span>
                     </a>
 
                 <?php elseif ($userRole === 'agent'): ?>
                     <!-- Menu Kỹ thuật viên (Agent) -->
-                    <a href="<?php echo $appBase; ?>agent/index.php" class="px-3 py-1.5 rounded-lg font-bold text-white bg-slate-800 transition flex items-center gap-1.5">
-                        <span>👨‍💻</span> Bàn Làm Việc KTV
+                    <a href="<?php echo $appBase; ?>agent/index.php" <?php echo $navAttributes(['agent/index.php']); ?>>
+                        <span aria-hidden="true">👨‍💻</span><span class="sidebar-label">Bàn Làm Việc KTV</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" class="px-3 py-1.5 rounded-lg font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
-                        <span>🎫</span> Nhiệm Vụ Được Giao
+                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
+                        <span aria-hidden="true">🎫</span><span class="sidebar-label">Nhiệm Vụ Được Giao</span>
                     </a>
 
                 <?php elseif ($userType === 'lecturer'): ?>
                     <!-- Menu Giảng viên (Lecturer) -->
-                    <a href="<?php echo $appBase; ?>index.php" class="px-3 py-1.5 rounded-lg font-bold text-white bg-slate-800 transition flex items-center gap-1.5">
-                        <span>🏠</span> Cổng Giảng Viên
+                    <a href="<?php echo $appBase; ?>index.php" <?php echo $navAttributes(['index.php'], ['']); ?>>
+                        <span aria-hidden="true">🏠</span><span class="sidebar-label">Cổng Giảng Viên</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/create.php" class="px-3 py-1.5 rounded-lg font-semibold text-amber-300 hover:text-amber-200 hover:bg-amber-950/40 transition flex items-center gap-1.5">
-                        <span>🚨</span> Báo Sự Cố Khẩn Cấp
+                    <a href="<?php echo $appBase; ?>tickets/create.php" <?php echo $navAttributes(['tickets/create.php']); ?>>
+                        <span aria-hidden="true">🚨</span><span class="sidebar-label">Báo Sự Cố Khẩn Cấp</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=index" class="px-3 py-1.5 rounded-lg font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
-                        <span>📚</span> Lớp Học Phần Phụ Trách
+                    <a href="<?php echo $appBase; ?>LeHaMy_GiangVien/index.php?action=index" <?php echo $navAttributes(['LeHaMy_GiangVien/index.php']); ?>>
+                        <span aria-hidden="true">📚</span><span class="sidebar-label">Lớp Học Phần Phụ Trách</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" class="px-3 py-1.5 rounded-lg font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
-                        <span>📋</span> Phiếu Của Tôi
+                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
+                        <span aria-hidden="true">📋</span><span class="sidebar-label">Phiếu Của Tôi</span>
                     </a>
 
                 <?php else: ?>
-                    <!-- Menu Sinh viên (Student) - LUÔN NẰM CHIỀU NGANG -->
-                    <a href="<?php echo $appBase; ?>index.php" class="px-3 py-1.5 rounded-lg font-bold text-white bg-slate-800 transition flex items-center gap-1.5">
-                        <span>🏠</span> Cổng Sinh Viên
+                    <!-- Menu Sinh viên (Student) -->
+                    <a href="<?php echo $appBase; ?>index.php" <?php echo $navAttributes(['index.php'], ['']); ?>>
+                        <span aria-hidden="true">🏠</span><span class="sidebar-label">Cổng Sinh Viên</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/create.php" class="px-3 py-1.5 rounded-lg font-semibold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-950/40 transition flex items-center gap-1.5">
+                    <a href="<?php echo $appBase; ?>tickets/create.php" <?php echo $navAttributes(['tickets/create.php']); ?>>
                         <span>➕</span> Gửi Yêu Cầu Hỗ Trợ
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" class="px-3 py-1.5 rounded-lg font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5">
+                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span>📋</span> Phiếu Của Tôi
                     </a>
-                    <a href="<?php echo $appBase; ?>NguyenAnhNhi_SinhVien/index.php?action=ratings" class="px-3 py-1.5 rounded-lg font-semibold text-yellow-300 hover:text-yellow-200 hover:bg-yellow-950/40 transition flex items-center gap-1.5">
+                    <a href="<?php echo $appBase; ?>NguyenAnhNhi_SinhVien/index.php?action=ratings" <?php echo $navAttributes(['NguyenAnhNhi_SinhVien/index.php']); ?>>
                         <span>⭐</span> Đánh Giá Dịch Vụ (CSAT)
                     </a>
+                <?php endif; ?>
+                <?php if ($hasFixedSidebar): ?>
+                    <div class="sidebar-user-copy mt-auto border-t border-slate-700/80 pt-4 text-xs text-slate-200">
+                        <div class="truncate font-semibold"><?php echo htmlspecialchars($currentUser['name']); ?></div>
+                        <div class="mt-1 text-slate-400"><?php echo htmlspecialchars($currentUser['user_code']); ?></div>
+                    </div>
                 <?php endif; ?>
             </nav>
 
             <!-- Góc phải: Thông tin người dùng & Đăng xuất -->
             <div class="flex items-center gap-2 shrink-0">
                 <?php if ($isLoggedIn): ?>
-                    <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1 rounded-xl text-xs">
+                    <div class="hidden sm:flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1 rounded-xl text-xs">
                         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                         <span class="font-semibold text-white"><?php echo htmlspecialchars($currentUser['name']); ?></span>
                         <span class="text-slate-400 font-mono text-[11px]">(<?php echo htmlspecialchars($currentUser['user_code']); ?>)</span>
@@ -150,17 +231,32 @@ $userType    = $currentUser['user_type'] ?? 'guest';
                     </div>
 
                     <a href="<?php echo $appBase; ?>index.php?action=logout" 
+                       aria-label="Đăng xuất" title="Đăng xuất"
                        onclick="return confirm('Bạn có chắc chắn muốn đăng xuất?');" 
-                       class="px-2.5 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1">
+                       class="px-2 sm:px-2.5 py-1.5 bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 rounded-xl text-xs font-bold transition flex items-center gap-1">
                         <span>🚪</span> <span class="hidden sm:inline">Đăng Xuất</span>
                     </a>
                 <?php else: ?>
-                    <a href="<?php echo $appBase; ?>index.php" class="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm">
-                        🔑 Đăng Nhập
+                    <a href="<?php echo $appBase; ?>index.php" aria-label="Đăng nhập" class="px-3 sm:px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm">
+                        🔑 <span class="sr-only sm:not-sr-only">Đăng Nhập</span>
                     </a>
                 <?php endif; ?>
             </div>
 
         </div>
     </div>
+    <style>
+        #primary-navigation > a,
+        .app-role-sidebar > a {
+            min-height: 44px;
+            padding-top: 0.65rem;
+            padding-bottom: 0.65rem;
+        }
+
+        #primary-navigation > a:focus-visible,
+        .app-role-sidebar > a:focus-visible {
+            outline: 2px solid #818cf8;
+            outline-offset: 2px;
+        }
+    </style>
 </header>

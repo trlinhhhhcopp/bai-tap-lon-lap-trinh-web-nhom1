@@ -48,9 +48,6 @@ function holidayEscape($value): string
             <a href="index.php?controller=holiday&action=create" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
                 <span>➕</span> Thêm Ngày Nghỉ Lễ
             </a>
-            <a href="../index.php" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">
-                ← Cổng Chính
-            </a>
         </div>
     </div>
 

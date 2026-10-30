@@ -143,15 +143,6 @@ $flash = get_flash();
                 <p class="text-xs text-indigo-200/80 mt-0.5">Tiếp nhận, xử lý sự cố từ xa, ghi chú nội bộ và lập biên bản giải pháp kỹ thuật.</p>
             </div>
 
-            <!-- Điều hướng nhanh (KTV không có nút thêm phiếu) -->
-            <div class="flex items-center gap-2 flex-wrap">
-                <a href="../tickets/index.php" class="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-2xl transition border border-white/20 flex items-center gap-1.5">
-                    <span>🎫</span> Tất Cả Nhiệm Vụ
-                </a>
-                <a href="../index.php" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-2xl transition shadow-sm flex items-center gap-1.5">
-                    <span>🏠</span> Trang Chủ
-                </a>
-            </div>
         </div>
 
         <!-- THÔNG BÁO FLASH MESSAGE -->

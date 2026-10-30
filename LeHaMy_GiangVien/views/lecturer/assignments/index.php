@@ -40,9 +40,6 @@ if (empty($_SESSION['user'])) {
                 <span>➕</span> Thêm Phân Công
             </a>
             <?php endif; ?>
-            <a href="../index.php" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">
-                ← Cổng Chính
-            </a>
         </div>
     </div>
 

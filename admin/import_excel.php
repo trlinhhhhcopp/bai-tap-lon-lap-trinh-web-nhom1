@@ -236,9 +236,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             <a href="../TranLinh/users.php" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
                 <span>👥</span> Danh Sách Người Dùng
             </a>
-            <a href="../index.php" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition">
-                ← Bảng Điều Hành
-            </a>
         </div>
     </div>
 
@@ -408,4 +405,3 @@ function downloadSampleCsv() {
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>
-

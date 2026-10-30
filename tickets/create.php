@@ -145,9 +145,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </h1>
             <p class="text-xs text-slate-500 mt-0.5">Tiếp nhận sự cố tự động theo chuyên môn ITIL v4 và phân công KTV phụ trách.</p>
         </div>
-        <a href="../index.php" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold rounded-2xl transition inline-flex items-center gap-1.5 self-start sm:self-auto">
-            ← Quay lại
-        </a>
     </div>
 
     <!-- THÔNG BÁO LỖI NẾU CÓ -->
@@ -255,7 +252,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Nút gửi -->
             <div class="pt-2 flex items-center justify-end gap-3">
-                <a href="../index.php" class="px-5 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-2xl transition">
+                <a href="index.php" class="px-5 py-2.5 border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold rounded-2xl transition">
                     Hủy bỏ
                 </a>
                 <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition shadow-md shadow-indigo-100 flex items-center gap-1.5">

@@ -107,3 +107,24 @@
         </div>
     </div>
 </footer>
+<script>
+    document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+        button.classList.remove('hidden');
+        button.classList.add('flex', 'items-center', 'justify-center');
+    });
+
+    document.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-password-toggle]');
+        if (!button) return;
+
+        const input = document.getElementById(button.getAttribute('aria-controls'));
+        if (!input) return;
+
+        const isVisible = input.type === 'text';
+        input.type = isVisible ? 'password' : 'text';
+        button.setAttribute('aria-pressed', String(!isVisible));
+        button.setAttribute('aria-label', isVisible ? 'Hiện mật khẩu' : 'Ẩn mật khẩu');
+        button.querySelector('[data-password-show-icon]').classList.toggle('hidden', !isVisible);
+        button.querySelector('[data-password-hide-icon]').classList.toggle('hidden', isVisible);
+    });
+</script>
