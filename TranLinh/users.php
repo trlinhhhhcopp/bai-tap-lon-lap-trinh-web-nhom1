@@ -323,7 +323,7 @@ $flash = get_flash();
 
     <!-- Flash Message (Slide 2 & 8) -->
     <?php if ($flash): ?>
-        <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
+        <div data-auto-dismiss="4500" class="alert alert-<?= htmlspecialchars($flash['type']) ?>">
             <span>ℹ️</span>
             <div><?= htmlspecialchars($flash['message']) ?></div>
         </div>

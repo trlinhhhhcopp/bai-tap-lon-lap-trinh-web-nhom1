@@ -51,7 +51,7 @@ $pageTitle = 'Phiếu của tôi';
 </nav>
 <div class="container">
     <?php if (!empty($flash)): ?>
-        <div class="alert alert-<?= htmlspecialchars($flash['type']) ?>"><?= htmlspecialchars($flash['msg']) ?></div>
+        <div data-auto-dismiss="4500" class="alert alert-<?= htmlspecialchars($flash['type']) ?>"><?= htmlspecialchars($flash['msg']) ?></div>
     <?php endif; ?>
 
     <div class="card">

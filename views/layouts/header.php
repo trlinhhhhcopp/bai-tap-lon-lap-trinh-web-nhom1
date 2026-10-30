@@ -76,7 +76,7 @@ $appBase = get_app_base_url();
             background: currentColor;
             opacity: 0.35;
             border-radius: 0 0 16px 16px;
-            animation: alertTimer 3s linear forwards;
+            animation: alertTimer 4.5s linear forwards;
         }
     </style>
 </head>
@@ -155,7 +155,7 @@ $appBase = get_app_base_url();
             if (flash && !flash.querySelector('#resetCountdownBox')) {
                 setTimeout(function() {
                     closeSystemFlash();
-                }, 3000); // 3 giây tự động tắt mượt mà
+                }, 4500);
             }
         });
         </script>

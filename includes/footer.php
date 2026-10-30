@@ -108,6 +108,23 @@
     </div>
 </footer>
 <script>
+    document.querySelectorAll('[data-auto-dismiss]').forEach(function (message) {
+        if (message.querySelector('#resetCountdownBox')) return;
+
+        const delay = Number(message.dataset.autoDismiss) || 4500;
+        window.setTimeout(function () {
+            if (!message.isConnected) return;
+
+            message.style.transition = 'opacity 0.3s ease, transform 0.3s ease, margin-bottom 0.3s ease';
+            message.style.opacity = '0';
+            message.style.transform = 'translateY(-8px)';
+            message.style.marginBottom = '0';
+            window.setTimeout(function () {
+                message.remove();
+            }, 300);
+        }, delay);
+    });
+
     document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
         button.classList.remove('hidden');
         button.classList.add('flex', 'items-center', 'justify-center');

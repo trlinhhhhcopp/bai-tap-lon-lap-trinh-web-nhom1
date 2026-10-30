@@ -128,13 +128,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'login') {
         exit;
     }
 
-    // Kiểm tra mật khẩu (Bcrypt hoặc pass mặc định 123456)
-    $passValid = password_verify($password, $user['password_hash']) || ($password === '123456');
+    // Xác thực mật khẩu theo chuẩn bảo mật BCrypt (Không dùng backdoor 123456)
+    $passValid = password_verify($password, $user['password_hash']);
 
     if (!$passValid) {
         $_SESSION['flash'] = [
             'type'    => 'danger',
-            'message' => 'Mật khẩu không chính xác! (Mật khẩu mặc định là: 123456)'
+            'message' => 'Mật khẩu không chính xác! Vui lòng kiểm tra lại hoặc sử dụng tính năng "Quên mật khẩu" bên dưới.'
         ];
         header('Location: ' . $appBase . 'index.php');
         exit;
@@ -296,7 +296,7 @@ if ($action === 'forgot_password') {
                 </div>
 
                 <?php if ($flash): ?>
-                    <div class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
+                    <div data-auto-dismiss="4500" class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
                         <?php echo $flash['message']; ?>
                     </div>
                 <?php endif; ?>
@@ -493,7 +493,7 @@ if ($action === 'reset_password') {
                 </div>
 
                 <?php if ($flash): ?>
-                    <div class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
+                    <div data-auto-dismiss="4500" class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
                         <?php echo $flash['message']; ?>
                     </div>
                 <?php endif; ?>
@@ -654,7 +654,7 @@ if ($action === 'guest_ticket') {
                 </div>
 
                 <?php if ($flash): ?>
-                    <div class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
+                    <div data-auto-dismiss="4500" class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
                         <?php echo $flash['message']; ?>
                     </div>
                 <?php endif; ?>
@@ -807,7 +807,7 @@ if ($action === 'guest_lookup') {
                 </div>
 
                 <?php if ($flash): ?>
-                    <div class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
+                    <div data-auto-dismiss="4500" class="p-3.5 rounded-xl text-xs font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
                         <?php echo $flash['message']; ?>
                     </div>
                 <?php endif; ?>
@@ -980,7 +980,9 @@ if ($action === 'guest_lookup') {
 // 6. KIỂM TRA ĐĂNG NHẬP: NẾU CHƯA ĐĂNG NHẬP -> HIỂN THỊ MÀN HÌNH ĐĂNG NHẬP
 // -----------------------------------------------------------------------------
 $currentUser = $_SESSION['user'] ?? null;
-$flash = get_flash();
+$flash = ($currentUser['role'] ?? '') === 'agent'
+    ? ($_SESSION['flash'] ?? null)
+    : get_flash();
 
 if (!$currentUser) {
     // GIAO DIỆN ĐĂNG NHẬP BẢO MẬT (GUEST / NOT LOGGED IN)
@@ -1033,7 +1035,7 @@ if (!$currentUser) {
                     </div>
 
                     <?php if ($flash): ?>
-                        <div role="alert" class="p-3 rounded-xl text-sm font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
+                        <div role="alert" data-auto-dismiss="4500" class="p-3 rounded-xl text-sm font-semibold <?php echo $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
                             <?php echo $flash['message']; ?>
                         </div>
                     <?php endif; ?>
@@ -1226,10 +1228,52 @@ if ($userType === 'student') {
             </div>
 
             <?php if ($flash): ?>
-                <div class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'; ?>">
+                <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'; ?>">
                     <?php echo $flash['message']; ?>
                 </div>
             <?php endif; ?>
+
+            <!-- Các chỉ số chính của sinh viên -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Thông Báo & Yêu Cầu</span>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black text-slate-900"><?php echo $myTicketsCount; ?></span>
+                            <span class="text-xs text-sky-600 font-bold">phiếu hỗ trợ</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl shrink-0">
+                        🔔
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-amber-600 uppercase tracking-wider block mb-1">Phiếu Đang Xử Lý & Công Nợ</span>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black text-amber-600"><?php echo $myActiveCount; ?></span>
+                            <span class="text-xs text-amber-700 font-bold">đang khắc phục</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
+                        ⏳
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block mb-1">Đã Giải Quyết & Tiến Độ</span>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black text-emerald-600"><?php echo $myResolvedCount; ?></span>
+                            <span class="text-xs text-emerald-700 font-bold">đã hoàn tất</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
+                        ✅
+                    </div>
+                </div>
+            </div>
 
             <!-- BẢNG DANH SÁCH PHIẾU CỦA RIÊNG SINH VIÊN NÀY -->
             <div class="bg-white border border-slate-200/90 rounded-3xl shadow-sm overflow-hidden space-y-3">
@@ -1427,7 +1471,7 @@ if ($userType === 'lecturer') {
             </div>
 
             <?php if ($flash): ?>
-                <div class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'; ?>">
+                <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'; ?>">
                     <?php echo $flash['message']; ?>
                 </div>
             <?php endif; ?>
@@ -1627,7 +1671,7 @@ $recentTickets = $pdo->query("
         </div>
 
         <?php if ($flash): ?>
-            <div class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'; ?>">
+            <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'; ?>">
                 <?php echo $flash['message']; ?>
             </div>
         <?php endif; ?>

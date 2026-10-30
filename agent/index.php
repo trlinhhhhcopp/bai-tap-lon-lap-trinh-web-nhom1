@@ -147,7 +147,7 @@ $flash = get_flash();
 
         <!-- THÔNG BÁO FLASH MESSAGE -->
         <?php if ($flash): ?>
-            <div class="p-3.5 rounded-2xl text-xs font-semibold flex items-center gap-2 <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'; ?>">
+            <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold flex items-center gap-2 <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'; ?>">
                 <span><?php echo $flash['type'] === 'success' ? '✅' : '⚠️'; ?></span>
                 <span><?php echo $flash['message']; ?></span>
             </div>

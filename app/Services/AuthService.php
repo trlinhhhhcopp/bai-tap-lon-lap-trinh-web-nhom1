@@ -65,12 +65,12 @@ class AuthService {
             throw new RuntimeException("Tài khoản đang bị tạm khóa do nhập sai mật khẩu quá 5 lần. Vui lòng thử lại sau {$remainingMinutes} phút!");
         }
 
-        // Xác thực mật khẩu
-        $isValid = password_verify($password, $user['password_hash']) || ($password === '123456');
+        // Xác thực mật khẩu theo chuẩn bảo mật BCrypt
+        $isValid = password_verify($password, $user['password_hash']);
 
         if (!$isValid) {
             User::recordFailedAttempt($user['id']);
-            throw new RuntimeException("Mật khẩu không chính xác! Vui lòng kiểm tra lại (mật khẩu mặc định: 123456).");
+            throw new RuntimeException("Mật khẩu không chính xác! Vui lòng kiểm tra lại hoặc sử dụng tính năng Quên mật khẩu.");
         }
 
         // Đăng nhập thành công -> Xóa các lần đăng nhập sai

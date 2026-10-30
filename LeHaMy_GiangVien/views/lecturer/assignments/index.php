@@ -44,7 +44,7 @@ if (empty($_SESSION['user'])) {
     </div>
 
     <?php if (!empty($flash)): ?>
-        <div class="p-3.5 rounded-2xl text-xs font-semibold <?= $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200' ?>">
+        <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold <?= $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200' ?>">
             <?= htmlspecialchars($flash['msg']) ?>
         </div>
     <?php endif; ?>
