@@ -1650,6 +1650,58 @@ $recentTickets = $pdo->query("
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trung Tâm Quản Trị Hệ Thống - Admin Control Center</title>
     <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    <style>
+        @media (max-width: 767px) {
+            .admin-ticket-table,
+            .admin-ticket-table tbody {
+                display: block;
+                width: 100%;
+            }
+
+            .admin-ticket-table thead {
+                display: none;
+            }
+
+            .admin-ticket-table tbody tr {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
+                padding: 1rem;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .admin-ticket-table tbody td {
+                display: flex;
+                min-width: 0;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+                padding: 0;
+                overflow-wrap: anywhere;
+                text-align: left;
+            }
+
+            .admin-ticket-table tbody td::before {
+                content: attr(data-label);
+                color: #64748b;
+                font-size: 0.75rem;
+                font-weight: 700;
+            }
+
+            .admin-ticket-table .admin-ticket-code,
+            .admin-ticket-table .admin-ticket-title,
+            .admin-ticket-table .admin-ticket-requester {
+                grid-column: 1 / -1;
+            }
+
+            .admin-ticket-table .admin-ticket-title a {
+                max-width: none;
+                overflow: visible;
+                text-overflow: clip;
+                white-space: normal;
+            }
+        }
+    </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
     
@@ -1701,20 +1753,23 @@ $recentTickets = $pdo->query("
 
             <!-- Danh sách phiếu gần đây (8 cột) -->
             <div class="lg:col-span-8 bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-3">
-                <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-                    <div>
+                <div class="p-3 sm:p-5 border-b border-slate-100 flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                            <span>🎫</span> PHIẾU HỖ TRỢ CẦN TRIAGE & ĐIỀU PHỐI
+                            <span>🎫</span>
+                            <span class="sm:hidden">Phiếu cần xử lý</span>
+                            <span class="hidden sm:inline">PHIẾU HỖ TRỢ CẦN TRIAGE & ĐIỀU PHỐI</span>
                         </h2>
-                        <p class="text-[11.5px] text-slate-500 mt-0.5">Quản trị viên có thẩm quyền nâng mức URGENT diện rộng và điều phối KTV.</p>
+                        <p class="hidden sm:block text-[11.5px] text-slate-500 mt-0.5">Quản trị viên có thẩm quyền nâng mức URGENT diện rộng và điều phối KTV.</p>
                     </div>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
-                        Xem Tất Cả →
+                    <a href="<?php echo $appBase; ?>tickets/index.php" class="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+                        <span class="sm:hidden">Tất cả →</span>
+                        <span class="hidden sm:inline">Xem Tất Cả →</span>
                     </a>
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
+                    <table class="admin-ticket-table w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
                                 <th class="py-3 px-4">Mã Vé</th>
@@ -1728,28 +1783,28 @@ $recentTickets = $pdo->query("
                         <tbody class="divide-y divide-slate-100">
                             <?php foreach ($recentTickets as $t): ?>
                                 <tr class="hover:bg-slate-50/80 transition">
-                                    <td class="py-3 px-4 font-mono font-bold text-indigo-600">
+                                    <td data-label="Mã vé" class="admin-ticket-code py-3 px-4 font-mono font-bold text-indigo-600">
                                         <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:underline">
                                             <?php echo htmlspecialchars($t['ticket_code']); ?>
                                         </a>
                                     </td>
-                                    <td class="py-3 px-4 font-semibold text-slate-800">
+                                    <td data-label="Tiêu đề" class="admin-ticket-title py-3 px-4 font-semibold text-slate-800">
                                         <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:text-indigo-600 transition block max-w-xs truncate">
                                             <?php echo htmlspecialchars($t['title']); ?>
                                         </a>
                                     </td>
-                                    <td class="py-3 px-4 text-slate-600"><?php echo htmlspecialchars($t['requester_name']); ?></td>
-                                    <td class="py-3 px-4 text-center">
+                                    <td data-label="Người gửi" class="admin-ticket-requester py-3 px-4 text-slate-600"><?php echo htmlspecialchars($t['requester_name']); ?></td>
+                                    <td data-label="Ưu tiên" class="py-3 px-4 text-center">
                                         <span class="px-2 py-0.5 rounded text-[10.5px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                                             <?php echo htmlspecialchars($t['priority_name']); ?>
                                         </span>
                                     </td>
-                                    <td class="py-3 px-4 text-center">
+                                    <td data-label="Trạng thái" class="py-3 px-4 text-center">
                                         <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
                                             ● <?php echo htmlspecialchars($t['status']); ?>
                                         </span>
                                     </td>
-                                    <td class="py-3 px-4 text-center">
+                                    <td data-label="Chi tiết" class="py-3 px-4 text-center">
                                         <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition">
                                             Chi tiết →
                                         </a>

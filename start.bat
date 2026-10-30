@@ -35,7 +35,11 @@ echo [*] De tat may chu, ban chi can nhan: Ctrl + C (hoac dong cua so nay)
 echo =========================================================================
 echo.
 
-%PHP_BIN% -S localhost:8080 router.php
+if exist "router.php" (
+    %PHP_BIN% -S localhost:8080 router.php
+) else (
+    %PHP_BIN% -S localhost:8080
+)
 
 echo.
 echo [*] May chu da dung.

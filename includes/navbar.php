@@ -55,6 +55,23 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
 
 <!-- Tailwind CSS Engine -->
 <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+<style>
+    body {
+        font-size: 1.0625rem !important;
+    }
+
+    .text-xs {
+        font-size: 0.875rem !important;
+    }
+
+    .text-sm {
+        font-size: 0.9375rem !important;
+    }
+
+    .text-base {
+        font-size: 1.0625rem !important;
+    }
+</style>
 <?php if ($hasFixedSidebar): ?>
 <style>
     body.has-role-sidebar {
