@@ -178,11 +178,17 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>agent/index.php" <?php echo $navAttributes(['agent/index.php']); ?>>
                         <span aria-hidden="true">👨‍💻</span><span class="sidebar-label">Bàn Làm Việc KTV</span>
                     </a>
+                    <a href="<?php echo $appBase; ?>agent/ratings.php" <?php echo $navAttributes(['agent/ratings.php']); ?>>
+                        <span aria-hidden="true">⭐</span><span class="sidebar-label">Đánh Giá & Nhận Xét CSAT</span>
+                    </a>
 
                 <?php elseif ($userRole === 'agent'): ?>
                     <!-- Menu Kỹ thuật viên (Agent) -->
                     <a href="<?php echo $appBase; ?>agent/index.php" <?php echo $navAttributes(['agent/index.php']); ?>>
                         <span aria-hidden="true">👨‍💻</span><span class="sidebar-label">Bàn Làm Việc KTV</span>
+                    </a>
+                    <a href="<?php echo $appBase; ?>agent/ratings.php" <?php echo $navAttributes(['agent/ratings.php']); ?>>
+                        <span aria-hidden="true">⭐</span><span class="sidebar-label">Đánh Giá & Nhận Xét CSAT</span>
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span aria-hidden="true">🎫</span><span class="sidebar-label">Nhiệm Vụ Được Giao</span>

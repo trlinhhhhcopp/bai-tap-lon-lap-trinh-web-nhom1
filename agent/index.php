@@ -90,6 +90,19 @@ $countWaiting    = (int)$db->query("SELECT COUNT(*) FROM tickets WHERE assigned_
 $countActive     = $countNew + $countInProgress + $countWaiting; // Số phiếu chưa hoàn thành
 $countResolved   = (int)$db->query("SELECT COUNT(*) FROM tickets WHERE assigned_to = {$agentId} AND status IN ('resolved', 'closed')")->fetchColumn(); // Đã hoàn thành
 
+// 5.5. Thống kê điểm trung bình sao CSAT của KTV (Tính toán chuẩn như Be/Grab)
+$csatStmt = $db->prepare("
+    SELECT COUNT(*) as total_ratings, 
+           AVG(r.score) as avg_score 
+    FROM ticket_ratings r 
+    JOIN tickets t ON r.ticket_id = t.id 
+    WHERE t.assigned_to = :agent_id
+");
+$csatStmt->execute([':agent_id' => $agentId]);
+$csatData = $csatStmt->fetch();
+$totalRatings = (int)($csatData['total_ratings'] ?? 0);
+$avgScore = $totalRatings > 0 ? round((float)$csatData['avg_score'], 1) : 5.0;
+
 // 6. Lấy hàng đợi phiếu của KTV này (Sắp xếp theo due_at ASC)
 $queue = TicketService::getAgentQueue($agentId, $statusFilter);
 
@@ -136,9 +149,19 @@ $flash = get_flash();
                         🎯 Chuyên môn: <?php echo htmlspecialchars($currentAgent['specialty_name'] ?? 'Hỗ trợ CNTT'); ?>
                     </span>
                 </div>
-                <h1 class="text-2xl font-black text-white">
-                    <?php echo htmlspecialchars($currentAgent['name']); ?> 
+                <h1 class="text-2xl font-black text-white flex items-center gap-2.5 flex-wrap">
+                    <span><?php echo htmlspecialchars($currentAgent['name']); ?></span>
                     <span class="text-xs font-mono text-indigo-300 font-semibold">(<?php echo htmlspecialchars($currentAgent['user_code']); ?>)</span>
+                    
+                    <!-- ĐIỂM TRUNG BÌNH SAO CSAT KIỂU BE/GRAB ĐẶT NGAY SAU TÊN KTV -->
+                    <a href="ratings.php<?php echo $isAdmin ? '?agent_id=' . $agentId : ''; ?>" 
+                       title="Bấm để xem chi tiết nhận xét & lọc số sao đánh giá CSAT"
+                       class="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/50 text-amber-300 rounded-full text-xs font-black transition shadow-xs cursor-pointer group">
+                        <span class="text-amber-400 text-sm">⭐</span>
+                        <span class="text-sm font-black text-white"><?php echo number_format($avgScore, 1); ?></span>
+                        <span class="text-[11px] text-amber-200/90 font-medium">/ 5.0 (<?php echo $totalRatings; ?> đánh giá)</span>
+                        <span class="text-xs text-amber-300 opacity-70 group-hover:translate-x-0.5 transition-transform">→</span>
+                    </a>
                 </h1>
                 <p class="text-xs text-indigo-200/80 mt-0.5">Tiếp nhận, xử lý sự cố từ xa, ghi chú nội bộ và lập biên bản giải pháp kỹ thuật.</p>
             </div>
