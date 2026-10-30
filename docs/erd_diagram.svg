@@ -1,0 +1,262 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 850" width="100%" height="100%" style="background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="headerGradUsers" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="headerGradResets" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#6d28d9" />
+    </linearGradient>
+    <linearGradient id="headerGradRel" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Title Banner -->
+  <rect x="40" y="25" width="1020" height="70" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="60" y="55" fill="#38bdf8" font-size="19" font-weight="bold">TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI - KHOA: TOÁN-CNTT</text>
+  <text x="60" y="78" fill="#94a3b8" font-size="14">SƠ ĐỒ THỰC THỂ QUAN HỆ (ERD) - PHÂN HỆ: USER MANAGEMENT | SV: TRẦN THỤC LINH (224001729) - LỚP TOÁN ỨNG DỤNG D2024</text>
+
+  <!-- ==================== TABLE 1: USERS (MAIN TABLE) ==================== -->
+  <g transform="translate(380, 130)" filter="url(#shadow)">
+    <!-- Box frame -->
+    <rect x="0" y="0" width="340" height="670" rx="8" fill="#1e293b" stroke="#0284c7" stroke-width="2"/>
+    <!-- Header -->
+    <path d="M 0,8 A 8,8 0 0,1 8,0 L 332,0 A 8,8 0 0,1 340,8 L 340,40 L 0,40 Z" fill="url(#headerGradUsers)"/>
+    <text x="15" y="26" fill="#ffffff" font-size="16" font-weight="bold">USERS (Tài khoản Toàn trường)</text>
+    <text x="240" y="26" fill="#bae6fd" font-size="12" font-style="italic">Model: User.php</text>
+
+    <!-- Fields -->
+    <!-- PK -->
+    <rect x="5" y="45" width="330" height="24" fill="#0369a1" fill-opacity="0.2"/>
+    <text x="15" y="62" fill="#fbbf24" font-size="12" font-weight="bold">PK  id</text>
+    <text x="180" y="62" fill="#94a3b8" font-size="12">INT UNSIGNED</text>
+
+    <!-- UKs -->
+    <text x="15" y="88" fill="#38bdf8" font-size="12" font-weight="bold">UK  user_code</text>
+    <text x="180" y="88" fill="#94a3b8" font-size="12">VARCHAR(30)</text>
+
+    <text x="15" y="112" fill="#e2e8f0" font-size="12">    name</text>
+    <text x="180" y="112" fill="#94a3b8" font-size="12">VARCHAR(100)</text>
+
+    <text x="15" y="136" fill="#38bdf8" font-size="12" font-weight="bold">UK  email</text>
+    <text x="180" y="136" fill="#94a3b8" font-size="12">VARCHAR(190)</text>
+
+    <text x="15" y="160" fill="#e2e8f0" font-size="12">    password_hash</text>
+    <text x="180" y="160" fill="#94a3b8" font-size="12">VARCHAR(255) [Bcrypt]</text>
+
+    <text x="15" y="184" fill="#a78bfa" font-size="12">    role</text>
+    <text x="180" y="184" fill="#94a3b8" font-size="12">ENUM('req','agent','adm')</text>
+
+    <text x="15" y="208" fill="#a78bfa" font-size="12">    user_type</text>
+    <text x="180" y="208" fill="#94a3b8" font-size="12">ENUM('stu','lec','staff')</text>
+
+    <text x="15" y="232" fill="#e2e8f0" font-size="12">    cohort</text>
+    <text x="180" y="232" fill="#94a3b8" font-size="12">VARCHAR(20) [D24, D20]</text>
+
+    <text x="15" y="256" fill="#f87171" font-size="12">    academic_status</text>
+    <text x="180" y="256" fill="#94a3b8" font-size="12">ENUM('studying','grad','exp')</text>
+
+    <!-- FKs -->
+    <rect x="5" y="267" width="330" height="24" fill="#047857" fill-opacity="0.2"/>
+    <text x="15" y="284" fill="#34d399" font-size="12" font-weight="bold">FK  class_id</text>
+    <text x="180" y="284" fill="#94a3b8" font-size="12">INT UNSIGNED -> classes</text>
+
+    <rect x="5" y="293" width="330" height="24" fill="#047857" fill-opacity="0.2"/>
+    <text x="15" y="310" fill="#34d399" font-size="12" font-weight="bold">FK  specialty_category_id</text>
+    <text x="180" y="310" fill="#94a3b8" font-size="12">INT UNSIGNED -> categories</text>
+
+    <!-- Dispatch attributes -->
+    <text x="15" y="336" fill="#e2e8f0" font-size="12">    max_capacity</text>
+    <text x="180" y="336" fill="#94a3b8" font-size="12">TINYINT (Default 5)</text>
+
+    <text x="15" y="360" fill="#e2e8f0" font-size="12">    active_tickets_count</text>
+    <text x="180" y="360" fill="#94a3b8" font-size="12">TINYINT (Counter)</text>
+
+    <text x="15" y="384" fill="#e2e8f0" font-size="12">    is_on_duty</text>
+    <text x="180" y="384" fill="#94a3b8" font-size="12">TINYINT(1) [Ca trực]</text>
+
+    <!-- Security attributes -->
+    <line x1="10" y1="398" x2="330" y2="398" stroke="#475569" stroke-dasharray="3,3"/>
+    <text x="15" y="418" fill="#f87171" font-size="12">    failed_attempts</text>
+    <text x="180" y="418" fill="#94a3b8" font-size="12">TINYINT (Brute-force)</text>
+
+    <text x="15" y="442" fill="#f87171" font-size="12">    locked_until</text>
+    <text x="180" y="442" fill="#94a3b8" font-size="12">DATETIME [Soft-lock 30m]</text>
+
+    <text x="15" y="466" fill="#f87171" font-size="12">    is_active</text>
+    <text x="180" y="466" fill="#94a3b8" font-size="12">TINYINT(1) [0: Hard Lock]</text>
+
+    <text x="15" y="490" fill="#f87171" font-size="12">    lock_reason</text>
+    <text x="180" y="490" fill="#94a3b8" font-size="12">ENUM('none','expelled'...)</text>
+
+    <text x="15" y="514" fill="#f87171" font-size="12">    is_first_login</text>
+    <text x="180" y="514" fill="#94a3b8" font-size="12">TINYINT(1) [Bắt buộc đổi]</text>
+
+    <text x="15" y="538" fill="#e2e8f0" font-size="12">    department</text>
+    <text x="180" y="538" fill="#94a3b8" font-size="12">VARCHAR(100)</text>
+
+    <text x="15" y="562" fill="#e2e8f0" font-size="12">    phone</text>
+    <text x="180" y="562" fill="#94a3b8" font-size="12">VARCHAR(20)</text>
+
+    <text x="15" y="586" fill="#64748b" font-size="12">    created_at</text>
+    <text x="180" y="586" fill="#94a3b8" font-size="12">DATETIME</text>
+
+    <text x="15" y="610" fill="#64748b" font-size="12">    updated_at</text>
+    <text x="180" y="610" fill="#94a3b8" font-size="12">DATETIME ON UPDATE</text>
+
+    <!-- Footer label -->
+    <rect x="0" y="635" width="340" height="35" fill="#0f172a" rx="0"/>
+    <text x="15" y="658" fill="#38bdf8" font-size="11" font-weight="bold">RÀNG BUỘC: UNIQUE(user_code), UNIQUE(email)</text>
+  </g>
+
+  <!-- ==================== TABLE 2: PASSWORD_RESETS ==================== -->
+  <g transform="translate(40, 200)" filter="url(#shadow)">
+    <rect x="0" y="0" width="280" height="230" rx="8" fill="#1e293b" stroke="#7c3aed" stroke-width="2"/>
+    <path d="M 0,8 A 8,8 0 0,1 8,0 L 272,0 A 8,8 0 0,1 280,8 L 280,40 L 0,40 Z" fill="url(#headerGradResets)"/>
+    <text x="15" y="26" fill="#ffffff" font-size="15" font-weight="bold">PASSWORD_RESETS (SSPR)</text>
+
+    <rect x="5" y="45" width="270" height="24" fill="#6d28d9" fill-opacity="0.2"/>
+    <text x="15" y="62" fill="#fbbf24" font-size="12" font-weight="bold">PK  id</text>
+    <text x="140" y="62" fill="#94a3b8" font-size="12">INT UNSIGNED</text>
+
+    <rect x="5" y="71" width="270" height="24" fill="#047857" fill-opacity="0.2"/>
+    <text x="15" y="88" fill="#34d399" font-size="12" font-weight="bold">FK  user_id</text>
+    <text x="140" y="88" fill="#94a3b8" font-size="12">INT -> users(id)</text>
+
+    <text x="15" y="114" fill="#e2e8f0" font-size="12">    email</text>
+    <text x="140" y="114" fill="#94a3b8" font-size="12">VARCHAR(190)</text>
+
+    <text x="15" y="138" fill="#38bdf8" font-size="12" font-weight="bold">IDX token_hash</text>
+    <text x="140" y="138" fill="#94a3b8" font-size="12">VARCHAR(64) SHA-256</text>
+
+    <text x="15" y="162" fill="#f87171" font-size="12" font-weight="bold">IDX expires_at</text>
+    <text x="140" y="162" fill="#94a3b8" font-size="12">DATETIME (15 phút)</text>
+
+    <text x="15" y="186" fill="#64748b" font-size="12">    created_at</text>
+    <text x="140" y="186" fill="#94a3b8" font-size="12">DATETIME</text>
+
+    <rect x="0" y="198" width="280" height="32" fill="#0f172a"/>
+    <text x="15" y="219" fill="#c084fc" font-size="11">CASCADE ON DELETE (users)</text>
+  </g>
+
+  <!-- ==================== TABLE 3: CLASSES (RELATED) ==================== -->
+  <g transform="translate(40, 500)" filter="url(#shadow)">
+    <rect x="0" y="0" width="280" height="200" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+    <path d="M 0,8 A 8,8 0 0,1 8,0 L 272,0 A 8,8 0 0,1 280,8 L 280,36 L 0,36 Z" fill="url(#headerGradRel)"/>
+    <text x="15" y="24" fill="#e2e8f0" font-size="14" font-weight="bold">CLASSES (Lớp Toán Ứng Dụng D2024)</text>
+
+    <text x="15" y="58" fill="#fbbf24" font-size="12" font-weight="bold">PK  id</text>
+    <text x="140" y="58" fill="#94a3b8" font-size="12">INT UNSIGNED</text>
+
+    <text x="15" y="82" fill="#38bdf8" font-size="12" font-weight="bold">UK  class_code</text>
+    <text x="140" y="82" fill="#94a3b8" font-size="12">VARCHAR(30) [TUD-D2024]</text>
+
+    <text x="15" y="106" fill="#e2e8f0" font-size="12">    name</text>
+    <text x="140" y="106" fill="#94a3b8" font-size="12">VARCHAR(100)</text>
+
+    <text x="15" y="130" fill="#e2e8f0" font-size="12">    cohort</text>
+    <text x="140" y="130" fill="#94a3b8" font-size="12">VARCHAR(20) [D2024, D2020]</text>
+
+    <text x="15" y="154" fill="#e2e8f0" font-size="12">    faculty</text>
+    <text x="140" y="154" fill="#94a3b8" font-size="12">Khoa: Toán-CNTT</text>
+
+    <text x="15" y="178" fill="#64748b" font-size="12">    academic_year</text>
+    <text x="140" y="178" fill="#94a3b8" font-size="12">2024-2028</text>
+  </g>
+
+  <!-- ==================== TABLE 4: CATEGORIES (RELATED) ==================== -->
+  <g transform="translate(780, 130)" filter="url(#shadow)">
+    <rect x="0" y="0" width="280" height="200" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+    <path d="M 0,8 A 8,8 0 0,1 8,0 L 272,0 A 8,8 0 0,1 280,8 L 280,36 L 0,36 Z" fill="url(#headerGradRel)"/>
+    <text x="15" y="24" fill="#e2e8f0" font-size="14" font-weight="bold">CATEGORIES (Chuyên môn KTV)</text>
+
+    <text x="15" y="58" fill="#fbbf24" font-size="12" font-weight="bold">PK  id</text>
+    <text x="140" y="58" fill="#94a3b8" font-size="12">INT UNSIGNED</text>
+
+    <text x="15" y="82" fill="#38bdf8" font-size="12" font-weight="bold">UK  code</text>
+    <text x="140" y="82" fill="#94a3b8" font-size="12">VARCHAR(50) [CAT_SSO...]</text>
+
+    <text x="15" y="106" fill="#e2e8f0" font-size="12">    name</text>
+    <text x="140" y="106" fill="#94a3b8" font-size="12">VARCHAR(100)</text>
+
+    <text x="15" y="130" fill="#e2e8f0" font-size="12">    sla_hours</text>
+    <text x="140" y="130" fill="#94a3b8" font-size="12">DECIMAL(4,1) [2.0 - 4.0h]</text>
+
+    <text x="15" y="154" fill="#e2e8f0" font-size="12">    is_active</text>
+    <text x="140" y="154" fill="#94a3b8" font-size="12">TINYINT(1)</text>
+
+    <text x="15" y="178" fill="#64748b" font-size="12">    created_at</text>
+    <text x="140" y="178" fill="#94a3b8" font-size="12">DATETIME</text>
+  </g>
+
+  <!-- ==================== TABLE 5: TICKETS (RELATED) ==================== -->
+  <g transform="translate(780, 420)" filter="url(#shadow)">
+    <rect x="0" y="0" width="280" height="290" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+    <path d="M 0,8 A 8,8 0 0,1 8,0 L 272,0 A 8,8 0 0,1 280,8 L 280,36 L 0,36 Z" fill="url(#headerGradRel)"/>
+    <text x="15" y="24" fill="#e2e8f0" font-size="14" font-weight="bold">TICKETS (Phiếu Sự cố)</text>
+
+    <text x="15" y="58" fill="#fbbf24" font-size="12" font-weight="bold">PK  id</text>
+    <text x="140" y="58" fill="#94a3b8" font-size="12">INT UNSIGNED</text>
+
+    <text x="15" y="82" fill="#38bdf8" font-size="12" font-weight="bold">UK  ticket_code</text>
+    <text x="140" y="82" fill="#94a3b8" font-size="12">HD-2026-00001</text>
+
+    <text x="15" y="106" fill="#34d399" font-size="12" font-weight="bold">FK  requester_id</text>
+    <text x="140" y="106" fill="#94a3b8" font-size="12">-> users(id)</text>
+
+    <text x="15" y="130" fill="#34d399" font-size="12" font-weight="bold">FK  assigned_to</text>
+    <text x="140" y="130" fill="#94a3b8" font-size="12">-> users(id) [KTV]</text>
+
+    <text x="15" y="154" fill="#34d399" font-size="12" font-weight="bold">FK  category_id</text>
+    <text x="140" y="154" fill="#94a3b8" font-size="12">-> categories(id)</text>
+
+    <text x="15" y="178" fill="#f87171" font-size="12">    is_guest_ticket</text>
+    <text x="140" y="178" fill="#94a3b8" font-size="12">TINYINT(1) [Form ngoài]</text>
+
+    <text x="15" y="202" fill="#f87171" font-size="12">    lookup_pin</text>
+    <text x="140" y="202" fill="#94a3b8" font-size="12">VARCHAR(10) [PIN 4 số]</text>
+
+    <text x="15" y="226" fill="#e2e8f0" font-size="12">    status</text>
+    <text x="140" y="226" fill="#94a3b8" font-size="12">ENUM('new','prog'...)</text>
+
+    <text x="15" y="250" fill="#e2e8f0" font-size="12">    due_at</text>
+    <text x="140" y="250" fill="#94a3b8" font-size="12">DATETIME [SLA]</text>
+
+    <text x="15" y="274" fill="#64748b" font-size="12">    created_at</text>
+    <text x="140" y="274" fill="#94a3b8" font-size="12">DATETIME</text>
+  </g>
+
+  <!-- ==================== RELATIONSHIP CONNECTORS ==================== -->
+  <!-- USERS to PASSWORD_RESETS (1 - N) -->
+  <path d="M 380, 280 L 320, 280" fill="none" stroke="#a78bfa" stroke-width="2" marker-start="url(#crow)" />
+  <circle cx="380" cy="280" r="4" fill="#38bdf8"/>
+  <text x="330" y="270" fill="#a78bfa" font-size="11" font-weight="bold">1 — N</text>
+
+  <!-- CLASSES to USERS (1 - N) -->
+  <path d="M 320, 580 L 380, 420" fill="none" stroke="#34d399" stroke-width="2"/>
+  <circle cx="320" cy="580" r="4" fill="#34d399"/>
+  <text x="330" y="490" fill="#34d399" font-size="11" font-weight="bold">1 — N (class_id)</text>
+
+  <!-- CATEGORIES to USERS (1 - N) -->
+  <path d="M 780, 230 L 720, 440" fill="none" stroke="#38bdf8" stroke-width="2"/>
+  <circle cx="780" cy="230" r="4" fill="#38bdf8"/>
+  <text x="730" y="320" fill="#38bdf8" font-size="11" font-weight="bold">1 — N (specialty)</text>
+
+  <!-- USERS to TICKETS (Requester 1 - N) -->
+  <path d="M 720, 540 L 780, 540" fill="none" stroke="#fbbf24" stroke-width="2"/>
+  <circle cx="720" cy="540" r="4" fill="#fbbf24"/>
+  <text x="725" y="530" fill="#fbbf24" font-size="11" font-weight="bold">1 — N</text>
+
+  <!-- USERS to TICKETS (Assigned_to 1 - N) -->
+  <path d="M 720, 580 L 780, 580" fill="none" stroke="#f472b6" stroke-width="2" stroke-dasharray="4,3"/>
+  <circle cx="720" cy="580" r="4" fill="#f472b6"/>
+  <text x="725" y="605" fill="#f472b6" font-size="11" font-weight="bold">1 — N (Agent max 5)</text>
+
+</svg>
+

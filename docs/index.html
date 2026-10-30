@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUD Helpdesk Online - Đồ Án Lập Trình Web Nhóm 1 | Đại Học Thủ Đô Hà Nội</title>
+    <meta name="description" content="Hệ thống tiếp nhận & xử lý hỗ trợ CNTT trực tuyến chuẩn ITIL v4 - Trường Đại Học Thủ Đô Hà Nội. Bài tập lớn Lập Trình Web - Nhóm 1 (D24-CNTT1).">
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .gradient-brand {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #0f172a 100%);
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- NAVBAR CHÍNH -->
+    <header class="sticky top-0 z-50 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 text-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo Brand -->
+                <div class="flex items-center gap-3">
+                    <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center font-black text-white text-base shadow-lg shadow-indigo-500/30">
+                        TUD
+                    </span>
+                    <div>
+                        <span class="font-bold text-white text-sm sm:text-base tracking-wide block leading-tight">Helpdesk CNTT Online</span>
+                        <span class="text-[11px] text-indigo-300 block leading-tight">Trường Đại Học Thủ Đô Hà Nội</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Links -->
+                <nav class="hidden md:flex items-center gap-6 text-xs font-semibold text-slate-300">
+                    <a href="#tong-quan" class="hover:text-white transition">Tổng Quan</a>
+                    <a href="#thanh-vien" class="hover:text-white transition">Thành Viên Nhóm</a>
+                    <a href="#phan-he" class="hover:text-white transition">4 Phân Hệ Lớn</a>
+                    <a href="#tinh-nang" class="hover:text-white transition">Tính Năng Cốt Lõi</a>
+                    <a href="#co-so-du-lieu" class="hover:text-white transition">Cơ Sở Dữ Liệu</a>
+                    <a href="#huong-dan" class="hover:text-white transition">Cài Đặt</a>
+                </nav>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-2.5">
+                    <a href="https://github.com/trlinhhhhcopp/bai-tap-lon-lap-trinh-web-nhom1" target="_blank" rel="noopener noreferrer"
+                       class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-md shadow-indigo-600/30 flex items-center gap-2">
+                        <span>⭐</span>
+                        <span>Mã Nguồn GitHub</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="gradient-brand text-white py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#818cf8_1px,transparent_1px)] [background-size:16px_16px]"></div>
+        
+        <div class="max-w-5xl mx-auto text-center relative z-10 space-y-6">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-bold tracking-wide">
+                <span>🎓</span> BÀI TẬP LỚN LẬP TRÌNH WEB · NHÓM 1 · LỚP D24-CNTT1
+            </div>
+
+            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
+                Hệ Thống Helpdesk Tiếp Nhận &amp; Xử Lý Hỗ Trợ CNTT Trực Tuyến
+            </h1>
+
+            <p class="text-sm sm:text-base text-slate-300 max-w-3xl mx-auto leading-relaxed">
+                Giải pháp số hóa toàn diện quy trình xử lý sự cố công nghệ thông tin tại Trường Đại Học Thủ Đô Hà Nội. Tuân thủ tiêu chuẩn quản lý dịch vụ ITIL v4, điều phối thông minh đa phân hệ dành cho <strong>Sinh Viên</strong>, <strong>Giảng Viên</strong>, <strong>Kỹ Thuật Viên IT</strong> và <strong>Quản Trị Viên</strong>.
+            </p>
+
+            <div class="flex items-center justify-center gap-3 pt-4 flex-wrap">
+                <a href="#phan-he" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-2xl text-xs sm:text-sm shadow-xl shadow-indigo-600/40 transition flex items-center gap-2">
+                    <span>🚀</span> Khám Phá 4 Phân Hệ
+                </a>
+                <a href="#thanh-vien" class="px-6 py-3 bg-slate-800/80 hover:bg-slate-700 text-white font-bold rounded-2xl text-xs sm:text-sm border border-slate-700 transition flex items-center gap-2">
+                    <span>👥</span> Danh Sách Thành Viên
+                </a>
+            </div>
+
+            <!-- Thống kê nhanh nổi bật -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-10 max-w-4xl mx-auto">
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                    <div class="text-2xl sm:text-3xl font-black text-amber-400">4 Phân Hệ</div>
+                    <div class="text-[11px] text-slate-300 mt-1 uppercase font-semibold">Sinh viên · GV · KTV · Admin</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                    <div class="text-2xl sm:text-3xl font-black text-emerald-400">12 Bảng CSDL</div>
+                    <div class="text-[11px] text-slate-300 mt-1 uppercase font-semibold">Chuẩn hóa 3NF &amp; Toàn vẹn</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                    <div class="text-2xl sm:text-3xl font-black text-sky-400">100% ITIL v4</div>
+                    <div class="text-[11px] text-slate-300 mt-1 uppercase font-semibold">SLA &amp; Cân bằng tải KTV</div>
+                </div>
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
+                    <div class="text-2xl sm:text-3xl font-black text-indigo-400">SSPR OTP</div>
+                    <div class="text-[11px] text-slate-300 mt-1 uppercase font-semibold">Gửi thư Gmail thật 15 phút</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PHẦN 1: THÀNH VIÊN NHÓM & PHÂN CÔNG NHIỆM VỤ -->
+    <section id="thanh-vien" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <div class="text-center max-w-2xl mx-auto mb-14 space-y-2">
+            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-wider">
+                ĐỘI NGŨ THỰC HIỆN
+            </span>
+            <h2 class="text-2xl sm:text-4xl font-black text-slate-900">
+                Thành Viên Nhóm 1 &amp; Phân Công Nhiệm Vụ
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-500">
+                Sản phẩm được xây dựng bởi 5 thành viên lớp D24-CNTT1 - Khoa Công Nghệ Thông Tin, ĐH Thủ Đô Hà Nội.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- 1. Thanh Ngân -->
+            <div class="bg-white rounded-3xl p-6 border-2 border-indigo-500 shadow-xl shadow-indigo-100 flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute -right-6 -top-6 w-24 h-24 bg-indigo-500/10 rounded-full"></div>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="px-3 py-1 rounded-full text-[10.5px] font-bold bg-indigo-600 text-white uppercase tracking-wider">
+                            👑 Trưởng Nhóm
+                        </span>
+                        <span class="text-xs font-mono font-bold text-indigo-600">MSSV: 224001736</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900">Phạm Thị Thanh Ngân</h3>
+                        <p class="text-xs text-slate-500">Khoa CNTT · Lớp D24-CNTT1</p>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-2 pt-2 border-t border-slate-100">
+                        <p class="font-bold text-slate-800">Nhiệm vụ đảm nhận:</p>
+                        <ul class="list-disc list-inside space-y-1 text-[11.5px] text-slate-600">
+                            <li>Thiết kế kiến trúc Core, Router trung tâm, Hệ thống Session &amp; Flash message.</li>
+                            <li>Xây dựng thuật toán phân phối vé tự động, cân bằng tải &amp; cơ chế tràn tải KTV ITIL v4.</li>
+                            <li>Cấu hình SMTP Gmail thực tế gửi mã xác thực OTP khôi phục mật khẩu.</li>
+                            <li>Biên soạn cẩm nang CSDL và tài liệu đặc tả toàn bộ hệ thống.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Thục Linh -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-700 uppercase">
+                            Thành viên
+                        </span>
+                        <span class="text-xs font-mono font-bold text-slate-600">MSSV: 224001729</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900">Trần Thục Linh</h3>
+                        <p class="text-xs text-slate-500">Khoa CNTT · Lớp D24-CNTT1</p>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-2 pt-2 border-t border-slate-100">
+                        <p class="font-bold text-slate-800">Nhiệm vụ đảm nhận:</p>
+                        <ul class="list-disc list-inside space-y-1 text-[11.5px] text-slate-600">
+                            <li>Phân hệ Quản trị Tài khoản người dùng (User Management).</li>
+                            <li>Quy trình tự khôi phục mật khẩu học thuật SSPR (Self-Service Password Reset).</li>
+                            <li>Thiết kế sơ đồ quan hệ thực thể ERD chuẩn SVG sắc nét.</li>
+                            <li>Bộ kiểm thử tự động CRUD qua dòng lệnh CLI (test_crud_cli.php).</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Hà My -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-700 uppercase">
+                            Thành viên
+                        </span>
+                        <span class="text-xs font-mono font-bold text-slate-600">MSSV: 224001737</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900">Lê Hà My</h3>
+                        <p class="text-xs text-slate-500">Khoa CNTT · Lớp D24-CNTT1</p>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-2 pt-2 border-t border-slate-100">
+                        <p class="font-bold text-slate-800">Nhiệm vụ đảm nhận:</p>
+                        <ul class="list-disc list-inside space-y-1 text-[11.5px] text-slate-600">
+                            <li>Phân hệ Giảng viên (Lecturer Portal) &amp; Phân công giảng dạy.</li>
+                            <li>Quản lý lớp học phần phụ trách (1 lớp học phần = 1 giảng viên).</li>
+                            <li>Chức năng báo sự cố khẩn cấp (HIGH/URGENT) trong giờ giảng dạy.</li>
+                            <li>Xây dựng bộ testcase và câu lệnh truy vấn mẫu phân hệ Đào tạo.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Ánh Nhi -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-700 uppercase">
+                            Thành viên
+                        </span>
+                        <span class="text-xs font-mono font-bold text-slate-600">MSSV: 224001742</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900">Nguyễn Ánh Nhi</h3>
+                        <p class="text-xs text-slate-500">Khoa CNTT · Lớp D24-CNTT1</p>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-2 pt-2 border-t border-slate-100">
+                        <p class="font-bold text-slate-800">Nhiệm vụ đảm nhận:</p>
+                        <ul class="list-disc list-inside space-y-1 text-[11.5px] text-slate-600">
+                            <li>Phân hệ Sinh viên (Student Portal) gửi yêu cầu hỗ trợ phòng máy, mạng.</li>
+                            <li>Quy trình Nghiệm thu kết quả xử lý và Đánh giá sao dịch vụ CSAT (1-5 sao).</li>
+                            <li>Tích hợp cơ chế tự động hoàn tất phiếu sau 24h nếu sinh viên chưa đánh giá.</li>
+                            <li>Bộ testcase và câu lệnh truy vấn mẫu cho phân hệ sinh viên.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. Công Thành -->
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-700 uppercase">
+                            Thành viên
+                        </span>
+                        <span class="text-xs font-mono font-bold text-slate-600">MSSV: 224001746</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900">Phan Công Thành</h3>
+                        <p class="text-xs text-slate-500">Khoa CNTT · Lớp D24-CNTT1</p>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-2 pt-2 border-t border-slate-100">
+                        <p class="font-bold text-slate-800">Nhiệm vụ đảm nhận:</p>
+                        <ul class="list-disc list-inside space-y-1 text-[11.5px] text-slate-600">
+                            <li>Phân hệ Quản trị Admin: Quản lý Ngày lễ &amp; Lịch nghỉ (Holidays Management).</li>
+                            <li>Tính toán thời gian cam kết dịch vụ SLA (loại trừ ngày nghỉ theo quy định trường).</li>
+                            <li>Xây dựng bộ testcase và câu lệnh truy vấn quản trị ngày lễ.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin giảng viên & trường -->
+            <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white rounded-3xl p-6 flex flex-col justify-between">
+                <div class="space-y-3">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-400 text-slate-950 uppercase">
+                        🏫 ĐƠN VỊ ĐÀO TẠO
+                    </span>
+                    <h3 class="text-lg font-black text-white">Trường Đại Học Thủ Đô Hà Nội</h3>
+                    <p class="text-xs text-indigo-200">Khoa Công Nghệ Thông Tin</p>
+                    <div class="text-[11.5px] text-slate-300 pt-3 border-t border-indigo-800/80 space-y-1">
+                        <div>Môn học: <strong>Lập Trình Web (Học phần cơ sở ngành)</strong></div>
+                        <div>Học kỳ: <strong>Học kỳ 1 · Năm học 2026 - 2027</strong></div>
+                        <div>Nhóm bài tập lớn: <strong>Nhóm 1 (D24-CNTT1)</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PHẦN 2: 4 PHÂN HỆ CHÍNH CỦA HỆ THỐNG -->
+    <section id="phan-he" class="py-20 bg-slate-100/70 border-y border-slate-200/80 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto space-y-14">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-wider">
+                    KIẾN TRÚC PHÂN QUYỀN
+                </span>
+                <h2 class="text-2xl sm:text-4xl font-black text-slate-900">
+                    4 Phân Hệ Chức Năng Chuẩn ITIL v4
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-500">
+                    Mỗi vai trò người dùng được phục vụ bởi một không gian làm việc chuyên biệt, tối ưu thao tác.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Phân hệ 1: Sinh viên -->
+                <div class="bg-white rounded-3xl p-7 border border-slate-200 shadow-sm space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl font-bold">
+                        🎓
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900">1. Cổng Dịch Vụ Sinh Viên (Student Portal)</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Thiết kế tươi sáng, thân thiện giúp sinh viên dễ dàng gửi yêu cầu báo hỏng máy tính phòng thực hành, lỗi tài khoản Canvas LMS, cổng QLĐT hoặc mạng Wi-Fi trường.
+                    </p>
+                    <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                        <li><strong>Tự động gán mức ưu tiên (Auto-Priority Mapping):</strong> Sự cố cổng thi cử/Canvas tự động đẩy lên mức CAO (SLA 2h).</li>
+                        <li><strong>Đính kèm minh chứng lỗi:</strong> Hỗ trợ tải tệp ảnh chụp màn hình hoặc tài liệu PDF minh chứng.</li>
+                        <li><strong>Nghiệm thu CSAT:</strong> Chấm điểm chất lượng phục vụ 1-5 sao sau khi KTV giải quyết.</li>
+                    </ul>
+                </div>
+
+                <!-- Phân hệ 2: Giảng viên -->
+                <div class="bg-white rounded-3xl p-7 border border-slate-200 shadow-sm space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl font-bold">
+                        👨‍🏫
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900">2. Cổng Giảng Viên (Lecturer Portal)</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Không gian riêng biệt phục vụ công tác giảng dạy của cán bộ, giảng viên theo đúng nguyên tắc ITIL: 1 lớp học phần chỉ có 1 giảng viên phụ trách.
+                    </p>
+                    <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                        <li><strong>Báo sự cố khẩn cấp (HIGH/URGENT):</strong> Kênh ưu tiên đặc biệt khi máy chiếu, âm thanh hoặc phần mềm phòng học gặp sự cố trong giờ lên lớp.</li>
+                        <li><strong>Xem phân công đào tạo:</strong> Theo dõi danh sách các lớp học phần và môn học được nhà trường phân công phụ trách.</li>
+                    </ul>
+                </div>
+
+                <!-- Phân hệ 3: KTV IT -->
+                <div class="bg-white rounded-3xl p-7 border border-slate-200 shadow-sm space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-2xl font-bold">
+                        👨‍💻
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900">3. Bàn Làm Việc Kỹ Thuật Viên (Agent Workspace)</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Bàn điều phối chuyên trách dành cho 5 KTV phụ trách 5 lĩnh vực: Tài khoản SSO, Canvas LMS, Cổng QLĐT, Email M365, Mạng Wi-Fi.
+                    </p>
+                    <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                        <li><strong>Hàng đợi vé cá nhân:</strong> KTV chỉ xem và xử lý các phiếu được phân công riêng cho mình.</li>
+                        <li><strong>Hỗ trợ chéo ca trực:</strong> Tính năng thêm KTV hỗ trợ khi sự cố phức tạp.</li>
+                        <li><strong>Chuyển trạng thái &amp; Giải pháp:</strong> KTV chuyển sang <em>Đã giải quyết</em> kèm biên bản giải trình kỹ thuật trước khi bàn giao cho sinh viên nghiệm thu.</li>
+                    </ul>
+                </div>
+
+                <!-- Phân hệ 4: Quản trị viên Admin -->
+                <div class="bg-white rounded-3xl p-7 border border-slate-200 shadow-sm space-y-4">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center text-2xl font-bold">
+                        🛡️
+                    </div>
+                    <h3 class="text-xl font-black text-slate-900">4. Trung Tâm Điều Hành Quản Trị (Admin Control Center)</h3>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Bảng điều khiển tổng thể toàn trường dành cho Ban Giám Hiệu và Quản Trị Viên Trung tâm CNTT &amp; Thư viện.
+                    </p>
+                    <ul class="text-xs text-slate-600 space-y-1.5 list-disc list-inside">
+                        <li><strong>Thuật toán phân công &amp; Tràn tải:</strong> Giám sát tải trọng của từng KTV; tự động kích hoạt tràn tải sang KTV rảnh nhất khi 1 KTV chạm ngưỡng kịch tải (≥ 15 phiếu).</li>
+                        <li><strong>Quản lý Người dùng &amp; Khóa kỷ luật:</strong> Phân quyền RBAC, mở khóa tài khoản, khóa kỷ luật học vụ.</li>
+                        <li><strong>Nhập Excel / CSV:</strong> Thêm danh sách hàng loạt sinh viên và giảng viên vào hệ thống chỉ với 1 click.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PHẦN 3: TÍNH NĂNG CÔNG NGHỆ NỔI BẬT -->
+    <section id="tinh-nang" class="py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-14">
+        <div class="text-center max-w-2xl mx-auto space-y-2">
+            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-wider">
+                ĐIỂM SÁNG KỸ THUẬT
+            </span>
+            <h2 class="text-2xl sm:text-4xl font-black text-slate-900">
+                Tính Năng Công Nghệ Nổi Bật
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+            <div class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+                <span class="text-3xl block">📧</span>
+                <h4 class="text-base font-bold text-slate-900">Khôi Phục Mật Khẩu SSPR Qua OTP Email Trường</h4>
+                <p class="text-slate-600 leading-relaxed">
+                    Hệ thống tích hợp SMTP Google phát thư tự động chứa mã xác thực 6 chữ cái in hoa về hòm thư <code>@daihocthudo.edu.vn</code> của sinh viên. Hiệu lực mã 15 phút, bảo mật cao.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+                <span class="text-3xl block">⚡</span>
+                <h4 class="text-base font-bold text-slate-900">Thuật Toán Tràn Tải &amp; Điều Phối Thông Minh</h4>
+                <p class="text-slate-600 leading-relaxed">
+                    Phiếu được gán tự động cho KTV chuyên trách. Nếu KTV đó đang ôm ≥ 15 vé, hệ thống kích hoạt cơ chế tràn tải sang KTV khác ít việc nhất, chống nghẽn dịch vụ ITIL.
+                </p>
+            </div>
+
+            <div class="p-6 rounded-3xl bg-white border border-slate-200 shadow-sm space-y-3">
+                <span class="text-3xl block">⭐</span>
+                <h4 class="text-base font-bold text-slate-900">Quy Trình Nghiệm Thu &amp; Chấm Điểm CSAT</h4>
+                <p class="text-slate-600 leading-relaxed">
+                    KTV chỉ có quyền chuyển vé về trạng thái <em>Đã giải quyết</em>. Quyền nghiệm thu thuộc về Sinh viên với đánh giá 1-5 sao. Tự động đóng hoàn tất sau 24h nếu quá hạn đánh giá.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- PHẦN 4: CƠ SỞ DỮ LIỆU & ERD -->
+    <section id="co-so-du-lieu" class="py-20 bg-slate-900 text-white px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto space-y-12">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <span class="text-xs font-bold text-amber-400 bg-amber-400/20 px-3 py-1 rounded-full uppercase tracking-wider border border-amber-400/30">
+                    DATABASE SCHEMA &amp; ERD
+                </span>
+                <h2 class="text-2xl sm:text-4xl font-black text-white">
+                    Kiến Trúc Cơ Sở Dữ Liệu 12 Bảng Chuẩn Hóa
+                </h2>
+                <p class="text-xs sm:text-sm text-slate-300">
+                    Cơ sở dữ liệu <code>helpdesk_thudo</code> được thiết kế theo chuẩn 3NF, ràng buộc khóa ngoại chặt chẽ.
+                </p>
+            </div>
+
+            <!-- Danh sách 12 bảng -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">1. users</span>
+                    <span class="text-[10.5px] text-slate-400">Tài khoản &amp; RBAC</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">2. tickets</span>
+                    <span class="text-[10.5px] text-slate-400">Phiếu sự cố</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">3. ticket_replies</span>
+                    <span class="text-[10.5px] text-slate-400">Phản hồi trao đổi</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">4. ticket_ratings</span>
+                    <span class="text-[10.5px] text-slate-400">Đánh giá CSAT</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">5. categories</span>
+                    <span class="text-[10.5px] text-slate-400">Dịch vụ &amp; SLA</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">6. priorities</span>
+                    <span class="text-[10.5px] text-slate-400">Mức độ ưu tiên</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">7. password_resets</span>
+                    <span class="text-[10.5px] text-slate-400">Mã OTP Email</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">8. classes</span>
+                    <span class="text-[10.5px] text-slate-400">Lớp sinh hoạt</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">9. class_students</span>
+                    <span class="text-[10.5px] text-slate-400">Danh sách SV lớp</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">10. courses</span>
+                    <span class="text-[10.5px] text-slate-400">Học phần môn học</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">11. course_assignments</span>
+                    <span class="text-[10.5px] text-slate-400">Phân công giảng dạy</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">12. holidays</span>
+                    <span class="text-[10.5px] text-slate-400">Lịch nghỉ &amp; lễ</span>
+                </div>
+            </div>
+
+            <!-- Tải file database -->
+            <div class="p-6 rounded-3xl bg-indigo-950/60 border border-indigo-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="space-y-1 text-center sm:text-left">
+                    <div class="text-sm font-bold text-white">📦 Bản sao lưu CSDL chuẩn: database_full_nhom1.sql</div>
+                    <div class="text-xs text-indigo-200">Bao gồm toàn bộ cấu trúc 12 bảng và dữ liệu mẫu kiểm thử của tất cả thành viên.</div>
+                </div>
+                <a href="https://raw.githubusercontent.com/trlinhhhhcopp/bai-tap-lon-lap-trinh-web-nhom1/main/database/database_full_nhom1.sql" target="_blank"
+                   class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-md flex items-center gap-2 shrink-0">
+                    <span>⬇️</span> Tải File SQL Hoàn Chỉnh
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- PHẦN 5: HƯỚNG DẪN CÀI ĐẶT LOCALHOST TRONG 3 BƯỚC -->
+    <section id="huong-dan" class="py-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto space-y-12">
+        <div class="text-center space-y-2">
+            <span class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full uppercase tracking-wider">
+                HƯỚNG DẪN DÀNH CHO GIẢNG VIÊN &amp; SINH VIÊN
+            </span>
+            <h2 class="text-2xl sm:text-4xl font-black text-slate-900">
+                Chạy Thử Nghiệm Trên Máy Cục Bộ (Localhost)
+            </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs">
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                <span class="w-8 h-8 rounded-full bg-indigo-600 text-white font-black flex items-center justify-center text-sm">1</span>
+                <h4 class="text-sm font-bold text-slate-900">Kéo Mã Nguồn Về Máy</h4>
+                <p class="text-slate-600 leading-relaxed font-mono bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-[11px]">
+                    git clone https://github.com/trlinhhhhcopp/bai-tap-lon-lap-trinh-web-nhom1.git
+                </p>
+                <p class="text-slate-500 text-[11px]">Sao chép thư mục dự án vào thư mục <code>htdocs</code> của XAMPP.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                <span class="w-8 h-8 rounded-full bg-indigo-600 text-white font-black flex items-center justify-center text-sm">2</span>
+                <h4 class="text-sm font-bold text-slate-900">Import Cơ Sở Dữ Liệu</h4>
+                <p class="text-slate-600 leading-relaxed">
+                    Mở <strong>phpMyAdmin</strong> (<a href="http://localhost/phpmyadmin" class="text-indigo-600 underline">localhost/phpmyadmin</a>), chọn thẻ <strong>Import</strong> và chọn file:
+                </p>
+                <div class="font-mono text-indigo-700 bg-indigo-50 p-2 rounded-xl text-[11px]">
+                    database/database_full_nhom1.sql
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
+                <span class="w-8 h-8 rounded-full bg-indigo-600 text-white font-black flex items-center justify-center text-sm">3</span>
+                <h4 class="text-sm font-bold text-slate-900">Trải Nghiệm Hệ Thống</h4>
+                <p class="text-slate-600 leading-relaxed">
+                    Mở trình duyệt truy cập:
+                </p>
+                <div class="font-mono text-emerald-700 bg-emerald-50 p-2 rounded-xl text-[11px]">
+                    http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/
+                </div>
+                <p class="text-slate-500 text-[11px]">Sử dụng danh sách tài khoản <strong>1-Click Login</strong> có sẵn để kiểm thử ngay.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER CHÍNH -->
+    <footer class="bg-slate-950 text-slate-400 py-12 px-4 sm:px-6 lg:px-8 border-t border-slate-800 text-xs">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+            <div class="space-y-1">
+                <div class="font-bold text-white text-sm">HỆ THỐNG HELPDESK CNTT TRỰC TUYẾN - TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI</div>
+                <div>Bài tập lớn môn Lập Trình Web · Nhóm 1 · Lớp D24-CNTT1 · Năm học 2026 - 2027</div>
+                <div class="text-slate-500 text-[11px]">Phát triển bởi: Phạm Thị Thanh Ngân, Trần Thục Linh, Lê Hà My, Nguyễn Ánh Nhi, Phan Công Thành</div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <a href="https://github.com/trlinhhhhcopp/bai-tap-lon-lap-trinh-web-nhom1" target="_blank"
+                   class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-semibold transition">
+                    GitHub Repository ↗
+                </a>
+                <a href="#tong-quan" class="px-4 py-2 bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white rounded-xl font-semibold transition">
+                    ↑ Lên Đầu Trang
+                </a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
