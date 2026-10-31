@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="font-bold">⚠️ Có lỗi xảy ra:</div>
             <ul class="list-disc pl-5">
                 <?php foreach ($errors as $err): ?>
-                    <li><?php echo htmlspecialchars($err); ?></li>
+                    <li><?php echo $err; ?></li>
                 <?php endforeach; ?>
             </ul>
         </div>

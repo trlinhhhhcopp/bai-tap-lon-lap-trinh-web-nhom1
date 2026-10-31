@@ -196,9 +196,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $catName = db()->query("SELECT name FROM categories WHERE id = " . (int)$categoryId)->fetchColumn() ?: 'nhóm dịch vụ này';
 
             if (in_array($dupTicket['status'], ['new', 'in_progress', 'waiting_requester'])) {
-                $errors[] = "⚠️ <strong>PHÁT HIỆN SỰ CỐ TRÙNG LẶP:</strong> Bạn đang có phiếu <strong>#{$dupTicket['ticket_code']}</strong> (\"" . htmlspecialchars($dupTicket['title']) . "\") thuộc dịch vụ <strong>{$catName}</strong> đang trong quá trình xử lý (<em>{$statusText}</em>). Theo quy định, vấn đề đang xử lý không được tạo thêm phiếu mới để tránh quá tải hệ thống. Vui lòng vào chi tiết phiếu hiện có để trao đổi thêm với KTV!";
+                $errors[] = "⚠️ <strong>PHÁT HIỆN SỰ CỐ TRÙNG LẶP:</strong> Bạn đang có phiếu <strong>#{$dupTicket['ticket_code']}</strong> (\"" . htmlspecialchars($dupTicket['title']) . "\") thuộc dịch vụ <strong>{$catName}</strong> đang trong quá trình xử lý (<em>{$statusText}</em>). Theo quy định, vấn đề đang xử lý không được tạo thêm phiếu mới để tránh quá tải hệ thống. Vui lòng <a href=\"show.php?id={$dupTicket['id']}\" class=\"font-bold underline text-indigo-700 hover:text-indigo-900\">vào chi tiết phiếu #{$dupTicket['ticket_code']}</a> để trao đổi thêm với KTV!";
             } else {
-                $errors[] = "⚠️ <strong>PHÁT HIỆN SỰ CỐ TRÙNG LẶP:</strong> Bạn đã gửi yêu cầu hỗ trợ cho dịch vụ <strong>{$catName}</strong> trong ngày hôm nay (phiếu <strong>#{$dupTicket['ticket_code']}</strong> gửi lúc {$createdTime}). Theo quy định, cùng một người gửi một dịch vụ sự cố nhiều lần trong một ngày đều tính là phiếu trùng lặp. Vui lòng trao đổi thêm trên phiếu đã gửi!";
+                $errors[] = "⚠️ <strong>PHÁT HIỆN SỰ CỐ TRÙNG LẶP:</strong> Bạn đã gửi yêu cầu hỗ trợ cho dịch vụ <strong>{$catName}</strong> trong ngày hôm nay (phiếu <strong>#{$dupTicket['ticket_code']}</strong> gửi lúc {$createdTime}). Theo quy định, cùng một người gửi một dịch vụ sự cố nhiều lần trong một ngày đều tính là phiếu trùng lặp. Vui lòng <a href=\"show.php?id={$dupTicket['id']}\" class=\"font-bold underline text-indigo-700 hover:text-indigo-900\">vào chi tiết phiếu #{$dupTicket['ticket_code']}</a> để trao đổi thêm!";
             }
         }
     }
@@ -262,7 +262,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <ul class="list-disc pl-5 space-y-0.5">
                 <?php foreach ($errors as $err): ?>
-                    <li><?php echo htmlspecialchars($err); ?></li>
+                    <li><?php echo $err; ?></li>
                 <?php endforeach; ?>
             </ul>
         </div>
