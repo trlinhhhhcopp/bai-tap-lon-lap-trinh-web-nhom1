@@ -8,111 +8,72 @@
 
 ---
 
-## 👥 1. DANH SÁCH THÀNH VIÊN NHÓM 1
+## 👥 1. DANH SÁCH THÀNH VIÊN NHÓM 1 & PHÂN CÔNG TRÁCH NHIỆM
 
-<<<<<<< HEAD
-## Danh sách 18 Route thống nhất toàn hệ thống
-V. BẢNG MÃ LỖI CHỐT CỨNG, QUY TẮC VALIDATION & DANH SÁCH ROUTE
-1. Khuôn JSON duy nhất & Bảng mã lỗi HTTP chốt cứng
-Mọi endpoint /api/* trả về Content-Type: application/json; charset=utf-8 theo khuôn:
-{"ok": true, "data": {...}, "error": null} hoặc {"ok": false, "data": null, "error": {"code": 404, "message": "..."}}.
+| STT | Họ và Tên | Mã Sinh Viên | Vai trò Nhóm | Phân hệ / Module Phụ trách (MVC & CSDL) | Email Sinh Viên Trường |
+|:---:|---|:---:|:---:|---|---|
+| 1 | **Phạm Thị Thanh Ngân** | **224001736** | **Trưởng nhóm** | Kiến trúc hệ thống ITIL v4, CSDL `helpdesk_thudo`, Triage điều phối phiếu, Báo cáo & Tài liệu đặc tả | `224001736@daihocthudo.edu.vn` |
+| 2 | **Trần Thục Linh** | **224001729** | Thành viên | Phân hệ Quản trị Người dùng & Phân quyền (`admin/users.php`, `UserRepository`, `AdminUserController`) | `224001729@daihocthudo.edu.vn` |
+| 3 | **Lê Hà My** | **224001737** | Thành viên | Phân hệ Phân công Đào tạo & Danh mục Lớp/Môn (`assignments/index.php`, `CourseAssignmentController`) | `224001737@daihocthudo.edu.vn` |
+| 4 | **Nguyễn Ánh Nhi** | **224001742** | Thành viên | Phân hệ Đánh giá CSAT & Cổng Học phần/Bài tập SV (`student/ratings.php`, `CourseController`, `CourseLesson`) | `224001742@daihocthudo.edu.vn` |
+| 5 | **Phan Công Thành** | **224001746** | Thành viên | Phân hệ Quản lý Lịch Nghỉ lễ & Hiệu chỉnh SLA (`admin/holidays.php`, `HolidayController`, `Holiday`) | `224001746@daihocthudo.edu.vn` |
 
-Mã HTTP
-Tình huống áp dụng duy nhất
-Hành vi với Route HTML
-Hành vi với Route /api/*
-401
-Chưa đăng nhập
-302 Redirect về /login
-Trả JSON lỗi code: 401
-403
-Đã đăng nhập nhưng sai vai trò (requester vào /admin/* hoặc agent sửa phiếu người khác)
-Hiện trang lỗi 403 Forbidden
-Trả JSON lỗi code: 403
-404
-Phiếu/ảnh không tồn tại hoặc requester A truy cập phiếu của requester B
-Hiện trang lỗi 404 Not Found
-Trả JSON lỗi code: 404
-405
-Sai phương thức HTTP (GET vào route chỉ nhận POST)
-Hiện trang lỗi 405
-Trả JSON lỗi code: 405
-409
-Vi phạm quy tắc trạng thái/nghiệp vụ (phản hồi phiếu đã đóng, vượt max_capacity, tranh chấp đồng thời, đánh giá CSAT lần 2)
-Hiện thông báo lỗi nghiệp vụ
-Trả JSON lỗi code: 409
-419
-Thiếu hoặc sai _csrf_token trong request POST
-Hiện lỗi phiên biểu mẫu hết hạn
-Trả JSON lỗi code: 419
-422
-Dữ liệu form hoặc tệp tải lên không hợp lệ
-Quay lại form, giữ $old, báo lỗi cạnh trường
-Trả JSON lỗi code: 422
-429
-Vượt giới hạn tần suất (đăng nhập sai quá 5 lần hoặc spam tạo phiếu)
-Hiện thông báo tạm khóa 15 phút
-Trả JSON lỗi code: 429
-500
-Lỗi hệ thống / PDOException
-rollBack(), ghi log server, hiện trang lỗi 500
-Trả JSON lỗi code: 500
-
-
-| STT | Method | Đường dẫn | Controller@Action | Vai trò được phép | Tầng |
-|---|---|---|---|---|---|
-| 1 | GET | `/login` | `AuthController@showLogin` | Khách | P0 |
-| 2 | POST | `/login` | `AuthController@login` | Khách | P0 |
-| 3 | POST | `/logout` | `AuthController@logout` | Đã đăng nhập | P0 |
-| 4 | GET | `/tickets/create` | `TicketController@create` | requester, admin | P0 |
-| 5 | POST | `/tickets/create` | `TicketController@store` | requester, admin | P0 |
-| 6 | GET | `/tickets/my` | `TicketController@myTickets` | requester | P0 |
-| 7 | GET | `/tickets/show?code=...` | `TicketController@show` | Chủ phiếu, agent được giao, admin | P0 |
-| 8 | POST | `/tickets/reply` | `TicketController@reply` | Chủ phiếu, agent được giao, admin | P0 |
-| 9 | GET | `/tickets/attachment?code=...` | `AttachmentController@download` | Chủ phiếu, agent được giao, admin | P1 |
-| 10 | POST | `/tickets/rate` | `TicketController@rate` | requester (chủ phiếu) | P1 |
-| 11 | GET | `/agent/queue` | `AgentController@queue` | agent, admin | P0 |
-| 12 | POST | `/tickets/status` | `AgentController@updateStatus` | agent (được giao), admin | P0 |
-| 13 | GET | `/admin/tickets` | `AdminController@tickets` | admin | P0 |
-| 14 | POST | `/admin/tickets/assign` | `AdminController@assign` | admin | P0 |
-| 15et=utf-8 theo khuôn:
-{"ok": true, "data": {...}, "error": null} hoặc {"ok": false, "data": null, "error": {"code": 404, "message": "..."}}.
- | GET/POST | `/admin/master-data` | `AdminController@masterData` | admin | P0 |
-| 16 | GET | `/admin/dashboard` | `AdminController@dashboard` | admin | P0 |
-| 17 | GET | `/admin/reports/export-csv` | `AdminController@exportCsv` | admin | P1 |
-| 18 | GET | `/api/tickets/open-count`, `/api/tickets/history`, `/api/kb/search` | `ApiController@openCount`, `@history`, `@kbSearch` | Đã đăng nhập (theo quyền) | P0 / P2 |
-=======
-| STT | Họ và Tên | Mã Sinh Viên | Vai trò trong Nhóm | Email Sinh Viên Trường |
-|:---:|---|:---:|:---:|---|
-| 1 | **Phạm Thị Thanh Ngân** | **224001736** | **Trưởng nhóm** | `224001736@daihocthudo.edu.vn` |
-| 2 | **Trần Thục Linh** | **224001729** | Thành viên | `224001729@daihocthudo.edu.vn` |
-| 3 | **Lê Hà My** | **224001735** | Thành viên | `224001735@daihocthudo.edu.vn` |
-| 4 | **Nguyễn Ánh Nhi** | **224001742** | Thành viên | `224001742@daihocthudo.edu.vn` |
-| 5 | **Phan Công Thành** | **224001746** | Thành viên | `224001746@daihocthudo.edu.vn` |
-
-<<<<<<< HEAD
-| STT | Method | Đường dẫn | Controller@Action | Vai trò được phép | Tầng |
-|---|---|---|---|---|---|
-| 1 | GET | `/login` | `AuthController@showLogin` | Khách | P0 |
-| 2 | POST | `/login` | `AuthController@login` | Khách | P0 |
-| 3 | POST | `/logout` | `AuthController@logout` | Đã đăng nhập | P0 |
-| 4 | GET | `/tickets/create` | `TicketController@cgit add .reate` | requester, admin | P0 |
-| 5 | POST | `/tickets/create` | `TicketController@store` | requester, admin | P0 |
-| 6 | GET | `/tickets/my` | `TicketController@myTickets` | requester | P0 |
-| 7 | GET | `/tickets/show?code=...` | `TicketController@show` | Chủ phiếu, agent được giao, admin | P0 |
-| 8 | POST | `/tickets/reply` | `TicketController@reply` | Chủ phiếu, agent được giao, admin | P0 |
-| 9 | GET | `/tickets/attachment?code=...` | `AttachmentController@download` | Chủ phiếu, agent được giao, admin | P1 |
-| 10 | POST | `/tickets/rate` | `TicketController@rate` | requester (chủ phiếu) | P1 |
-| 11 | GET | `/agent/queue` | `AgentController@queue` | agent, admin | P0 |
-| 12 | POST | `/tickets/status` | `AgentController@updateStatus` | agent (được giao), admin | P0 |
-| 13 | GET | `/admin/tickets` | `AdminController@tickets` | admin | P0 |
-| 14 | POST | `/admin/tickets/assign` | `AdminController@assign` | admin | P0 |
-| 15 | GET/POST | `/admin/master-data` | `AdminController@masterData` | admin | P0 |
-| 16 | GET | `/admin/dashboard` | `AdminController@dashboard` | admin | P0 |
-| 17 | GET | `/admin/reports/export-csv` | `AdminController@exportCsv` | admin | P1 |
-| 18 | GET | `/api/tickets/open-count`, `/api/tickets/history`, `/api/kb/search` | `ApiController@openCount`, `@history`, `@kbSearch` | Đã đăng nhập (theo quyền) | P0 / P2 |
-=======
 ---
+
+### 🔑 BẢNG TÀI KHOẢN THỬ NGHIỆM TỪNG VAI TRÒ (TEST ACCOUNTS - THEO BÀI 7 & 8)
+
+| Vai trò (Role) | Mã người dùng | Email đăng nhập | Mật khẩu chung | Mô tả quyền hạn & Trách nhiệm |
+|---|---|---|---|---|
+| **Quản trị viên (Admin)** | `ADMIN001` | `admin@daihocthudo.edu.vn` | `123456` | Toàn quyền quản trị: duyệt phân công vé, quản lý tài khoản, lịch nghỉ lễ, phân công đào tạo |
+| **Kỹ thuật viên (KTV / Agent)** | `KTV001` | `ktv.an@daihocthudo.edu.vn` | `123456` | KTV chuyên trách SSO/Tài khoản: Bàn làm việc KTV, giải quyết sự cố, xem sao đánh giá CSAT |
+| **Kỹ thuật viên (KTV / Agent)** | `KTV002` | `ktv.binh@daihocthudo.edu.vn` | `123456` | KTV chuyên trách Mạng/Wifi: tiếp nhận và xử lý sự cố hạ tầng kết nối |
+| **Giảng viên (Lecturer)** | `GV001` | `nguyenvangiang@daihocthudo.edu.vn` | `123456` | TS. Nguyễn Văn Giảng: Báo sự cố khẩn cấp, xem lớp học phần phụ trách giảng dạy |
+| **Sinh viên (Student)** | `224001736` | `224001736@daihocthudo.edu.vn` | `123456` | Phạm Thị Thanh Ngân: Gửi phiếu, Cổng học phần & Đính kèm bài tập các buổi, Đánh giá CSAT |
+| **Sinh viên (Student)** | `224001729` | `224001729@daihocthudo.edu.vn` | `123456` | Trần Thục Linh: Gửi phiếu, theo dõi tiến độ nộp bài tập thực hành |
+
+---
+
+### 🛡️ MA TRẬN PHÂN QUYỀN TRUY CẬP (RBAC MATRIX - THEO BÀI 7)
+
+| Chức năng / Đường dẫn | Khách vãng lai | Sinh viên | Giảng viên | Kỹ thuật viên (KTV) | Quản trị viên (Admin) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| Cứu hộ tài khoản bị khóa (`/index.php?action=guest_ticket`) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Đăng nhập / Quên mật khẩu (`/index.php?action=login`) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Gửi phiếu báo sự cố (`/tickets/create.php`) | ❌ | ✅ | ✅ (Khẩn cấp) | ❌ | ✅ |
+| Quản lý phiếu của tôi (`/tickets/index.php`) | ❌ | ✅ (Phiếu của mình) | ✅ (Phiếu của mình) | ✅ (Nhiệm vụ được giao) | ✅ (Tất cả phiếu) |
+| Mục lục học phần & Đính kèm bài tập (`/student/index.php`) | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Đánh giá chất lượng CSAT (`/student/ratings.php`) | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Bàn làm việc KTV (`/agent/index.php`) | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Xem & lọc đánh giá CSAT KTV (`/agent/ratings.php`) | ❌ | ❌ | ❌ | ✅ | ✅ |
+| Quản trị người dùng & Ca trực (`/admin/users.php`) | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Nhập dữ liệu SV/GV Excel (`/admin/import_excel.php`) | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Quản lý lịch nghỉ lễ SLA (`/admin/holidays.php`) | ❌ | ❌ | ❌ | ❌ | ✅ |
+| Phân công đào tạo (`/assignments/index.php`) | ❌ | ❌ | ✅ (Xem lớp phụ trách) | ❌ | ✅ (Toàn quyền) |
+
+---
+
+### 🛣️ DANH SÁCH ROUTE MVC CHÍNH THỨC CỦA HỆ THỐNG
+
+| STT | Phương thức | Đường dẫn (Route) | Controller @ Action | Quyền hạn áp dụng | Ghi chú kỹ thuật |
+|:---:|:---:|---|---|:---:|---|
+| 1 | GET/POST | `/index.php?action=login` | `AuthController@login` | Khách / Tất cả | Xác thực Bcrypt `password_verify`, khởi tạo session an toàn |
+| 2 | GET | `/index.php?action=logout` | `AuthController@logout` | Đã đăng nhập | `session_destroy()`, xóa cookie, chuyển về trang chủ |
+| 3 | GET/POST | `/student/index.php?action=courses` | `CourseController@index` | Sinh viên | Mục lục danh sách học phần sinh viên đang học kèm tiến độ % |
+| 4 | GET | `/student/index.php?action=course_detail` | `CourseController@detail` | Sinh viên | Chi tiết từng buổi học, hạn nộp, trạng thái hoàn thành |
+| 5 | POST | `/student/index.php?action=course_submit` | `CourseController@submitAssignment` | Sinh viên | Đính kèm bài tập buổi học (CSRF + Ownership + Upload 25MB) |
+| 6 | POST | `/student/index.php?action=course_delete_submission` | `CourseController@deleteSubmission` | Sinh viên | Hủy tệp đính kèm để nộp lại |
+| 7 | GET | `/student/index.php?action=api_lessons` | `CourseController@apiLessons` | Sinh viên | Web API JSON Endpoint cho Fetch API cập nhật DOM an toàn |
+| 8 | GET | `/student/ratings.php` | `RatingController@index` | Sinh viên | Xem danh sách đánh giá CSAT của sinh viên |
+| 9 | POST | `/student/ratings.php?action=rating_create` | `RatingController@create` | Sinh viên | Gửi đánh giá sao 1-5 và nhận xét cho KTV sau khi đóng phiếu |
+| 10 | GET/POST | `/tickets/create.php` | `TicketService` | SV, GV, Admin | Tạo phiếu sự cố, tính toán SLA tự động |
+| 11 | GET | `/tickets/index.php` | `TicketRepository` | Đã đăng nhập | Danh sách phiếu có phân trang, bộ lọc trạng thái, tìm kiếm |
+| 12 | GET | `/tickets/show.php?id=...` | `TicketService` | Chủ phiếu, KTV, Admin | Chi tiết tiến độ SLA, thảo luận, gửi giải pháp kỹ thuật |
+| 13 | GET | `/agent/index.php` | `AgentWorkspace` | KTV, Admin | Bàn làm việc KTV, hàng đợi nhiệm vụ theo `due_at ASC` |
+| 14 | GET | `/agent/ratings.php` | `AgentRatings` | KTV, Admin | Điểm trung bình sao kiểu Be/Grab, bộ lọc 5 sao -> 1 sao |
+| 15 | GET/POST | `/admin/users.php` | `AdminUserController` / `UserRepository` | Admin | Quản trị tài khoản, khóa/mở khóa, phân vai trò |
+| 16 | GET/POST | `/admin/import_excel.php` | `SpreadsheetImportService` | Admin | Nhập hàng loạt tài khoản từ Excel/CSV kèm mã hóa tự động |
+| 17 | GET/POST | `/admin/holidays.php` | `HolidayController` | Admin | Quản lý ngày nghỉ lễ, SLA calendar |
+| 18 | GET/POST | `/assignments/index.php` | `CourseAssignmentController` | GV, Admin | Quản lý phân công giảng dạy, danh mục lớp & môn học |
 
 ## 🛠️ 2. CÁC NGUỒN CÔNG NGHỆ & TÀI LIỆU THAM KHẢO (TECH STACK & SOURCES)
 
@@ -507,8 +468,3 @@ Toàn bộ hệ thống giao diện Web (CSS) được chuẩn hóa theo hệ m�
 
 🏆 **KẾT LUẬN & CAM KẾT CHẤT LƯỢNG:**  
 Hệ thống Helpdesk CNTT Nhóm 1 được xây dựng chuẩn mực theo mô hình kiến trúc công nghệ hiện đại, vừa vặn, đáp ứng toàn diện các tiêu chí khắt khe của môn học và các tình huống vận hành thực tế tại Trường Đại học Thủ Đô Hà Nội. Đồ án cam kết mang lại sản phẩm hoàn chỉnh và điểm số xuất sắc (Grade A+) cho cả nhóm!
-<<<<<<< HEAD
->>>>>>> dcc1fe98f9b7cf56f352e2d51079d49f952bc1d7
-=======
->>>>>>> f643cbc9ff17554aca1f9e326fa6b7aaef1fddec
->>>>>>> 96556caab1556f83d1450b62fce42a94e4317cc2

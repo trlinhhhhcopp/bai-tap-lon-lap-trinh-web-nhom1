@@ -1,0 +1,16 @@
+{
+    "name": "daihocthudo/helpdesk-nhom1",
+    "description": "Bài tập lớn Lập trình Web - Hệ thống Helpdesk CNTT Trực tuyến Đại học Thủ Đô Hà Nội (Nhóm 1)",
+    "type": "project",
+    "authors": [
+        { "name": "Nhóm 1 - Lập trình Web", "email": "cntt@daihocthudo.edu.vn" }
+    ],
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}

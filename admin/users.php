@@ -74,7 +74,7 @@ $flash = get_flash();
             background-color: var(--bg-body);
             color: var(--text-main);
             line-height: 1.5;
-            padding: 24px;
+            padding: 0 24px 24px;
         }
         .container { max-width: 1200px; margin: 0 auto; }
 
@@ -318,7 +318,6 @@ $flash = get_flash();
             <h1 style="margin:0; font-size:20px; font-weight:800; color:#fff;">QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN TRUY CẬP</h1>
             <p style="margin:4px 0 0; font-size:12px; color:#94a3b8;">Hệ thống Quản lý Người dùng, Vai trò & Khóa bảo mật tài khoản - Trường Đại học Thủ Đô Hà Nội</p>
         </div>
-    </div>
     </div>
 
     <!-- Flash Message (Slide 2 & 8) -->
