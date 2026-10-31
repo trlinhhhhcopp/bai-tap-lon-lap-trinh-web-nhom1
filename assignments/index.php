@@ -33,3 +33,4 @@ match ($action) {
     'download_template'  => $controller->downloadTemplate(),
     default              => $controller->index(),
 };
+

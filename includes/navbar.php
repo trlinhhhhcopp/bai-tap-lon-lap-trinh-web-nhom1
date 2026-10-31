@@ -217,13 +217,16 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>index.php" <?php echo $navAttributes(['index.php'], ['']); ?>>
                         <span aria-hidden="true">🏠</span><span class="sidebar-label">Cổng Sinh Viên</span>
                     </a>
+                    <a href="<?php echo $appBase; ?>student/index.php?action=courses" <?php echo $navAttributes(['student/index.php', 'student/courses.php'], ['courses', 'course_detail', '']); ?>>
+                        <span aria-hidden="true">📚</span><span class="sidebar-label">Học Phần & Bài Tập</span>
+                    </a>
                     <a href="<?php echo $appBase; ?>tickets/create.php" <?php echo $navAttributes(['tickets/create.php']); ?>>
                         <span>➕</span> Gửi Yêu Cầu Hỗ Trợ
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span>📋</span> Phiếu Của Tôi
                     </a>
-                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/index.php']); ?>>
+                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
                         <span>⭐</span> Đánh Giá Dịch Vụ (CSAT)
                     </a>
                 <?php endif; ?>

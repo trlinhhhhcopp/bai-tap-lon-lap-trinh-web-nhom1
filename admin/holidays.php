@@ -27,3 +27,4 @@ match ($action) {
     'delete' => $controller->delete(),
     default  => $controller->index(),
 };
+
