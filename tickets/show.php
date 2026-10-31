@@ -31,8 +31,27 @@ if (!$ticket) {
     exit;
 }
 
-// Cách ly dữ liệu: Sinh viên & Giảng viên chỉ được xem phiếu của chính mình
-if ($userRole === 'requester' && (int)$ticket['requester_id'] !== (int)$currentUser['id']) {
+$isLecturer = ($userType === 'lecturer');
+$isCourseLecturer = false;
+if ($isLecturer) {
+    if (!empty($ticket['course_id'])) {
+        $stmtChk = db()->prepare("SELECT COUNT(*) FROM course_assignments WHERE course_id = :cid AND lecturer_id = :lid");
+        $stmtChk->execute([':cid' => $ticket['course_id'], ':lid' => $currentUser['id']]);
+        if ((int)$stmtChk->fetchColumn() > 0) {
+            $isCourseLecturer = true;
+        }
+    }
+    if (!$isCourseLecturer && !empty($ticket['class_id'])) {
+        $stmtChk2 = db()->prepare("SELECT COUNT(*) FROM course_assignments WHERE class_id = :cid AND lecturer_id = :lid");
+        $stmtChk2->execute([':cid' => $ticket['class_id'], ':lid' => $currentUser['id']]);
+        if ((int)$stmtChk2->fetchColumn() > 0) {
+            $isCourseLecturer = true;
+        }
+    }
+}
+
+// Cách ly dữ liệu: Sinh viên chỉ xem phiếu của mình; Giảng viên xem phiếu của mình HOẶC môn mình phụ trách; Agent / Admin xem toàn bộ
+if ($userRole === 'requester' && (int)$ticket['requester_id'] !== (int)$currentUser['id'] && !$isCourseLecturer) {
     set_flash('error', "Bạn không có quyền truy cập vào phiếu của tài khoản khác!");
     header('Location: ../index.php');
     exit;
@@ -46,6 +65,69 @@ $viewAs = $canViewInternal ? 'agent' : 'student';
 $ratingStmt = db()->prepare("SELECT r.*, u.name as user_name FROM ticket_ratings r LEFT JOIN users u ON r.user_id = u.id WHERE r.ticket_id = :tid LIMIT 1");
 $ratingStmt->execute(['tid' => $id]);
 $currentRating = $ratingStmt->fetch();
+
+// -----------------------------------------------------------------------------
+// XỬ LÝ KỊCH BẢN 1: KTV XÁC THỰC LỖI KỸ THUẬT CHO HỌC PHẦN
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ktv_verify_incident') {
+    if (in_array($userRole, ['agent', 'admin'])) {
+        $verifyNote = trim($_POST['verify_note'] ?? 'Kỹ thuật viên đã kiểm tra nhật ký Access Point KTX / Server LMS Canvas: Xác nhận tài khoản sinh viên gặp sự cố gián đoạn mạng ngoài ý muốn trong thời gian nộp bài.');
+        db()->prepare("UPDATE tickets SET it_verified = 1, it_verified_at = NOW(), it_verified_note = :note WHERE id = :id")
+            ->execute([':note' => $verifyNote, ':id' => $id]);
+
+        $replyContent = "📋 [XÁC NHẬN SỰ CỐ KỸ THUẬT HỢP LỆ CHO HỌC PHẦN]\n" .
+                        "Kỹ thuật viên phụ trách đã kiểm tra log hệ thống và cấp biên bản xác thực:\n" .
+                        "\"" . $verifyNote . "\"\n" .
+                        "👉 Kính chuyển Giảng viên phụ trách môn học xem xét chấp thuận mở lại Deadline / gia hạn nộp bài cho sinh viên.";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'in_progress');
+
+        set_flash('success', "Đã cấp biên bản xác nhận sự cố kỹ thuật hợp lệ thành công và chuyển thông tin tới Giảng viên bộ môn!");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// XỬ LÝ KỊCH BẢN 1: GIẢNG VIÊN XEM XÉT VÀ MỞ LẠI DEADLINE CHO BUỔI HỌC
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'lecturer_extend_deadline') {
+    if ($isCourseLecturer || $userRole === 'admin') {
+        $newDeadline = trim($_POST['new_deadline'] ?? '');
+        $lecturerNote = trim($_POST['lecturer_note'] ?? 'Thầy/Cô đồng ý gia hạn thời gian nộp bài do sự cố mạng đã được KTV xác thực.');
+        $lessonId = (int)($ticket['lesson_id'] ?? 0);
+
+        if ($lessonId > 0 && !empty($newDeadline)) {
+            $newDeadlineSql = date('Y-m-d H:i:s', strtotime(str_replace('T', ' ', $newDeadline)));
+
+            // 1. Cập nhật deadline_at của buổi học trong course_lessons
+            db()->prepare("UPDATE course_lessons SET deadline_at = :dl WHERE id = :lid")
+                ->execute([':dl' => $newDeadlineSql, ':lid' => $lessonId]);
+
+            // 2. Format hiển thị đẹp
+            $formattedDl = date('d/m/Y H:i', strtotime($newDeadlineSql));
+            $lessonNum = $ticket['lesson_number'] ?? '';
+
+            // 3. Tự động thêm tin nhắn chính thức từ Giảng viên vào cuộc hội thoại của ticket
+            $replyContent = "🎓 [GIẢNG VIÊN BỘ MÔN CHẤP THUẬN GIA HẠN DEADLINE]\n" .
+                            "Thầy/Cô đã xem xét biên bản xác nhận kỹ thuật từ KTV và đồng ý mở lại Deadline cho Buổi " . $lessonNum . ".\n" .
+                            "⏰ Thời hạn nộp bài mới (Deadline): " . $formattedDl . "\n" .
+                            "💬 Lời nhắn của Giảng viên: \"" . $lecturerNote . "\"\n" .
+                            "✅ Sinh viên vui lòng truy cập Cổng Học Tập để nộp bài làm bổ sung trước thời hạn trên.";
+            TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'resolved');
+
+            // 4. Cập nhật trạng thái phiếu sang resolved
+            TicketRepository::updateStatus($id, 'resolved');
+
+            set_flash('success', "Thầy/Cô đã mở lại Deadline thành công cho Buổi {$lessonNum} đến: <strong>{$formattedDl}</strong>! Phiếu đã chuyển sang trạng thái Đã giải quyết.");
+            header("Location: show.php?id={$id}&view_as={$viewAs}");
+            exit;
+        } else {
+            set_flash('error', "Vui lòng chọn thời hạn Deadline mới hợp lệ!");
+            header("Location: show.php?id={$id}&view_as={$viewAs}");
+            exit;
+        }
+    }
+}
 
 // -----------------------------------------------------------------------------
 // 1. XỬ LÝ GỬI ĐÁNH GIÁ CSAT (SINH VIÊN NGHIỆM THU)
@@ -454,7 +536,7 @@ $flash   = get_flash();
 
             <!-- KỊCH BẢN 1: NGỮ CẢNH HỌC PHẦN & BUỔI HỌC ĐÍNH KÈM -->
             <?php if (!empty($ticket['lesson_number']) || !empty($ticket['lesson_title'])): ?>
-                <div class="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-200 rounded-3xl p-5 shadow-sm space-y-3">
+                <div class="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-200 rounded-3xl p-5 shadow-sm space-y-4">
                     <div class="flex items-center justify-between flex-wrap gap-2">
                         <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-indigo-600 text-white flex items-center gap-1 shadow-2xs">
                             <span>🎓</span> SỰ CỐ GẮN LIỀN VỚI BUỔI HỌC (ITIL CONTEXTUAL INCIDENT)
@@ -474,6 +556,109 @@ $flash   = get_flash();
                             </div>
                         <?php endif; ?>
                     </div>
+
+                    <!-- 1. BIÊN BẢN XÁC THỰC CỦA KTV (NẾU ĐÃ KIỂM TRA & XÁC NHẬN) -->
+                    <?php if (!empty($ticket['it_verified'])): ?>
+                        <div class="p-3.5 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-start gap-2.5 text-xs text-emerald-900">
+                            <span class="text-lg shrink-0">✅</span>
+                            <div class="space-y-1 flex-1">
+                                <div class="font-bold flex items-center justify-between flex-wrap gap-1">
+                                    <span class="uppercase tracking-wide text-emerald-950">BIÊN BẢN KỸ THUẬT: KTV ĐÃ KIỂM TRA & XÁC NHẬN SỰ CỐ KỸ THUẬT HỢP LỆ</span>
+                                    <span class="font-mono text-[11px] text-emerald-700"><?php echo htmlspecialchars($ticket['it_verified_at'] ?? ''); ?></span>
+                                </div>
+                                <p class="text-[11.5px] leading-relaxed">
+                                    "<?php echo htmlspecialchars($ticket['it_verified_note'] ?: 'Đã kiểm tra log hệ thống, xác nhận tài khoản sinh viên gặp sự cố ngắt kết nối mạng khách quan trong giờ nộp bài.'); ?>"
+                                </p>
+                                <span class="text-[10.5px] text-emerald-700 block italic">Căn cứ kỹ thuật chính thức gửi Giảng viên bộ môn xem xét gia hạn mở lại Deadline.</span>
+                            </div>
+                        </div>
+                    <?php elseif (in_array($userRole, ['agent', 'admin'])): ?>
+                        <!-- NẾU CHƯA XÁC NHẬN VÀ NGƯỜI XEM LÀ KTV / ADMIN -->
+                        <div class="p-3.5 bg-indigo-50 border border-indigo-200 rounded-2xl space-y-2 text-xs">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <span class="font-bold text-indigo-900 flex items-center gap-1.5">
+                                    <span>🔍</span> Thao tác KTV: Kiểm tra log mạng/tài khoản & Cấp biên bản xác thực
+                                </span>
+                                <button type="button" onclick="document.getElementById('ktvVerifyForm').classList.toggle('hidden')" 
+                                        class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer flex items-center gap-1">
+                                    <span>⚡</span> KTV Xác Nhận Lỗi Kỹ Thuật
+                                </button>
+                            </div>
+                            <form id="ktvVerifyForm" method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="hidden pt-2 border-t border-indigo-200 space-y-2">
+                                <input type="hidden" name="action" value="ktv_verify_incident" />
+                                <label class="block font-bold text-slate-700 text-[11px]">Nội dung biên bản xác thực gửi Giảng viên:</label>
+                                <textarea name="verify_note" rows="2" class="w-full p-2.5 bg-white border border-indigo-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">Kỹ thuật viên đã kiểm tra nhật ký Access Point Wi-Fi KTX / Server LMS Canvas: Xác nhận tài khoản sinh viên gặp sự cố gián đoạn mạng ngoài ý muốn trong thời gian nộp bài từ 23:45 - 23:59. Đề nghị Giảng viên phụ trách xem xét mở lại Deadline cho sinh viên.</textarea>
+                                <div class="flex justify-end">
+                                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1 shadow-sm cursor-pointer">
+                                        <span>✓</span> Cấp Biên Bản Xác Thực Cho Thầy/Cô
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- 2. KHỐI THẨM QUYỀN HỌC THUẬT CỦA GIẢNG VIÊN (MỞ LẠI DEADLINE) -->
+                    <?php if ($isCourseLecturer || $userRole === 'admin'): ?>
+                        <div class="p-4 bg-gradient-to-r from-purple-100/90 via-indigo-100/90 to-purple-50 border-2 border-purple-300 rounded-2xl space-y-3 text-xs">
+                            <div class="flex items-center justify-between flex-wrap gap-2 border-b border-purple-200 pb-2">
+                                <span class="font-black text-purple-950 flex items-center gap-1.5 text-sm">
+                                    <span>🎓</span> THẨM QUYỀN HỌC THUẬT: GIẢNG VIÊN XEM XÉT GIA HẠN DEADLINE
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-700 text-white">
+                                    Buổi <?php echo (int)$ticket['lesson_number']; ?>
+                                </span>
+                            </div>
+                            <p class="text-purple-900 leading-relaxed text-[11.5px]">
+                                <?php if (!empty($ticket['it_verified'])): ?>
+                                    ✅ <strong>Kỹ thuật viên đã kiểm tra và xác nhận sự cố kỹ thuật là có thật.</strong> Thầy/Cô có thể chấp thuận mở lại hạn nộp bài (Deadline) cho Buổi học này để sinh viên hoàn thành bài tập mà không bị trừ điểm nộp muộn.
+                                <?php else: ?>
+                                    ℹ️ Giảng viên có quyền sư phạm trực tiếp gia hạn thời gian nộp bài (Deadline) cho Buổi học này:
+                                <?php endif; ?>
+                            </p>
+
+                            <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-3 bg-white/80 p-3.5 rounded-xl border border-purple-200">
+                                <input type="hidden" name="action" value="lecturer_extend_deadline" />
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block font-bold text-slate-700 mb-1">Thời hạn nộp bài mới (Deadline gia hạn):</label>
+                                        <?php 
+                                        $suggestedDeadline = date('Y-m-d\TH:i', strtotime('+24 hours'));
+                                        ?>
+                                        <input type="datetime-local" name="new_deadline" value="<?php echo $suggestedDeadline; ?>" required 
+                                               class="w-full px-3 py-2 bg-slate-50 border border-purple-300 rounded-xl font-mono text-purple-900 font-bold focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                    </div>
+                                    <div>
+                                        <label class="block font-bold text-slate-700 mb-1">Lời nhắn của Giảng viên cho sinh viên:</label>
+                                        <input type="text" name="lecturer_note" value="Thầy/Cô chấp thuận mở lại Deadline do sự cố kỹ thuật đã được KTV xác thực. Em hãy tranh thủ nộp bài bổ sung nhé!" 
+                                               class="w-full px-3 py-2 bg-slate-50 border border-purple-300 rounded-xl text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" />
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+                                    <span class="text-[11px] text-slate-500 italic">Hệ thống sẽ cập nhật Deadline buổi học và gửi thông báo cho sinh viên.</span>
+                                    <button type="submit" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center gap-1.5 cursor-pointer">
+                                        <span>⚡</span> Chấp Thuận & Mở Lại Deadline Buổi Học
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    <?php endif; ?>
+
+                    <!-- 3. THÔNG BÁO CHO SINH VIÊN KHI THẦY/CÔ ĐÃ MỞ LẠI DEADLINE -->
+                    <?php if ($userRole === 'requester' && !$isLecturer && (!empty($ticket['it_verified']) || $ticket['status'] === 'resolved')): ?>
+                        <div class="p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs text-emerald-900">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">🎉</span>
+                                <div>
+                                    <strong>Thầy/Cô đã chấp thuận gia hạn Deadline cho Buổi này!</strong>
+                                    <div class="text-[11px] text-emerald-700 mt-0.5">Hạn nộp hiện tại: <span class="font-mono font-bold"><?php echo htmlspecialchars($ticket['lesson_deadline_at'] ?? ''); ?></span></div>
+                                </div>
+                            </div>
+                            <a href="../student/courses.php?view_course_id=<?php echo (int)($ticket['course_id'] ?? 1); ?>" 
+                               class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs flex items-center gap-1">
+                                <span>📤</span> Vào Cổng Học Tập Nộp Bài Ngay →
+                            </a>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
             

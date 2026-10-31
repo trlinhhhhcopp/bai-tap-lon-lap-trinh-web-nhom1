@@ -26,6 +26,7 @@ function findUserImportHeader(array $rows): ?array
         'user_type' => ['loaitaikhoan', 'loạitàikhoản', 'loainguoidung', 'loạingườidùng', 'loaiuser', 'usertype', 'type'],
         'department' => ['khoabomon', 'khoabộmôn', 'khoaobomon', 'department', 'faculty', 'khoa'],
         'phone' => ['sodienthoai', 'sốđiệnthoại', 'sdt', 'phone', 'telephone'],
+        'class' => ['lop', 'lớp', 'lopsinhhoat', 'lớpsinhhoạt', 'lophoc', 'lớphọc', 'malop', 'mãlớp', 'class', 'classcode', 'classname'],
     ];
 
     foreach (array_slice($rows, 0, 10, true) as $rowIndex => $row) {
@@ -73,6 +74,11 @@ if (empty($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
 
 $currentUser = $_SESSION['user'];
 $db = db();
+$classLookup = [];
+foreach ($db->query('SELECT id, class_code, name FROM classes')->fetchAll(PDO::FETCH_ASSOC) as $class) {
+    $classLookup[normalizeUserImportHeader($class['name'])] = $class;
+    $classLookup[normalizeUserImportHeader($class['class_code'])] = $class;
+}
 $importedUsers = [];
 $skippedUsers  = [];
 $errorMsg      = null;
@@ -103,8 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $headerColumns = $header['columns'];
             $dataRows = [];
             foreach (array_slice($rows, $header['row'] + 1) as $row) {
-                $normalizedRow = array_fill(0, 8, '');
-                $fieldOrder = ['code', 'name', 'email', 'password', 'role', 'user_type', 'department', 'phone'];
+                $normalizedRow = array_fill(0, 9, '');
+                $fieldOrder = ['code', 'name', 'email', 'password', 'role', 'user_type', 'department', 'phone', 'class'];
                 foreach ($fieldOrder as $columnIndex => $field) {
                     if (isset($headerColumns[$field])) {
                         $normalizedRow[$columnIndex] = $row[$headerColumns[$field]] ?? '';
@@ -135,6 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             // 5: Loại người dùng (student, lecturer, agent, staff)
             // 6: Khoa / Bộ môn
             // 7: Số điện thoại
+            // 8: Lớp (tùy chọn, mã lớp hoặc tên lớp)
             $userCode   = trim($r[0] ?? '');
             $name       = trim($r[1] ?? '');
             $email      = trim($r[2] ?? '');
@@ -143,6 +150,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $userType   = !empty($r[5]) ? strtolower(trim($r[5])) : 'student';
             $department = !empty($r[6]) ? trim($r[6]) : 'Khoa Công Nghệ Thông Tin';
             $phone      = !empty($r[7]) ? trim($r[7]) : ('09' . str_pad((string)mt_rand(10000000, 99999999), 8, '0'));
+            $classValue = trim($r[8] ?? '');
+            $class = null;
 
             if (empty($userCode) || empty($name)) {
                 $skippedUsers[] = [
@@ -156,6 +165,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
             if (empty($email)) {
                 $email = strtolower($userCode) . '@daihocthudo.edu.vn';
+            }
+
+            if ($classValue !== '') {
+                $class = $classLookup[normalizeUserImportHeader($classValue)] ?? null;
+                if ($class === null) {
+                    $skippedUsers[] = [
+                        'row' => $index + 1,
+                        'code' => $userCode,
+                        'name' => $name,
+                        'reason' => "Không tìm thấy lớp '{$classValue}' (nhập mã lớp hoặc tên lớp đã có trong hệ thống)",
+                    ];
+                    continue;
+                }
             }
 
             // Chuẩn hóa role & user_type
@@ -208,10 +230,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 $ins = $db->prepare("
                     INSERT INTO users (
                         user_code, name, email, password_hash, role, user_type, 
-                        department, phone, is_active, cohort, academic_status, created_at
+                        department, phone, class_id, is_active, cohort, academic_status, created_at
                     ) VALUES (
                         :user_code, :name, :email, :password_hash, :role, :user_type,
-                        :department, :phone, 1, :cohort, 'studying', NOW()
+                        :department, :phone, :class_id, 1, :cohort, 'studying', NOW()
                     )
                 ");
                 $ins->execute([
@@ -223,6 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'user_type'     => $userType,
                     'department'    => $department,
                     'phone'         => $phone,
+                    'class_id'      => $class['id'] ?? null,
                     'cohort'        => $cohort,
                 ]);
 
@@ -234,6 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                     'role'      => $role,
                     'user_type' => $userType,
                     'cohort'    => $cohort,
+                    'class'     => $class['name'] ?? '—',
                 ];
             } catch (Exception $e) {
                 $skippedUsers[] = [
@@ -308,6 +332,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                             <th class="py-2.5 px-3">Họ và tên</th>
                             <th class="py-2.5 px-3">Email</th>
                             <th class="py-2.5 px-3">Niên khóa tự nhận diện</th>
+                            <th class="py-2.5 px-3">Lớp</th>
                             <th class="py-2.5 px-3">Vai trò</th>
                             <th class="py-2.5 px-3">Loại tài khoản</th>
                         </tr>
@@ -320,6 +345,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                                 <td class="py-2.5 px-3 font-bold text-slate-900"><?= htmlspecialchars($u['name']) ?></td>
                                 <td class="py-2.5 px-3 font-mono text-slate-600"><?= htmlspecialchars($u['email']) ?></td>
                                 <td class="py-2.5 px-3 font-mono"><?= htmlspecialchars($u['cohort'] ?? '—') ?></td>
+                                <td class="py-2.5 px-3"><?= htmlspecialchars($u['class']) ?></td>
                                 <td class="py-2.5 px-3"><?= htmlspecialchars($u['role']) ?></td>
                                 <td class="py-2.5 px-3"><?= htmlspecialchars($u['user_type']) ?></td>
                             </tr>
@@ -368,14 +394,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             </form>
         </div>
 
-        <!-- CỘT PHẢI: HƯỚNG DẪN CẤU TRÚC FILE EXCEL (5 CỘT) -->
+        <!-- CỘT PHẢI: HƯỚNG DẪN CẤU TRÚC FILE EXCEL (9 CỘT) -->
         <div class="md:col-span-5 space-y-4">
             <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm text-xs space-y-3">
                 <h3 class="font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5 text-[11px]">
                     <span>ℹ️</span> Cấu Trúc Các Cột Dữ Liệu Chuẩn:
                 </h3>
                 <div class="space-y-2 text-slate-600 text-[11.5px] leading-relaxed">
-                    <p>Mỗi dòng trong tệp tương ứng với 1 tài khoản mới. Có thể đặt cột theo tiêu đề trong mẫu hoặc theo thứ tự 8 cột:</p>
+                    <p>Mỗi dòng trong tệp tương ứng với 1 tài khoản mới. Có thể đặt cột theo tiêu đề trong mẫu hoặc theo thứ tự 9 cột:</p>
                     <ol class="list-decimal list-inside space-y-1 font-medium bg-slate-50 p-3 rounded-2xl border border-slate-200">
                         <li><strong>Mã tài khoản:</strong> Bắt buộc (VD: <code>224001801</code>)</li>
                         <li><strong>Họ và tên:</strong> Bắt buộc (VD: <code>Nguyễn Thị Hoa</code>)</li>
@@ -385,6 +411,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         <li><strong>Loại tài khoản:</strong> <code>student</code>, <code>lecturer</code>, <code>agent</code></li>
                         <li><strong>Khoa / Bộ môn:</strong> VD: <code>Khoa Công Nghệ Thông Tin</code></li>
                         <li><strong>Số điện thoại:</strong> Tùy chọn (VD: <code>0901234567</code>)</li>
+                        <li><strong>Lớp:</strong> Tùy chọn (mã lớp hoặc tên lớp đã có, VD: <code>D24-CNTT2</code>)</li>
                     </ol>
                     <p class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-900"><strong>Niên khóa sinh viên được tự nhận diện từ mã SV</strong> (ví dụ: <code>224...</code> → <code>D24</code>). Không cần thêm cột niên khóa vào tệp.</p>
                     <p class="text-slate-500">Tệp Excel định dạng .xlsx được đọc theo giá trị ô; bảng có kẻ viền, màu nền hoặc độ rộng cột vẫn import bình thường. Mã tài khoản và số điện thoại nên để dạng văn bản để giữ số 0 ở đầu.</p>
@@ -421,8 +448,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 <script>
 function downloadSampleCsv() {
-    const header = '"Mã Tài Khoản","Họ và Tên","Email","Mật Khẩu","Vai Trò","Loại Người Dùng","Khoa/Bộ Môn","Số Điện Thoại"\r\n';
-    const sampleRows = '"224001801","Nguyễn Văn An","224001801@daihocthudo.edu.vn","123456","requester","student","Khoa Công Nghệ Thông Tin","0901234801"\r\n"224001802","Trần Thị Mai","224001802@daihocthudo.edu.vn","123456","requester","student","Khoa Công Nghệ Thông Tin","0901234802"\r\n';
+    const header = '"Mã Tài Khoản","Họ và Tên","Email","Mật Khẩu","Vai Trò","Loại Người Dùng","Khoa/Bộ Môn","Số Điện Thoại","Lớp"\r\n';
+    const sampleRows = '"224001801","Nguyễn Văn An","224001801@daihocthudo.edu.vn","123456","requester","student","Khoa Công Nghệ Thông Tin","0901234801","D24-CNTT2"\r\n"224001802","Trần Thị Mai","224001802@daihocthudo.edu.vn","123456","requester","student","Khoa Công Nghệ Thông Tin","0901234802","D24-CNTT2"\r\n';
     const blob = new Blob(["\uFEFF" + header + sampleRows], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
