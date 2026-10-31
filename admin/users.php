@@ -31,11 +31,12 @@ $type    = $_GET['type'] ?? '';
 if (!in_array($type, ['agent', 'lecturer', 'student'], true)) {
     $type = '';
 }
+$classId = (int)($_GET['class_id'] ?? 0);
 $page    = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 6; // Số lượng bản ghi mỗi trang
 
 // 2. Gọi Repository lấy dữ liệu
-$filters    = ['kw' => $kw, 'type' => $type];
+$filters    = ['kw' => $kw, 'type' => $type, 'class_id' => $classId];
 $totalUsers = UserRepository::countActiveUsers($filters);
 $totalPages = max(1, (int)ceil($totalUsers / $perPage));
 if ($page > $totalPages) {
@@ -339,22 +340,33 @@ $flash = get_flash();
 
     <!-- Control Bar: Search & Create -->
     <div class="control-bar">
-        <form class="search-form" method="GET" action="users.php">
-            <input type="text" name="kw" class="input-text" placeholder="Tìm theo Mã SV/GV, Họ tên, Email..." value="<?= htmlspecialchars($kw) ?>">
+        <form class="search-form" method="GET" action="users.php" style="max-width: 650px;">
+            <input type="text" name="kw" class="input-text" placeholder="Tìm theo Tên SV/GV, Mã, Email, Lớp..." value="<?= htmlspecialchars($kw) ?>">
+            
+            <!-- Lọc theo Lớp học -->
+            <select name="class_id" class="input-text" style="max-width: 170px;" onchange="this.form.submit()">
+                <option value="0">-- Lọc theo Lớp --</option>
+                <?php foreach ($classes as $cl): ?>
+                    <option value="<?= $cl['id'] ?>" <?= $classId === (int)$cl['id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($cl['class_code']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+
             <?php if ($type !== ''): ?>
                 <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>">
             <?php endif; ?>
-            <button type="submit" class="btn btn-primary">🔍 Tìm kiếm</button>
-            <?php if ($kw !== '' || $type !== ''): ?>
-                <a href="users.php" class="btn btn-secondary">✕ Xóa lọc</a>
+            <button type="submit" class="btn btn-primary">🔍 Tìm</button>
+            <?php if ($kw !== '' || $type !== '' || $classId > 0): ?>
+                <a href="users.php" class="btn btn-secondary">✕ Xóa</a>
             <?php endif; ?>
         </form>
 
         <nav class="filter-buttons" aria-label="Lọc theo đối tượng">
-            <a class="btn filter-button <?= $type === '' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>" <?= $type === '' ? 'aria-current="page"' : '' ?>>Tất cả</a>
-            <a class="btn filter-button <?= $type === 'agent' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=agent" <?= $type === 'agent' ? 'aria-current="page"' : '' ?>>KTV</a>
-            <a class="btn filter-button <?= $type === 'lecturer' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=lecturer" <?= $type === 'lecturer' ? 'aria-current="page"' : '' ?>>GV</a>
-            <a class="btn filter-button <?= $type === 'student' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=student" <?= $type === 'student' ? 'aria-current="page"' : '' ?>>SV</a>
+            <a class="btn filter-button <?= $type === '' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;class_id=<?= $classId ?>" <?= $type === '' ? 'aria-current="page"' : '' ?>>Tất cả</a>
+            <a class="btn filter-button <?= $type === 'agent' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=agent&amp;class_id=<?= $classId ?>" <?= $type === 'agent' ? 'aria-current="page"' : '' ?>>KTV</a>
+            <a class="btn filter-button <?= $type === 'lecturer' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=lecturer&amp;class_id=<?= $classId ?>" <?= $type === 'lecturer' ? 'aria-current="page"' : '' ?>>GV</a>
+            <a class="btn filter-button <?= $type === 'student' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=student&amp;class_id=<?= $classId ?>" <?= $type === 'student' ? 'aria-current="page"' : '' ?>>SV</a>
         </nav>
 
         <button type="button" class="btn btn-primary" onclick="openCreateModal()">
@@ -453,19 +465,19 @@ $flash = get_flash();
             <ul class="pagination">
                 <!-- Nút Trước -->
                 <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?kw=<?= urlencode($kw) ?>&amp;type=<?= urlencode($type) ?>&amp;page=<?= $page - 1 ?>">« Trước</a>
+                    <a class="page-link" href="?kw=<?= urlencode($kw) ?>&amp;type=<?= urlencode($type) ?>&amp;class_id=<?= $classId ?>&amp;page=<?= $page - 1 ?>">« Trước</a>
                 </li>
 
                 <!-- Danh sách số trang -->
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                     <li class="page-item <?= ($i === $page) ? 'active' : '' ?>">
-                        <a class="page-link" href="?kw=<?= urlencode($kw) ?>&amp;type=<?= urlencode($type) ?>&amp;page=<?= $i ?>"><?= $i ?></a>
+                        <a class="page-link" href="?kw=<?= urlencode($kw) ?>&amp;type=<?= urlencode($type) ?>&amp;class_id=<?= $classId ?>&amp;page=<?= $i ?>"><?= $i ?></a>
                     </li>
                 <?php endfor; ?>
 
                 <!-- Nút Sau -->
                 <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?kw=<?= urlencode($kw) ?>&amp;type=<?= urlencode($type) ?>&amp;page=<?= $page + 1 ?>">Sau »</a>
+                    <a class="page-link" href="?kw=<?= urlencode($kw) ?>&amp;type=<?= urlencode($type) ?>&amp;class_id=<?= $classId ?>&amp;page=<?= $page + 1 ?>">Sau »</a>
                 </li>
             </ul>
         <?php endif; ?>

@@ -247,6 +247,46 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                                     </form>
                                 </div>
                             </div>
+
+                            <!-- KHỐI ĐIỂM SỐ & NHẬN XÉT CỦA GIẢNG VIÊN -->
+                            <?php if ($item['score'] !== null): ?>
+                                <div class="mt-3 bg-gradient-to-r from-amber-50/80 via-white to-amber-50/50 border border-amber-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-sm">
+                                            ⭐
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="text-xs font-black text-slate-800">ĐÁNH GIÁ CỦA GIẢNG VIÊN:</span>
+                                                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-400 text-slate-900 shadow-2xs">
+                                                    ⭐ <?= number_format((float)$item['score'], 1) ?> / 10.0
+                                                </span>
+                                                <?php if (!empty($item['graded_at'])): ?>
+                                                    <span class="text-[11px] text-slate-400 font-medium">
+                                                        (Chấm lúc: <?= date('d/m/Y H:i', strtotime($item['graded_at'])) ?>)
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="mt-1 text-xs text-slate-700 bg-white/80 p-2.5 rounded-xl border border-amber-200/60 leading-relaxed font-medium">
+                                                💬 <strong>Nhận xét:</strong> <?= htmlspecialchars($item['feedback'] ?: 'Đã hoàn thành bài tập.') ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="shrink-0 text-right">
+                                        <span class="px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full text-[11px] font-bold">
+                                            ✅ Đã Được Chấm Điểm
+                                        </span>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <div class="mt-3 bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between gap-2 text-xs text-slate-500">
+                                    <div class="flex items-center gap-2">
+                                        <span>⏳</span>
+                                        <span>Trạng thái đánh giá: <strong class="text-slate-700">Đang chờ Giảng viên chấm điểm & nhận xét</strong></span>
+                                    </div>
+                                    <span class="text-[11px] text-slate-400 font-mono">Thang điểm 10.0</span>
+                                </div>
+                            <?php endif; ?>
                         <?php else: ?>
                             <!-- NẾU CHƯA ĐÍNH KÈM BÀI TẬP -->
                             <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">

@@ -238,6 +238,9 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span aria-hidden="true">📋</span><span class="sidebar-label">Phiếu Của Tôi</span>
                     </a>
+                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/index.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
+                        <span aria-hidden="true">⭐</span><span class="sidebar-label">Đánh Giá Dịch Vụ (CSAT)</span>
+                    </a>
 
                 <?php else: ?>
                     <!-- Menu Sinh viên (Student) -->

@@ -119,6 +119,10 @@ class CourseLesson
                     s.file_name,
                     s.file_size,
                     s.notes,
+                    s.score,
+                    s.feedback,
+                    s.graded_at,
+                    s.graded_by,
                     s.submitted_at,
                     s.is_completed
                 FROM course_lessons l
@@ -404,6 +408,26 @@ class CourseLesson
 
         $stmtDel = $this->pdo->prepare("DELETE FROM student_assignment_submissions WHERE id = :id AND student_id = :sid");
         return $stmtDel->execute([':id' => $submissionId, ':sid' => $studentId]);
+    }
+
+    /**
+     * Giảng viên chấm điểm và nhận xét bài nộp của sinh viên
+     */
+    public function gradeSubmission(int $submissionId, float $score, string $feedback, int $lecturerId): bool
+    {
+        $now = date('Y-m-d H:i:s');
+        $stmt = $this->pdo->prepare("
+            UPDATE student_assignment_submissions 
+            SET score = :score, feedback = :feedback, graded_at = :graded_at, graded_by = :graded_by 
+            WHERE id = :id
+        ");
+        return $stmt->execute([
+            ':score'     => $score,
+            ':feedback'  => $feedback,
+            ':graded_at' => $now,
+            ':graded_by' => $lecturerId,
+            ':id'        => $submissionId,
+        ]);
     }
 }
 

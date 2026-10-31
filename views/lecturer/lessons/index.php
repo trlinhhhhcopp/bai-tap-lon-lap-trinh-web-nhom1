@@ -250,6 +250,8 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                         <th class="py-3 px-4">Ghi Chú Sinh Viên</th>
                                         <th class="py-3 px-4">Thời Gian Nộp</th>
                                         <th class="py-3 px-4 text-center">Trạng Thái</th>
+                                        <th class="py-3 px-4 text-center">⭐ Điểm & Đánh Giá</th>
+                                        <th class="py-3 px-4 text-center">Thao Tác</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
@@ -304,6 +306,36 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                                         ✅ Đúng hạn
                                                     </span>
                                                 <?php endif; ?>
+                                            </td>
+                                            <td class="py-3.5 px-4 text-center">
+                                                <?php if ($sub['score'] !== null): ?>
+                                                    <div class="space-y-1">
+                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-amber-400 text-slate-900 shadow-2xs">
+                                                            ⭐ <?php echo number_format((float)$sub['score'], 1); ?> / 10.0
+                                                        </span>
+                                                        <?php if (!empty($sub['feedback'])): ?>
+                                                            <div class="text-[10.5px] text-slate-600 italic max-w-[180px] mx-auto truncate" title="<?php echo htmlspecialchars($sub['feedback']); ?>">
+                                                                💬 "<?php echo htmlspecialchars($sub['feedback']); ?>"
+                                                            </div>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($sub['graded_at'])): ?>
+                                                            <div class="text-[10px] text-slate-400 font-mono">
+                                                                <?php echo date('d/m H:i', strtotime($sub['graded_at'])); ?>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                                        ⏳ Chưa chấm
+                                                    </span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="py-3.5 px-4 text-center">
+                                                <button type="button" 
+                                                        onclick='openGradeModal(<?php echo json_encode($sub, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>)' 
+                                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition shadow-xs cursor-pointer">
+                                                    <span>⭐</span> Chấm Điểm
+                                                </button>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -374,6 +406,77 @@ $csrfToken = $_SESSION['csrf'] ?? '';
         </div>
     </div>
 
+    <!-- MODAL CHẤM ĐIỂM & ĐÁNH GIÁ BÀI NỘP CỦA SINH VIÊN -->
+    <div id="gradeSubmissionModal" class="hidden fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 animate-scale-up">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">⭐</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm">Chấm Điểm & Đánh Giá Bài Nộp</h4>
+                        <span class="text-[11px] text-slate-500">Giảng viên ghi nhận điểm số và lời nhận xét</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closeGradeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold text-sm">✕</button>
+            </div>
+
+            <!-- THÔNG TIN SINH VIÊN & BÀI NỘP -->
+            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 space-y-1 text-xs">
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-500">Sinh viên:</span>
+                    <strong class="text-slate-900 font-bold" id="gradeStudentName">—</strong>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-500">Mã sinh viên:</span>
+                    <span class="font-mono font-bold text-indigo-700" id="gradeStudentCode">—</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-slate-500">Tệp đã nộp:</span>
+                    <span class="font-mono text-[11px] text-slate-700 truncate max-w-[200px]" id="gradeFileName">—</span>
+                </div>
+            </div>
+
+            <form method="POST" action="lessons.php" class="space-y-4 text-xs">
+                <input type="hidden" name="action" value="grade" />
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
+                <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
+                <input type="hidden" name="ca_id" value="<?php echo (int)$selectedCaId; ?>" />
+                <input type="hidden" name="lesson_id" value="<?php echo (int)$viewLessonId; ?>" />
+                <input type="hidden" name="submission_id" id="formSubmissionId" value="0" />
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        Điểm Chấm (Thang điểm 10.0): <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" name="score" id="formGradeScore" required min="0" max="10" step="0.1" placeholder="Ví dụ: 8.5 hoặc 10" 
+                               class="w-full px-3.5 py-2.5 bg-amber-50/40 border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 font-mono font-black text-amber-900 text-sm" />
+                        <span class="absolute right-3 top-2.5 text-xs font-bold text-amber-600">/ 10.0</span>
+                    </div>
+                    <span class="text-[11px] text-slate-400 mt-1 block">Cho phép nhập số thập phân (ví dụ: 7.5, 8.2, 9.0, 10).</span>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        Lời Nhận Xét & Đánh Giá Bài Làm:
+                    </label>
+                    <textarea name="feedback" id="formGradeFeedback" rows="3" 
+                              placeholder="Nhận xét ưu điểm, mặt cần cải thiện hoặc góp ý sửa mã nguồn cho sinh viên..." 
+                              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-400 font-medium text-slate-800 text-xs"></textarea>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeGradeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
+                        Hủy
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-md shadow-amber-200 flex items-center gap-1.5">
+                        <span>💾</span> Lưu Điểm & Nhận Xét
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- SCRIPT ĐIỀU KHIỂN MODAL -->
     <script>
         function openEditLessonModal(lesson) {
@@ -387,6 +490,23 @@ $csrfToken = $_SESSION['csrf'] ?? '';
 
         function closeEditLessonModal() {
             document.getElementById('editLessonModal').classList.add('hidden');
+        }
+
+        function openGradeModal(sub) {
+            document.getElementById('formSubmissionId').value = sub.id;
+            document.getElementById('gradeStudentName').innerText = sub.student_name || '—';
+            document.getElementById('gradeStudentCode').innerText = sub.student_code || '—';
+            document.getElementById('gradeFileName').innerText = sub.file_name || 'Không có tên file';
+            document.getElementById('formGradeScore').value = sub.score !== null ? parseFloat(sub.score) : '';
+            document.getElementById('formGradeFeedback').value = sub.feedback || '';
+            document.getElementById('gradeSubmissionModal').classList.remove('hidden');
+            setTimeout(function() {
+                document.getElementById('formGradeScore').focus();
+            }, 100);
+        }
+
+        function closeGradeModal() {
+            document.getElementById('gradeSubmissionModal').classList.add('hidden');
         }
     </script>
 

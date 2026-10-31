@@ -16,6 +16,7 @@ $action = $_POST['action'] ?? ($_GET['action'] ?? 'index');
 
 match ($action) {
     'update' => $controller->update(),
+    'grade'  => $controller->grade(),
     default  => $controller->index(),
 };
 

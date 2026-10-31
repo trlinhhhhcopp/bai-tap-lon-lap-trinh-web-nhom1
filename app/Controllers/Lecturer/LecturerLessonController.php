@@ -149,4 +149,47 @@ class LecturerLessonController
         header("Location: {$redirectUrl}&view_lesson_id={$lessonId}");
         exit;
     }
+
+    /**
+     * Giảng viên chấm điểm và nhận xét bài nộp của sinh viên
+     */
+    public function grade(): void
+    {
+        $currentUser = $this->requireLecturer();
+        $this->verifyCsrf();
+
+        $submissionId = (int)($_POST['submission_id'] ?? 0);
+        $scoreRaw     = trim($_POST['score'] ?? '');
+        $feedback     = trim($_POST['feedback'] ?? '');
+        $caId         = (int)($_POST['ca_id'] ?? 0);
+        $courseId     = (int)($_POST['course_id'] ?? 0);
+        $viewLessonId = (int)($_POST['lesson_id'] ?? 0);
+
+        $redirectUrl = "lessons.php?" . ($caId > 0 ? "ca_id={$caId}" : "course_id={$courseId}") . ($viewLessonId > 0 ? "&view_lesson_id={$viewLessonId}" : "");
+
+        if ($submissionId <= 0 || $scoreRaw === '') {
+            set_flash('error', 'Vui lòng nhập điểm hợp lệ từ 0.0 đến 10.0 cho sinh viên!');
+            header("Location: {$redirectUrl}");
+            exit;
+        }
+
+        $score = (float)$scoreRaw;
+        if ($score < 0 || $score > 10) {
+            set_flash('error', 'Điểm chấm phải nằm trong thang điểm từ 0.0 đến 10.0!');
+            header("Location: {$redirectUrl}");
+            exit;
+        }
+
+        $lecturerId = (int)$currentUser['id'];
+        $success = $this->model->gradeSubmission($submissionId, $score, $feedback, $lecturerId);
+
+        if ($success) {
+            set_flash('success', "Đã lưu điểm (⭐ " . number_format($score, 1) . "/10.0) và lời nhận xét đánh giá cho sinh viên thành công!");
+        } else {
+            set_flash('error', 'Không thể lưu điểm, vui lòng thử lại!');
+        }
+
+        header("Location: {$redirectUrl}");
+        exit;
+    }
 }

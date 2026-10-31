@@ -332,7 +332,7 @@ erDiagram
    * **Sinh viên khóa TUD D24 (Lớp D24-CNTT1):**
      * `224001736@daihocthudo.edu.vn` (Phạm Thị Thanh Ngân - Trưởng nhóm)
      * `224001729@daihocthudo.edu.vn` (Trần Thục Linh)
-     * `224001737@daihocthudo.edu.vn` (Lê Hà My)
+     * `224001735@daihocthudo.edu.vn` (Lê Hà My)
      * `224001742@daihocthudo.edu.vn` (Nguyễn Ánh Nhi)
      * `224001746@daihocthudo.edu.vn` (Phan Công Thành)
    * **Cựu sinh viên hết khóa (D20 tốt nghiệp):** `220001001@daihocthudo.edu.vn` (`graduated`)
