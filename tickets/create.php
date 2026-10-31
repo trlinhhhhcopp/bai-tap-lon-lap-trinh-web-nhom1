@@ -39,6 +39,66 @@ $priorities  = TicketRepository::getPriorities();
 
 $errors = [];
 
+// KỊCH BẢN 1: BÁO SỰ CỐ GẮN LIỀN NGỮ CẢNH BUỔI HỌC (CONTEXTUAL INCIDENT MANAGEMENT)
+$reqCourseId = (int)($_POST['course_id'] ?? ($_GET['course_id'] ?? 0));
+$reqLessonId = (int)($_POST['lesson_id'] ?? ($_GET['lesson_id'] ?? 0));
+$contextCourse = null;
+$contextLesson = null;
+$prefillTitle  = '';
+$prefillSystem = '';
+$prefillDesc   = '';
+$defaultCatId  = 0;
+
+if ($reqCourseId > 0 && $reqLessonId > 0) {
+    try {
+        $cStmt = db()->prepare("SELECT c.*, ca.semester, ca.academic_year, cl.class_code, u.name as lecturer_name 
+                                FROM courses c 
+                                LEFT JOIN course_assignments ca ON ca.course_id = c.id 
+                                LEFT JOIN classes cl ON ca.class_id = cl.id 
+                                LEFT JOIN users u ON ca.lecturer_id = u.id 
+                                WHERE c.id = :cid LIMIT 1");
+        $cStmt->execute([':cid' => $reqCourseId]);
+        $contextCourse = $cStmt->fetch();
+
+        $lStmt = db()->prepare("SELECT * FROM course_lessons WHERE id = :lid LIMIT 1");
+        $lStmt->execute([':lid' => $reqLessonId]);
+        $contextLesson = $lStmt->fetch();
+
+        if ($contextCourse && $contextLesson) {
+            // Mặc định chọn danh mục Canvas / LMS
+            foreach ($categories as $cat) {
+                if ($cat['code'] === 'CAT_CANVAS') {
+                    $defaultCatId = (int)$cat['id'];
+                    break;
+                }
+            }
+            $num = $contextLesson['lesson_number'];
+            $cName = $contextCourse['name'];
+            $cCode = $contextCourse['course_code'];
+            $lTitle = $contextLesson['title'];
+            $classCode = $contextCourse['class_code'];
+            $lecName = $contextCourse['lecturer_name'];
+            $deadline = $contextLesson['deadline_at'];
+            $req = $contextLesson['assignment_requirement'] ?: 'Hoàn thành bài tập theo hướng dẫn';
+
+            $prefillTitle = "[CỨU HỘ BUỔI HỌC] Sự cố nộp bài tập Buổi " . $num . " môn " . $cName . " (" . $cCode . ")";
+            $prefillSystem = "Cổng Học Phần & Nộp Bài Tập (LMS / " . $cCode . " / Buổi " . $num . ")";
+            $prefillDesc = "=== THÔNG TIN HỌC PHẦN & BUỔI HỌC CẦN CỨU HỘ ===\n" .
+                           "• Học phần: " . $cName . " (" . $cCode . ")\n" .
+                           "• Lớp học phần: " . $classCode . " - GV phụ trách: " . $lecName . "\n" .
+                           "• Buổi học: Buổi " . $num . " - " . $lTitle . "\n" .
+                           "• Hạn chót nộp bài (Deadline): " . $deadline . "\n" .
+                           "• Yêu cầu bài tập: " . $req . "\n\n" .
+                           "=== MÔ TẢ CHI TIẾT SỰ CỐ KỸ THUẬT GẶP PHẢI ===\n" .
+                           "Em gặp sự cố kỹ thuật sau khi nộp bài tập buổi này:\n" .
+                           "[Vui lòng mô tả cụ thể: ví dụ file nộp bị lỗi, mạng gián đoạn không nộp kịp deadline, hoặc hệ thống báo lỗi...]";
+        }
+    } catch (\Throwable $e) {
+        $contextCourse = null;
+        $contextLesson = null;
+    }
+}
+
 // XỬ LÝ POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $categoryId     = (int)($_POST['category_id'] ?? 0);
@@ -125,6 +185,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'requester_id'    => $requesterId,
                 'category_id'     => $categoryId,
                 'priority_id'     => $priorityId,
+                'course_id'       => $reqCourseId > 0 ? $reqCourseId : null,
+                'lesson_id'       => $reqLessonId > 0 ? $reqLessonId : null,
                 'title'           => $title,
                 'description'     => $description,
                 'system_affected' => $systemAffected,
@@ -185,6 +247,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- FORM NHẬP LIỆU -->
     <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
         <form method="POST" action="create.php" enctype="multipart/form-data" class="space-y-4 text-xs">
+            <?php if ($reqCourseId > 0 && $reqLessonId > 0): ?>
+                <input type="hidden" name="course_id" value="<?php echo (int)$reqCourseId; ?>" />
+                <input type="hidden" name="lesson_id" value="<?php echo (int)$reqLessonId; ?>" />
+            <?php endif; ?>
+
+            <?php if ($contextCourse && $contextLesson): ?>
+                <!-- BANNER KỊCH BẢN 1: BÁO SỰ CỐ GẮN LIỀN NGỮ CẢNH BUỔI HỌC -->
+                <div class="p-4 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-200 rounded-2xl space-y-2 shadow-2xs">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-indigo-600 text-white flex items-center gap-1 shadow-2xs">
+                            <span>🎓</span> KỊCH BẢN 1: BÁO SỰ CỐ BUỔI HỌC THEO NGỮ CẢNH
+                        </span>
+                        <span class="text-[11px] text-purple-700 font-bold">ITIL Contextual Incident</span>
+                    </div>
+                    <div class="text-xs text-indigo-950 grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-indigo-100">
+                        <div>Học phần: <strong><?php echo htmlspecialchars($contextCourse['name']); ?></strong> (<?php echo htmlspecialchars($contextCourse['course_code']); ?>)</div>
+                        <div>Buổi học: <strong class="text-indigo-800">Buổi <?php echo (int)$contextLesson['lesson_number']; ?>: <?php echo htmlspecialchars($contextLesson['title']); ?></strong></div>
+                        <div>Giảng viên phụ trách: <strong><?php echo htmlspecialchars($contextCourse['lecturer_name']); ?></strong></div>
+                        <div>Hạn nộp (Deadline): <strong class="text-rose-600 font-mono"><?php echo htmlspecialchars($contextLesson['deadline_at']); ?></strong></div>
+                    </div>
+                    <p class="text-[10.5px] text-indigo-700/80 italic">
+                        💡 Hệ thống đã tự động điền sẵn thông tin học phần và buổi học. KTV trực ca sẽ ưu tiên xác minh để đảm bảo quyền lợi nộp bài của bạn!
+                    </p>
+                </div>
+            <?php endif; ?>
             
             <!-- Người gửi (Tự động theo tài khoản đang đăng nhập) -->
             <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
@@ -222,7 +309,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <option value="<?php echo $cat['id']; ?>" 
                                 data-code="<?php echo htmlspecialchars($cat['code']); ?>"
                                 data-system="<?php echo htmlspecialchars($autoSys); ?>"
-                                <?php echo isset($_POST['category_id']) && (int)$_POST['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>>
+                                <?php 
+                                    $isSelected = (isset($_POST['category_id']) && (int)$_POST['category_id'] === (int)$cat['id'])
+                                               || (!isset($_POST['category_id']) && $defaultCatId > 0 && (int)$cat['id'] === $defaultCatId);
+                                    echo $isSelected ? 'selected' : ''; 
+                                ?>>
                             <?php echo htmlspecialchars($cat['name']); ?> (SLA chuẩn: <?php echo $cat['sla_hours']; ?>h)
                         </option>
                     <?php endforeach; ?>
@@ -257,7 +348,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span id="systemAffectedTag" class="ml-1 text-[11px] font-normal text-slate-400">(Tự động điền theo danh mục)</span>
                 </label>
                 <input type="text" name="system_affected" id="systemAffectedInput" 
-                       value="<?php echo htmlspecialchars($_POST['system_affected'] ?? ''); ?>" 
+                       value="<?php echo htmlspecialchars($_POST['system_affected'] ?? $prefillSystem); ?>" 
                        class="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold text-slate-700"
                        placeholder="Chọn dịch vụ gặp sự cố ở trên để hệ thống tự điền..." />
                 <p id="systemAffectedHelp" class="text-[11px] text-slate-400 mt-1 leading-relaxed">
@@ -268,7 +359,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Tiêu đề sự cố -->
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Tiêu đề tóm tắt sự cố: <span class="text-rose-500">*</span></label>
-                <input type="text" name="title" required value="<?php echo htmlspecialchars($_POST['title'] ?? ''); ?>" 
+                <input type="text" name="title" required value="<?php echo htmlspecialchars($_POST['title'] ?? $prefillTitle); ?>" 
                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold"
                        placeholder="Ví dụ: Không thể đăng nhập vào lớp học phần môn Lập trình Web" />
             </div>
@@ -278,7 +369,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label class="block font-bold text-slate-700 mb-1">Nội dung mô tả chi tiết: <span class="text-rose-500">*</span></label>
                 <textarea name="description" rows="4" required
                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs leading-relaxed"
-                          placeholder="Mô tả cụ thể thông báo lỗi, thời điểm gặp sự cố và mong muốn KTV hỗ trợ..."><?php echo htmlspecialchars($_POST['description'] ?? ''); ?></textarea>
+                          placeholder="Mô tả cụ thể thông báo lỗi, thời điểm gặp sự cố và mong muốn KTV hỗ trợ..."><?php echo htmlspecialchars($_POST['description'] ?? $prefillDesc); ?></textarea>
             </div>
 
             <!-- ĐÍNH KÈM TỆP ẢNH / TÀI LIỆU MINH CHỨNG SỰ CỐ -->

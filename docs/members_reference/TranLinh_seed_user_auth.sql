@@ -91,7 +91,7 @@ INSERT INTO `users` (
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'requester', 'student', 
  'Khoa: Toán-CNTT', '0901234502', 1, 'D2024', 'studying', NULL, 5, 0, 1, 1, 'none', 1, 2, NULL),
 
-(15, '224001737', 'Lê Hà My', '224001737@daihocthudo.edu.vn', 
+(15, '224001735', 'Lê Hà My', '224001735@daihocthudo.edu.vn', 
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'requester', 'student', 
  'Khoa: Toán-CNTT', '0901234503', 1, 'D2024', 'studying', NULL, 5, 0, 1, 1, 'none', 1, 0, NULL),
 

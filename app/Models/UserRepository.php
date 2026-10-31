@@ -18,7 +18,7 @@ class UserRepository {
     /**
      * Lấy danh sách người dùng có Tìm kiếm tương đối (%) và Phân trang (Slide 6 & 11)
      * 
-     * @param array $filters ['kw' => 'từ khóa']
+     * @param array $filters ['kw' => 'từ khóa', 'type' => 'agent|lecturer|student']
      * @param int $page Số trang hiện tại (mặc định 1)
      * @param int $perPage Số lượng người dùng trên 1 trang (mặc định 8)
      * @return array Danh sách mảng kết hợp người dùng
@@ -26,12 +26,38 @@ class UserRepository {
     public static function findActiveUsers(array $filters = [], int $page = 1, int $perPage = 8): array {
         $pdo = db();
         $kw = trim($filters['kw'] ?? '');
+        $type = $filters['type'] ?? '';
+        $classId = (int)($filters['class_id'] ?? 0);
 
         // Tính vị trí offset phân trang: (page - 1) * perPage (Slide 11)
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
+        $conditions = [];
+        $params = [];
 
-        // Câu truy vấn Prepared Statement nối bảng classes lấy tên lớp (Slide 5-6)
+        // Tìm kiếm linh hoạt theo cả: Tên SV/GV, Mã SV/GV, Email, Tên/Mã lớp, Khóa đào tạo
+        if ($kw !== '') {
+            $conditions[] = '(u.user_code LIKE :kw1 OR u.name LIKE :kw2 OR u.email LIKE :kw3 OR c.class_code LIKE :kw4 OR c.name LIKE :kw5 OR u.cohort LIKE :kw6)';
+            $kwVal = '%' . $kw . '%';
+            $params[':kw1'] = $kwVal;
+            $params[':kw2'] = $kwVal;
+            $params[':kw3'] = $kwVal;
+            $params[':kw4'] = $kwVal;
+            $params[':kw5'] = $kwVal;
+            $params[':kw6'] = $kwVal;
+        }
+        if ($type === 'agent') {
+            $conditions[] = "u.role = 'agent'";
+        } elseif (in_array($type, ['lecturer', 'student'], true)) {
+            $conditions[] = 'u.user_type = :type';
+            $params[':type'] = $type;
+        }
+        if ($classId > 0) {
+            $conditions[] = 'u.class_id = :class_id';
+            $params[':class_id'] = $classId;
+        }
+
+        // Câu truy vấn Prepared Statement nối bảng classes lấy mã và tên lớp
         $sql = "SELECT 
                     u.id, 
                     u.user_code, 
@@ -44,22 +70,23 @@ class UserRepository {
                     u.is_active, 
                     u.lock_reason, 
                     u.is_first_login,
-                    COALESCE(c.name, 'Chưa xếp lớp') AS class_name
+                    COALESCE(c.class_code, c.name, 'Chưa xếp lớp') AS class_name,
+                    c.class_code,
+                    c.name AS class_full_name,
+                    c.id AS class_id
                 FROM users u
                 LEFT JOIN classes c ON c.id = u.class_id ";
 
-        // Điều kiện tìm kiếm gần đúng với LIKE :kw (Slide 6)
-        if ($kw !== '') {
-            $sql .= "WHERE u.user_code LIKE :kw OR u.name LIKE :kw OR u.email LIKE :kw ";
+        if ($conditions !== []) {
+            $sql .= 'WHERE ' . implode(' AND ', $conditions) . ' ';
         }
 
         $sql .= "ORDER BY u.id DESC LIMIT :limit OFFSET :offset";
 
         $stmt = $pdo->prepare($sql);
 
-        // Ràng buộc tham số an toàn, chống SQL Injection
-        if ($kw !== '') {
-            $stmt->bindValue(':kw', '%' . $kw . '%', PDO::PARAM_STR);
+        foreach ($params as $name => $value) {
+            $stmt->bindValue($name, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
         }
         $stmt->bindValue(':limit', (int)$perPage, PDO::PARAM_INT);
         $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
@@ -71,21 +98,48 @@ class UserRepository {
     /**
      * Đếm tổng số người dùng thỏa mãn bộ lọc để tính tổng số trang (Slide 10 & 11)
      * 
-     * @param array $filters ['kw' => 'từ khóa']
+     * @param array $filters ['kw' => 'từ khóa', 'type' => 'agent|lecturer|student', 'class_id' => int]
      * @return int Tổng số bản ghi
      */
     public static function countActiveUsers(array $filters = []): int {
         $pdo = db();
         $kw = trim($filters['kw'] ?? '');
+        $type = $filters['type'] ?? '';
+        $classId = (int)($filters['class_id'] ?? 0);
 
-        $sql = "SELECT COUNT(*) FROM users u ";
+        $sql = "SELECT COUNT(*) FROM users u LEFT JOIN classes c ON c.id = u.class_id ";
+        $conditions = [];
+        $params = [];
+
         if ($kw !== '') {
-            $sql .= "WHERE u.user_code LIKE :kw OR u.name LIKE :kw OR u.email LIKE :kw";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([':kw' => '%' . $kw . '%']);
-        } else {
-            $stmt = $pdo->query($sql);
+            $conditions[] = '(u.user_code LIKE :kw1 OR u.name LIKE :kw2 OR u.email LIKE :kw3 OR c.class_code LIKE :kw4 OR c.name LIKE :kw5 OR u.cohort LIKE :kw6)';
+            $kwVal = '%' . $kw . '%';
+            $params[':kw1'] = $kwVal;
+            $params[':kw2'] = $kwVal;
+            $params[':kw3'] = $kwVal;
+            $params[':kw4'] = $kwVal;
+            $params[':kw5'] = $kwVal;
+            $params[':kw6'] = $kwVal;
         }
+        if ($type === 'agent') {
+            $conditions[] = "u.role = 'agent'";
+        } elseif (in_array($type, ['lecturer', 'student'], true)) {
+            $conditions[] = 'u.user_type = :type';
+            $params[':type'] = $type;
+        }
+        if ($classId > 0) {
+            $conditions[] = 'u.class_id = :class_id';
+            $params[':class_id'] = $classId;
+        }
+
+        if ($conditions !== []) {
+            $sql .= 'WHERE ' . implode(' AND ', $conditions);
+        }
+        $stmt = $pdo->prepare($sql);
+        foreach ($params as $name => $value) {
+            $stmt->bindValue($name, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->execute();
 
         return (int) $stmt->fetchColumn();
     }
@@ -277,4 +331,3 @@ class UserRepository {
         return $pdo->query("SELECT id, code, name FROM categories ORDER BY id ASC")->fetchAll();
     }
 }
-

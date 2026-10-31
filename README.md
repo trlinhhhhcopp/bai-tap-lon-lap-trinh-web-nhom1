@@ -14,7 +14,7 @@
 |:---:|---|:---:|:---:|---|---|
 | 1 | **Phạm Thị Thanh Ngân** | **224001736** | **Trưởng nhóm** | Kiến trúc hệ thống ITIL v4, CSDL `helpdesk_thudo`, Triage điều phối phiếu, Báo cáo & Tài liệu đặc tả | `224001736@daihocthudo.edu.vn` |
 | 2 | **Trần Thục Linh** | **224001729** | Thành viên | Phân hệ Quản trị Người dùng & Phân quyền (`admin/users.php`, `UserRepository`, `AdminUserController`) | `224001729@daihocthudo.edu.vn` |
-| 3 | **Lê Hà My** | **224001737** | Thành viên | Phân hệ Phân công Đào tạo & Danh mục Lớp/Môn (`assignments/index.php`, `CourseAssignmentController`) | `224001737@daihocthudo.edu.vn` |
+| 3 | **Lê Hà My** | **224001735** | Thành viên | Phân hệ Phân công Đào tạo & Danh mục Lớp/Môn (`assignments/index.php`, `CourseAssignmentController`) | `224001735@daihocthudo.edu.vn` |
 | 4 | **Nguyễn Ánh Nhi** | **224001742** | Thành viên | Phân hệ Đánh giá CSAT & Cổng Học phần/Bài tập SV (`student/ratings.php`, `CourseController`, `CourseLesson`) | `224001742@daihocthudo.edu.vn` |
 | 5 | **Phan Công Thành** | **224001746** | Thành viên | Phân hệ Quản lý Lịch Nghỉ lễ & Hiệu chỉnh SLA (`admin/holidays.php`, `HolidayController`, `Holiday`) | `224001746@daihocthudo.edu.vn` |
 
@@ -411,7 +411,7 @@ mysql -u root -p helpdesk_thudo < database/seed.sql
   * **Sinh viên khóa TUD D24 (Lớp D24-CNTT1):**
     * `224001736@daihocthudo.edu.vn` (Phạm Thị Thanh Ngân - Trưởng nhóm)
     * `224001729@daihocthudo.edu.vn` (Trần Thục Linh)
-    * `224001737@daihocthudo.edu.vn` (Lê Hà My)
+    * `224001735@daihocthudo.edu.vn` (Lê Hà My)
     * `224001742@daihocthudo.edu.vn` (Nguyễn Ánh Nhi)
     * `224001746@daihocthudo.edu.vn` (Phan Công Thành)
   * **Cựu sinh viên hết khóa (D20 tốt nghiệp):** `220001001@daihocthudo.edu.vn`

@@ -178,11 +178,11 @@ class TicketRepository {
     /**
      * Đếm số phiếu vi phạm do KTV báo cáo (is_spam = 1) để Admin xem xét
      */
-    public static function countViolations(int $requesterId = 0, int $assignedTo = 0): int {
+    public static function countViolations(int $requesterId = 0, int $assignedTo = 0, bool $isLecturer = false): int {
         $db = db();
         $conditions = ["t.is_spam = 1"];
         $params = [];
-        if ($requesterId > 0) {
+        if ($requesterId > 0 && !$isLecturer) {
             $conditions[] = "t.requester_id = :req_id";
             $params['req_id'] = $requesterId;
         }
@@ -260,7 +260,8 @@ class TicketRepository {
                        p.name AS priority_name, p.code AS priority_code,
                        COALESCE(cl.class_code, u_cl.class_code, u_req.cohort, 'D24-CNTT1') AS class_code,
                        COALESCE(cl.name, u_cl.name, 'Đại học CNTT K24') AS class_name,
-                       co.course_code, co.name AS course_name
+                       co.course_code, co.name AS course_name,
+                       cln.lesson_number, cln.title AS lesson_title, cln.deadline_at AS lesson_deadline_at, cln.assignment_requirement AS lesson_requirement
                 FROM tickets t
                 INNER JOIN users u_req ON t.requester_id = u_req.id
                 LEFT JOIN users u_agent ON t.assigned_to = u_agent.id
@@ -269,6 +270,7 @@ class TicketRepository {
                 LEFT JOIN classes cl ON t.class_id = cl.id
                 LEFT JOIN classes u_cl ON u_req.class_id = u_cl.id
                 LEFT JOIN courses co ON t.course_id = co.id
+                LEFT JOIN course_lessons cln ON t.lesson_id = cln.id
                 WHERE t.id = :id";
 
         $stmt = db()->prepare($sql);
@@ -358,12 +360,17 @@ class TicketRepository {
             }
         }
 
+        $courseId = !empty($data['course_id']) ? (int)$data['course_id'] : null;
+        $lessonId = !empty($data['lesson_id']) ? (int)$data['lesson_id'] : null;
+
         $sql = "INSERT INTO tickets (
                     ticket_code, requester_id, assigned_to, category_id, priority_id, 
+                    course_id, lesson_id,
                     title, description, system_affected, attachment_path,
                     status, created_at, sla_started_at, triage_due_at, due_at
                 ) VALUES (
                     :ticket_code, :requester_id, :assigned_to, :category_id, :priority_id,
+                    :course_id, :lesson_id,
                     :title, :description, :system_affected, :attachment_path,
                     'new', NOW(), NOW(),
                     DATE_ADD(NOW(), INTERVAL 30 MINUTE),
@@ -377,6 +384,8 @@ class TicketRepository {
             'assigned_to'     => $assignedTo,
             'category_id'     => (int)$data['category_id'],
             'priority_id'     => (int)$data['priority_id'],
+            'course_id'       => $courseId,
+            'lesson_id'       => $lessonId,
             'title'           => trim($data['title']),
             'description'     => trim($data['description']),
             'system_affected' => trim($data['system_affected']),
