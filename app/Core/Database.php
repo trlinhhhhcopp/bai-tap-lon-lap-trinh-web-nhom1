@@ -20,7 +20,7 @@ class Database {
         $config = require __DIR__ . '/../../config/database.php';
 
         $ports     = array_unique([(int)($config['port'] ?? 3306), 3306, 3307]);
-        $passwords = array_unique([$config['password'] ?? '', '', 'root', '1234', '123456', 'admin', 'nhi12345']);
+        $passwords = array_unique([$config['password'] ?? '', '', 'root', '12345678', '1234', '123456', 'admin', 'nhi12345']);
         $connected = false;
 
         foreach ($ports as $port) {

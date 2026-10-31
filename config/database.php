@@ -48,7 +48,7 @@ if (!function_exists('db')) {
         $port     = 3306;
         $database = 'helpdesk_thudo';
         $username = 'root';
-        $password = '';
+        $password = '12345678';
         $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
 
         try {
@@ -122,7 +122,7 @@ return [
     'port'      => 3306,
     'database'  => 'helpdesk_thudo',
     'username'  => 'root',
-    'password'  => '',
+    'password'  => '12345678',
     'charset'   => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
     'options'   => [
