@@ -199,31 +199,14 @@ $flash        = get_flash();
                         <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'guest') ? 'bg-white text-orange-700' : 'bg-orange-600 text-white' ?>"><?= $guestCount ?></span>
                     </a>
                 <?php endif; ?>
-
-                <a href="index.php?status=new<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'new' && empty($warningType)) ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
-                    <span>⏳ Mới Tiếp Nhận</span>
-                </a>
-
-                <a href="index.php?status=in_progress<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'in_progress' && empty($warningType)) ? 'bg-amber-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
-                    <span>⚙️ Đang Xử Lý</span>
-                </a>
-
-                <a href="index.php?status=waiting_requester<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'waiting_requester' && empty($warningType)) ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
-                    <span>💬 Chờ Phản Hồi</span>
-                </a>
-
-                <a href="index.php?status=resolved<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'resolved' && empty($warningType)) ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
-                    <span>✅ Đã Xong / Đóng</span>
-                </a>
             </div>
 
             <form method="GET" action="index.php" class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
-                <?php if ($warningType === 'sla'): ?>
-                    <input type="hidden" name="warning" value="sla" />
+                <?php if ($warningType): ?>
+                    <input type="hidden" name="warning" value="<?php echo htmlspecialchars($warningType); ?>" />
+                <?php endif; ?>
+                <?php if ($lecturerScope): ?>
+                    <input type="hidden" name="scope" value="<?php echo htmlspecialchars($lecturerScope); ?>" />
                 <?php endif; ?>
                 <!-- Từ khóa -->
                 <div class="md:col-span-6">
