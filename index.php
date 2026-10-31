@@ -1621,6 +1621,9 @@ if ($userType === 'student') {
 }
 
 if ($userType === 'lecturer') {
+    require_once __DIR__ . '/app/Repositories/TicketRepository.php';
+    $pendingCourseIncidents = TicketRepository::getPendingCourseIncidentsForLecturer($userId);
+
     // Thống kê của giảng viên
     $myTicketsCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId}")->fetchColumn();
     $myCoursesCount = (int)$pdo->query("SELECT COUNT(*) FROM course_assignments WHERE lecturer_id = {$userId}")->fetchColumn();

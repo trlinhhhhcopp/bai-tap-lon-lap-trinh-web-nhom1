@@ -56,11 +56,12 @@ class TicketRepository {
                 $conditions[] = "t.requester_id = :lid_req";
                 $params['lid_req'] = $lecturerId;
             } elseif ($lecturerScope === 'course_incidents') {
-                $conditions[] = "(t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                // Chỉ hiển thị các phiếu mà KTV đã xác thực có lỗi kỹ thuật (it_verified = 1)
+                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
                 $params['lid_ca'] = $lecturerId;
                 $params['lid_ca2'] = $lecturerId;
             } else {
-                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
+                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
                 $params['lid_req'] = $lecturerId;
                 $params['lid_ca'] = $lecturerId;
                 $params['lid_ca2'] = $lecturerId;
@@ -163,11 +164,12 @@ class TicketRepository {
                 $conditions[] = "t.requester_id = :lid_req";
                 $params['lid_req'] = $lecturerId;
             } elseif ($lecturerScope === 'course_incidents') {
-                $conditions[] = "(t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                // Chỉ hiển thị các phiếu mà KTV đã xác thực có lỗi kỹ thuật (it_verified = 1)
+                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
                 $params['lid_ca'] = $lecturerId;
                 $params['lid_ca2'] = $lecturerId;
             } else {
-                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
+                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
                 $params['lid_req'] = $lecturerId;
                 $params['lid_ca'] = $lecturerId;
                 $params['lid_ca2'] = $lecturerId;
@@ -277,11 +279,12 @@ class TicketRepository {
                 $conditions[] = "t.requester_id = :lid_req";
                 $params['lid_req'] = $lecturerId;
             } elseif ($lecturerScope === 'course_incidents') {
-                $conditions[] = "(t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                // Chỉ hiển thị các phiếu mà KTV đã xác thực có lỗi kỹ thuật (it_verified = 1)
+                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
                 $params['lid_ca'] = $lecturerId;
                 $params['lid_ca2'] = $lecturerId;
             } else {
-                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
+                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
                 $params['lid_req'] = $lecturerId;
                 $params['lid_ca'] = $lecturerId;
                 $params['lid_ca2'] = $lecturerId;
@@ -651,12 +654,13 @@ class TicketRepository {
 
 
     /**
-     * Đếm số phiếu sự cố học tập liên quan đến lớp/học phần của Giảng viên phụ trách
+     * Đếm số phiếu sự cố học tập liên quan đến lớp/học phần của Giảng viên phụ trách (chỉ tính phiếu KTV đã xác nhận có lỗi)
      */
     public static function countLecturerCourseIncidents(int $lecturerId): int {
         $db = db();
         $sql = "SELECT COUNT(*) FROM tickets t 
                 WHERE t.lesson_id IS NOT NULL 
+                  AND t.it_verified = 1
                   AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid) 
                        OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid2))";
         $stmt = $db->prepare($sql);
@@ -665,7 +669,7 @@ class TicketRepository {
     }
 
     /**
-     * Lấy danh sách các phiếu sự cố học tập cần Giảng viên xem xét (ưu tiên phiếu KTV đã xác thực)
+     * Lấy danh sách các phiếu sự cố học tập cần Giảng viên xem xét (Chỉ lấy phiếu KTV đã xác thực có lỗi kỹ thuật)
      */
     public static function getPendingCourseIncidentsForLecturer(int $lecturerId): array {
         $db = db();
@@ -680,9 +684,10 @@ class TicketRepository {
                 LEFT JOIN courses co ON t.course_id = co.id
                 LEFT JOIN course_lessons cln ON t.lesson_id = cln.id
                 WHERE t.lesson_id IS NOT NULL
+                  AND t.it_verified = 1
                   AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid)
                        OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid2))
-                ORDER BY t.it_verified DESC, t.id DESC
+                ORDER BY t.id DESC
                 LIMIT 10";
         $stmt = $db->prepare($sql);
         $stmt->execute([':lid' => $lecturerId, ':lid2' => $lecturerId]);

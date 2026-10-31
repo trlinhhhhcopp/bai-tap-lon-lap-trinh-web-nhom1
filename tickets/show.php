@@ -130,6 +130,65 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 }
 
 // -----------------------------------------------------------------------------
+// KTV BÁC BỎ SỰ CỐ KỸ THUẬT (SV BÁO SAI / KHÔNG CÓ LỖI)
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ktv_reject_incident') {
+    if (in_array($userRole, ['agent', 'admin'])) {
+        $rejectReason = trim($_POST['reject_reason'] ?? 'Kỹ thuật viên đã kiểm tra log hệ thống: Mạng và máy chủ hoạt động bình thường, không ghi nhận sự cố gián đoạn mạng. Sinh viên báo sai sự thật.');
+        db()->prepare("UPDATE tickets SET it_verified = 2, it_verified_at = NOW(), it_verified_note = :note, status = 'resolved' WHERE id = :id")
+            ->execute([':note' => $rejectReason, ':id' => $id]);
+
+        $replyContent = "❌ [KTV BÁC BỎ YÊU CẦU SỰ CỐ KỸ THUẬT - KHÔNG CÓ LỖI]\n" .
+                        "Kỹ thuật viên đã kiểm tra nhật ký hệ thống: Xác nhận KHÔNG CÓ sự cố kỹ thuật nào xảy ra.\n" .
+                        "Lý do: \"" . $rejectReason . "\"\n" .
+                        "👉 Yêu cầu báo lỗi bị bác bỏ. Giảng viên không cần xem xét mở lại Deadline.";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'resolved');
+
+        set_flash('info', "Đã bác bỏ báo lỗi kỹ thuật (Sinh viên báo sai). Phiếu đã được giải quyết và không hiển thị trên danh sách của Giảng viên.");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// KTV THU HỒI / HỦY XÁC NHẬN LỖI ĐÃ CẤP
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ktv_reset_verification') {
+    if (in_array($userRole, ['agent', 'admin'])) {
+        db()->prepare("UPDATE tickets SET it_verified = 0, it_verified_at = NULL, it_verified_note = NULL WHERE id = :id")
+            ->execute([':id' => $id]);
+
+        $replyContent = "↺ [KTV THU HỒI BIÊN BẢN XÁC THỰC]\n" .
+                        "Kỹ thuật viên đã thu hồi biên bản xác nhận lỗi kỹ thuật để tiến hành kiểm tra lại.";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'in_progress');
+
+        set_flash('info', "Đã hủy xác nhận lỗi kỹ thuật thành công!");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// GIẢNG VIÊN TỪ CHỐI GIA HẠN / HỦY GIA HẠN DEADLINE
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'lecturer_reject_extension') {
+    if ($isCourseLecturer || $userRole === 'admin') {
+        $rejectNote = trim($_POST['lecturer_reject_note'] ?? 'Thầy/Cô không chấp thuận gia hạn Deadline do thời gian làm bài đã đủ dài theo quy chế đào tạo.');
+        
+        $replyContent = "🚫 [GIẢNG VIÊN BỘ MÔN TỪ CHỐI GIA HẠN DEADLINE]\n" .
+                        "Thầy/Cô đã xem xét yêu cầu và quyết định KHÔNG mở lại Deadline cho Buổi " . ($ticket['lesson_number'] ?? '') . ".\n" .
+                        "Lý do của Thầy/Cô: \"" . $rejectNote . "\"\n" .
+                        "Sinh viên lưu ý nộp bài đúng hạn ở các buổi học tiếp theo.";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'resolved');
+        TicketRepository::updateStatus($id, 'resolved');
+
+        set_flash('info', "Đã từ chối gia hạn Deadline cho sinh viên. Phiếu chuyển sang trạng thái Đã giải quyết.");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
 // 1. XỬ LÝ GỬI ĐÁNH GIÁ CSAT (SINH VIÊN NGHIỆM THU)
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'rate_ticket') {
@@ -309,7 +368,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 
             if ($newAgent) {
                 db()->prepare("UPDATE tickets SET assigned_to = :aid WHERE id = :id")->execute(['aid' => $newAgentId, 'id' => $id]);
-                TicketRepository::addReply($id, (int)$currentUser['id'], "Quản trị viên đã phân công phiếu sự cố cho KTV: {$newAgent['name']} ({$newAgent['user_code']}).", true);
+                $transferTitle = ($userRole === 'agent') ? "KTV {$currentUser['name']} đã điều chuyển chuyên môn phiếu sự cố" : "Quản trị viên đã phân công phiếu sự cố";
+                TicketRepository::addReply($id, (int)$currentUser['id'], "{$transferTitle} cho KTV: {$newAgent['name']} ({$newAgent['user_code']}).", false);
                 set_flash('success', "Đã phân công thành công cho KTV: <strong>{$newAgent['name']}</strong>!");
                 header("Location: show.php?id={$id}&view_as={$viewAs}");
                 exit;
@@ -557,94 +617,189 @@ $flash   = get_flash();
                         <?php endif; ?>
                     </div>
 
-                    <!-- 1. BIÊN BẢN XÁC THỰC CỦA KTV (NẾU ĐÃ KIỂM TRA & XÁC NHẬN) -->
-                    <?php if (!empty($ticket['it_verified'])): ?>
-                        <div class="p-3.5 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-start gap-2.5 text-xs text-emerald-900">
-                            <span class="text-lg shrink-0">✅</span>
-                            <div class="space-y-1 flex-1">
+                    <!-- 1. BIÊN BẢN XÁC THỰC CỦA KTV -->
+                    <?php if ((int)($ticket['it_verified'] ?? 0) === 1): ?>
+                        <!-- TRƯỜNG HỢP 1: KTV ĐÃ XÁC NHẬN CÓ LỖI KỸ THUẬT -->
+                        <div class="p-3.5 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-start gap-2.5 text-xs text-emerald-900 shadow-2xs">
+                            <span class="text-xl shrink-0">✅</span>
+                            <div class="space-y-1.5 flex-1">
                                 <div class="font-bold flex items-center justify-between flex-wrap gap-1">
-                                    <span class="uppercase tracking-wide text-emerald-950">BIÊN BẢN KỸ THUẬT: KTV ĐÃ KIỂM TRA & XÁC NHẬN SỰ CỐ KỸ THUẬT HỢP LỆ</span>
-                                    <span class="font-mono text-[11px] text-emerald-700"><?php echo htmlspecialchars($ticket['it_verified_at'] ?? ''); ?></span>
+                                    <span class="uppercase tracking-wide text-emerald-950 font-black">BIÊN BẢN KỸ THUẬT: KTV ĐÃ KIỂM TRA & XÁC NHẬN SỰ CỐ KỸ THUẬT HỢP LỆ</span>
+                                    <span class="font-mono text-[11px] text-emerald-700 font-semibold"><?php echo htmlspecialchars($ticket['it_verified_at'] ?? ''); ?></span>
                                 </div>
-                                <p class="text-[11.5px] leading-relaxed">
+                                <p class="text-[11.5px] leading-relaxed bg-white/60 p-2.5 rounded-xl border border-emerald-200">
                                     "<?php echo htmlspecialchars($ticket['it_verified_note'] ?: 'Đã kiểm tra log hệ thống, xác nhận tài khoản sinh viên gặp sự cố ngắt kết nối mạng khách quan trong giờ nộp bài.'); ?>"
                                 </p>
-                                <span class="text-[10.5px] text-emerald-700 block italic">Căn cứ kỹ thuật chính thức gửi Giảng viên bộ môn xem xét gia hạn mở lại Deadline.</span>
+                                <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+                                    <span class="text-[10.5px] text-emerald-700 italic">✓ Căn cứ kỹ thuật chính thức đã được gửi tới Giảng viên bộ môn xem xét mở lại Deadline.</span>
+                                    <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" onsubmit="return confirm('Bạn có chắc chắn muốn thu hồi biên bản xác thực sự cố này?');">
+                                            <input type="hidden" name="action" value="ktv_reset_verification" />
+                                            <button type="submit" class="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold rounded-lg text-[10.5px] transition flex items-center gap-1 border border-amber-300 cursor-pointer">
+                                                <span>↺</span> Thu Hồi Xác Nhận
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
+
+                    <?php elseif ((int)($ticket['it_verified'] ?? 0) === 2): ?>
+                        <!-- TRƯỜNG HỢP 2: KTV ĐÃ HỦY BÁO LỖI / BÁC BỎ (SV BÁO SAI) -->
+                        <div class="p-3.5 bg-rose-50 border border-rose-300 rounded-2xl flex items-start gap-2.5 text-xs text-rose-900 shadow-2xs">
+                            <span class="text-xl shrink-0">❌</span>
+                            <div class="space-y-1.5 flex-1">
+                                <div class="font-bold flex items-center justify-between flex-wrap gap-1">
+                                    <span class="uppercase tracking-wide text-rose-950 font-black">BIÊN BẢN KỸ THUẬT: KTV ĐÃ BÁC BỎ — KHÔNG CÓ LỖI (SV BÁO SAI SỰ THẬT)</span>
+                                    <span class="font-mono text-[11px] text-rose-700 font-semibold"><?php echo htmlspecialchars($ticket['it_verified_at'] ?? ''); ?></span>
+                                </div>
+                                <p class="text-[11.5px] leading-relaxed bg-white/60 p-2.5 rounded-xl border border-rose-200">
+                                    "<?php echo htmlspecialchars($ticket['it_verified_note'] ?: 'Kỹ thuật viên đã kiểm tra log hệ thống: Mạng và máy chủ hoạt động bình thường, không ghi nhận sự cố gián đoạn mạng. Sinh viên báo sai sự thật.'); ?>"
+                                </p>
+                                <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
+                                    <span class="text-[10.5px] text-rose-700 italic font-semibold">👉 Phiếu này đã được KTV bác bỏ và KHÔNG hiển thị trên danh sách của Giảng viên.</span>
+                                    <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>">
+                                            <input type="hidden" name="action" value="ktv_reset_verification" />
+                                            <button type="submit" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold rounded-lg text-[10.5px] transition flex items-center gap-1 cursor-pointer">
+                                                <span>↺</span> Kiểm Tra Lại Sự Cố
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+
                     <?php elseif (in_array($userRole, ['agent', 'admin'])): ?>
-                        <!-- NẾU CHƯA XÁC NHẬN VÀ NGƯỜI XEM LÀ KTV / ADMIN -->
-                        <div class="p-3.5 bg-indigo-50 border border-indigo-200 rounded-2xl space-y-2 text-xs">
+                        <!-- TRƯỜNG HỢP 3: CHƯA KIỂM TRA (KTV / ADMIN ĐƯỢC CHỌN XÁC NHẬN HOẶC HỦY BÁO LỖI) -->
+                        <div class="p-3.5 bg-indigo-50 border border-indigo-200 rounded-2xl space-y-2.5 text-xs shadow-2xs">
                             <div class="flex items-center justify-between flex-wrap gap-2">
                                 <span class="font-bold text-indigo-900 flex items-center gap-1.5">
-                                    <span>🔍</span> Thao tác KTV: Kiểm tra log mạng/tài khoản & Cấp biên bản xác thực
+                                    <span>🔍</span> Thao Tác Kỹ Thuật Viên: Kiểm Tra Nhật Ký Mạng / Máy Chủ
                                 </span>
-                                <button type="button" onclick="document.getElementById('ktvVerifyForm').classList.toggle('hidden')" 
-                                        class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer flex items-center gap-1">
-                                    <span>⚡</span> KTV Xác Nhận Lỗi Kỹ Thuật
-                                </button>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="document.getElementById('ktvVerifyForm').classList.toggle('hidden'); document.getElementById('ktvRejectForm').classList.add('hidden');" 
+                                            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer flex items-center gap-1">
+                                        <span>⚡</span> KTV Xác Nhận Có Lỗi
+                                    </button>
+                                    <button type="button" onclick="document.getElementById('ktvRejectForm').classList.toggle('hidden'); document.getElementById('ktvVerifyForm').classList.add('hidden');" 
+                                            class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer flex items-center gap-1">
+                                        <span>❌</span> Hủy Báo Lỗi (SV Báo Sai)
+                                    </button>
+                                </div>
                             </div>
+
+                            <!-- FORM KTV XÁC NHẬN CÓ LỖI KỸ THUẬT HỢP LỆ -->
                             <form id="ktvVerifyForm" method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="hidden pt-2 border-t border-indigo-200 space-y-2">
                                 <input type="hidden" name="action" value="ktv_verify_incident" />
-                                <label class="block font-bold text-slate-700 text-[11px]">Nội dung biên bản xác thực gửi Giảng viên:</label>
-                                <textarea name="verify_note" rows="2" class="w-full p-2.5 bg-white border border-indigo-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">Kỹ thuật viên đã kiểm tra nhật ký Access Point Wi-Fi KTX / Server LMS Canvas: Xác nhận tài khoản sinh viên gặp sự cố gián đoạn mạng ngoài ý muốn trong thời gian nộp bài từ 23:45 - 23:59. Đề nghị Giảng viên phụ trách xem xét mở lại Deadline cho sinh viên.</textarea>
+                                <label class="block font-bold text-slate-700 text-[11px]">Nội dung biên bản xác thực có lỗi kỹ thuật (Gửi Thầy/Cô bộ môn):</label>
+                                <textarea name="verify_note" rows="2" class="w-full p-2.5 bg-white border border-emerald-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500">Kỹ thuật viên đã kiểm tra nhật ký Access Point Wi-Fi KTX / Server LMS Canvas: Xác nhận tài khoản sinh viên gặp sự cố gián đoạn mạng ngoài ý muốn trong thời gian nộp bài từ 23:45 - 23:59. Đề nghị Giảng viên phụ trách xem xét mở lại Deadline cho sinh viên.</textarea>
                                 <div class="flex justify-end">
                                     <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1 shadow-sm cursor-pointer">
-                                        <span>✓</span> Cấp Biên Bản Xác Thực Cho Thầy/Cô
+                                        <span>✓</span> Cấp Biên Bản & Chuyển Giảng Viên Mở Deadline
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- FORM KTV BÁC BỎ SỰ CỐ / HỦY BÁO LỖI VÌ SV BÁO SAI -->
+                            <form id="ktvRejectForm" method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="hidden pt-2 border-t border-rose-200 space-y-2">
+                                <input type="hidden" name="action" value="ktv_reject_incident" />
+                                <label class="block font-bold text-rose-800 text-[11px]">Lý do bác bỏ / Hủy báo lỗi (SV nói sai / Log mạng bình thường):</label>
+                                <textarea name="reject_reason" rows="2" class="w-full p-2.5 bg-white border border-rose-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500">Kỹ thuật viên đã kiểm tra log hệ thống mạng KTX và server Canvas: Kết nối hoàn toàn thông suốt, không có sự cố mạng. Sinh viên báo sai sự thật hoặc nộp trễ ngoài thời gian quy định.</textarea>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[11px] text-rose-600 italic">Phiếu sẽ tự đóng và không hiển thị cho Giảng viên xem xét.</span>
+                                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1 shadow-sm cursor-pointer">
+                                        <span>❌</span> Xác Nhận Hủy Báo Lỗi (Không Có Lỗi)
                                     </button>
                                 </div>
                             </form>
                         </div>
                     <?php endif; ?>
 
-                    <!-- 2. KHỐI THẨM QUYỀN HỌC THUẬT CỦA GIẢNG VIÊN (MỞ LẠI DEADLINE) -->
+                    <!-- 2. KHỐI THẨM QUYỀN HỌC THUẬT CỦA GIẢNG VIÊN -->
                     <?php if ($isCourseLecturer || $userRole === 'admin'): ?>
-                        <div class="p-4 bg-gradient-to-r from-purple-100/90 via-indigo-100/90 to-purple-50 border-2 border-purple-300 rounded-2xl space-y-3 text-xs">
-                            <div class="flex items-center justify-between flex-wrap gap-2 border-b border-purple-200 pb-2">
-                                <span class="font-black text-purple-950 flex items-center gap-1.5 text-sm">
-                                    <span>🎓</span> THẨM QUYỀN HỌC THUẬT: GIẢNG VIÊN XEM XÉT GIA HẠN DEADLINE
-                                </span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-700 text-white">
-                                    Buổi <?php echo (int)$ticket['lesson_number']; ?>
+                        <?php if ((int)($ticket['it_verified'] ?? 0) === 1): ?>
+                            <!-- KTV ĐÃ XÁC NHẬN: GIẢNG VIÊN CÓ 2 LỰA CHỌN (GIA HẠN HOẶC TỪ CHỐI GIA HẠN) -->
+                            <div class="p-4 bg-gradient-to-r from-purple-100/90 via-indigo-100/90 to-purple-50 border-2 border-purple-300 rounded-2xl space-y-3 text-xs">
+                                <div class="flex items-center justify-between flex-wrap gap-2 border-b border-purple-200 pb-2">
+                                    <span class="font-black text-purple-950 flex items-center gap-1.5 text-sm">
+                                        <span>🎓</span> THẨM QUYỀN HỌC THUẬT: GIẢNG VIÊN XEM XÉT GIA HẠN DEADLINE
+                                    </span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-700 text-white">
+                                        Buổi <?php echo (int)$ticket['lesson_number']; ?>
+                                    </span>
+                                </div>
+                                <p class="text-purple-900 leading-relaxed text-[11.5px]">
+                                    ✅ <strong>Kỹ thuật viên đã kiểm tra và xác nhận sự cố kỹ thuật là có thật.</strong> Thầy/Cô có toàn quyền sư phạm: chấp thuận mở lại hạn nộp bài (Deadline) hoặc từ chối gia hạn nếu lý do chưa hợp lý.
+                                </p>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <!-- CỘT 1: CHẤP THUẬN & MỞ LẠI DEADLINE -->
+                                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-2.5 bg-white/90 p-3.5 rounded-xl border border-purple-200 flex flex-col justify-between">
+                                        <input type="hidden" name="action" value="lecturer_extend_deadline" />
+                                        <div class="space-y-2">
+                                            <span class="font-bold text-emerald-800 flex items-center gap-1 text-xs">
+                                                <span>⚡</span> Phương Án 1: Chấp Thuận Mở Lại Hạn Nộp
+                                            </span>
+                                            <div>
+                                                <label class="block font-bold text-slate-700 text-[11px] mb-1">Thời hạn mới (Deadline gia hạn):</label>
+                                                <?php $suggestedDeadline = date('Y-m-d\TH:i', strtotime('+24 hours')); ?>
+                                                <input type="datetime-local" name="new_deadline" value="<?php echo $suggestedDeadline; ?>" required 
+                                                       class="w-full px-2.5 py-1.5 bg-slate-50 border border-purple-300 rounded-lg font-mono text-purple-900 font-bold text-xs focus:ring-2 focus:ring-purple-500" />
+                                            </div>
+                                            <div>
+                                                <label class="block font-bold text-slate-700 text-[11px] mb-1">Lời nhắn của Thầy/Cô:</label>
+                                                <input type="text" name="lecturer_note" value="Thầy/Cô chấp thuận mở lại Deadline do sự cố kỹ thuật đã được KTV xác thực. Em hãy tranh thủ nộp bài bổ sung nhé!" 
+                                                       class="w-full px-2.5 py-1.5 bg-slate-50 border border-purple-300 rounded-lg text-slate-800 text-xs focus:ring-2 focus:ring-purple-500" />
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="w-full mt-2 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                                            <span>⚡</span> Chấp Thuận & Mở Lại Deadline
+                                        </button>
+                                    </form>
+
+                                    <!-- CỘT 2: TỪ CHỐI GIA HẠN / HỦY GIA HẠN -->
+                                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-2.5 bg-white/90 p-3.5 rounded-xl border border-rose-200 flex flex-col justify-between">
+                                        <input type="hidden" name="action" value="lecturer_reject_extension" />
+                                        <div class="space-y-2">
+                                            <span class="font-bold text-rose-800 flex items-center gap-1 text-xs">
+                                                <span>🚫</span> Phương Án 2: Hủy / Từ Chối Gia Hạn
+                                            </span>
+                                            <p class="text-[11px] text-slate-600">
+                                                Nếu Thầy/Cô xét thấy sự cố xảy ra quá lâu sau deadline, hoặc sinh viên đã có đủ thời gian làm bài từ trước:
+                                            </p>
+                                            <div>
+                                                <label class="block font-bold text-rose-800 text-[11px] mb-1">Lý do Thầy/Cô từ chối gia hạn:</label>
+                                                <textarea name="lecturer_reject_note" rows="2" class="w-full p-2 bg-slate-50 border border-rose-300 rounded-lg text-xs focus:ring-2 focus:ring-rose-500" placeholder="Nhập lý do gửi sinh viên...">Thầy/Cô không chấp thuận mở lại Deadline do thời gian làm bài tập đã kéo dài 7 ngày, sự cố mạng KTX chỉ diễn ra ngắn và sinh viên cần chủ động hoàn thành sớm hơn.</textarea>
+                                            </div>
+                                        </div>
+                                        <button type="submit" onclick="return confirm('Thầy/Cô có chắc chắn muốn TỪ CHỐI gia hạn Deadline cho sinh viên này?');" class="w-full mt-2 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center justify-center gap-1.5 cursor-pointer">
+                                            <span>🚫</span> Xác Nhận Từ Chối Mở Deadline
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        <?php elseif ((int)($ticket['it_verified'] ?? 0) === 2): ?>
+                            <!-- KTV ĐÃ BÁC BỎ LỖI: THÔNG BÁO CHO GV BIẾT -->
+                            <div class="p-3.5 bg-slate-100 border border-slate-300 rounded-2xl flex items-center justify-between gap-2 text-xs text-slate-700">
+                                <span class="flex items-center gap-2">
+                                    <span class="text-lg">ℹ️</span>
+                                    <span>Kỹ thuật viên đã kiểm tra và <strong>bác bỏ</strong> sự cố kỹ thuật này (xác nhận sinh viên báo sai). Thầy/Cô không cần xử lý mở lại hạn nộp.</span>
                                 </span>
                             </div>
-                            <p class="text-purple-900 leading-relaxed text-[11.5px]">
-                                <?php if (!empty($ticket['it_verified'])): ?>
-                                    ✅ <strong>Kỹ thuật viên đã kiểm tra và xác nhận sự cố kỹ thuật là có thật.</strong> Thầy/Cô có thể chấp thuận mở lại hạn nộp bài (Deadline) cho Buổi học này để sinh viên hoàn thành bài tập mà không bị trừ điểm nộp muộn.
-                                <?php else: ?>
-                                    ℹ️ Giảng viên có quyền sư phạm trực tiếp gia hạn thời gian nộp bài (Deadline) cho Buổi học này:
-                                <?php endif; ?>
-                            </p>
-
-                            <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-3 bg-white/80 p-3.5 rounded-xl border border-purple-200">
-                                <input type="hidden" name="action" value="lecturer_extend_deadline" />
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Thời hạn nộp bài mới (Deadline gia hạn):</label>
-                                        <?php 
-                                        $suggestedDeadline = date('Y-m-d\TH:i', strtotime('+24 hours'));
-                                        ?>
-                                        <input type="datetime-local" name="new_deadline" value="<?php echo $suggestedDeadline; ?>" required 
-                                               class="w-full px-3 py-2 bg-slate-50 border border-purple-300 rounded-xl font-mono text-purple-900 font-bold focus:outline-none focus:ring-2 focus:ring-purple-500" />
-                                    </div>
-                                    <div>
-                                        <label class="block font-bold text-slate-700 mb-1">Lời nhắn của Giảng viên cho sinh viên:</label>
-                                        <input type="text" name="lecturer_note" value="Thầy/Cô chấp thuận mở lại Deadline do sự cố kỹ thuật đã được KTV xác thực. Em hãy tranh thủ nộp bài bổ sung nhé!" 
-                                               class="w-full px-3 py-2 bg-slate-50 border border-purple-300 rounded-xl text-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-purple-500" />
-                                    </div>
-                                </div>
-                                <div class="flex items-center justify-between flex-wrap gap-2 pt-1">
-                                    <span class="text-[11px] text-slate-500 italic">Hệ thống sẽ cập nhật Deadline buổi học và gửi thông báo cho sinh viên.</span>
-                                    <button type="submit" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center gap-1.5 cursor-pointer">
-                                        <span>⚡</span> Chấp Thuận & Mở Lại Deadline Buổi Học
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+                        <?php else: ?>
+                            <!-- CHỜ KTV KIỂM TRA -->
+                            <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between gap-2 text-xs text-amber-900">
+                                <span class="flex items-center gap-2">
+                                    <span class="text-lg">⏳</span>
+                                    <span>Đang chờ Kỹ thuật viên kiểm tra log hệ thống mạng & server LMS. Thầy/Cô chỉ cần ra quyết định khi KTV xác nhận có lỗi kỹ thuật khách quan.</span>
+                                </span>
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
 
                     <!-- 3. THÔNG BÁO CHO SINH VIÊN KHI THẦY/CÔ ĐÃ MỞ LẠI DEADLINE -->
-                    <?php if ($userRole === 'requester' && !$isLecturer && (!empty($ticket['it_verified']) || $ticket['status'] === 'resolved')): ?>
+                    <?php if ($userRole === 'requester' && !$isLecturer && ((int)($ticket['it_verified'] ?? 0) === 1 || $ticket['status'] === 'resolved')): ?>
                         <div class="p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs text-emerald-900">
                             <div class="flex items-center gap-2">
                                 <span class="text-xl">🎉</span>
@@ -1107,10 +1262,12 @@ $flash   = get_flash();
                         <span class="text-amber-600 font-bold italic block">⚠️ Đang chờ phân công...</span>
                     <?php endif; ?>
 
-                    <?php if ($userRole === 'admin'): ?>
+                    <?php if (in_array($userRole, ['agent', 'admin'])): ?>
                         <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="mt-2.5 pt-2 border-t border-slate-100 space-y-2">
                             <input type="hidden" name="action" value="assign_agent" />
-                            <label class="block text-[11px] font-bold text-slate-700">🎯 Phân công / Điều chuyển KTV:</label>
+                            <label class="block text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                                <span>🔄</span> Điều Chuyển Chuyên Môn KTV:
+                            </label>
                             <select name="assigned_to" required class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500">
                                 <option value="">-- Chọn KTV tiếp nhận --</option>
                                 <?php foreach ($agents as $ag): ?>

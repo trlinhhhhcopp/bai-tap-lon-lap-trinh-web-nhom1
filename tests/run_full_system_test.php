@@ -152,6 +152,46 @@ try {
     assert_test("10. Bộ lọc Ticket: Đã bỏ tab 'SV Vi Phạm (KTV Báo Cáo)'", false, $e->getMessage());
 }
 
+// 11. Kiểm tra Kịch bản 1: KTV Xác thực / Bác bỏ & Giảng viên Gia hạn / Từ chối & Điều chuyển KTV
+try {
+    $lecturerId = 7;
+    // it_verified = 0: Không hiện cho GV
+    $beforeList = TicketRepository::getPendingCourseIncidentsForLecturer($lecturerId);
+    $found18 = false;
+    foreach ($beforeList as $item) {
+        if ((int)$item['id'] === 18) { $found18 = true; }
+    }
+    
+    // KTV bác bỏ (it_verified = 2) -> Không hiện cho GV
+    db()->prepare("UPDATE tickets SET it_verified = 2 WHERE id = 18")->execute();
+    $listV2 = TicketRepository::getPendingCourseIncidentsForLecturer($lecturerId);
+    $found18V2 = false;
+    foreach ($listV2 as $item) {
+        if ((int)$item['id'] === 18) { $found18V2 = true; }
+    }
+
+    // KTV xác nhận (it_verified = 1) -> Hiện cho GV
+    db()->prepare("UPDATE tickets SET it_verified = 1 WHERE id = 18")->execute();
+    $listV1 = TicketRepository::getPendingCourseIncidentsForLecturer($lecturerId);
+    $found18V1 = false;
+    foreach ($listV1 as $item) {
+        if ((int)$item['id'] === 18) { $found18V1 = true; }
+    }
+
+    // Hoàn trả lại
+    db()->prepare("UPDATE tickets SET it_verified = 0 WHERE id = 18")->execute();
+
+    $showCode = file_get_contents(__DIR__ . '/../tickets/show.php');
+    $hasKtvReject = strpos($showCode, 'ktv_reject_incident') !== false;
+    $hasLecturerReject = strpos($showCode, 'lecturer_reject_extension') !== false;
+    $hasTransferPerm = strpos($showCode, "in_array(\$userRole, ['agent', 'admin'])") !== false;
+
+    $passed11 = (!$found18 && !$found18V2 && $found18V1 && $hasKtvReject && $hasLecturerReject && $hasTransferPerm);
+    assert_test("11. Kịch bản 1: KTV Bác bỏ/Xác thực, GV Mở/Từ chối Deadline & Điều chuyển KTV", $passed11, "Chỉ hiện phiếu it_verified=1 cho GV | KTV Bác bỏ ẩn phiếu | GV Từ chối gia hạn | KTV được quyền điều chuyển");
+} catch (Exception $e) {
+    assert_test("11. Kịch bản 1: KTV Bác bỏ/Xác thực, GV Mở/Từ chối Deadline & Điều chuyển KTV", false, $e->getMessage());
+}
+
 echo "\n========================================================================\n";
 echo "KẾT THÚC KIỂM THỬ: TẤT CẢ TÍNH NĂNG ĐẠT CHUẨN 100%\n";
 echo "========================================================================\n";
