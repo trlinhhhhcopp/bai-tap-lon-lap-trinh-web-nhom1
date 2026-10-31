@@ -10,6 +10,30 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/../config/database.php';
+
+// Tính điểm sao CSAT trung bình kiểu Be/Grab cho KTV hiển thị trên đầu
+$navbarKtvAvgScore = null;
+$navbarKtvTotalRatings = 0;
+$currentUser = $_SESSION['user'] ?? null;
+if (!empty($currentUser) && ($currentUser['role'] ?? '') === 'agent') {
+    try {
+        $navAgentId = (int)$currentUser['id'];
+        $csatNavStmt = db()->prepare("
+            SELECT COUNT(*) as total_ratings, AVG(r.score) as avg_score 
+            FROM ticket_ratings r 
+            JOIN tickets t ON r.ticket_id = t.id 
+            WHERE t.assigned_to = :agent_id
+        ");
+        $csatNavStmt->execute([':agent_id' => $navAgentId]);
+        $csatNavData = $csatNavStmt->fetch();
+        $navbarKtvTotalRatings = (int)($csatNavData['total_ratings'] ?? 0);
+        $navbarKtvAvgScore = $navbarKtvTotalRatings > 0 ? round((float)$csatNavData['avg_score'], 1) : 5.0;
+    } catch (\Throwable $e) {
+        $navbarKtvAvgScore = 5.0;
+    }
+}
+
 if (!function_exists('get_app_base_url')) {
     function get_app_base_url(): string {
         $docRoot = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: ($_SERVER['DOCUMENT_ROOT'] ?? ''));
@@ -172,9 +196,6 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>assignments/index.php" <?php echo $navAttributes(['assignments/index.php'], ['', 'index', 'create', 'edit', 'delete', 'export_csv', 'toggle_lock', 'import_assignments']); ?>>
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Phân Công Giảng Dạy</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>student/index.php?action=courses" <?php echo $navAttributes(['student/index.php', 'student/courses.php'], ['courses', 'course_detail', '']); ?>>
-                        <span aria-hidden="true">📖</span><span class="sidebar-label">Mục Lục Học Phần & Bài Tập</span>
-                    </a>
                     <a href="<?php echo $appBase; ?>admin/holidays.php" <?php echo $navAttributes(['admin/holidays.php']); ?>>
                         <span aria-hidden="true">📅</span><span class="sidebar-label">Lịch Nghỉ Lễ & SLA</span>
                     </a>
@@ -210,6 +231,9 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     </a>
                     <a href="<?php echo $appBase; ?>assignments/index.php" <?php echo $navAttributes(['assignments/index.php'], ['', 'index', 'create', 'edit', 'delete', 'export_csv', 'toggle_lock', 'import_assignments']); ?>>
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Lớp Học Phần Phụ Trách</span>
+                    </a>
+                    <a href="<?php echo $appBase; ?>lecturer/lessons.php" <?php echo $navAttributes(['lecturer/lessons.php']); ?>>
+                        <span aria-hidden="true">📝</span><span class="sidebar-label">Giao Bài Tập Từng Buổi</span>
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span aria-hidden="true">📋</span><span class="sidebar-label">Phiếu Của Tôi</span>
@@ -256,6 +280,17 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                             else echo 'Sinh Viên';
                             ?>
                         </span>
+
+                        <?php if ($userRole === 'agent' && $navbarKtvAvgScore !== null): ?>
+                            <!-- Điểm sao trung bình như Be hiển thị trên đầu sau tên KTV -->
+                            <a href="<?php echo $appBase; ?>agent/ratings.php" 
+                               title="Xem chi tiết nhận xét & lọc số sao đánh giá CSAT của bạn"
+                               class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-400/20 hover:bg-amber-400/30 border border-amber-400/50 text-amber-300 font-black text-xs transition shadow-xs">
+                                <span class="text-amber-400">⭐</span>
+                                <span class="text-white font-bold"><?php echo number_format($navbarKtvAvgScore, 1); ?></span>
+                                <span class="text-[10px] text-amber-200/90 font-medium">(<?php echo $navbarKtvTotalRatings; ?>)</span>
+                            </a>
+                        <?php endif; ?>
                     </div>
 
                     <a href="<?php echo $appBase; ?>index.php?action=logout" 

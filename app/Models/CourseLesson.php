@@ -237,6 +237,110 @@ class CourseLesson
     }
 
     /**
+     * Lấy danh sách các lớp học phần được phân công cho giảng viên
+     */
+    public function getLecturerCourses(int $lecturerId, bool $isAdmin = false): array
+    {
+        $sql = "SELECT ca.id as ca_id, ca.course_id, ca.class_id, ca.semester, ca.academic_year,
+                       c.course_code, c.name as course_name, c.credits,
+                       cl.class_code, cl.name as class_name,
+                       u.name as lecturer_name,
+                       (SELECT COUNT(*) FROM course_lessons cln WHERE cln.course_id = c.id) as total_lessons
+                FROM course_assignments ca
+                JOIN courses c ON ca.course_id = c.id
+                JOIN classes cl ON ca.class_id = cl.id
+                LEFT JOIN users u ON ca.lecturer_id = u.id ";
+
+        $params = [];
+        if (!$isAdmin) {
+            $sql .= "WHERE ca.lecturer_id = :lid ";
+            $params[':lid'] = $lecturerId;
+        }
+        $sql .= "ORDER BY ca.id ASC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Lấy danh sách bài học các buổi của môn học dành cho Giảng viên quản lý
+     */
+    public function getLessonsForLecturer(int $courseId): array
+    {
+        $sql = "SELECT l.*,
+                       (SELECT COUNT(*) FROM student_assignment_submissions s WHERE s.lesson_id = l.id AND s.is_completed = 1) AS submission_count
+                FROM course_lessons l
+                WHERE l.course_id = :cid
+                ORDER BY l.lesson_number ASC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':cid' => $courseId]);
+        $lessons = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $now = new DateTime('now', new DateTimeZone('Asia/Ho_Chi_Minh'));
+        foreach ($lessons as &$item) {
+            $deadline = !empty($item['deadline_at']) ? new DateTime($item['deadline_at'], new DateTimeZone('Asia/Ho_Chi_Minh')) : null;
+            $item['is_overdue'] = $deadline ? ($now > $deadline) : false;
+            $item['deadline_formatted'] = $deadline ? $deadline->format('d/m/Y H:i') : 'Chưa đặt hạn';
+            $item['deadline_iso'] = $deadline ? $deadline->format('Y-m-d\TH:i') : '';
+        }
+        unset($item);
+
+        return $lessons;
+    }
+
+    /**
+     * Giảng viên cập nhật đề bài / yêu cầu và hạn nộp cho buổi học
+     */
+    public function updateLessonAssignment(int $lessonId, string $requirement, string $deadlineAt, ?string $title = null): bool
+    {
+        $sql = "UPDATE course_lessons 
+                SET assignment_requirement = :req, deadline_at = :deadline" .
+                ($title !== null ? ", title = :title" : "") .
+                " WHERE id = :id";
+        $params = [
+            ':req' => $requirement,
+            ':deadline' => $deadlineAt,
+            ':id' => $lessonId,
+        ];
+        if ($title !== null) {
+            $params[':title'] = $title;
+        }
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($params);
+    }
+
+    /**
+     * Lấy danh sách toàn bộ bài tập sinh viên đã nộp cho buổi học này
+     */
+    public function getSubmissionsForLesson(int $lessonId): array
+    {
+        $sql = "SELECT s.*, 
+                       u.name AS student_name, u.user_code AS student_code, u.email AS student_email,
+                       l.title AS lesson_title, l.lesson_number, l.deadline_at,
+                       cl.class_code
+                FROM student_assignment_submissions s
+                JOIN users u ON s.student_id = u.id
+                JOIN course_lessons l ON s.lesson_id = l.id
+                LEFT JOIN classes cl ON u.class_id = cl.id
+                WHERE s.lesson_id = :lid
+                ORDER BY s.submitted_at DESC";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([':lid' => $lessonId]);
+        $subs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($subs as &$sub) {
+            $deadline = !empty($sub['deadline_at']) ? new DateTime($sub['deadline_at'], new DateTimeZone('Asia/Ho_Chi_Minh')) : null;
+            $subTime  = !empty($sub['submitted_at']) ? new DateTime($sub['submitted_at'], new DateTimeZone('Asia/Ho_Chi_Minh')) : null;
+            $sub['is_late'] = ($deadline && $subTime) ? ($subTime > $deadline) : false;
+            $sub['submitted_formatted'] = $subTime ? $subTime->format('d/m/Y H:i') : '';
+        }
+        unset($sub);
+
+        return $subs;
+    }
+
+    /**
      * Xóa bài nộp (Đảm bảo kiểm tra ownership sinh viên)
      */
     public function deleteSubmission(int $submissionId, int $studentId): bool

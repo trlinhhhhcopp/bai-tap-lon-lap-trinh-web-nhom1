@@ -21,7 +21,7 @@ class TicketRepository {
         int $categoryId = 0,
         int $requesterId = 0,
         int $assignedTo = 0,
-        bool $hasWarning = false
+        $hasWarning = false
     ): array {
         $db = db();
         $offset = ($page - 1) * $perPage;
@@ -56,17 +56,24 @@ class TicketRepository {
         }
 
                 if ($hasWarning) {
-            $conditions[] = "(
-                t.status NOT IN ('resolved', 'closed')
-                AND (
-                    (t.due_at IS NOT NULL AND t.due_at < NOW())
-                    OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
-                    OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
-                    OR (p.code IN ('urgent', 'high'))
-                    OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
-                    OR (t.reopen_count > 0)
-                )
-            )";
+            if ($hasWarning === 'sla') {
+                $conditions[] = "t.status NOT IN ('resolved', 'closed') AND ((t.due_at IS NOT NULL AND t.due_at < NOW()) OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL))";
+            } elseif ($hasWarning === 'violation') {
+                $conditions[] = "t.is_spam = 1";
+            } else {
+                $conditions[] = "(
+                    (t.status NOT IN ('resolved', 'closed')
+                    AND (
+                        (t.due_at IS NOT NULL AND t.due_at < NOW())
+                        OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
+                        OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
+                        OR (p.code IN ('urgent', 'high'))
+                        OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
+                        OR (t.reopen_count > 0)
+                    ))
+                    OR (t.is_spam = 1)
+                )";
+            }
         }
 
         $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
@@ -109,7 +116,7 @@ class TicketRepository {
         int $categoryId = 0,
         int $requesterId = 0,
         int $assignedTo = 0,
-        bool $hasWarning = false
+        $hasWarning = false
     ): int {
         $db = db();
         $conditions = [];
@@ -136,17 +143,24 @@ class TicketRepository {
             $params['assigned_to'] = $assignedTo;
         }
         if ($hasWarning) {
-            $conditions[] = "(
-                t.status NOT IN ('resolved', 'closed')
-                AND (
-                    (t.due_at IS NOT NULL AND t.due_at < NOW())
-                    OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
-                    OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
-                    OR (p.code IN ('urgent', 'high'))
-                    OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
-                    OR (t.reopen_count > 0)
-                )
-            )";
+            if ($hasWarning === 'sla') {
+                $conditions[] = "t.status NOT IN ('resolved', 'closed') AND ((t.due_at IS NOT NULL AND t.due_at < NOW()) OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL))";
+            } elseif ($hasWarning === 'violation') {
+                $conditions[] = "t.is_spam = 1";
+            } else {
+                $conditions[] = "(
+                    (t.status NOT IN ('resolved', 'closed')
+                    AND (
+                        (t.due_at IS NOT NULL AND t.due_at < NOW())
+                        OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
+                        OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
+                        OR (p.code IN ('urgent', 'high'))
+                        OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
+                        OR (t.reopen_count > 0)
+                    ))
+                    OR (t.is_spam = 1)
+                )";
+            }
         }
 
         $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
@@ -161,6 +175,51 @@ class TicketRepository {
     /**
      * Đếm số phiếu đang có cảnh báo khẩn cấp / quá hạn SLA
      */
+    /**
+     * Đếm số phiếu vi phạm do KTV báo cáo (is_spam = 1) để Admin xem xét
+     */
+    public static function countViolations(int $requesterId = 0, int $assignedTo = 0): int {
+        $db = db();
+        $conditions = ["t.is_spam = 1"];
+        $params = [];
+        if ($requesterId > 0) {
+            $conditions[] = "t.requester_id = :req_id";
+            $params['req_id'] = $requesterId;
+        }
+        if ($assignedTo > 0) {
+            $conditions[] = "t.assigned_to = :assigned_to";
+            $params['assigned_to'] = $assignedTo;
+        }
+        $where = 'WHERE ' . implode(' AND ', $conditions);
+        $stmt = $db->prepare("SELECT COUNT(*) FROM tickets t {$where}");
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Đếm số phiếu quá hạn SLA nghiêm trọng
+     */
+    public static function countSlaOverdue(int $requesterId = 0, int $assignedTo = 0): int {
+        $db = db();
+        $conditions = [
+            "t.status NOT IN ('resolved', 'closed')",
+            "((t.due_at IS NOT NULL AND t.due_at < NOW()) OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL))"
+        ];
+        $params = [];
+        if ($requesterId > 0) {
+            $conditions[] = "t.requester_id = :req_id";
+            $params['req_id'] = $requesterId;
+        }
+        if ($assignedTo > 0) {
+            $conditions[] = "t.assigned_to = :assigned_to";
+            $params['assigned_to'] = $assignedTo;
+        }
+        $where = 'WHERE ' . implode(' AND ', $conditions);
+        $stmt = $db->prepare("SELECT COUNT(*) FROM tickets t {$where}");
+        $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
+    }
+
     public static function countWarnings(int $requesterId = 0, int $assignedTo = 0): int {
         $db = db();
         $conditions = [

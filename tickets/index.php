@@ -25,28 +25,31 @@ $filterAgentId = ($userRole === 'agent') ? (int)$currentUser['id'] : 0;
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
 // 1. Tiếp nhận tham số tìm kiếm & lọc an toàn
-$keyword    = trim($_GET['kw'] ?? '');
-$status     = trim($_GET['status'] ?? '');
-$categoryId = (int)($_GET['category_id'] ?? 0);
-$hasWarning = (isset($_GET['warning']) && $_GET['warning'] == 1) || ($status === 'warning');
+$keyword     = trim($_GET['kw'] ?? '');
+$status      = trim($_GET['status'] ?? '');
+$categoryId  = (int)($_GET['category_id'] ?? 0);
+$warningType = trim($_GET['warning'] ?? '');
 if ($status === 'warning') {
+    $warningType = 'sla';
     $status = '';
 }
+$hasWarning = !empty($warningType) ? $warningType : false;
 
 // 2. Phân trang an toàn (5 bản ghi / trang)
 $perPage    = 5;
 $page       = max(1, (int)($_GET['page'] ?? 1));
 
-$totalTickets = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning);
-$totalPages   = max(1, (int)ceil($totalTickets / $perPage));
+$totalTickets   = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning);
+$totalPages     = max(1, (int)ceil($totalTickets / $perPage));
 
 if ($page > $totalPages && $totalTickets > 0) {
     $page = $totalPages;
 }
 
-$tickets      = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning);
-$categories   = TicketRepository::getCategories();
-$warningCount = TicketRepository::countWarnings($filterReqId, $filterAgentId);
+$tickets        = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning);
+$categories     = TicketRepository::getCategories();
+$slaCount       = TicketRepository::countSlaOverdue($filterReqId, $filterAgentId);
+$violationCount = TicketRepository::countViolations($filterReqId, $filterAgentId);
 $flash        = get_flash();
 ?>
 <!DOCTYPE html>
@@ -128,47 +131,57 @@ $flash        = get_flash();
                 <span class="text-slate-400 text-[11px]">Tìm thấy: <strong class="text-indigo-600"><?php echo $totalTickets; ?></strong> phiếu</span>
             </div>
 
-            <!-- CÁC TAB LỌC NHANH TRẠNG THÁI & CẢNH BÁO CHO QUẢN TRỊ VIÊN -->
+            <!-- CÁC TAB LỌC NHANH TRẠNG THÁI & 2 BỘ LỌC CẢNH BÁO CHO ADMIN (SLA QUÁ GIỜ & SV VI PHẠM) -->
             <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
                 <a href="index.php?kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= (!$hasWarning && empty($status)) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
+                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= (empty($warningType) && empty($status)) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>📋 Tất Cả Phiếu</span>
                 </a>
 
-                <a href="index.php?warning=1&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= $hasWarning ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-400' : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200' ?>">
+                <!-- 1. CẢNH BÁO SLA QUÁ GIỜ -->
+                <a href="index.php?warning=sla&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
+                   title="Xem danh sách các phiếu sự cố đã quá hạn giải quyết theo cam kết SLA"
+                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'sla') ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-400' : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200' ?>">
                     <span class="flex h-2 w-2 relative">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
                         <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-600"></span>
                     </span>
-                    <span>🚨 Phiếu Có Cảnh Báo</span>
-                    <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= $hasWarning ? 'bg-white text-rose-700' : 'bg-rose-600 text-white' ?>"><?= $warningCount ?></span>
+                    <span>⏰ Quá Hạn SLA</span>
+                    <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'sla') ? 'bg-white text-rose-700' : 'bg-rose-600 text-white' ?>"><?= $slaCount ?></span>
+                </a>
+
+                <!-- 2. CẢNH BÁO SINH VIÊN VI PHẠM (KTV BÁO CÁO) -->
+                <a href="index.php?warning=violation&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
+                   title="Xem danh sách các phiếu sinh viên vi phạm/spam do KTV báo cáo để Admin xử lý"
+                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'violation') ? 'bg-purple-700 text-white shadow-sm ring-2 ring-purple-400' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' ?>">
+                    <span>🚨 SV Vi Phạm (KTV Báo Cáo)</span>
+                    <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'violation') ? 'bg-white text-purple-700' : 'bg-purple-700 text-white' ?>"><?= $violationCount ?></span>
                 </a>
 
                 <a href="index.php?status=new&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'new' && !$hasWarning) ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
+                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'new' && empty($warningType)) ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>⏳ Mới Tiếp Nhận</span>
                 </a>
 
                 <a href="index.php?status=in_progress&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'in_progress' && !$hasWarning) ? 'bg-amber-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
+                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'in_progress' && empty($warningType)) ? 'bg-amber-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>⚙️ Đang Xử Lý</span>
                 </a>
 
                 <a href="index.php?status=waiting_requester&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'waiting_requester' && !$hasWarning) ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
+                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'waiting_requester' && empty($warningType)) ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>💬 Chờ Phản Hồi</span>
                 </a>
 
                 <a href="index.php?status=resolved&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'resolved' && !$hasWarning) ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
+                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'resolved' && empty($warningType)) ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>✅ Đã Xong / Đóng</span>
                 </a>
             </div>
 
             <form method="GET" action="index.php" class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
-                <?php if ($hasWarning): ?>
-                    <input type="hidden" name="warning" value="1" />
+                <?php if (!empty($warningType)): ?>
+                    <input type="hidden" name="warning" value="<?php echo htmlspecialchars($warningType); ?>" />
                 <?php endif; ?>
                 <!-- Từ khóa -->
                 <div class="md:col-span-5">
@@ -280,7 +293,8 @@ $flash        = get_flash();
                                 $isEmergency     = (in_array(strtoupper($t['priority_code']), ['URGENT', 'HIGH']) && !in_array($t['status'], ['resolved', 'closed']));
                                 $isSos           = (str_contains($t['title'], '[CỨU HỘ KHẨN CẤP]') && !in_array($t['status'], ['resolved', 'closed']));
                                 $isReopened      = (!empty($t['reopen_count']) && (int)$t['reopen_count'] > 0 && !in_array($t['status'], ['resolved', 'closed']));
-                                $hasRowWarning   = ($isOverdueSLA || $isOverdueTriage || $isSoonOverdue || $isEmergency || $isSos || $isReopened);
+                                $isSpamViolation = (!empty($t['is_spam']) && (int)$t['is_spam'] === 1);
+                                $hasRowWarning   = ($isOverdueSLA || $isOverdueTriage || $isSoonOverdue || $isEmergency || $isSos || $isReopened || $isSpamViolation);
                                 ?>
                                 <tr class="hover:bg-slate-50/80 transition <?= $hasRowWarning ? 'bg-rose-50/25 border-l-4 border-l-rose-500' : '' ?>">
                                     <td class="py-3.5 px-4 font-mono font-bold text-indigo-600">
@@ -320,6 +334,16 @@ $flash        = get_flash();
                                         <a href="show.php?id=<?php echo $t['id']; ?>" class="font-bold text-slate-900 hover:text-indigo-600 transition block line-clamp-2 leading-relaxed">
                                             <?php echo htmlspecialchars($t['title']); ?>
                                         </a>
+                                        <?php if ($isSpamViolation): ?>
+                                            <div class="mt-1.5 p-2 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-[11px] flex items-start gap-1.5">
+                                                <span class="text-sm shrink-0">🚨</span>
+                                                <div>
+                                                    <span class="font-bold text-purple-950 uppercase tracking-wide">KTV Báo Cáo Vi Phạm:</span>
+                                                    <span><?php echo htmlspecialchars($t['spam_reason'] ?: 'Phát hiện sinh viên vi phạm quy định / gửi yêu cầu spam'); ?></span>
+                                                    <span class="block text-[10px] text-purple-700 font-semibold mt-0.5">⚠️ Admin xem xét: Nhắc nhở hoặc xử lý kỷ luật tài khoản SV này</span>
+                                                </div>
+                                            </div>
+                                        <?php endif; ?>
                                         <span class="text-slate-400 text-[11px] block mt-1 leading-normal">
                                             Hệ thống: <strong class="text-slate-700 font-semibold"><?php echo htmlspecialchars($t['system_affected']); ?></strong> · Hạn: <span class="font-mono text-slate-600"><?php echo htmlspecialchars($t['due_at']); ?></span>
                                         </span>
@@ -372,21 +396,21 @@ $flash        = get_flash();
                         </span>
                         <div class="flex items-center gap-1.5">
                             <?php if ($page > 1): ?>
-                                <a href="?page=<?php echo $page - 1; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>&warning=<?php echo $hasWarning ? 1 : 0; ?>" 
+                                <a href="?page=<?php echo $page - 1; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>&warning=<?php echo urlencode($warningType); ?>" 
                                    class="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 transition text-slate-700 font-semibold shadow-2xs">
                                     ← Trước
                                 </a>
                             <?php endif; ?>
 
                             <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                <a href="?page=<?php echo $i; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>&warning=<?php echo $hasWarning ? 1 : 0; ?>" 
+                                <a href="?page=<?php echo $i; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>&warning=<?php echo urlencode($warningType); ?>" 
                                    class="px-3.5 py-1.5 rounded-xl border font-bold transition <?php echo $i === $page ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'border-slate-300 bg-white hover:bg-slate-100 text-slate-700'; ?>">
                                     <?php echo $i; ?>
                                 </a>
                             <?php endfor; ?>
 
                             <?php if ($page < $totalPages): ?>
-                                <a href="?page=<?php echo $page + 1; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>&warning=<?php echo $hasWarning ? 1 : 0; ?>" 
+                                <a href="?page=<?php echo $page + 1; ?>&kw=<?php echo urlencode($keyword); ?>&status=<?php echo urlencode($status); ?>&category_id=<?php echo $categoryId; ?>&warning=<?php echo urlencode($warningType); ?>" 
                                    class="px-3 py-1.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 transition text-slate-700 font-semibold shadow-2xs">
                                     Sau →
                                 </a>

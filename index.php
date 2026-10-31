@@ -1714,9 +1714,14 @@ if ($userType === 'lecturer') {
                         </h2>
                         <p class="text-[11.5px] text-slate-500 mt-0.5">Mỗi lớp học phần chỉ có duy nhất 1 giảng viên phụ trách theo nguyên tắc đào tạo.</p>
                     </div>
-                    <a href="<?php echo $appBase; ?>assignments/index.php" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition">
-                        Xem Tất Cả Lớp Phụ Trách →
-                    </a>
+                    <div class="flex items-center gap-2">
+                        <a href="<?php echo $appBase; ?>lecturer/lessons.php" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition inline-flex items-center gap-1 shadow-xs">
+                            📝 Giao Bài Tập Từng Buổi →
+                        </a>
+                        <a href="<?php echo $appBase; ?>assignments/index.php" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition">
+                            Xem Danh Sách Phân Công →
+                        </a>
+                    </div>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -1728,12 +1733,13 @@ if ($userType === 'lecturer') {
                                 <th class="py-3 px-4">Môn Học</th>
                                 <th class="py-3 px-4">Học Kỳ</th>
                                 <th class="py-3 px-4 text-center">Năm Học</th>
+                                <th class="py-3 px-4 text-center">Nhiệm Vụ Học Phần</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             <?php if (empty($myCourses)): ?>
                                 <tr>
-                                    <td colspan="5" class="py-6 text-center text-slate-400">Chưa có phân công lớp học phần nào trong học kỳ này.</td>
+                                    <td colspan="6" class="py-6 text-center text-slate-400">Chưa có phân công lớp học phần nào trong học kỳ này.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php foreach ($myCourses as $c): ?>
@@ -1743,6 +1749,12 @@ if ($userType === 'lecturer') {
                                         <td class="py-3 px-4 text-slate-600"><?php echo htmlspecialchars($c['course_name']); ?></td>
                                         <td class="py-3 px-4 text-slate-600"><?php echo htmlspecialchars($c['semester']); ?></td>
                                         <td class="py-3 px-4 text-center font-mono text-slate-500"><?php echo htmlspecialchars($c['academic_year']); ?></td>
+                                        <td class="py-3 px-4 text-center">
+                                            <a href="<?php echo $appBase; ?>lecturer/lessons.php?course_id=<?php echo (int)$c['course_id']; ?>" 
+                                               class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold rounded-lg text-xs transition inline-flex items-center gap-1 border border-indigo-200">
+                                                📝 Giao Đề & Buổi →
+                                            </a>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php endif; ?>
