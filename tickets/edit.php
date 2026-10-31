@@ -18,20 +18,29 @@ if (empty($_SESSION['user'])) {
 
 $currentUser = $_SESSION['user'];
 $userRole    = $currentUser['role'];
-
-// Chỉ KTV hoặc Quản trị viên mới có quyền sửa thông tin quản trị phiếu
-if (!in_array($userRole, ['agent', 'admin'])) {
-    set_flash('error', "Bạn không có quyền chỉnh sửa thông số quản trị của phiếu hỗ trợ!");
-    header('Location: index.php');
-    exit;
-}
-
-$id = (int)($_GET['id'] ?? 0);
-$ticket = TicketRepository::findById($id);
+$id          = (int)($_GET['id'] ?? 0);
+$ticket      = TicketRepository::findById($id);
 
 if (!$ticket) {
     set_flash('error', "Không tìm thấy phiếu hỗ trợ với ID #{$id}.");
     header('Location: index.php');
+    exit;
+}
+
+$createdTimestamp    = strtotime($ticket['created_at']);
+$minutesSinceCreated = (time() - $createdTimestamp) / 60;
+$isRequesterOwner    = ((int)$ticket['requester_id'] === (int)$currentUser['id']);
+$isWithin15m         = ($minutesSinceCreated <= 15);
+$isRequesterEdit     = in_array($userRole, ['requester', 'lecturer']) && $isRequesterOwner && $isWithin15m && in_array($ticket['status'], ['new', 'waiting_requester']);
+
+// Chỉ KTV, Quản trị viên HOẶC người gửi (SV, Giảng viên trong 15 phút đầu) mới có quyền sửa
+if (!in_array($userRole, ['agent', 'admin']) && !$isRequesterEdit) {
+    if ($isRequesterOwner && !$isWithin15m) {
+        set_flash('error', "Đã quá 15 phút kể từ khi gửi phiếu! Bạn không còn quyền chỉnh sửa phiếu này nữa.");
+    } else {
+        set_flash('error', "Bạn không có quyền chỉnh sửa phiếu hỗ trợ này!");
+    }
+    header('Location: show.php?id=' . $id);
     exit;
 }
 
@@ -46,13 +55,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $description    = trim($_POST['description'] ?? '');
     $systemAffected = trim($_POST['system_affected'] ?? '');
     $categoryId     = (int)($_POST['category_id'] ?? 0);
-    $priorityId     = (int)($_POST['priority_id'] ?? 0);
-    $assignedTo     = (int)($_POST['assigned_to'] ?? 0);
-    $status         = trim($_POST['status'] ?? $ticket['status']);
-
-    // Khóa điều chuyển phân công khi phiếu đã hoàn tất / đã giải quyết
-    if (in_array($ticket['status'], ['closed', 'resolved'])) {
+    
+    if ($isRequesterEdit) {
+        $priorityId = (int)$ticket['priority_id'];
         $assignedTo = (int)$ticket['assigned_to'];
+        $status     = $ticket['status'];
+    } else {
+        $priorityId = (int)($_POST['priority_id'] ?? 0);
+        $assignedTo = (int)($_POST['assigned_to'] ?? 0);
+        $status     = trim($_POST['status'] ?? $ticket['status']);
+
+        // Khóa điều chuyển phân công khi phiếu đã hoàn tất / đã giải quyết
+        if (in_array($ticket['status'], ['closed', 'resolved'])) {
+            $assignedTo = (int)$ticket['assigned_to'];
+        }
     }
 
     if (empty($title)) {
@@ -121,6 +137,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <!-- LỖI VALIDATION -->
+    <?php if ($isRequesterEdit): ?>
+        <div class="p-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs text-amber-900">
+            <div class="flex items-center gap-2">
+                <span class="text-xl">⏳</span>
+                <div>
+                    <strong class="text-sm block text-amber-950">Quyền Chỉnh Sửa Dành Cho Người Gửi (Trong 15 phút đầu)</strong>
+                    <span>Bạn có thể đính chính tiêu đề, mô tả và hệ thống bị ảnh hưởng. Thời gian còn lại: <strong class="text-rose-600 font-mono text-sm"><?= max(0, 15 - (int)floor($minutesSinceCreated)) ?> phút</strong>.</span>
+                </div>
+            </div>
+            <span class="px-2.5 py-1 bg-amber-200/70 text-amber-950 font-bold rounded-lg text-[11px]">15 Phút Đầu</span>
+        </div>
+    <?php endif; ?>
+
     <?php if (!empty($errors)): ?>
         <div class="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 space-y-1">
             <div class="font-bold">⚠️ Có lỗi xảy ra:</div>
@@ -136,10 +165,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="bg-white border border-slate-200 rounded-3xl p-6 md:p-8 shadow-sm">
         <form method="POST" action="edit.php?id=<?php echo $ticket['id']; ?>" class="space-y-4 text-xs">
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Danh mục -->
+            <?php if ($isRequesterEdit): ?>
+                <!-- Dành cho Người tạo phiếu: Tinh gọn -->
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">Nhóm dịch vụ: <span class="text-rose-500">*</span></label>
+                    <label class="block font-bold text-slate-700 mb-1">Nhóm dịch vụ sự cố: <span class="text-rose-500">*</span></label>
                     <select name="category_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
                         <?php foreach ($categories as $cat): ?>
                             <option value="<?php echo $cat['id']; ?>" <?php echo (int)$ticket['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>>
@@ -148,57 +177,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php endforeach; ?>
                     </select>
                 </div>
-
-                <!-- Mức ưu tiên -->
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Mức độ ưu tiên: <span class="text-rose-500">*</span></label>
-                    <select name="priority_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
-                        <?php foreach ($priorities as $p): ?>
-                            <option value="<?php echo $p['id']; ?>" <?php echo (int)$ticket['priority_id'] === (int)$p['id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($p['name']); ?> (<?php echo htmlspecialchars($p['code']); ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <!-- Trạng thái phiếu -->
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">Trạng thái phiếu:</label>
-                    <select name="status" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="new" <?php echo $ticket['status'] === 'new' ? 'selected' : ''; ?>>Mới tiếp nhận (new)</option>
-                        <option value="in_progress" <?php echo $ticket['status'] === 'in_progress' ? 'selected' : ''; ?>>Đang xử lý (in_progress)</option>
-                        <option value="waiting_requester" <?php echo $ticket['status'] === 'waiting_requester' ? 'selected' : ''; ?>>Chờ phản hồi (waiting)</option>
-                        <option value="resolved" <?php echo $ticket['status'] === 'resolved' ? 'selected' : ''; ?>>Đã giải quyết (resolved)</option>
-                        <option value="closed" <?php echo $ticket['status'] === 'closed' ? 'selected' : ''; ?>>Đã đóng hoàn tất (closed)</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Phân công KTV -->
-            <div>
-                <label class="block font-bold text-slate-700 mb-1">Kỹ thuật viên phụ trách xử lý:</label>
-                <?php if (in_array($ticket['status'], ['closed', 'resolved'])): ?>
-                    <input type="hidden" name="assigned_to" value="<?php echo (int)$ticket['assigned_to']; ?>" />
-                    <div class="p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-center justify-between">
-                        <span>
-                            👨‍💻 <strong><?php echo htmlspecialchars($ticket['agent_name'] ?: 'Chưa phân công'); ?></strong>
-                            <?php if (!empty($ticket['agent_code'])): ?>
-                                (Mã KTV: <?php echo htmlspecialchars($ticket['agent_code']); ?>)
-                            <?php endif; ?>
-                        </span>
-                        <span class="text-[11px] text-slate-500 italic">🔒 Phiếu đã hoàn tất & đóng. Quyền điều chuyển phân công đã khóa.</span>
+            <?php else: ?>
+                <!-- Dành cho KTV & Admin: Đầy đủ tham số quản trị -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Danh mục -->
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Nhóm dịch vụ: <span class="text-rose-500">*</span></label>
+                        <select name="category_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
+                            <?php foreach ($categories as $cat): ?>
+                                <option value="<?php echo $cat['id']; ?>" <?php echo (int)$ticket['category_id'] === (int)$cat['id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($cat['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-                <?php else: ?>
-                    <select name="assigned_to" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
-                        <option value="0">-- Chưa phân công (Để trống) --</option>
-                        <?php foreach ($agents as $ag): ?>
-                            <option value="<?php echo $ag['id']; ?>" <?php echo (int)$ticket['assigned_to'] === (int)$ag['id'] ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($ag['name']); ?> (Mã KTV: <?php echo htmlspecialchars($ag['user_code']); ?>)
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                <?php endif; ?>
-            </div>
+
+                    <!-- Mức ưu tiên -->
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Mức độ ưu tiên: <span class="text-rose-500">*</span></label>
+                        <select name="priority_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
+                            <?php foreach ($priorities as $p): ?>
+                                <option value="<?php echo $p['id']; ?>" <?php echo (int)$ticket['priority_id'] === (int)$p['id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($p['name']); ?> (<?php echo htmlspecialchars($p['code']); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <!-- Trạng thái phiếu -->
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Trạng thái phiếu:</label>
+                        <select name="status" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="new" <?php echo $ticket['status'] === 'new' ? 'selected' : ''; ?>>Mới tiếp nhận (new)</option>
+                            <option value="in_progress" <?php echo $ticket['status'] === 'in_progress' ? 'selected' : ''; ?>>Đang xử lý (in_progress)</option>
+                            <option value="waiting_requester" <?php echo $ticket['status'] === 'waiting_requester' ? 'selected' : ''; ?>>Chờ phản hồi (waiting)</option>
+                            <option value="resolved" <?php echo $ticket['status'] === 'resolved' ? 'selected' : ''; ?>>Đã giải quyết (resolved)</option>
+                            <option value="closed" <?php echo $ticket['status'] === 'closed' ? 'selected' : ''; ?>>Đã đóng hoàn tất (closed)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Phân công KTV -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Kỹ thuật viên phụ trách xử lý:</label>
+                    <?php if (in_array($ticket['status'], ['closed', 'resolved'])): ?>
+                        <input type="hidden" name="assigned_to" value="<?php echo (int)$ticket['assigned_to']; ?>" />
+                        <div class="p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-center justify-between">
+                            <span>
+                                👨‍💻 <strong><?php echo htmlspecialchars($ticket['agent_name'] ?: 'Chưa phân công'); ?></strong>
+                                <?php if (!empty($ticket['agent_code'])): ?>
+                                    (Mã KTV: <?php echo htmlspecialchars($ticket['agent_code']); ?>)
+                                <?php endif; ?>
+                            </span>
+                            <span class="text-[11px] text-slate-500 italic">🔒 Phiếu đã hoàn tất & đóng. Quyền điều chuyển phân công đã khóa.</span>
+                        </div>
+                    <?php else: ?>
+                        <select name="assigned_to" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
+                            <option value="0">-- Chưa phân công (Để trống) --</option>
+                            <?php foreach ($agents as $ag): ?>
+                                <option value="<?php echo $ag['id']; ?>" <?php echo (int)$ticket['assigned_to'] === (int)$ag['id'] ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($ag['name']); ?> (Mã KTV: <?php echo htmlspecialchars($ag['user_code']); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
 
             <!-- Hệ thống bị ảnh hưởng -->
             <div>

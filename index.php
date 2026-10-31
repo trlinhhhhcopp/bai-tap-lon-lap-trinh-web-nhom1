@@ -1608,10 +1608,18 @@ if ($userType === 'student') {
                                                 <span class="text-slate-300 text-[11px]">—</span>
                                             <?php endif; ?>
                                         </td>
-                                        <td class="py-3.5 px-4 text-center">
+                                        <td class="py-3.5 px-4 text-center whitespace-nowrap space-x-1">
                                             <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl transition inline-block text-xs">
                                                 Chi tiết & Chat →
                                             </a>
+                                            <?php 
+                                            $minsSinceCreated = (time() - strtotime($t['created_at'])) / 60;
+                                            if ($minsSinceCreated <= 15 && in_array($t['status'], ['new', 'waiting_requester'])): 
+                                            ?>
+                                                <a href="<?php echo $appBase; ?>tickets/edit.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-xl transition inline-block text-xs border border-amber-200" title="Chỉnh sửa phiếu (trong 15 phút đầu)">
+                                                    ✏️ Sửa
+                                                </a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -1639,21 +1647,6 @@ if ($userType === 'lecturer') {
     // Thống kê của giảng viên
     $myTicketsCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId}")->fetchColumn();
     $myCoursesCount = (int)$pdo->query("SELECT COUNT(*) FROM course_assignments WHERE lecturer_id = {$userId}")->fetchColumn();
-
-    // Lấy danh sách sinh viên trong các lớp GV phụ trách bị KTV báo cáo vi phạm
-    $violatingStudents = $pdo->query("
-        SELECT DISTINCT t.id AS ticket_id, t.ticket_code, t.title AS ticket_title, 
-                        t.spam_reason, t.created_at AS reported_at,
-                        u.id AS student_id, u.user_code, u.name AS student_name, u.email AS student_email,
-                        cl.class_code, cl.name AS class_name
-        FROM tickets t
-        JOIN users u ON t.requester_id = u.id
-        LEFT JOIN classes cl ON u.class_id = cl.id
-        WHERE t.is_spam = 1 AND u.user_type = 'student'
-          AND u.class_id IN (SELECT class_id FROM course_assignments WHERE lecturer_id = {$userId})
-        ORDER BY t.created_at DESC
-    ")->fetchAll();
-    $violatingCount = count($violatingStudents);
 
     // Lấy danh sách lớp học phần phụ trách (kèm thông tin Lớp và Môn học)
     $myCourses = $pdo->query("
@@ -1940,10 +1933,18 @@ if ($userType === 'lecturer') {
                                             </span>
                                         </td>
                                         <td class="py-3 px-4 text-slate-600"><?php echo htmlspecialchars($t['agent_name'] ?: 'Đang phân công...'); ?></td>
-                                        <td class="py-3 px-4 text-center">
+                                        <td class="py-3 px-4 text-center whitespace-nowrap space-x-1">
                                             <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-3 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition inline-block">
                                                 Chi tiết →
                                             </a>
+                                            <?php 
+                                            $minsSinceCreated = (time() - strtotime($t['created_at'])) / 60;
+                                            if ($minsSinceCreated <= 15 && in_array($t['status'], ['new', 'waiting_requester'])): 
+                                            ?>
+                                                <a href="<?php echo $appBase; ?>tickets/edit.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold rounded-lg transition inline-block border border-amber-200" title="Chỉnh sửa phiếu (trong 15 phút đầu)">
+                                                    ✏️ Sửa
+                                                </a>
+                                            <?php endif; ?>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -2123,7 +2124,7 @@ $pendingGuestCount   = count($pendingGuestTickets);
             </div>
         </div>
 
-        <!-- BẢNG PHIẾU CỨU HỘ KHẨN CẤP CẦN ADMIN XEM XÉT / MỞ KHÓA TÀI KHOẢN -->
+        <!-- BẢNG PHIẾU CỨU HỘ KHẨN CẤP KTV ĐÃ DUYỆT CẦN ADMIN PHÊ DUYỆT MỞ KHÓA -->
         <?php if (!empty($pendingGuestTickets)): ?>
             <div class="bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 border-2 border-rose-300 rounded-3xl p-5 shadow-sm space-y-3">
                 <div class="flex items-center justify-between flex-wrap gap-2 border-b border-rose-200 pb-3">
@@ -2131,13 +2132,13 @@ $pendingGuestCount   = count($pendingGuestTickets);
                         <span class="text-2xl">🚑</span>
                         <div>
                             <h2 class="text-sm font-black text-rose-950 flex items-center gap-2">
-                                <span>PHIẾU CỨU HỘ KHẨN CẤP CẦN ADMIN XEM XÉT / MỞ KHÓA TÀI KHOẢN</span>
+                                <span>PHIẾU CỨU HỘ KHẨN CẤP KTV ĐÃ DUYỆT CẦN ADMIN PHÊ DUYỆT MỞ KHÓA</span>
                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-600 text-white animate-pulse">
-                                    <?php echo $pendingGuestCount; ?> phiếu chờ
+                                    <?php echo $pendingGuestCount; ?> phiếu đã duyệt
                                 </span>
                             </h2>
                             <p class="text-[11.5px] text-rose-800/90 mt-0.5">
-                                Sinh viên / Cán bộ gửi đơn qua Trạm Cứu Hộ Ngoài Cổng do tài khoản bị khóa hoặc quên mật khẩu. Quản trị viên xem xét và mở khóa trực tiếp.
+                                Kỹ thuật viên đã kiểm tra xác minh thẻ SV/CMND hợp lệ. Quản trị viên (Admin) xem xét và phê duyệt mở khóa tài khoản & cấp mật khẩu mới.
                             </p>
                         </div>
                     </div>

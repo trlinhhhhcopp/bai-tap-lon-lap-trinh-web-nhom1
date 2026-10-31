@@ -238,6 +238,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'admin_unlock_account') {
     if ($userRole === 'admin') {
+        // KTV phải duyệt trước thì mới báo đến Admin ra quyết định mở khóa
+        if ((int)($ticket['rescue_verified'] ?? 0) !== 1) {
+            set_flash('error', "Kỹ thuật viên chưa xác thực duyệt đơn cứu hộ này. Ban Quản Trị chỉ xem xét sau khi KTV duyệt!");
+            header("Location: show.php?id={$id}&view_as={$viewAs}");
+            exit;
+        }
+
         $targetUserId = (int)$ticket['requester_id'];
         $defaultPassHash = password_hash('123456', PASSWORD_BCRYPT);
         db()->prepare("UPDATE users SET is_active = 1, locked_until = NULL, lock_reason = 'none', failed_attempts = 0, password_hash = :hash, is_first_login = 1 WHERE id = :uid")
@@ -263,6 +270,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'admin_reject_rescue') {
     if ($userRole === 'admin') {
+        if ((int)($ticket['rescue_verified'] ?? 0) !== 1) {
+            set_flash('error', "Kỹ thuật viên chưa xác thực duyệt đơn cứu hộ này!");
+            header("Location: show.php?id={$id}&view_as={$viewAs}");
+            exit;
+        }
+
         $reason = trim($_POST['admin_reject_reason'] ?? 'Ban Quản Trị từ chối mở khóa tài khoản do thông tin xác minh không đủ căn cứ.');
         db()->prepare("UPDATE tickets SET rescue_verified = 2, rescue_verified_at = NOW(), rescue_verified_note = :note, status = 'closed', closed_at = NOW(), closed_reason = 'duplicate' WHERE id = :id")
             ->execute([':note' => $reason, ':id' => $id]);
@@ -273,6 +286,26 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
 
         set_flash('info', "Đã từ chối đơn cứu hộ.");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// XỬ LÝ SINH VIÊN / GIẢNG VIÊN XÓA LẠI PHIẾU TRONG VÒNG 15 PHÚT ĐẦU TIÊN
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'requester_delete_ticket') {
+    $createdTime = strtotime($ticket['created_at']);
+    $minutes = (time() - $createdTime) / 60;
+    $isOwner = in_array($userRole, ['requester', 'lecturer']) && ((int)$ticket['requester_id'] === (int)$currentUser['id']);
+
+    if ($isOwner && $minutes <= 15 && in_array($ticket['status'], ['new', 'waiting_requester'])) {
+        TicketRepository::delete($id);
+        set_flash('success', "Đã xóa và thu hồi phiếu hỗ trợ {$ticket['ticket_code']} thành công!");
+        header("Location: ../index.php");
+        exit;
+    } else {
+        set_flash('error', "Không thể xóa phiếu (Đã quá 15 phút hoặc phiếu đang được xử lý)!");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
     }
@@ -320,6 +353,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 // 3. XỬ LÝ GỬI PHẢN HỒI / GIẢI PHÁP & ĐÍNH KÈM ẢNH
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'reply') {
+    // Admin tất cả các phiếu chỉ có quyền xem & phân công sang KTV, không có quyền chat hay phản hồi
+    if ($userRole === 'admin') {
+        set_flash('error', 'Quản trị viên chỉ có quyền xem và phân công sang KTV, không có quyền gửi phản hồi hay chat trực tiếp trên phiếu!');
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+
     if ($ticket['status'] === 'closed' || !empty($currentRating)) {
         set_flash('error', 'Phiếu đã đóng và hoàn tất đánh giá CSAT. Không thể gửi thêm phản hồi!');
         header("Location: show.php?id={$id}&view_as={$viewAs}");
@@ -491,15 +531,16 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         $lockPermanent = isset($_POST['lock_permanent']) && $_POST['lock_permanent'] === '1';
 
         $pdo = db();
-        $pdo->prepare("UPDATE tickets SET is_spam = 1, spam_reason = :r WHERE id = :id")->execute(['r' => $reason, 'id' => $id]);
-        TicketRepository::addReply($id, (int)$currentUser['id'], "🚨 [BÁO CÁO SPAM / NGHỊCH TRẠM CỨU HỘ]: {$reason}", true);
+        // KTV báo cáo phiếu về trạng thái đã giải quyết (resolved) để sang admin xem xét
+        $pdo->prepare("UPDATE tickets SET is_spam = 1, spam_reason = :r, status = 'resolved', resolved_at = NOW() WHERE id = :id")->execute(['r' => $reason, 'id' => $id]);
+        TicketRepository::addReply($id, (int)$currentUser['id'], "🚨 [KTV BÁO CÁO VI PHẠM / SPAM - CHUYỂN ADMIN XEM XÉT]: {$reason}", false, 'resolved');
 
         if ($lockPermanent || $userRole === 'admin') {
             $pdo->prepare("UPDATE users SET is_active = 0, lock_reason = 'banned_rescue_abuse' WHERE id = :uid")
                 ->execute(['uid' => $ticket['requester_id']]);
-            set_flash('success', "Đã ghi nhận báo cáo spam và KHÓA VĨNH VIỄN tài khoản {$ticket['requester_name']} ({$ticket['requester_code']}) - Chặn trạm cứu hộ!");
+            set_flash('success', "Đã ghi nhận báo cáo spam, chuyển trạng thái ĐÃ GIẢI QUYẾT sang Admin xem xét và KHÓA VĨNH VIỄN tài khoản!");
         } else {
-            set_flash('success', "Đã gửi báo cáo sinh viên spam lên Quản trị viên (Admin) xem xét khóa tài khoản!");
+            set_flash('success', "Đã gửi báo cáo vi phạm thành công! Phiếu đã chuyển sang trạng thái ĐÃ GIẢI QUYẾT và gửi sang Admin xem xét.");
         }
 
         header("Location: show.php?id={$id}&view_as={$viewAs}");
@@ -508,27 +549,29 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 }
 
 // -----------------------------------------------------------------------------
-// 5.5.1. XỬ LÝ HỦY CẢNH BÁO SPAM / GIẢI OAN CHO SINH VIÊN (DÀNH CHO ADMIN)
+// 5.5.1. XỬ LÝ HỦY CẢNH BÁO SPAM / GIẢI OAN CHO SINH VIÊN (KTV & ADMIN)
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'unmark_spam') {
-    if ($userRole === 'admin') {
+    if (in_array($userRole, ['agent', 'admin'])) {
         $pdo = db();
-        // 1. Hủy bỏ cảnh báo spam của phiếu
-        $pdo->prepare("UPDATE tickets SET is_spam = 0, spam_reason = NULL WHERE id = :id")->execute(['id' => $id]);
+        // 1. Hủy bỏ cảnh báo spam của phiếu và đưa phiếu về lại đang xử lý
+        $pdo->prepare("UPDATE tickets SET is_spam = 0, spam_reason = NULL, status = 'in_progress' WHERE id = :id")->execute(['id' => $id]);
         
         // 2. Mở khóa lại tài khoản sinh viên nếu bị khóa do spam
         $pdo->prepare("UPDATE users SET is_active = 1, lock_reason = 'none' WHERE id = :uid AND lock_reason IN ('banned_rescue_abuse', 'spam_reported')")
             ->execute(['uid' => $ticket['requester_id']]);
 
+        $cancellerName = ($userRole === 'agent') ? "Kỹ thuật viên ({$currentUser['name']})" : "Quản trị viên (Admin)";
         // 3. Ghi chú lịch sử hệ thống
         TicketRepository::addReply(
             $id, 
             (int)$currentUser['id'], 
-            "🛡️ [QUẢN TRỊ VIÊN XEM XÉT & GIẢI OAN]: Admin đã rà soát toàn bộ cuộc trò chuyện, xác định nội dung trao đổi là hỗ trợ hợp lệ (KTV có phần nóng tính bấm cảnh báo nhầm). Admin đã HỦY CẢNH BÁO VI PHẠM và bảo lưu quyền lợi trọn vẹn cho sinh viên.", 
-            true
+            "↺ [HỦY BÁO CÁO VI PHẠM]: {$cancellerName} đã xem xét lại toàn bộ nội dung, xác nhận không có vi phạm và hủy cảnh báo cho sinh viên. Phiếu quay lại tiếp tục xử lý.", 
+            false,
+            'in_progress'
         );
 
-        set_flash('success', "Đã HỦY BỎ CẢNH BÁO SPAM thành công! Phiếu đã trở lại bình thường và tài khoản sinh viên đã được khôi phục uy tín.");
+        set_flash('success', "Đã HỦY BỎ BÁO CÁO VI PHẠM thành công! Phiếu đã trở lại trạng thái Đang xử lý và tài khoản sinh viên đã được khôi phục.");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
     }
@@ -640,6 +683,25 @@ $flash   = get_flash();
                         <span>🚨</span> Báo Cáo SV Spam
                     </button>
                 <?php endif; ?>
+                <?php 
+                $minutesSinceCreated = (time() - strtotime($ticket['created_at'])) / 60;
+                $isRequesterOwner = in_array($userRole, ['requester', 'lecturer']) && ((int)$ticket['requester_id'] === (int)$currentUser['id']);
+                $canRequesterModify15m = $isRequesterOwner && ($minutesSinceCreated <= 15) && in_array($ticket['status'], ['new', 'waiting_requester']);
+                $minutesLeft15m = max(0, 15 - (int)floor($minutesSinceCreated));
+                ?>
+
+                <?php if ($canRequesterModify15m): ?>
+                    <a href="edit.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-full border border-amber-300 transition flex items-center gap-1 shadow-2xs">
+                        <span>✏️</span> Sửa phiếu (Còn <?= $minutesLeft15m ?>p)
+                    </a>
+                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn XÓA và thu hồi phiếu này khỏi hệ thống?');">
+                        <input type="hidden" name="action" value="requester_delete_ticket" />
+                        <button type="submit" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-full border border-rose-300 transition flex items-center gap-1 shadow-2xs cursor-pointer">
+                            <span>🗑️</span> Xóa phiếu
+                        </button>
+                    </form>
+                <?php endif; ?>
+
                 <?php if ($userRole === 'admin' && !in_array($ticket['status'], ['closed']) && empty($currentRating)): ?>
                     <a href="edit.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200 transition">
                         ✏️ Sửa phiếu
@@ -652,6 +714,30 @@ $flash   = get_flash();
         </div>
     </div>
 
+    <!-- BANNER QUYỀN SỬA/XÓA 15 PHÚT DÀNH CHO NGƯỜI GỬI (SV & GIẢNG VIÊN) -->
+    <?php if ($canRequesterModify15m): ?>
+        <div class="p-4 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-300 rounded-3xl flex items-center justify-between flex-wrap gap-3 text-xs text-amber-950 shadow-xs mb-4">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">⏳</span>
+                <div>
+                    <strong class="text-sm block">Quyền Chỉnh Sửa & Hủy Phiếu Trong 15 Phút Đầu</strong>
+                    <span class="text-slate-600">Bạn có quyền chỉnh sửa lại nội dung hoặc thu hồi (xóa) phiếu này nếu gửi nhầm. Thời gian còn lại: <strong class="text-rose-600 font-mono text-sm"><?= $minutesLeft15m ?> phút</strong>.</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="edit.php?id=<?= $ticket['id'] ?>" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-xs flex items-center gap-1.5">
+                    <span>✏️</span> Sửa Phiếu
+                </a>
+                <form method="POST" action="show.php?id=<?= $ticket['id'] ?>&view_as=<?= $viewAs ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn XÓA và thu hồi phiếu hỗ trợ này? Hành động này không thể hoàn tác.');">
+                    <input type="hidden" name="action" value="requester_delete_ticket" />
+                    <button type="submit" class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-xs flex items-center gap-1.5 cursor-pointer">
+                        <span>🗑️</span> Xóa Phiếu
+                    </button>
+                </form>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- BANNER CẢNH BÁO SPAM NẾU CÓ (PAGE 8) -->
     <?php if (!empty($ticket['is_spam'])): ?>
         <div class="p-4 bg-rose-50 border-2 border-rose-300 rounded-3xl flex items-center justify-between flex-wrap gap-3 text-xs text-rose-900 shadow-sm">
@@ -662,24 +748,26 @@ $flash   = get_flash();
                     <span class="text-rose-700">Lý do: <?php echo htmlspecialchars($ticket['spam_reason'] ?? 'Gửi tin rác không đúng mục đích'); ?></span>
                 </div>
             </div>
-            <?php if ($userRole === 'admin'): ?>
+            <?php if (in_array($userRole, ['agent', 'admin'])): ?>
                 <div class="flex items-center gap-2 flex-wrap">
-                    <!-- NÚT ADMIN HỦY CẢNH BÁO SPAM / GIẢI OAN CHO SINH VIÊN KHI KTV NÓNG TÍNH -->
-                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Admin xác nhận: Cuộc nói chuyện không có yếu tố vi phạm, KTV bấm nhầm/nóng tính.\nBạn muốn HỦY CẢNH BÁO VI PHẠM và bảo lưu uy tín cho sinh viên?');">
+                    <!-- NÚT KTV & ADMIN HỦY CẢNH BÁO SPAM / GIẢI OAN CHO SINH VIÊN -->
+                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Xác nhận HỦY BÁO CÁO VI PHẠM cho sinh viên này?\nPhiếu sẽ quay lại trạng thái Đang xử lý.');">
                         <input type="hidden" name="action" value="unmark_spam" />
                         <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer">
-                            <span>🛡️</span> Hủy Cảnh Báo Vi Phạm (Giải Oan Cho SV)
+                            <span>↺</span> Hủy Báo Cáo Vi Phạm
                         </button>
                     </form>
 
-                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn KHÓA VĨNH VIỄN tài khoản này và chặn vĩnh viễn trạm cứu hộ?');">
-                        <input type="hidden" name="action" value="report_spam" />
-                        <input type="hidden" name="lock_permanent" value="1" />
-                        <input type="hidden" name="spam_reason" value="Admin xử lý báo cáo: Khóa vĩnh viễn do spam/nghịch trạm cứu hộ" />
-                        <button type="submit" class="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-black rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
-                            <span>🔒</span> Khóa Vĩnh Viễn
-                        </button>
-                    </form>
+                    <?php if ($userRole === 'admin'): ?>
+                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn KHÓA VĨNH VIỄN tài khoản này và chặn vĩnh viễn trạm cứu hộ?');">
+                            <input type="hidden" name="action" value="report_spam" />
+                            <input type="hidden" name="lock_permanent" value="1" />
+                            <input type="hidden" name="spam_reason" value="Admin xử lý báo cáo: Khóa vĩnh viễn do spam/nghịch trạm cứu hộ" />
+                            <button type="submit" class="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-black rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
+                                <span>🔒</span> Khóa Vĩnh Viễn
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>
@@ -1054,7 +1142,7 @@ $flash   = get_flash();
                     </div>
 
                     <!-- THAO TÁC KTV TIẾP NHẬN: XÁC MINH & CHUYỂN ADMIN DUYỆT -->
-                    <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                    <?php if ($userRole === 'agent'): ?>
                         <?php if ((int)($ticket['rescue_verified'] ?? 0) === 0 && $ticket['status'] !== 'closed'): ?>
                             <div class="p-3 bg-white/90 rounded-2xl border border-amber-300 space-y-2 text-xs">
                                 <span class="font-bold text-amber-900 flex items-center gap-1">
@@ -1098,30 +1186,45 @@ $flash   = get_flash();
                         <?php endif; ?>
                     <?php endif; ?>
 
-                    <!-- THẨM QUYỀN ADMIN: DUYỆT MỞ KHÓA & RESET PASS -->
+                    <!-- THẨM QUYỀN ADMIN: DUYỆT MỞ KHÓA & RESET PASS (CHỈ KHI KTV ĐÃ DUYỆT) -->
                     <?php if ($userRole === 'admin' && $ticket['status'] !== 'closed'): ?>
-                        <div class="p-3.5 bg-purple-50 border-2 border-purple-300 rounded-2xl space-y-2 text-xs">
-                            <span class="font-black text-purple-950 flex items-center gap-1.5 text-xs">
-                                <span>⚡</span> Thẩm Quyền Admin: Phê Duyệt Cứu Hộ & Mở Khóa Tài Khoản
-                            </span>
-                            <p class="text-[11.5px] text-purple-900">
-                                Admin có thẩm quyền đặt lại mật khẩu về mặc định (123456) và mở khóa tài khoản ngay lập tức:
-                            </p>
-                            <div class="flex items-center gap-2 flex-wrap pt-1">
-                                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn MỞ KHÓA tài khoản và đặt mật khẩu về 123456?');">
-                                    <input type="hidden" name="action" value="admin_unlock_account" />
-                                    <button type="submit" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center gap-1.5 cursor-pointer">
-                                        <span>🔓</span> Phê Duyệt Mở Khóa & Reset Mật Khẩu (123456)
-                                    </button>
-                                </form>
-                                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn TỪ CHỐI đơn cứu hộ này?');">
-                                    <input type="hidden" name="action" value="admin_reject_rescue" />
-                                    <button type="submit" class="px-3 py-2 bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">
-                                        <span>🔒</span> Từ Chối & Giữ Khóa
-                                    </button>
-                                </form>
+                        <?php if ((int)($ticket['rescue_verified'] ?? 0) === 1): ?>
+                            <div class="p-3.5 bg-purple-50 border-2 border-purple-300 rounded-2xl space-y-2 text-xs">
+                                <span class="font-black text-purple-950 flex items-center gap-1.5 text-xs">
+                                    <span>⚡</span> Thẩm Quyền Admin: Phê Duyệt Cứu Hộ & Mở Khóa Tài Khoản (KTV Đã Duyệt)
+                                </span>
+                                <p class="text-[11.5px] text-purple-900">
+                                    Kỹ thuật viên đã kiểm tra xác minh hồ sơ/thẻ SV hợp lệ. Admin có thẩm quyền đặt lại mật khẩu về mặc định (123456) và mở khóa tài khoản ngay lập tức:
+                                </p>
+                                <div class="flex items-center gap-2 flex-wrap pt-1">
+                                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn MỞ KHÓA tài khoản và đặt mật khẩu về 123456?');">
+                                        <input type="hidden" name="action" value="admin_unlock_account" />
+                                        <button type="submit" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center gap-1.5 cursor-pointer">
+                                            <span>🔓</span> Phê Duyệt Mở Khóa & Reset Mật Khẩu (123456)
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn TỪ CHỐI đơn cứu hộ này?');">
+                                        <input type="hidden" name="action" value="admin_reject_rescue" />
+                                        <button type="submit" class="px-3 py-2 bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">
+                                            <span>🔒</span> Từ Chối & Giữ Khóa
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
-                        </div>
+                        <?php elseif ((int)($ticket['rescue_verified'] ?? 0) === 2): ?>
+                            <div class="p-3 bg-rose-50 border border-rose-300 rounded-2xl flex items-center justify-between text-xs text-rose-900">
+                                <span class="flex items-center gap-2 font-bold">
+                                    <span>❌</span> Đơn cứu hộ đã bị KTV bác bỏ. Admin chỉ xem lưu trữ.
+                                </span>
+                            </div>
+                        <?php else: ?>
+                            <div class="p-3 bg-amber-50 border border-amber-300 rounded-2xl text-xs text-amber-900 flex items-center justify-between gap-2">
+                                <span class="flex items-center gap-2">
+                                    <span>⏳</span>
+                                    <span><strong>Chế độ Admin (Chỉ Xem):</strong> Đơn cứu hộ đang chờ Kỹ thuật viên (KTV) tiếp nhận kiểm tra CMND/Thẻ SV và duyệt xác thực trước. Sau khi KTV duyệt, Admin mới có quyền phê duyệt mở khóa tài khoản.</span>
+                                </span>
+                            </div>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
@@ -1428,9 +1531,20 @@ $flash   = get_flash();
                         </div>
                     </div>
                 <?php else: ?>
-                <!-- Form gửi phản hồi mới -->
-                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" enctype="multipart/form-data" class="pt-5 border-t border-slate-100 space-y-4 text-xs">
-                    <input type="hidden" name="action" value="reply" />
+                    <?php if ($userRole === 'admin'): ?>
+                        <!-- Chế độ Admin: Chỉ xem và phân công KTV, không chat hay gửi phản hồi -->
+                        <div class="pt-5 border-t border-slate-100 p-4 bg-slate-50 rounded-2xl border border-slate-200 text-center space-y-1">
+                            <div class="text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5">
+                                <span>🔒</span> Chế độ Quản Trị Viên (Admin): Chỉ Xem & Phân Công KTV
+                            </div>
+                            <p class="text-[11px] text-slate-500">
+                                Admin theo dõi tiến độ và điều phối phân công kỹ thuật viên phụ trách, không tham gia gửi phản hồi hay trao đổi trực tiếp trên phiếu sự cố.
+                            </p>
+                        </div>
+                    <?php else: ?>
+                    <!-- Form gửi phản hồi mới cho KTV và Người dùng (SV, GV) -->
+                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" enctype="multipart/form-data" class="pt-5 border-t border-slate-100 space-y-4 text-xs">
+                        <input type="hidden" name="action" value="reply" />
 
                     <?php if (in_array($userRole, ['agent', 'admin'])): ?>
                         <!-- Dành cho Kỹ thuật viên / Quản trị viên: Có đầy đủ công cụ chuyển trạng thái & ghi chú nội bộ -->
@@ -1517,6 +1631,7 @@ $flash   = get_flash();
                         ⚡ <strong>Quy tắc tự động State Machine:</strong> Khi KTV gửi tin nhắn công khai, phiếu tự chuyển sang <em>waiting_requester</em>. Khi Sinh viên/Giảng viên gửi phản hồi lại, phiếu tự quay về <em>in_progress</em>.
                     </div>
                 </form>
+                <?php endif; ?>
                 <?php endif; ?>
             </div>
 

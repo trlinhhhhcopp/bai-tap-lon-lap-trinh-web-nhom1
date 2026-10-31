@@ -406,6 +406,7 @@ class CourseLesson
                   AND u.user_type = 'student'
                   AND u.is_active = 1
                   AND (u.lock_reason IS NULL OR u.lock_reason = 'none' OR u.lock_reason = '')
+                  AND NOT EXISTS (SELECT 1 FROM tickets t_sp WHERE t_sp.requester_id = u.id AND t_sp.is_spam = 1)
                 ORDER BY (s.id IS NULL) ASC, s.submitted_at DESC, u.name ASC";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([

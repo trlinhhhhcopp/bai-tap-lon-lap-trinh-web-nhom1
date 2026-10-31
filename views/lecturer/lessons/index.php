@@ -194,7 +194,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                             </button>
                             <a href="lessons.php?ca_id=<?php echo $selectedCaId; ?>" 
                                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-xs transition shadow-sm flex items-center gap-1.5 cursor-pointer">
-                                <span>←</span> Quay Lại Danh Sách 9 Buổi Học
+                                <span>✕</span> Đóng Danh Sách / Quay Lại Các Buổi Học
                             </a>
                         </div>
                     </div>
@@ -417,6 +417,36 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 <input type="hidden" name="ca_id" value="<?php echo (int)$selectedCaId; ?>" />
                 <input type="hidden" name="lesson_id" value="<?php echo (int)$viewLessonId; ?>" />
                 <input type="hidden" name="submission_id" id="formSubmissionId" value="0" />
+                <input type="hidden" name="star_rating" id="formGradeStarRating" value="5" />
+
+                <!-- Đánh giá mức sao (1-5 sao) -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        Xếp Loại Chất Lượng (1 - 5 Sao): <span class="text-amber-500">★</span>
+                    </label>
+                    <div class="grid grid-cols-5 gap-1.5">
+                        <button type="button" data-star="1" onclick="selectGradeStar(1)" class="grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer">
+                            <span class="text-sm">⭐</span>
+                            <span class="text-[9.5px]">1 Sao</span>
+                        </button>
+                        <button type="button" data-star="2" onclick="selectGradeStar(2)" class="grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer">
+                            <span class="text-sm">⭐⭐</span>
+                            <span class="text-[9.5px]">2 Sao</span>
+                        </button>
+                        <button type="button" data-star="3" onclick="selectGradeStar(3)" class="grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer">
+                            <span class="text-sm">⭐⭐⭐</span>
+                            <span class="text-[9.5px]">3 Sao</span>
+                        </button>
+                        <button type="button" data-star="4" onclick="selectGradeStar(4)" class="grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer">
+                            <span class="text-sm">⭐⭐⭐⭐</span>
+                            <span class="text-[9.5px]">4 Sao</span>
+                        </button>
+                        <button type="button" data-star="5" onclick="selectGradeStar(5)" class="grade-star-btn px-1 py-1.5 rounded-xl border-2 border-amber-500 bg-amber-400 font-bold text-slate-950 text-center transition flex flex-col items-center gap-0.5 shadow-xs cursor-pointer">
+                            <span class="text-sm">⭐⭐⭐⭐⭐</span>
+                            <span class="text-[9.5px]">5 Sao</span>
+                        </button>
+                    </div>
+                </div>
 
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">
@@ -468,16 +498,22 @@ $csrfToken = $_SESSION['csrf'] ?? '';
 
         
         function selectGradeStar(star) {
-            document.getElementById("formGradeStarRating").value = star;
+            const starInput = document.getElementById("formGradeStarRating");
+            if (starInput) {
+                starInput.value = star;
+            }
             const scoreMap = { 5: 10.0, 4: 8.5, 3: 7.0, 2: 5.0, 1: 3.0 };
-            document.getElementById("formGradeScore").value = scoreMap[star] || 10.0;
+            const scoreInput = document.getElementById("formGradeScore");
+            if (scoreInput) {
+                scoreInput.value = scoreMap[star] || 10.0;
+            }
             
             document.querySelectorAll(".grade-star-btn").forEach(btn => {
                 const s = parseInt(btn.getAttribute("data-star"));
                 if (s === star) {
-                    btn.className = "grade-star-btn px-1.5 py-2 rounded-xl border-2 border-amber-500 bg-amber-400 font-bold text-slate-950 text-center transition flex flex-col items-center gap-0.5 shadow-xs";
+                    btn.className = "grade-star-btn px-1 py-1.5 rounded-xl border-2 border-amber-500 bg-amber-400 font-bold text-slate-950 text-center transition flex flex-col items-center gap-0.5 shadow-xs cursor-pointer";
                 } else {
-                    btn.className = "grade-star-btn px-1.5 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5";
+                    btn.className = "grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer";
                 }
             });
         }

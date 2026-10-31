@@ -552,11 +552,13 @@ class TicketRepository {
     }
 
     /**
-     * Hủy/Xóa phiếu (Slide 7 - Delete bằng POST)
+     * Hủy/Xóa phiếu vĩnh viễn (Xóa kèm đánh giá và phản hồi để toàn vẹn CSDL)
      */
     public static function delete(int $id): bool {
-        $sql = "DELETE FROM tickets WHERE id = :id";
-        $stmt = db()->prepare($sql);
+        $db = db();
+        $db->prepare("DELETE FROM ticket_ratings WHERE ticket_id = :id")->execute(['id' => $id]);
+        $db->prepare("DELETE FROM ticket_replies WHERE ticket_id = :id")->execute(['id' => $id]);
+        $stmt = $db->prepare("DELETE FROM tickets WHERE id = :id");
         return $stmt->execute(['id' => $id]);
     }
 
@@ -737,7 +739,7 @@ class TicketRepository {
     }
 
     /**
-     * Đếm số phiếu cứu hộ khẩn cấp (Guest Tickets) đang chờ xử lý
+     * Đếm số phiếu cứu hộ khẩn cấp (Guest Tickets) đang chờ KTV hoặc Admin xử lý
      */
     public static function countPendingGuestTickets(): int {
         $db = db();
@@ -745,7 +747,15 @@ class TicketRepository {
     }
 
     /**
-     * Lấy danh sách phiếu cứu hộ khẩn cấp cho Quản trị viên (Admin)
+     * Đếm số phiếu cứu hộ khẩn cấp mà KTV ĐÃ DUYỆT cần Admin quyết định mở khóa
+     */
+    public static function countPendingGuestTicketsForAdmin(): int {
+        $db = db();
+        return (int)$db->query("SELECT COUNT(*) FROM tickets WHERE is_guest_ticket = 1 AND rescue_verified = 1 AND status NOT IN ('closed')")->fetchColumn();
+    }
+
+    /**
+     * Lấy danh sách phiếu cứu hộ khẩn cấp KTV ĐÃ DUYỆT cho Quản trị viên (Admin) xem xét mở khóa
      */
     public static function getPendingGuestTickets(): array {
         $db = db();
@@ -758,8 +768,8 @@ class TicketRepository {
                 LEFT JOIN users u_req ON t.requester_id = u_req.id
                 LEFT JOIN classes cl ON u_req.class_id = cl.id
                 LEFT JOIN users ag ON t.assigned_to = ag.id
-                WHERE t.is_guest_ticket = 1 AND t.status NOT IN ('closed')
-                ORDER BY t.rescue_verified DESC, t.id DESC";
+                WHERE t.is_guest_ticket = 1 AND t.rescue_verified = 1 AND t.status NOT IN ('closed')
+                ORDER BY t.id DESC";
         return $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 }

@@ -38,6 +38,8 @@ if ($warningType === 'sla') {
     $hasWarning = 'sla';
 } elseif ($warningType === 'guest') {
     $hasWarning = 'guest';
+} elseif ($warningType === 'violation' && ($userRole === 'admin' || ($userRole === 'requester' && !$isLecturer))) {
+    $hasWarning = 'violation';
 }
 
 $lecturerId = $isLecturer ? (int)$currentUser['id'] : 0;
@@ -67,6 +69,8 @@ $categories     = TicketRepository::getCategories();
 $slaCount       = TicketRepository::countSlaOverdue($filterReqId, $filterAgentId);
 $lecturerIncidentsCount = $isLecturer ? TicketRepository::countLecturerCourseIncidents((int)$currentUser['id']) : 0;
 $guestCount     = in_array($userRole, ['agent', 'admin']) ? TicketRepository::countPendingGuestTickets() : 0;
+$canSeeViolations = ($userRole === 'admin' || ($userRole === 'requester' && !$isLecturer));
+$violationCount   = $canSeeViolations ? TicketRepository::countViolations($filterReqId, 0, $isLecturer) : 0;
 $flash        = get_flash();
 ?>
 <!DOCTYPE html>
@@ -175,6 +179,16 @@ $flash        = get_flash();
                     <span>⏰ Quá Hạn SLA</span>
                     <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'sla') ? 'bg-white text-rose-700' : 'bg-rose-600 text-white' ?>"><?= $slaCount ?></span>
                 </a>
+
+                <?php if ($canSeeViolations): ?>
+                    <!-- TAB SV BỊ BÁO CÁO VI PHẠM (CHỈ HIỂN THỊ CHO ADMIN & CHÍNH SV ĐÓ) -->
+                    <a href="index.php?warning=violation<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                       title="Xem danh sách sinh viên bị KTV báo cáo vi phạm (Chỉ Admin và Sinh viên xem)"
+                       class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'violation') ? 'bg-purple-700 text-white shadow-sm ring-2 ring-purple-400' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' ?>">
+                        <span>🚨 SV Vi Phạm (KTV Báo Cáo)</span>
+                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'violation') ? 'bg-white text-purple-700' : 'bg-purple-700 text-white' ?>"><?= $violationCount ?></span>
+                    </a>
+                <?php endif; ?>
 
                 <?php if (in_array($userRole, ['agent', 'admin'])): ?>
                     <!-- TAB TRẠM CỨU HỘ NGOÀI CHO KTV & ADMIN -->
@@ -368,7 +382,7 @@ $flash        = get_flash();
                                         <a href="show.php?id=<?php echo $t['id']; ?>" class="font-bold text-slate-900 hover:text-indigo-600 transition block line-clamp-2 leading-relaxed">
                                             <?php echo htmlspecialchars($t['title']); ?>
                                         </a>
-                                        <?php if ($isSpamViolation): ?>
+                                        <?php if ($isSpamViolation && $canSeeViolations): ?>
                                             <div class="mt-1.5 p-2 rounded-xl bg-purple-50 border border-purple-200 text-purple-900 text-[11px] flex items-start gap-1.5">
                                                 <span class="text-sm shrink-0">🚨</span>
                                                 <div>
@@ -410,9 +424,14 @@ $flash        = get_flash();
                                         <a href="show.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition inline-block">
                                             Chi Tiết →
                                         </a>
-                                        <?php if (in_array($userRole, ['agent', 'admin'])): ?>
-                                            <a href="edit.php?id=<?php echo $t['id']; ?>" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-medium transition inline-block">
-                                                Sửa
+                                        <?php 
+                                        $minsSinceCreated = (time() - strtotime($t['created_at'])) / 60;
+                                        $canEditThisRow = in_array($userRole, ['agent', 'admin']) 
+                                            || (in_array($userRole, ['requester', 'lecturer']) && ((int)$t['requester_id'] === (int)$currentUser['id']) && $minsSinceCreated <= 15 && in_array($t['status'], ['new', 'waiting_requester']));
+                                        ?>
+                                        <?php if ($canEditThisRow): ?>
+                                            <a href="edit.php?id=<?php echo $t['id']; ?>" class="px-2 py-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-800 text-slate-700 rounded-lg text-[11px] font-medium transition inline-block" title="Sửa phiếu (trong 15 phút đầu)">
+                                                ✏️ Sửa
                                             </a>
                                         <?php endif; ?>
                                     </td>

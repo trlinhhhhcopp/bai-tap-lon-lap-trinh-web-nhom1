@@ -516,12 +516,6 @@ $flash = get_flash();
                                 <span class="text-[11px] text-slate-400">
                                     Hệ thống: <strong class="text-slate-600"><?php echo htmlspecialchars($r['system_affected']); ?></strong>
                                 </span>
-                                <?php if ($agentId === 0 || $isAdmin): ?>
-                                    <span>•</span>
-                                    <span class="text-[11px] text-indigo-700 font-bold bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md">
-                                        👨‍💻 KTV: <?php echo htmlspecialchars($r['agent_name'] ?? 'KTV'); ?> (<?php echo htmlspecialchars($r['agent_code'] ?? ''); ?>)
-                                    </span>
-                                <?php endif; ?>
                             </div>
 
                             <a href="../tickets/show.php?id=<?php echo $r['ticket_id']; ?>" 
