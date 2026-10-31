@@ -59,27 +59,38 @@ class LecturerLessonController
 
         $courses = $this->model->getLecturerCourses($lecturerId, $isAdmin);
 
+        // Lấy lớp học phần theo ca_id (course_assignments.id) hoặc fallback theo course_id
+        $selectedCaId = (int)($_GET['ca_id'] ?? ($_GET['assignment_id'] ?? 0));
         $selectedCourseId = (int)($_GET['course_id'] ?? 0);
-        if ($selectedCourseId <= 0 && !empty($courses)) {
-            $selectedCourseId = (int)$courses[0]['course_id'];
-        }
 
         $selectedCourse = null;
-        foreach ($courses as $c) {
-            if ((int)$c['course_id'] === $selectedCourseId) {
-                $selectedCourse = $c;
-                break;
+        if ($selectedCaId > 0) {
+            foreach ($courses as $c) {
+                if ((int)$c['ca_id'] === $selectedCaId) {
+                    $selectedCourse = $c;
+                    break;
+                }
+            }
+        } elseif ($selectedCourseId > 0) {
+            foreach ($courses as $c) {
+                if ((int)$c['course_id'] === $selectedCourseId) {
+                    $selectedCourse = $c;
+                    break;
+                }
             }
         }
 
         if (!$selectedCourse && !empty($courses)) {
             $selectedCourse = $courses[0];
-            $selectedCourseId = (int)$selectedCourse['course_id'];
         }
+
+        $selectedCaId     = $selectedCourse ? (int)$selectedCourse['ca_id'] : 0;
+        $selectedCourseId = $selectedCourse ? (int)$selectedCourse['course_id'] : 0;
+        $selectedClassId  = $selectedCourse ? (int)$selectedCourse['class_id'] : 0;
 
         $lessons = [];
         if ($selectedCourseId > 0) {
-            $lessons = $this->model->getLessonsForLecturer($selectedCourseId);
+            $lessons = $this->model->getLessonsForLecturer($selectedCourseId, $selectedClassId);
         }
 
         $viewLessonId = (int)($_GET['view_lesson_id'] ?? 0);
@@ -87,8 +98,11 @@ class LecturerLessonController
         $activeLesson = null;
         if ($viewLessonId > 0) {
             $activeLesson = $this->model->getLessonById($viewLessonId);
-            $lessonSubmissions = $this->model->getSubmissionsForLesson($viewLessonId);
+            $lessonSubmissions = $this->model->getSubmissionsForLesson($viewLessonId, $selectedClassId);
         }
+
+        // Lấy danh sách sinh viên thuộc các lớp mà Giảng viên này phụ trách bị KTV báo cáo vi phạm
+        $violatingStudents = $this->model->getViolatingStudentsForLecturer($lecturerId, $isAdmin);
 
         if (empty($_SESSION['csrf'])) {
             $_SESSION['csrf'] = bin2hex(random_bytes(32));
@@ -105,13 +119,16 @@ class LecturerLessonController
 
         $lessonId    = (int)($_POST['lesson_id'] ?? 0);
         $courseId    = (int)($_POST['course_id'] ?? 0);
+        $caId        = (int)($_POST['ca_id'] ?? 0);
         $title       = trim($_POST['title'] ?? '');
         $requirement = trim($_POST['assignment_requirement'] ?? '');
         $deadlineAt  = trim($_POST['deadline_at'] ?? '');
 
+        $redirectUrl = "lessons.php?" . ($caId > 0 ? "ca_id={$caId}" : "course_id={$courseId}");
+
         if ($lessonId <= 0 || empty($deadlineAt)) {
             set_flash('error', 'Vui lòng nhập đầy đủ thông tin buổi học và thời hạn nộp bài!');
-            header("Location: lessons.php?course_id={$courseId}");
+            header("Location: {$redirectUrl}");
             exit;
         }
 
@@ -129,7 +146,7 @@ class LecturerLessonController
             set_flash('error', "Không thể cập nhật buổi học, vui lòng thử lại!");
         }
 
-        header("Location: lessons.php?course_id={$courseId}&view_lesson_id={$lessonId}");
+        header("Location: {$redirectUrl}&view_lesson_id={$lessonId}");
         exit;
     }
 }

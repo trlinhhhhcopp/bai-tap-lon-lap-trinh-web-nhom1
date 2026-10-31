@@ -18,3 +18,4 @@ match ($action) {
     'update' => $controller->update(),
     default  => $controller->index(),
 };
+

@@ -414,6 +414,31 @@ $flash   = get_flash();
 
         <!-- CỘT TRÁI: MÔ TẢ, CSAT, TIMELINE & FORM (8 CỘT) -->
         <div class="md:col-span-8 space-y-6">
+
+            <!-- KỊCH BẢN 1: NGỮ CẢNH HỌC PHẦN & BUỔI HỌC ĐÍNH KÈM -->
+            <?php if (!empty($ticket['lesson_number']) || !empty($ticket['lesson_title'])): ?>
+                <div class="bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-200 rounded-3xl p-5 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-black bg-indigo-600 text-white flex items-center gap-1 shadow-2xs">
+                            <span>🎓</span> SỰ CỐ GẮN LIỀN VỚI BUỔI HỌC (ITIL CONTEXTUAL INCIDENT)
+                        </span>
+                        <span class="text-[11px] text-purple-700 font-bold font-mono">Buổi <?php echo (int)$ticket['lesson_number']; ?></span>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-indigo-950">
+                        <div>Môn học: <strong class="text-indigo-900"><?php echo htmlspecialchars($ticket['course_name'] ?? ''); ?></strong> (<?php echo htmlspecialchars($ticket['course_code'] ?? ''); ?>)</div>
+                        <div>Lớp học phần: <strong><?php echo htmlspecialchars($ticket['class_code'] ?? ''); ?></strong></div>
+                        <div class="sm:col-span-2">Tiêu đề buổi: <strong class="text-indigo-950 font-bold">Buổi <?php echo (int)$ticket['lesson_number']; ?>: <?php echo htmlspecialchars($ticket['lesson_title'] ?? ''); ?></strong></div>
+                        <?php if (!empty($ticket['lesson_deadline_at'])): ?>
+                            <div>Hạn nộp bài tập (Deadline): <strong class="text-rose-600 font-mono"><?php echo htmlspecialchars($ticket['lesson_deadline_at']); ?></strong></div>
+                        <?php endif; ?>
+                        <?php if (!empty($ticket['lesson_requirement'])): ?>
+                            <div class="sm:col-span-2 text-slate-600 text-[11.5px] bg-white/70 p-2.5 rounded-xl border border-indigo-100">
+                                <span class="font-bold text-indigo-950">Đề bài yêu cầu:</span> <?php echo htmlspecialchars($ticket['lesson_requirement']); ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
             
             <!-- Mô tả sự cố ban đầu -->
             <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">

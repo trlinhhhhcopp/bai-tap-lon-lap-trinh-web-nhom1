@@ -27,11 +27,15 @@ require_once __DIR__ . '/../app/Models/UserRepository.php';
 
 // 1. Tiếp nhận tham số tìm kiếm & phân trang an toàn từ URL (Slide 6 & 11)
 $kw      = trim($_GET['kw'] ?? '');
+$type    = $_GET['type'] ?? '';
+if (!in_array($type, ['agent', 'lecturer', 'student'], true)) {
+    $type = '';
+}
 $page    = max(1, (int)($_GET['page'] ?? 1));
 $perPage = 6; // Số lượng bản ghi mỗi trang
 
 // 2. Gọi Repository lấy dữ liệu
-$filters    = ['kw' => $kw];
+$filters    = ['kw' => $kw, 'type' => $type];
 $totalUsers = UserRepository::countActiveUsers($filters);
 $totalPages = max(1, (int)ceil($totalUsers / $perPage));
 if ($page > $totalPages) {
@@ -141,6 +145,11 @@ $flash = get_flash();
             gap: 14px;
         }
         .search-form { display: flex; gap: 8px; align-items: center; flex: 1; max-width: 500px; }
+        .filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+        .filter-button { background: #e2e8f0; color: #334155; }
+        .filter-button:hover { background: #cbd5e1; }
+        .filter-button.active { background: var(--primary); color: #fff; }
+        .filter-button.active:hover { background: var(--primary-dark); }
         .input-text {
             flex: 1;
             padding: 9px 14px;
@@ -332,11 +341,21 @@ $flash = get_flash();
     <div class="control-bar">
         <form class="search-form" method="GET" action="users.php">
             <input type="text" name="kw" class="input-text" placeholder="Tìm theo Mã SV/GV, Họ tên, Email..." value="<?= htmlspecialchars($kw) ?>">
+            <?php if ($type !== ''): ?>
+                <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>">
+            <?php endif; ?>
             <button type="submit" class="btn btn-primary">🔍 Tìm kiếm</button>
-            <?php if ($kw !== ''): ?>
+            <?php if ($kw !== '' || $type !== ''): ?>
                 <a href="users.php" class="btn btn-secondary">✕ Xóa lọc</a>
             <?php endif; ?>
         </form>
+
+        <nav class="filter-buttons" aria-label="Lọc theo đối tượng">
+            <a class="btn filter-button <?= $type === '' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>" <?= $type === '' ? 'aria-current="page"' : '' ?>>Tất cả</a>
+            <a class="btn filter-button <?= $type === 'agent' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=agent" <?= $type === 'agent' ? 'aria-current="page"' : '' ?>>KTV</a>
+            <a class="btn filter-button <?= $type === 'lecturer' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=lecturer" <?= $type === 'lecturer' ? 'aria-current="page"' : '' ?>>GV</a>
+            <a class="btn filter-button <?= $type === 'student' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=student" <?= $type === 'student' ? 'aria-current="page"' : '' ?>>SV</a>
+        </nav>
 
         <button type="button" class="btn btn-primary" onclick="openCreateModal()">
             ➕ Thêm tài khoản mới
@@ -434,19 +453,19 @@ $flash = get_flash();
             <ul class="pagination">
                 <!-- Nút Trước -->
                 <li class="page-item <?= ($page <= 1) ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?kw=<?= urlencode($kw) ?>&page=<?= $page - 1 ?>">« Trước</a>
+                    <a class="page-link" href="?kw=<?= urlencode($kw) ?>&amp;type=<?= urlencode($type) ?>&amp;page=<?= $page - 1 ?>">« Trước</a>
                 </li>
 
                 <!-- Danh sách số trang -->
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                     <li class="page-item <?= ($i === $page) ? 'active' : '' ?>">
-                        <a class="page-link" href="?kw=<?= urlencode($kw) ?>&page=<?= $i ?>"><?= $i ?></a>
+                        <a class="page-link" href="?kw=<?= urlencode($kw) ?>&amp;type=<?= urlencode($type) ?>&amp;page=<?= $i ?>"><?= $i ?></a>
                     </li>
                 <?php endfor; ?>
 
                 <!-- Nút Sau -->
                 <li class="page-item <?= ($page >= $totalPages) ? 'disabled' : '' ?>">
-                    <a class="page-link" href="?kw=<?= urlencode($kw) ?>&page=<?= $page + 1 ?>">Sau »</a>
+                    <a class="page-link" href="?kw=<?= urlencode($kw) ?>&amp;type=<?= urlencode($type) ?>&amp;page=<?= $page + 1 ?>">Sau »</a>
                 </li>
             </ul>
         <?php endif; ?>

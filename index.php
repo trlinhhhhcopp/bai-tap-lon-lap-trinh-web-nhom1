@@ -1625,6 +1625,21 @@ if ($userType === 'lecturer') {
     $myTicketsCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId}")->fetchColumn();
     $myCoursesCount = (int)$pdo->query("SELECT COUNT(*) FROM course_assignments WHERE lecturer_id = {$userId}")->fetchColumn();
 
+    // Lấy danh sách sinh viên trong các lớp GV phụ trách bị KTV báo cáo vi phạm
+    $violatingStudents = $pdo->query("
+        SELECT DISTINCT t.id AS ticket_id, t.ticket_code, t.title AS ticket_title, 
+                        t.spam_reason, t.created_at AS reported_at,
+                        u.id AS student_id, u.user_code, u.name AS student_name, u.email AS student_email,
+                        cl.class_code, cl.name AS class_name
+        FROM tickets t
+        JOIN users u ON t.requester_id = u.id
+        LEFT JOIN classes cl ON u.class_id = cl.id
+        WHERE t.is_spam = 1 AND u.user_type = 'student'
+          AND u.class_id IN (SELECT class_id FROM course_assignments WHERE lecturer_id = {$userId})
+        ORDER BY t.created_at DESC
+    ")->fetchAll();
+    $violatingCount = count($violatingStudents);
+
     // Lấy danh sách lớp học phần phụ trách (kèm thông tin Lớp và Môn học)
     $myCourses = $pdo->query("
         SELECT ca.*, u.name AS lecturer_name,
@@ -1678,10 +1693,10 @@ if ($userType === 'lecturer') {
             </div>
 
             <!-- Thống Kê Nhanh Phân Hệ Giảng Viên -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
-                        <div class="text-[11px] font-bold text-slate-500 uppercase">Lớp Học Phần Đang Phụ Trách</div>
+                        <div class="text-[11px] font-bold text-slate-500 uppercase">Lớp Học Phần Phụ Trách</div>
                         <div class="text-2xl font-black text-indigo-600 mt-1"><?php echo $myCoursesCount; ?> lớp</div>
                     </div>
                     <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center text-xl">
@@ -1697,7 +1712,74 @@ if ($userType === 'lecturer') {
                         🎫
                     </div>
                 </div>
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-500 uppercase">SV Bị KTV Báo Cáo Vi Phạm</div>
+                        <div class="text-2xl font-black text-rose-600 mt-1"><?php echo $violatingCount; ?> SV</div>
+                    </div>
+                    <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-xl">
+                        🚨
+                    </div>
+                </div>
             </div>
+
+            <!-- BẢNG CẢNH BÁO SINH VIÊN BỊ KTV BÁO CÁO VI PHẠM (DÀNH CHO GIẢNG VIÊN) -->
+            <?php if (!empty($violatingStudents)): ?>
+                <div class="bg-gradient-to-r from-purple-50 via-rose-50 to-amber-50 border-2 border-purple-300 rounded-3xl p-5 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2 border-b border-purple-200 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">🚨</span>
+                            <div>
+                                <h3 class="text-sm font-black text-purple-950 flex items-center gap-2">
+                                    <span>DANH SÁCH SINH VIÊN TRONG LỚP BỊ KTV BÁO CÁO VI PHẠM / SPAM</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-black bg-rose-600 text-white"><?php echo $violatingCount; ?> trường hợp</span>
+                                </h3>
+                                <p class="text-[11px] text-purple-800/90 mt-0.5">
+                                    Các sinh viên sau thuộc lớp của Thầy/Cô đã bị KTV lập biên bản báo cáo spam hoặc vi phạm nội quy hỗ trợ CNTT.
+                                </p>
+                            </div>
+                        </div>
+                        <a href="<?php echo $appBase; ?>tickets/index.php?warning=violation" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-xs">
+                            Xem Bộ Lọc Vi Phạm Chi Tiết →
+                        </a>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-purple-100/70 text-purple-900 font-bold border-b border-purple-200 text-[11px]">
+                                    <th class="py-2.5 px-3">Mã SV</th>
+                                    <th class="py-2.5 px-3">Họ và Tên</th>
+                                    <th class="py-2.5 px-3">Lớp Sinh Viên</th>
+                                    <th class="py-2.5 px-3">Mã Phiếu</th>
+                                    <th class="py-2.5 px-3">Lý Do KTV Báo Cáo</th>
+                                    <th class="py-2.5 px-3 text-center">Thời Điểm Báo Cáo</th>
+                                    <th class="py-2.5 px-3 text-center">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-purple-100 bg-white/70">
+                                <?php foreach ($violatingStudents as $vs): ?>
+                                    <tr class="hover:bg-purple-50 transition">
+                                        <td class="py-2.5 px-3 font-mono font-bold text-purple-900"><?php echo htmlspecialchars($vs['user_code']); ?></td>
+                                        <td class="py-2.5 px-3 font-bold text-slate-900"><?php echo htmlspecialchars($vs['student_name']); ?></td>
+                                        <td class="py-2.5 px-3 font-mono text-slate-700"><?php echo htmlspecialchars($vs['class_code']); ?></td>
+                                        <td class="py-2.5 px-3 font-mono text-indigo-700 font-semibold"><?php echo htmlspecialchars($vs['ticket_code']); ?></td>
+                                        <td class="py-2.5 px-3 text-rose-700 font-medium">
+                                            <span>⚠️</span> <?php echo htmlspecialchars($vs['spam_reason'] ?: 'Gửi tin nhắn spam, tin rác nhiều lần'); ?>
+                                        </td>
+                                        <td class="py-2.5 px-3 text-center font-mono text-slate-500 text-[11px]"><?php echo htmlspecialchars($vs['reported_at']); ?></td>
+                                        <td class="py-2.5 px-3 text-center">
+                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo (int)$vs['ticket_id']; ?>" target="_blank" class="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-[11px] transition inline-flex items-center gap-1 shadow-2xs">
+                                                <span>🔍</span> Xem Phiếu
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <?php if ($flash): ?>
                 <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'; ?>">
@@ -1750,7 +1832,7 @@ if ($userType === 'lecturer') {
                                         <td class="py-3 px-4 text-slate-600"><?php echo htmlspecialchars($c['semester']); ?></td>
                                         <td class="py-3 px-4 text-center font-mono text-slate-500"><?php echo htmlspecialchars($c['academic_year']); ?></td>
                                         <td class="py-3 px-4 text-center">
-                                            <a href="<?php echo $appBase; ?>lecturer/lessons.php?course_id=<?php echo (int)$c['course_id']; ?>" 
+                                            <a href="<?php echo $appBase; ?>lecturer/lessons.php?ca_id=<?php echo (int)$c['id']; ?>" 
                                                class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold rounded-lg text-xs transition inline-flex items-center gap-1 border border-indigo-200">
                                                 📝 Giao Đề & Buổi →
                                             </a>

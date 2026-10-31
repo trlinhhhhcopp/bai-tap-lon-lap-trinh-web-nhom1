@@ -72,19 +72,77 @@ $csrfToken = $_SESSION['csrf'] ?? '';
 
             <div class="flex items-center gap-2.5 overflow-x-auto pb-1 text-xs">
                 <?php foreach ($courses as $c): ?>
-                    <?php $isActive = ($c['course_id'] == $selectedCourseId); ?>
-                    <a href="lessons.php?course_id=<?php echo $c['course_id']; ?>" 
+                    <?php $isActive = ($c['ca_id'] == $selectedCaId); ?>
+                    <a href="lessons.php?ca_id=<?php echo $c['ca_id']; ?>" 
+                       title="Chọn lớp <?php echo htmlspecialchars($c['class_code']); ?> môn <?php echo htmlspecialchars($c['course_name']); ?>"
                        class="px-4 py-2.5 rounded-2xl font-bold transition whitespace-nowrap flex items-center gap-2 <?php echo $isActive ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200 ring-2 ring-indigo-400' : 'bg-slate-50 text-slate-700 hover:bg-slate-100 border border-slate-200'; ?>">
                         <span class="font-mono"><?php echo htmlspecialchars($c['course_code']); ?></span>
                         <span>–</span>
                         <span><?php echo htmlspecialchars($c['course_name']); ?></span>
-                        <span class="px-1.5 py-0.5 rounded-md text-[10.5px] font-semibold <?php echo $isActive ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'; ?>">
-                            <?php echo htmlspecialchars($c['class_code']); ?>
+                        <span class="px-2 py-0.5 rounded-lg text-[11px] font-bold <?php echo $isActive ? 'bg-white text-indigo-700 shadow-2xs' : 'bg-indigo-100 text-indigo-700'; ?>">
+                            Lớp: <?php echo htmlspecialchars($c['class_code']); ?>
                         </span>
                     </a>
                 <?php endforeach; ?>
             </div>
         </div>
+
+        <!-- KHỐI LỌC CẢNH BÁO SINH VIÊN BỊ KTV BÁO CÁO VI PHẠM (DÀNH CHO GIẢNG VIÊN ĐÀO TẠO) -->
+        <?php if (!empty($violatingStudents)): ?>
+            <div class="bg-gradient-to-r from-purple-50 via-rose-50 to-amber-50 border-2 border-purple-300 rounded-3xl p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2 border-b border-purple-200 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">🚨</span>
+                        <div>
+                            <h3 class="text-sm font-black text-purple-950 flex items-center gap-2">
+                                <span>CẢNH BÁO SINH VIÊN THUỘC LỚP BỊ KTV BÁO CÁO VI PHẠM / SPAM</span>
+                                <span class="px-2 py-0.5 rounded-full text-xs font-black bg-rose-600 text-white"><?php echo count($violatingStudents); ?> trường hợp</span>
+                            </h3>
+                            <p class="text-[11px] text-purple-800/90 mt-0.5">
+                                Kỹ thuật viên IT đã lập biên bản báo cáo các sinh viên sau có hành vi gửi yêu cầu spam, phá hoại hoặc vi phạm nội quy. Giảng viên lưu ý khi chấm điểm và đánh giá rèn luyện.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-purple-100/70 text-purple-900 font-bold border-b border-purple-200 text-[11px]">
+                                <th class="py-2.5 px-3">Mã SV</th>
+                                <th class="py-2.5 px-3">Họ và Tên</th>
+                                <th class="py-2.5 px-3">Lớp Sinh Viên</th>
+                                <th class="py-2.5 px-3">Mã Phiếu Sự Cố</th>
+                                <th class="py-2.5 px-3">Lý Do KTV Báo Cáo Vi Phạm</th>
+                                <th class="py-2.5 px-3 text-center">Thời Điểm Báo Cáo</th>
+                                <th class="py-2.5 px-3 text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-purple-100 bg-white/70">
+                            <?php foreach ($violatingStudents as $vs): ?>
+                                <tr class="hover:bg-purple-50 transition">
+                                    <td class="py-2.5 px-3 font-mono font-bold text-purple-900"><?php echo htmlspecialchars($vs['user_code']); ?></td>
+                                    <td class="py-2.5 px-3 font-bold text-slate-900"><?php echo htmlspecialchars($vs['student_name']); ?></td>
+                                    <td class="py-2.5 px-3 font-mono text-slate-700"><?php echo htmlspecialchars($vs['class_code']); ?></td>
+                                    <td class="py-2.5 px-3 font-mono text-indigo-700 font-semibold"><?php echo htmlspecialchars($vs['ticket_code']); ?></td>
+                                    <td class="py-2.5 px-3 text-rose-700 font-medium">
+                                        <span class="inline-flex items-center gap-1">
+                                            <span>⚠️</span> <?php echo htmlspecialchars($vs['spam_reason'] ?: 'Gửi tin nhắn spam, tin rác nhiều lần'); ?>
+                                        </span>
+                                    </td>
+                                    <td class="py-2.5 px-3 text-center font-mono text-slate-500 text-[11px]"><?php echo htmlspecialchars($vs['reported_at']); ?></td>
+                                    <td class="py-2.5 px-3 text-center">
+                                        <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo (int)$vs['ticket_id']; ?>" target="_blank" class="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-[11px] transition inline-flex items-center gap-1 shadow-2xs">
+                                            <span>🔍</span> Xem Phiếu
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
 
         <?php if ($selectedCourse): ?>
             <!-- KHỐI DANH SÁCH CÁC BUỔI HỌC CỦA MÔN NÀY -->
@@ -124,7 +182,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                             class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
                                         <span>✏️</span> Giao Đề & Đổi Hạn
                                     </button>
-                                    <a href="lessons.php?course_id=<?php echo $selectedCourseId; ?>&view_lesson_id=<?php echo $item['id']; ?>" 
+                                    <a href="lessons.php?ca_id=<?php echo $selectedCaId; ?>&view_lesson_id=<?php echo $item['id']; ?>" 
                                        class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs">
                                         <span>👥</span> Xem Bài Nộp (<?php echo (int)$item['submission_count']; ?>)
                                     </a>
@@ -169,7 +227,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                 Hạn chót nộp bài: <strong class="text-rose-600"><?php echo htmlspecialchars($activeLesson['deadline_at']); ?></strong>
                             </p>
                         </div>
-                        <a href="lessons.php?course_id=<?php echo $selectedCourseId; ?>" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+                        <a href="lessons.php?ca_id=<?php echo $selectedCaId; ?>" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
                             ✕ Đóng Danh Sách
                         </a>
                     </div>
@@ -201,7 +259,20 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                                 <?php echo htmlspecialchars($sub['student_code']); ?>
                                             </td>
                                             <td class="py-3.5 px-4 font-bold text-slate-900">
-                                                <?php echo htmlspecialchars($sub['student_name']); ?>
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <span><?php echo htmlspecialchars($sub['student_name']); ?></span>
+                                                    <?php if (!empty($sub['spam_ticket_count'])): ?>
+                                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-600 text-white shadow-2xs" 
+                                                              title="KTV báo cáo: <?php echo htmlspecialchars($sub['spam_reason'] ?: 'Gửi yêu cầu spam/vi phạm'); ?>">
+                                                            🚨 SV Vi Phạm (KTV Báo Cáo)
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <?php if (!empty($sub['spam_ticket_count'])): ?>
+                                                    <span class="block text-[10px] text-rose-600 font-normal mt-0.5 italic">
+                                                        Lý do vi phạm: <?php echo htmlspecialchars($sub['spam_reason']); ?>
+                                                    </span>
+                                                <?php endif; ?>
                                             </td>
                                             <td class="py-3.5 px-4 text-slate-600 font-mono">
                                                 <?php echo htmlspecialchars($sub['class_code'] ?? 'D24-CNTT1'); ?>
@@ -265,6 +336,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 <input type="hidden" name="action" value="update" />
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
                 <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
+                <input type="hidden" name="ca_id" value="<?php echo (int)$selectedCaId; ?>" />
                 <input type="hidden" name="lesson_id" id="formLessonId" value="0" />
 
                 <div>
@@ -323,3 +395,4 @@ $csrfToken = $_SESSION['csrf'] ?? '';
 
 </body>
 </html>
+

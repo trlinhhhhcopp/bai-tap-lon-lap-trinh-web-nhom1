@@ -150,7 +150,7 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                         </h2>
                     </div>
 
-                    <div class="shrink-0">
+                    <div class="shrink-0 flex items-center gap-2 flex-wrap">
                         <?php if ($isSubmitted): ?>
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs">
                                 <span>🎉</span> Đã đính kèm bài tập
@@ -160,6 +160,13 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                                 <span>⚠️</span> Cần đính kèm tệp
                             </span>
                         <?php endif; ?>
+
+                        <!-- NÚT BÁO SỰ CỐ KỸ THUẬT BUỔI HỌC THEO KỊCH BẢN 1 (ITIL INCIDENT MANAGEMENT) -->
+                        <a href="<?php echo $appBase; ?>tickets/create.php?course_id=<?= (int)$course['id'] ?>&lesson_id=<?= $lessonId ?>" 
+                           title="Gặp sự cố lỗi mạng, lỗi nộp tệp hoặc sự cố hệ thống ở buổi học này? Bấm để gửi phiếu cứu hộ ngay tới KTV trực ca"
+                           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition shadow-2xs">
+                            <span>🆘</span> Báo Lỗi Buổi Này
+                        </a>
                     </div>
                 </div>
 

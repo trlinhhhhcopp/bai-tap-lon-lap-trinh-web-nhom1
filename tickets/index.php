@@ -19,8 +19,7 @@ if (empty($_SESSION['user'])) {
 $currentUser   = $_SESSION['user'];
 $userRole      = $currentUser['role'];
 $userType      = $currentUser['user_type'] ?? 'student';
-$filterReqId   = ($userRole === 'requester') ? (int)$currentUser['id'] : 0;
-$filterAgentId = ($userRole === 'agent') ? (int)$currentUser['id'] : 0;
+$isLecturer    = ($userType === 'lecturer');
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
@@ -34,6 +33,17 @@ if ($status === 'warning') {
     $status = '';
 }
 $hasWarning = !empty($warningType) ? $warningType : false;
+
+// Nếu là Giảng viên và đang lọc xem Sinh viên vi phạm do KTV báo cáo:
+// Không ép điều kiện requester_id = ID giảng viên để giảng viên xem được phiếu của sinh viên vi phạm
+if ($isLecturer && $warningType === 'violation') {
+    $filterReqId = 0;
+} elseif ($userRole === 'requester') {
+    $filterReqId = (int)$currentUser['id'];
+} else {
+    $filterReqId = 0;
+}
+$filterAgentId = ($userRole === 'agent') ? (int)$currentUser['id'] : 0;
 
 // 2. Phân trang an toàn (5 bản ghi / trang)
 $perPage    = 5;
@@ -49,7 +59,7 @@ if ($page > $totalPages && $totalTickets > 0) {
 $tickets        = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning);
 $categories     = TicketRepository::getCategories();
 $slaCount       = TicketRepository::countSlaOverdue($filterReqId, $filterAgentId);
-$violationCount = TicketRepository::countViolations($filterReqId, $filterAgentId);
+$violationCount = TicketRepository::countViolations($filterReqId, $filterAgentId, $isLecturer);
 $flash        = get_flash();
 ?>
 <!DOCTYPE html>

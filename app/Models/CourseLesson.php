@@ -266,15 +266,27 @@ class CourseLesson
     /**
      * Lấy danh sách bài học các buổi của môn học dành cho Giảng viên quản lý
      */
-    public function getLessonsForLecturer(int $courseId): array
+    public function getLessonsForLecturer(int $courseId, int $classId = 0): array
     {
-        $sql = "SELECT l.*,
-                       (SELECT COUNT(*) FROM student_assignment_submissions s WHERE s.lesson_id = l.id AND s.is_completed = 1) AS submission_count
-                FROM course_lessons l
-                WHERE l.course_id = :cid
-                ORDER BY l.lesson_number ASC";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':cid' => $courseId]);
+        if ($classId > 0) {
+            $sql = "SELECT l.*,
+                           (SELECT COUNT(*) FROM student_assignment_submissions s 
+                            JOIN users u_sub ON s.student_id = u_sub.id 
+                            WHERE s.lesson_id = l.id AND s.is_completed = 1 AND u_sub.class_id = :class_id) AS submission_count
+                    FROM course_lessons l
+                    WHERE l.course_id = :cid
+                    ORDER BY l.lesson_number ASC";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':cid' => $courseId, ':class_id' => $classId]);
+        } else {
+            $sql = "SELECT l.*,
+                           (SELECT COUNT(*) FROM student_assignment_submissions s WHERE s.lesson_id = l.id AND s.is_completed = 1) AS submission_count
+                    FROM course_lessons l
+                    WHERE l.course_id = :cid
+                    ORDER BY l.lesson_number ASC";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':cid' => $courseId]);
+        }
         $lessons = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         $now = new DateTime('now', new DateTimeZone('Asia/Ho_Chi_Minh'));
@@ -292,6 +304,32 @@ class CourseLesson
     /**
      * Giảng viên cập nhật đề bài / yêu cầu và hạn nộp cho buổi học
      */
+    /**
+     * Lấy danh sách sinh viên thuộc các lớp mà Giảng viên phụ trách bị KTV báo cáo vi phạm
+     */
+    public function getViolatingStudentsForLecturer(int $lecturerId, bool $isAdmin = false): array
+    {
+        $sql = "SELECT DISTINCT t.id AS ticket_id, t.ticket_code, t.title AS ticket_title, 
+                                t.spam_reason, t.created_at AS reported_at,
+                                u.id AS student_id, u.user_code, u.name AS student_name, u.email AS student_email,
+                                cl.class_code, cl.name AS class_name
+                FROM tickets t
+                JOIN users u ON t.requester_id = u.id
+                LEFT JOIN classes cl ON u.class_id = cl.id
+                WHERE t.is_spam = 1 AND u.user_type = 'student' ";
+        
+        $params = [];
+        if (!$isAdmin) {
+            $sql .= "AND u.class_id IN (SELECT class_id FROM course_assignments WHERE lecturer_id = :lid) ";
+            $params[':lid'] = $lecturerId;
+        }
+        $sql .= "ORDER BY t.created_at DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function updateLessonAssignment(int $lessonId, string $requirement, string $deadlineAt, ?string $title = null): bool
     {
         $sql = "UPDATE course_lessons 
@@ -313,20 +351,27 @@ class CourseLesson
     /**
      * Lấy danh sách toàn bộ bài tập sinh viên đã nộp cho buổi học này
      */
-    public function getSubmissionsForLesson(int $lessonId): array
+    public function getSubmissionsForLesson(int $lessonId, int $classId = 0): array
     {
+        $whereClass = ($classId > 0) ? " AND u.class_id = :cid" : "";
         $sql = "SELECT s.*, 
                        u.name AS student_name, u.user_code AS student_code, u.email AS student_email,
                        l.title AS lesson_title, l.lesson_number, l.deadline_at,
-                       cl.class_code
+                       cl.class_code,
+                       (SELECT COUNT(*) FROM tickets t_sp WHERE t_sp.requester_id = u.id AND t_sp.is_spam = 1) AS spam_ticket_count,
+                       (SELECT t_sp.spam_reason FROM tickets t_sp WHERE t_sp.requester_id = u.id AND t_sp.is_spam = 1 ORDER BY t_sp.id DESC LIMIT 1) AS spam_reason
                 FROM student_assignment_submissions s
                 JOIN users u ON s.student_id = u.id
                 JOIN course_lessons l ON s.lesson_id = l.id
                 LEFT JOIN classes cl ON u.class_id = cl.id
-                WHERE s.lesson_id = :lid
+                WHERE s.lesson_id = :lid {$whereClass}
                 ORDER BY s.submitted_at DESC";
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':lid' => $lessonId]);
+        $params = [':lid' => $lessonId];
+        if ($classId > 0) {
+            $params[':cid'] = $classId;
+        }
+        $stmt->execute($params);
         $subs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($subs as &$sub) {
