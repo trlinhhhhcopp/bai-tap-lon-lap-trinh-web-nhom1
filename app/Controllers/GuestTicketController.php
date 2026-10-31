@@ -28,20 +28,20 @@ class GuestTicketController extends Controller {
 
         try {
             $user = User::findByEmailOrCode($userCode);
-            if ($user) {
-                if (($user['lock_reason'] ?? '') === 'banned_rescue_abuse' || ($user['lock_reason'] ?? '') === 'spam') {
-                    $this->flash('danger', '⛔ Tài khoản này đã bị KHÓA VĨNH VIỄN do cố tình nghịch trạm cứu hộ hoặc spam vi phạm nội quy. Hệ thống từ chối tiếp nhận phiếu cứu hộ từ tài khoản này!');
-                    $this->redirect('/guest/ticket');
-                }
-                if (empty($name)) {
-                    $name = $user['name'];
-                }
-            } else {
-                if (empty($name)) {
-                    $name = 'Sinh viên / Cán bộ ' . $userCode;
-                }
+            if (!$user) {
+                $this->flash('danger', "❌ Không tìm thấy thông tin Sinh viên / Cán bộ có mã '{$userCode}' trong cơ sở dữ liệu nhà trường. Vui lòng kiểm tra lại chính xác Mã SV/CB!");
+                $this->redirect('/guest/ticket');
+                return;
             }
-            $userId = $user ? $user['id'] : 1;
+            if (($user['lock_reason'] ?? '') === 'banned_rescue_abuse' || ($user['lock_reason'] ?? '') === 'spam') {
+                $this->flash('danger', '⛔ Tài khoản này đã bị KHÓA VĨNH VIỄN do cố tình nghịch trạm cứu hộ hoặc spam vi phạm nội quy. Hệ thống từ chối tiếp nhận phiếu cứu hộ từ tài khoản này!');
+                $this->redirect('/guest/ticket');
+                return;
+            }
+            if (empty($name)) {
+                $name = $user['name'];
+            }
+            $userId = (int)$user['id'];
             $issueTitle = trim($_POST['issue_title'] ?? 'Yêu cầu mở khóa tài khoản');
 
             $attachmentPath = null;

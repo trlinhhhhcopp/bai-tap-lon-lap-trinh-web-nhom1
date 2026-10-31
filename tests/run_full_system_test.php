@@ -162,34 +162,80 @@ try {
         if ((int)$item['id'] === 18) { $found18 = true; }
     }
     
-    // KTV bác bỏ (it_verified = 2) -> Không hiện cho GV
-    db()->prepare("UPDATE tickets SET it_verified = 2 WHERE id = 18")->execute();
+    // KTV bác bỏ (it_verified = 2, status = closed) -> Không hiện cho GV
+    db()->prepare("UPDATE tickets SET it_verified = 2, status = 'closed', lecturer_decision = 'pending' WHERE id = 18")->execute();
     $listV2 = TicketRepository::getPendingCourseIncidentsForLecturer($lecturerId);
     $found18V2 = false;
     foreach ($listV2 as $item) {
         if ((int)$item['id'] === 18) { $found18V2 = true; }
     }
 
-    // KTV xác nhận (it_verified = 1) -> Hiện cho GV
-    db()->prepare("UPDATE tickets SET it_verified = 1 WHERE id = 18")->execute();
+    // KTV xác nhận (it_verified = 1, status = in_progress) -> Hiện cho GV
+    db()->prepare("UPDATE tickets SET it_verified = 1, status = 'in_progress', lecturer_decision = 'pending' WHERE id = 18")->execute();
     $listV1 = TicketRepository::getPendingCourseIncidentsForLecturer($lecturerId);
     $found18V1 = false;
     foreach ($listV1 as $item) {
         if ((int)$item['id'] === 18) { $found18V1 = true; }
     }
 
+    // GV Từ chối gia hạn (lecturer_decision = 'rejected', status = 'closed') -> Biến mất khỏi danh sách chờ của GV
+    db()->prepare("UPDATE tickets SET it_verified = 1, status = 'closed', lecturer_decision = 'rejected' WHERE id = 18")->execute();
+    $listRejected = TicketRepository::getPendingCourseIncidentsForLecturer($lecturerId);
+    $found18Rejected = false;
+    foreach ($listRejected as $item) {
+        if ((int)$item['id'] === 18) { $found18Rejected = true; }
+    }
+
     // Hoàn trả lại
-    db()->prepare("UPDATE tickets SET it_verified = 0 WHERE id = 18")->execute();
+    db()->prepare("UPDATE tickets SET it_verified = 0, status = 'resolved', lecturer_decision = 'pending' WHERE id = 18")->execute();
 
     $showCode = file_get_contents(__DIR__ . '/../tickets/show.php');
     $hasKtvReject = strpos($showCode, 'ktv_reject_incident') !== false;
     $hasLecturerReject = strpos($showCode, 'lecturer_reject_extension') !== false;
     $hasTransferPerm = strpos($showCode, "in_array(\$userRole, ['agent', 'admin'])") !== false;
 
-    $passed11 = (!$found18 && !$found18V2 && $found18V1 && $hasKtvReject && $hasLecturerReject && $hasTransferPerm);
+    $passed11 = (!$found18 && !$found18V2 && $found18V1 && !$found18Rejected && $hasKtvReject && $hasLecturerReject && $hasTransferPerm);
     assert_test("11. Kịch bản 1: KTV Bác bỏ/Xác thực, GV Mở/Từ chối Deadline & Điều chuyển KTV", $passed11, "Chỉ hiện phiếu it_verified=1 cho GV | KTV Bác bỏ ẩn phiếu | GV Từ chối gia hạn | KTV được quyền điều chuyển");
 } catch (Exception $e) {
     assert_test("11. Kịch bản 1: KTV Bác bỏ/Xác thực, GV Mở/Từ chối Deadline & Điều chuyển KTV", false, $e->getMessage());
+}
+
+// 12. Kiểm tra SLA Service theo Giờ Hành Chính (T2 - T6, 08:00-12:00 & 13:30-17:30, loại trừ ngày nghỉ lễ)
+try {
+    require_once __DIR__ . '/../app/Services/SlaService.php';
+    // Test gửi phiếu tối Thứ Sáu 21:00 -> SLA 2 tiếng làm việc (120 phút) -> Hạn chót phải là Thứ Hai 10:00 sáng
+    $fridayNight = new DateTime('2026-11-06 21:00:00'); // 2026-11-06 là Thứ Sáu
+    $slaFriday = \App\Services\SlaService::addBusinessMinutes($fridayNight, 120);
+    $isCorrectSla = ($slaFriday->format('Y-m-d H:i') === '2026-11-09 10:00'); // 2026-11-09 là Thứ Hai
+
+    // Test nghỉ trưa: gửi 11:30 sáng, SLA 60 phút -> 11:30-12:00 (30p), nghỉ trưa 12:00-13:30, 13:30-14:00 (30p) -> Hạn chót 14:00
+    $lunchTest = new DateTime('2026-11-09 11:30:00');
+    $slaLunch = \App\Services\SlaService::addBusinessMinutes($lunchTest, 60);
+    $isCorrectLunch = ($slaLunch->format('Y-m-d H:i') === '2026-11-09 14:00');
+
+    assert_test("12. Động cơ SLA Giờ Hành Chính (SlaService)", $isCorrectSla && $isCorrectLunch, "Đêm/cuối tuần chuyển sang Thứ 2 10:00 | Nghỉ trưa đóng băng và cộng tiếp lúc 13:30");
+} catch (Exception $e) {
+    assert_test("12. Động cơ SLA Giờ Hành Chính (SlaService)", false, $e->getMessage());
+}
+
+// 13. Kiểm tra Trạm Cứu Hộ Khẩn Cấp (Guest Tickets & Xác thực tài khoản)
+try {
+    // 1. Chặn mã SV/CB không tồn tại
+    $fakeCode = 'FAKE999999';
+    $foundUser = \App\Models\User::findByEmailOrCode($fakeCode);
+    $isBlocked = ($foundUser === null);
+
+    // 2. Mã SV hợp lệ
+    $validUser = \App\Models\User::findByEmailOrCode('224001736');
+    $isValid = ($validUser !== null);
+
+    // 3. Admin có bảng & hàm lấy danh sách phiếu cứu hộ
+    $guestTickets = TicketRepository::getPendingGuestTickets();
+    $hasGuestMethod = is_array($guestTickets);
+
+    assert_test("13. Trạm Cứu Hộ Khẩn Cấp & Xác thực Người Dùng", $isBlocked && $isValid && $hasGuestMethod, "Chặn mã SV rác | Nhận diện đúng SV hợp lệ | Admin có danh sách & phương thức duyệt riêng");
+} catch (Exception $e) {
+    assert_test("13. Trạm Cứu Hộ Khẩn Cấp & Xác thực Người Dùng", false, $e->getMessage());
 }
 
 echo "\n========================================================================\n";

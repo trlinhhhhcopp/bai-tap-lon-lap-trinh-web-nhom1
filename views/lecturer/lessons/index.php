@@ -22,8 +22,15 @@ $csrfToken = $_SESSION['csrf'] ?? '';
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
+        <!-- NÚT KHÔI PHỤC BANNER TIẾN ĐỘ BÀI TẬP KHI BỊ ẨN -->
+        <div id="banner_lessons_restore" class="hidden flex justify-end">
+            <button type="button" onclick="toggleAppBanner('banner_lessons')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+                <span>👁️</span> <span>Hiện lại banner môn học</span>
+            </button>
+        </div>
+
         <!-- HEADER BANNER -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div id="banner_lessons" data-banner-id="banner_lessons" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2 flex-wrap mb-1.5">
                     <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
@@ -41,12 +48,15 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 </p>
             </div>
             
-            <div class="flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 p-3 rounded-2xl text-xs">
-                <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+                <div class="bg-slate-800/80 border border-slate-700/80 p-3 rounded-2xl text-xs">
                     <span class="text-slate-400 block text-[11px]">Giảng viên phụ trách:</span>
                     <strong class="text-white"><?php echo htmlspecialchars($currentUser['name']); ?></strong>
                     <span class="text-indigo-300 font-mono text-[11px]">(<?php echo htmlspecialchars($currentUser['user_code']); ?>)</span>
                 </div>
+                <button type="button" onclick="toggleAppBanner('banner_lessons')" title="Thu gọn banner" class="px-3 py-2 text-xs font-bold rounded-2xl bg-white/10 hover:bg-white/20 text-white/90 transition flex items-center gap-1 backdrop-blur-sm border border-white/10 cursor-pointer">
+                    <span>✕</span> <span>Ẩn banner</span>
+                </button>
             </div>
         </div>
 

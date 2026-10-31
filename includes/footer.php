@@ -144,4 +144,36 @@
         button.querySelector('[data-password-show-icon]').classList.toggle('hidden', !isVisible);
         button.querySelector('[data-password-hide-icon]').classList.toggle('hidden', isVisible);
     });
+
+    // ==============================================================================
+    // TÍNH NĂNG ẨN / HIỆN BANNER TOÀN DIỆN CÁC PHÂN HỆ (LOCAL STORAGE PERSISTENCE)
+    // ==============================================================================
+    window.toggleAppBanner = function(id) {
+        const banner = document.getElementById(id);
+        const restore = document.getElementById(id + '_restore');
+        if (!banner) return;
+        const isHidden = banner.classList.toggle('hidden');
+        if (restore) {
+            if (isHidden) {
+                restore.classList.remove('hidden');
+            } else {
+                restore.classList.add('hidden');
+            }
+        }
+        try {
+            localStorage.setItem('hide_' + id, isHidden ? '1' : '0');
+        } catch (e) {}
+    };
+
+    // Khởi tạo trạng thái banner khi tải trang
+    document.querySelectorAll('[data-banner-id]').forEach(function(el) {
+        const id = el.getAttribute('data-banner-id');
+        try {
+            if (localStorage.getItem('hide_' + id) === '1') {
+                el.classList.add('hidden');
+                const restore = document.getElementById(id + '_restore');
+                if (restore) restore.classList.remove('hidden');
+            }
+        } catch (e) {}
+    });
 </script>

@@ -108,23 +108,7 @@ class TicketService {
      * Tính toán hạn chót xử lý SLA tự động
      */
     public static function calculateSla(int $categoryId, int $priorityId): array {
-        $pdo = Database::getConnection();
-
-        $catStmt = $pdo->prepare("SELECT sla_hours FROM categories WHERE id = :id");
-        $catStmt->execute([':id' => $categoryId]);
-        $slaHours = (float)($catStmt->fetchColumn() ?: 4.0);
-
-        $prioStmt = $pdo->prepare("SELECT sla_factor FROM priorities WHERE id = :id");
-        $prioStmt->execute([':id' => $priorityId]);
-        $slaFactor = (float)($prioStmt->fetchColumn() ?: 1.0);
-
-        $effectiveMinutes = (int)round($slaHours * $slaFactor * 60);
-
-        return [
-            'effective_minutes' => $effectiveMinutes,
-            'triage_due_at'     => date('Y-m-d H:i:s', strtotime('+30 minutes')),
-            'due_at'            => date('Y-m-d H:i:s', strtotime("+{$effectiveMinutes} minutes")),
-        ];
+        return SlaService::calculateSlaDeadlines($categoryId, $priorityId);
     }
 
     /**

@@ -752,25 +752,28 @@ if ($action === 'guest_ticket') {
 
         try {
             $user = \App\Models\User::findByEmailOrCode($userCode);
-            if ($user) {
-                // Kiểm tra tài khoản có bị khóa vĩnh viễn do nghịch trạm cứu hộ/spam không (Page 8)
-                if (($user['lock_reason'] ?? '') === 'banned_rescue_abuse' || ($user['lock_reason'] ?? '') === 'spam') {
-                    $_SESSION['flash'] = [
-                        'type'    => 'danger',
-                        'message' => '⛔ Tài khoản này đã bị KHÓA VĨNH VIỄN do cố tình nghịch trạm cứu hộ hoặc spam vi phạm nội quy. Hệ thống từ chối tiếp nhận phiếu cứu hộ từ tài khoản này!'
-                    ];
-                    header('Location: ' . $appBase . 'index.php?action=guest_ticket');
-                    exit;
-                }
-                if (empty($name)) {
-                    $name = $user['name'];
-                }
-            } else {
-                if (empty($name)) {
-                    $name = 'Sinh viên / Cán bộ ' . $userCode;
-                }
+            if (!$user) {
+                $_SESSION['flash'] = [
+                    'type'    => 'danger',
+                    'message' => "❌ Không tìm thấy thông tin Sinh viên / Cán bộ có mã '{$userCode}' trong cơ sở dữ liệu nhà trường. Vui lòng kiểm tra lại chính xác Mã SV/CB!"
+                ];
+                header('Location: ' . $appBase . 'index.php?action=guest_ticket');
+                exit;
             }
-            $userId = $user ? (int)$user['id'] : 1;
+
+            // Kiểm tra tài khoản có bị khóa vĩnh viễn do nghịch trạm cứu hộ/spam không (Page 8)
+            if (($user['lock_reason'] ?? '') === 'banned_rescue_abuse' || ($user['lock_reason'] ?? '') === 'spam') {
+                $_SESSION['flash'] = [
+                    'type'    => 'danger',
+                    'message' => '⛔ Tài khoản này đã bị KHÓA VĨNH VIỄN do cố tình nghịch trạm cứu hộ hoặc spam vi phạm nội quy. Hệ thống từ chối tiếp nhận phiếu cứu hộ từ tài khoản này!'
+                ];
+                header('Location: ' . $appBase . 'index.php?action=guest_ticket');
+                exit;
+            }
+            if (empty($name)) {
+                $name = $user['name'];
+            }
+            $userId = (int)$user['id'];
 
             // Xử lý tệp đính kèm nếu có
             $attachmentPath = null;
@@ -1394,8 +1397,15 @@ if ($userType === 'student') {
 
         <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
+            <!-- NÚT KHÔI PHỤC BANNER SINH VIÊN KHI BỊ ẨN -->
+            <div id="banner_student_restore" class="hidden flex justify-end">
+                <button type="button" onclick="toggleAppBanner('banner_student')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+                    <span>👁️</span> <span>Hiện lại banner sinh viên</span>
+                </button>
+            </div>
+
             <!-- 1. BANNER CHÀO MỪNG SINH VIÊN (TƯƠI SÁNG, HIỆN ĐẠI THEO CHUẨN CỔNG TRƯỜNG ĐH) -->
-            <div class="bg-gradient-to-r from-sky-600 via-indigo-600 to-indigo-800 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div id="banner_student" data-banner-id="banner_student" class="bg-gradient-to-r from-sky-600 via-indigo-600 to-indigo-800 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-5">
                 <div class="absolute -right-8 -bottom-8 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="flex items-center gap-4 relative z-10">
                     <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md text-white border border-white/30 flex items-center justify-center text-2xl font-black shadow-lg shrink-0">
@@ -1435,6 +1445,9 @@ if ($userType === 'student') {
                     <a href="<?php echo $appBase; ?>tickets/create.php" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
                         <span>➕</span> Gửi Phiếu Mới
                     </a>
+                    <button type="button" onclick="toggleAppBanner('banner_student')" title="Thu gọn banner" class="px-3 py-2.5 bg-black/25 hover:bg-black/40 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1 text-xs border border-white/20 cursor-pointer">
+                        <span>✕</span> <span>Ẩn</span>
+                    </button>
                 </div>
 
             </div>
@@ -1682,8 +1695,15 @@ if ($userType === 'lecturer') {
 
         <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
+            <!-- NÚT KHÔI PHỤC BANNER GIẢNG VIÊN KHI BỊ ẨN -->
+            <div id="banner_lecturer_restore" class="hidden flex justify-end">
+                <button type="button" onclick="toggleAppBanner('banner_lecturer')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+                    <span>👁️</span> <span>Hiện lại banner giảng viên</span>
+                </button>
+            </div>
+
             <!-- Banner Chào Mừng Giảng Viên -->
-            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div id="banner_lecturer" data-banner-id="banner_lecturer" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="space-y-1">
                     <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                         👨‍🏫 CỔNG GIẢNG VIÊN (LECTURER PORTAL)
@@ -1692,6 +1712,11 @@ if ($userType === 'lecturer') {
                         Kính chào Thầy/Cô: <?php echo htmlspecialchars($currentUser['name']); ?>
                     </h1>
                     <p class="text-xs text-indigo-200/80">Mã cán bộ: <strong class="text-white"><?php echo htmlspecialchars($currentUser['user_code']); ?></strong> • Đơn vị: <?php echo htmlspecialchars($currentUser['department'] ?? 'Khoa Công Nghệ Thông Tin'); ?></p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="toggleAppBanner('banner_lecturer')" title="Thu gọn banner" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white/90 transition flex items-center gap-1 backdrop-blur-sm border border-white/10 cursor-pointer">
+                        <span>✕</span> <span>Ẩn banner</span>
+                    </button>
                 </div>
             </div>
 
@@ -1980,6 +2005,10 @@ $recentTickets = $pdo->query("
     ORDER BY t.id DESC
     LIMIT 6
 ")->fetchAll();
+
+require_once __DIR__ . '/app/Repositories/TicketRepository.php';
+$pendingGuestTickets = TicketRepository::getPendingGuestTickets();
+$pendingGuestCount   = count($pendingGuestTickets);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -2047,8 +2076,15 @@ $recentTickets = $pdo->query("
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
+        <!-- NÚT KHÔI PHỤC BANNER QUẢN TRỊ KHI BỊ ẨN -->
+        <div id="banner_admin_restore" class="hidden flex justify-end">
+            <button type="button" onclick="toggleAppBanner('banner_admin')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+                <span>👁️</span> <span>Hiện lại banner quản trị</span>
+            </button>
+        </div>
+
         <!-- Banner Admin Control Center -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div id="banner_admin" data-banner-id="banner_admin" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="space-y-1">
                 <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
                     🛡️ TRUNG TÂM QUẢN TRỊ VIÊN (ADMIN CONTROL CENTER)
@@ -2057,6 +2093,16 @@ $recentTickets = $pdo->query("
                     Bảng Điều Hành Hệ Thống Helpdesk
                 </h1>
                 <p class="text-xs text-indigo-200/80">Quản trị người dùng, phân công đào tạo, nhập dữ liệu Excel hàng loạt và điều phối tràn tải.</p>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+                <?php if ($pendingGuestCount > 0): ?>
+                    <a href="<?php echo $appBase; ?>tickets/index.php?has_warning=guest" class="px-3 py-1.5 rounded-xl bg-rose-500/30 hover:bg-rose-500/50 text-rose-200 border border-rose-400/40 font-bold text-xs flex items-center gap-1.5 transition">
+                        <span>🚑</span> <span>Trạm Cứu Hộ: <?php echo $pendingGuestCount; ?> phiếu</span>
+                    </a>
+                <?php endif; ?>
+                <button type="button" onclick="toggleAppBanner('banner_admin')" title="Thu gọn banner" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white/90 transition flex items-center gap-1 backdrop-blur-sm border border-white/10 cursor-pointer">
+                    <span>✕</span> <span>Ẩn banner</span>
+                </button>
             </div>
         </div>
 
@@ -2085,6 +2131,100 @@ $recentTickets = $pdo->query("
                 <span class="text-2xl font-black text-purple-600"><?php echo $totalUsers; ?></span>
             </div>
         </div>
+
+        <!-- BẢNG PHIẾU CỨU HỘ KHẨN CẤP CẦN ADMIN XEM XÉT / MỞ KHÓA TÀI KHOẢN -->
+        <?php if (!empty($pendingGuestTickets)): ?>
+            <div class="bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 border-2 border-rose-300 rounded-3xl p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2 border-b border-rose-200 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">🚑</span>
+                        <div>
+                            <h2 class="text-sm font-black text-rose-950 flex items-center gap-2">
+                                <span>PHIẾU CỨU HỘ KHẨN CẤP CẦN ADMIN XEM XÉT / MỞ KHÓA TÀI KHOẢN</span>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-600 text-white animate-pulse">
+                                    <?php echo $pendingGuestCount; ?> phiếu chờ
+                                </span>
+                            </h2>
+                            <p class="text-[11.5px] text-rose-800/90 mt-0.5">
+                                Sinh viên / Cán bộ gửi đơn qua Trạm Cứu Hộ Ngoài Cổng do tài khoản bị khóa hoặc quên mật khẩu. Quản trị viên xem xét và mở khóa trực tiếp.
+                            </p>
+                        </div>
+                    </div>
+                    <a href="<?php echo $appBase; ?>tickets/index.php?has_warning=guest" class="shrink-0 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-xs">
+                        Xem Tất Cả Trạm Cứu Hộ →
+                    </a>
+                </div>
+
+                <div class="overflow-x-auto bg-white rounded-2xl border border-rose-200 shadow-2xs">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-rose-50/80 text-rose-950 font-bold border-b border-rose-200 text-[11px]">
+                                <th class="py-3 px-4">Mã Vé Cứu Hộ</th>
+                                <th class="py-3 px-4">Người Gửi (SV/CB)</th>
+                                <th class="py-3 px-4">Lớp / Đơn Vị</th>
+                                <th class="py-3 px-4">Trạng Thái Tài Khoản</th>
+                                <th class="py-3 px-4 text-center">Xác Thực KTV</th>
+                                <th class="py-3 px-4 text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-rose-100">
+                            <?php foreach ($pendingGuestTickets as $gt): ?>
+                                <tr class="hover:bg-rose-50/40 transition">
+                                    <td class="py-3 px-4 font-mono font-bold text-rose-700">
+                                        <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $gt['id']; ?>" class="hover:underline">
+                                            <?php echo htmlspecialchars($gt['ticket_code']); ?>
+                                        </a>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="font-bold text-slate-900"><?php echo htmlspecialchars($gt['student_name'] ?: 'Khách vãng lai'); ?></div>
+                                        <div class="text-[11px] font-mono text-slate-500">Mã: <?php echo htmlspecialchars($gt['student_code'] ?: 'N/A'); ?></div>
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-700 font-medium">
+                                        <?php echo htmlspecialchars($gt['class_code']); ?>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <?php if ((int)($gt['is_locked'] ?? 0) === 1): ?>
+                                            <span class="px-2 py-0.5 rounded-full text-[10.5px] font-black bg-rose-100 text-rose-800 border border-rose-200">
+                                                🔒 Đang Bị Khóa
+                                            </span>
+                                            <?php if (!empty($gt['lock_reason'])): ?>
+                                                <div class="text-[10.5px] text-rose-600 mt-0.5 truncate max-w-xs" title="<?php echo htmlspecialchars($gt['lock_reason']); ?>">
+                                                    Lý do: <?php echo htmlspecialchars($gt['lock_reason']); ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        <?php else: ?>
+                                            <span class="px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                                Bình thường / Quên mật khẩu
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        <?php if ((int)($gt['rescue_verified'] ?? 0) === 1): ?>
+                                            <span class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                ✅ KTV Đã Xác Nhận
+                                            </span>
+                                        <?php elseif ((int)($gt['rescue_verified'] ?? 0) === 2): ?>
+                                            <span class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-100 text-rose-800 border border-rose-200">
+                                                ❌ KTV Bác Bỏ
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                                                ⏳ Chờ KTV Xác Nhận
+                                            </span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $gt['id']; ?>" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-2xs inline-flex items-center gap-1 cursor-pointer">
+                                            <span>🔓</span> Xem & Xử Lý →
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
 
         <!-- 2 CỘT: DANH SÁCH PHIẾU CẦN TRIAGE & GIÁM SÁT TẢI 5 KTV -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">

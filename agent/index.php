@@ -138,8 +138,15 @@ $flash = get_flash();
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
+        <!-- NÚT KHÔI PHỤC BANNER KTV KHI BỊ ẨN -->
+        <div id="banner_agent_restore" class="hidden flex justify-end">
+            <button type="button" onclick="toggleAppBanner('banner_agent')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+                <span>👁️</span> <span>Hiện lại banner bàn làm việc KTV</span>
+            </button>
+        </div>
+
         <!-- HEADER BANNER WORKSPACE -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div id="banner_agent" data-banner-id="banner_agent" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <div class="flex items-center gap-2 mb-1.5 flex-wrap">
                     <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
@@ -165,7 +172,11 @@ $flash = get_flash();
                 </h1>
                 <p class="text-xs text-indigo-200/80 mt-0.5">Tiếp nhận, xử lý sự cố từ xa, ghi chú nội bộ và lập biên bản giải pháp kỹ thuật.</p>
             </div>
-
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="toggleAppBanner('banner_agent')" title="Thu gọn banner" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white/90 transition flex items-center gap-1 backdrop-blur-sm border border-white/10 cursor-pointer">
+                    <span>✕</span> <span>Ẩn banner</span>
+                </button>
+            </div>
         </div>
 
         <!-- THÔNG BÁO FLASH MESSAGE -->

@@ -33,7 +33,12 @@ if ($status === 'warning') {
     $warningType = 'sla';
     $status = '';
 }
-$hasWarning = ($warningType === 'sla') ? 'sla' : false;
+$hasWarning = false;
+if ($warningType === 'sla') {
+    $hasWarning = 'sla';
+} elseif ($warningType === 'guest') {
+    $hasWarning = 'guest';
+}
 
 $lecturerId = $isLecturer ? (int)$currentUser['id'] : 0;
 if ($isLecturer) {
@@ -60,6 +65,7 @@ $tickets        = TicketRepository::findAll($keyword, $page, $perPage, $status, 
 $categories     = TicketRepository::getCategories();
 $slaCount       = TicketRepository::countSlaOverdue($filterReqId, $filterAgentId);
 $lecturerIncidentsCount = $isLecturer ? TicketRepository::countLecturerCourseIncidents((int)$currentUser['id']) : 0;
+$guestCount     = in_array($userRole, ['agent', 'admin']) ? TicketRepository::countPendingGuestTickets() : 0;
 $flash        = get_flash();
 ?>
 <!DOCTYPE html>
@@ -77,8 +83,15 @@ $flash        = get_flash();
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-8 space-y-6">
 
+        <!-- NÚT KHÔI PHỤC BANNER SỰ CỐ KHI BỊ ẨN -->
+        <div id="banner_tickets_restore" class="hidden flex justify-end">
+            <button type="button" onclick="toggleAppBanner('banner_tickets')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
+                <span>👁️</span> <span>Hiện lại banner sự cố</span>
+            </button>
+        </div>
+
         <!-- BANNER ĐẦU TRANG THEO THIẾT KẾ TRẦN THỤC LINH & CORE NHÓM 1 -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div id="banner_tickets" data-banner-id="banner_tickets" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="space-y-1.5">
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
@@ -118,6 +131,9 @@ $flash        = get_flash();
                         <span>➕</span> Gửi Phiếu Mới
                     </a>
                 <?php endif; ?>
+                <button type="button" onclick="toggleAppBanner('banner_tickets')" title="Thu gọn banner" class="px-3 py-2 text-xs font-bold rounded-2xl bg-white/10 hover:bg-white/20 text-white/90 transition flex items-center gap-1 backdrop-blur-sm border border-white/10 cursor-pointer">
+                    <span>✕</span> <span>Ẩn banner</span>
+                </button>
             </div>
         </div>
 
@@ -168,6 +184,16 @@ $flash        = get_flash();
                     <span>⏰ Quá Hạn SLA</span>
                     <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'sla') ? 'bg-white text-rose-700' : 'bg-rose-600 text-white' ?>"><?= $slaCount ?></span>
                 </a>
+
+                <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                    <!-- TAB TRẠM CỨU HỘ NGOÀI CHO KTV & ADMIN -->
+                    <a href="index.php?warning=guest<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                       title="Xem danh sách các đơn cứu hộ khẩn cấp từ bên ngoài cổng"
+                       class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'guest') ? 'bg-orange-600 text-white shadow-sm ring-2 ring-orange-400' : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200' ?>">
+                        <span>🚑 Trạm Cứu Hộ</span>
+                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'guest') ? 'bg-white text-orange-700' : 'bg-orange-600 text-white' ?>"><?= $guestCount ?></span>
+                    </a>
+                <?php endif; ?>
 
                 <a href="index.php?status=new<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'new' && empty($warningType)) ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">

@@ -80,6 +80,8 @@ class TicketRepository {
                 $conditions[] = "t.status NOT IN ('resolved', 'closed') AND ((t.due_at IS NOT NULL AND t.due_at < NOW()) OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL))";
             } elseif ($hasWarning === 'violation') {
                 $conditions[] = "t.is_spam = 1";
+            } elseif ($hasWarning === 'guest') {
+                $conditions[] = "t.is_guest_ticket = 1";
             } else {
                 $conditions[] = "(
                     (t.status NOT IN ('resolved', 'closed')
@@ -187,6 +189,8 @@ class TicketRepository {
                 $conditions[] = "t.status NOT IN ('resolved', 'closed') AND ((t.due_at IS NOT NULL AND t.due_at < NOW()) OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL))";
             } elseif ($hasWarning === 'violation') {
                 $conditions[] = "t.is_spam = 1";
+            } elseif ($hasWarning === 'guest') {
+                $conditions[] = "t.is_guest_ticket = 1";
             } else {
                 $conditions[] = "(
                     (t.status NOT IN ('resolved', 'closed')
@@ -418,6 +422,12 @@ class TicketRepository {
         $courseId = !empty($data['course_id']) ? (int)$data['course_id'] : null;
         $lessonId = !empty($data['lesson_id']) ? (int)$data['lesson_id'] : null;
 
+        // Tính toán SLA chuẩn theo giờ hành chính (T2-T6, trừ ngày nghỉ lễ & ngoài giờ)
+        require_once __DIR__ . '/../Services/SlaService.php';
+        $sla = \App\Services\SlaService::calculateSlaDeadlines((int)$data['category_id'], (int)$data['priority_id']);
+        $triageDueAt = $sla['triage_due_at'];
+        $dueAt       = $sla['due_at'];
+
         $sql = "INSERT INTO tickets (
                     ticket_code, requester_id, assigned_to, category_id, priority_id, 
                     course_id, lesson_id,
@@ -428,8 +438,8 @@ class TicketRepository {
                     :course_id, :lesson_id,
                     :title, :description, :system_affected, :attachment_path,
                     'new', NOW(), NOW(),
-                    DATE_ADD(NOW(), INTERVAL 30 MINUTE),
-                    DATE_ADD(NOW(), INTERVAL :eff_min MINUTE)
+                    :triage_due_at,
+                    :due_at
                 )";
 
         $stmt = $db->prepare($sql);
@@ -445,7 +455,8 @@ class TicketRepository {
             'description'     => trim($data['description']),
             'system_affected' => trim($data['system_affected']),
             'attachment_path' => $attachmentPath,
-            'eff_min'         => $effectiveMinutes,
+            'triage_due_at'   => $triageDueAt,
+            'due_at'          => $dueAt,
         ]);
 
         return (int) $db->lastInsertId();
@@ -654,13 +665,15 @@ class TicketRepository {
 
 
     /**
-     * Đếm số phiếu sự cố học tập liên quan đến lớp/học phần của Giảng viên phụ trách (chỉ tính phiếu KTV đã xác nhận có lỗi)
+     * Đếm số phiếu sự cố học tập CẦN Giảng viên xem xét (KTV đã xác nhận có lỗi & GV chưa xử lý)
      */
     public static function countLecturerCourseIncidents(int $lecturerId): int {
         $db = db();
         $sql = "SELECT COUNT(*) FROM tickets t 
                 WHERE t.lesson_id IS NOT NULL 
                   AND t.it_verified = 1
+                  AND (t.lecturer_decision IS NULL OR t.lecturer_decision = 'pending')
+                  AND t.status NOT IN ('closed', 'resolved')
                   AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid) 
                        OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid2))";
         $stmt = $db->prepare($sql);
@@ -669,7 +682,7 @@ class TicketRepository {
     }
 
     /**
-     * Lấy danh sách các phiếu sự cố học tập cần Giảng viên xem xét (Chỉ lấy phiếu KTV đã xác thực có lỗi kỹ thuật)
+     * Lấy danh sách các phiếu sự cố học tập CẦN Giảng viên xem xét (KTV đã xác thực có lỗi kỹ thuật & GV chưa quyết định)
      */
     public static function getPendingCourseIncidentsForLecturer(int $lecturerId): array {
         $db = db();
@@ -685,6 +698,8 @@ class TicketRepository {
                 LEFT JOIN course_lessons cln ON t.lesson_id = cln.id
                 WHERE t.lesson_id IS NOT NULL
                   AND t.it_verified = 1
+                  AND (t.lecturer_decision IS NULL OR t.lecturer_decision = 'pending')
+                  AND t.status NOT IN ('closed', 'resolved')
                   AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid)
                        OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid2))
                 ORDER BY t.id DESC
@@ -692,5 +707,32 @@ class TicketRepository {
         $stmt = $db->prepare($sql);
         $stmt->execute([':lid' => $lecturerId, ':lid2' => $lecturerId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Đếm số phiếu cứu hộ khẩn cấp (Guest Tickets) đang chờ xử lý
+     */
+    public static function countPendingGuestTickets(): int {
+        $db = db();
+        return (int)$db->query("SELECT COUNT(*) FROM tickets WHERE is_guest_ticket = 1 AND status NOT IN ('closed')")->fetchColumn();
+    }
+
+    /**
+     * Lấy danh sách phiếu cứu hộ khẩn cấp cho Quản trị viên (Admin)
+     */
+    public static function getPendingGuestTickets(): array {
+        $db = db();
+        $sql = "SELECT t.*, u_req.name AS student_name, u_req.user_code AS student_code,
+                       CASE WHEN (u_req.is_active = 0 OR (u_req.locked_until IS NOT NULL AND u_req.locked_until > NOW()) OR (u_req.lock_reason IS NOT NULL AND u_req.lock_reason != 'none')) THEN 1 ELSE 0 END AS is_locked,
+                       u_req.lock_reason,
+                       COALESCE(cl.class_code, 'N/A') AS class_code,
+                       ag.name AS agent_name, ag.user_code AS agent_code
+                FROM tickets t
+                LEFT JOIN users u_req ON t.requester_id = u_req.id
+                LEFT JOIN classes cl ON u_req.class_id = cl.id
+                LEFT JOIN users ag ON t.assigned_to = ag.id
+                WHERE t.is_guest_ticket = 1 AND t.status NOT IN ('closed')
+                ORDER BY t.rescue_verified DESC, t.id DESC";
+        return $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 }

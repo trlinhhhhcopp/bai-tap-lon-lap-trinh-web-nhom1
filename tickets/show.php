@@ -113,12 +113,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                             "⏰ Thời hạn nộp bài mới (Deadline): " . $formattedDl . "\n" .
                             "💬 Lời nhắn của Giảng viên: \"" . $lecturerNote . "\"\n" .
                             "✅ Sinh viên vui lòng truy cập Cổng Học Tập để nộp bài làm bổ sung trước thời hạn trên.";
-            TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'resolved');
+            TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
 
-            // 4. Cập nhật trạng thái phiếu sang resolved
-            TicketRepository::updateStatus($id, 'resolved');
+            // 4. Cập nhật quyết định của Giảng viên & tự động hoàn tất phiếu
+            db()->prepare("UPDATE tickets SET lecturer_decision = 'approved', lecturer_decision_at = NOW(), lecturer_decision_note = :note, status = 'closed', closed_at = NOW(), closed_reason = 'completed' WHERE id = :id")
+                ->execute([':note' => $lecturerNote, ':id' => $id]);
 
-            set_flash('success', "Thầy/Cô đã mở lại Deadline thành công cho Buổi {$lessonNum} đến: <strong>{$formattedDl}</strong>! Phiếu đã chuyển sang trạng thái Đã giải quyết.");
+            set_flash('success', "Thầy/Cô đã mở lại Deadline thành công cho Buổi {$lessonNum} đến: <strong>{$formattedDl}</strong>! Phiếu tự động chuyển sang trạng thái Đã hoàn tất.");
             header("Location: show.php?id={$id}&view_as={$viewAs}");
             exit;
         } else {
@@ -130,21 +131,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 }
 
 // -----------------------------------------------------------------------------
-// KTV BÁC BỎ SỰ CỐ KỸ THUẬT (SV BÁO SAI / KHÔNG CÓ LỖI)
+// KTV BÁC BỎ SỰ CỐ KỸ THUẬT (SV BÁO SAI / KHÔNG CÓ LỖI) -> TỰ CHUYỂN HOÀN TẤT
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ktv_reject_incident') {
     if (in_array($userRole, ['agent', 'admin'])) {
         $rejectReason = trim($_POST['reject_reason'] ?? 'Kỹ thuật viên đã kiểm tra log hệ thống: Mạng và máy chủ hoạt động bình thường, không ghi nhận sự cố gián đoạn mạng. Sinh viên báo sai sự thật.');
-        db()->prepare("UPDATE tickets SET it_verified = 2, it_verified_at = NOW(), it_verified_note = :note, status = 'resolved' WHERE id = :id")
+        db()->prepare("UPDATE tickets SET it_verified = 2, it_verified_at = NOW(), it_verified_note = :note, status = 'closed', closed_at = NOW(), closed_reason = 'completed' WHERE id = :id")
             ->execute([':note' => $rejectReason, ':id' => $id]);
 
         $replyContent = "❌ [KTV BÁC BỎ YÊU CẦU SỰ CỐ KỸ THUẬT - KHÔNG CÓ LỖI]\n" .
                         "Kỹ thuật viên đã kiểm tra nhật ký hệ thống: Xác nhận KHÔNG CÓ sự cố kỹ thuật nào xảy ra.\n" .
                         "Lý do: \"" . $rejectReason . "\"\n" .
-                        "👉 Yêu cầu báo lỗi bị bác bỏ. Giảng viên không cần xem xét mở lại Deadline.";
-        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'resolved');
+                        "👉 Yêu cầu báo lỗi bị bác bỏ. Phiếu tự động chuyển sang Hoàn tất và không chuyển cho Giảng viên.";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
 
-        set_flash('info', "Đã bác bỏ báo lỗi kỹ thuật (Sinh viên báo sai). Phiếu đã được giải quyết và không hiển thị trên danh sách của Giảng viên.");
+        set_flash('info', "Đã bác bỏ báo lỗi kỹ thuật (Sinh viên báo sai). Phiếu tự động chuyển sang Hoàn tất & Đóng.");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
     }
@@ -155,7 +156,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ktv_reset_verification') {
     if (in_array($userRole, ['agent', 'admin'])) {
-        db()->prepare("UPDATE tickets SET it_verified = 0, it_verified_at = NULL, it_verified_note = NULL WHERE id = :id")
+        db()->prepare("UPDATE tickets SET it_verified = 0, it_verified_at = NULL, it_verified_note = NULL, lecturer_decision = 'pending', lecturer_decision_at = NULL, lecturer_decision_note = NULL, status = 'in_progress', closed_at = NULL, closed_reason = NULL WHERE id = :id")
             ->execute([':id' => $id]);
 
         $replyContent = "↺ [KTV THU HỒI BIÊN BẢN XÁC THỰC]\n" .
@@ -169,20 +170,109 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 }
 
 // -----------------------------------------------------------------------------
-// GIẢNG VIÊN TỪ CHỐI GIA HẠN / HỦY GIA HẠN DEADLINE
+// GIẢNG VIÊN TỪ CHỐI GIA HẠN / HỦY GIA HẠN DEADLINE -> TỰ CHUYỂN HOÀN TẤT
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'lecturer_reject_extension') {
     if ($isCourseLecturer || $userRole === 'admin') {
         $rejectNote = trim($_POST['lecturer_reject_note'] ?? 'Thầy/Cô không chấp thuận gia hạn Deadline do thời gian làm bài đã đủ dài theo quy chế đào tạo.');
         
+        db()->prepare("UPDATE tickets SET lecturer_decision = 'rejected', lecturer_decision_at = NOW(), lecturer_decision_note = :note, status = 'closed', closed_at = NOW(), closed_reason = 'completed' WHERE id = :id")
+            ->execute([':note' => $rejectNote, ':id' => $id]);
+
         $replyContent = "🚫 [GIẢNG VIÊN BỘ MÔN TỪ CHỐI GIA HẠN DEADLINE]\n" .
                         "Thầy/Cô đã xem xét yêu cầu và quyết định KHÔNG mở lại Deadline cho Buổi " . ($ticket['lesson_number'] ?? '') . ".\n" .
                         "Lý do của Thầy/Cô: \"" . $rejectNote . "\"\n" .
                         "Sinh viên lưu ý nộp bài đúng hạn ở các buổi học tiếp theo.";
-        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'resolved');
-        TicketRepository::updateStatus($id, 'resolved');
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
 
-        set_flash('info', "Đã từ chối gia hạn Deadline cho sinh viên. Phiếu chuyển sang trạng thái Đã giải quyết.");
+        set_flash('info', "Đã từ chối gia hạn Deadline cho sinh viên. Phiếu tự động chuyển sang Hoàn tất & Đóng.");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// XỬ LÝ TRẠM CỨU HỘ: KTV XÁC THỰC & CHUYỂN TIẾP CHO ADMIN
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ktv_verify_rescue') {
+    if (in_array($userRole, ['agent', 'admin'])) {
+        $verifyNote = trim($_POST['rescue_verify_note'] ?? 'Kỹ thuật viên đã kiểm tra thông tin sinh viên/cán bộ: Xác nhận hồ sơ hợp lệ và chuyển tiếp Ban Quản Trị (Admin) xem xét phê duyệt mở khóa tài khoản.');
+        db()->prepare("UPDATE tickets SET rescue_verified = 1, rescue_verified_at = NOW(), rescue_verified_note = :note WHERE id = :id")
+            ->execute([':note' => $verifyNote, ':id' => $id]);
+
+        $replyContent = "🚑 [KTV ĐÃ XÁC THỰC ĐƠN CỨU HỘ & CHUYỂN ADMIN]\n" .
+                        "Kỹ thuật viên đã kiểm tra hồ sơ, đối chiếu thông tin sinh viên/cán bộ hợp lệ.\n" .
+                        "Ghi chú: \"" . $verifyNote . "\"\n" .
+                        "👉 Kính chuyển Quản Trị Viên (Admin) xem xét phê duyệt mở khóa tài khoản và thiết lập lại mật khẩu.";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'in_progress');
+
+        set_flash('success', "Đã xác thực đơn cứu hộ và chuyển tiếp Ban Quản Trị (Admin) thành công!");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// XỬ LÝ TRẠM CỨU HỘ: KTV BÁC BỎ ĐƠN CỨU HỘ (SPAM / NGHỊCH TRẠM CỨU HỘ)
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ktv_reject_rescue') {
+    if (in_array($userRole, ['agent', 'admin'])) {
+        $rejectNote = trim($_POST['rescue_reject_note'] ?? 'Kỹ thuật viên đã kiểm tra: Thông tin cung cấp không trùng khớp với hồ sơ hoặc có hành vi spam / nghịch trạm cứu hộ.');
+        db()->prepare("UPDATE tickets SET rescue_verified = 2, rescue_verified_at = NOW(), rescue_verified_note = :note, status = 'closed', closed_at = NOW(), closed_reason = 'duplicate' WHERE id = :id")
+            ->execute([':note' => $rejectNote, ':id' => $id]);
+
+        $replyContent = "❌ [KTV BÁC BỎ ĐƠN CỨU HỘ]\n" .
+                        "Kỹ thuật viên đã kiểm tra và bác bỏ yêu cầu cứu hộ này.\n" .
+                        "Lý do: \"" . $rejectNote . "\"\n" .
+                        "Đơn cứu hộ đã được đóng.";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
+
+        set_flash('info', "Đã bác bỏ đơn cứu hộ.");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// XỬ LÝ TRẠM CỨU HỘ: ADMIN DUYỆT MỞ KHÓA TÀI KHOẢN & RESET MẬT KHẨU
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'admin_unlock_account') {
+    if ($userRole === 'admin') {
+        $targetUserId = (int)$ticket['requester_id'];
+        $defaultPassHash = password_hash('123456', PASSWORD_BCRYPT);
+        db()->prepare("UPDATE users SET is_active = 1, locked_until = NULL, lock_reason = 'none', failed_attempts = 0, password_hash = :hash, is_first_login = 1 WHERE id = :uid")
+            ->execute([':hash' => $defaultPassHash, ':uid' => $targetUserId]);
+        db()->prepare("UPDATE tickets SET rescue_verified = 1, status = 'closed', closed_at = NOW(), closed_reason = 'completed' WHERE id = :id")
+            ->execute([':id' => $id]);
+
+        $replyContent = "🔓 [ADMIN PHÊ DUYỆT MỞ KHÓA TÀI KHOẢN & ĐẶT LẠI MẬT KHẨU]\n" .
+                        "Quản trị viên đã phê duyệt đơn cứu hộ:\n" .
+                        "✅ Tài khoản sinh viên/cán bộ đã được MỞ KHÓA thành công.\n" .
+                        "🔑 Mật khẩu tạm thời đặt về: 123456 (Hệ thống yêu cầu đổi mật khẩu mới ở lần đăng nhập đầu tiên).\n" .
+                        "📧 Hướng dẫn đã được xác nhận gửi về email liên hệ: " . ($ticket['contact_email'] ?? '') . ".";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
+
+        set_flash('success', "Đã mở khóa tài khoản thành công và đặt lại mật khẩu về '123456'!");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// XỬ LÝ TRẠM CỨU HỘ: ADMIN TỪ CHỐI CỨU HỘ & GIỮ NGUYÊN KHÓA TÀI KHOẢN
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'admin_reject_rescue') {
+    if ($userRole === 'admin') {
+        $reason = trim($_POST['admin_reject_reason'] ?? 'Ban Quản Trị từ chối mở khóa tài khoản do thông tin xác minh không đủ căn cứ.');
+        db()->prepare("UPDATE tickets SET rescue_verified = 2, rescue_verified_at = NOW(), rescue_verified_note = :note, status = 'closed', closed_at = NOW(), closed_reason = 'duplicate' WHERE id = :id")
+            ->execute([':note' => $reason, ':id' => $id]);
+
+        $replyContent = "🔒 [ADMIN TỪ CHỐI ĐƠN CỨU HỘ]\n" .
+                        "Ban Quản Trị từ chối yêu cầu cứu hộ mở khóa.\n" .
+                        "Lý do: \"" . $reason . "\"";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
+
+        set_flash('info', "Đã từ chối đơn cứu hộ.");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
     }
@@ -718,8 +808,50 @@ $flash   = get_flash();
 
                     <!-- 2. KHỐI THẨM QUYỀN HỌC THUẬT CỦA GIẢNG VIÊN -->
                     <?php if ($isCourseLecturer || $userRole === 'admin'): ?>
-                        <?php if ((int)($ticket['it_verified'] ?? 0) === 1): ?>
-                            <!-- KTV ĐÃ XÁC NHẬN: GIẢNG VIÊN CÓ 2 LỰA CHỌN (GIA HẠN HOẶC TỪ CHỐI GIA HẠN) -->
+                        <?php if (($ticket['lecturer_decision'] ?? '') === 'approved'): ?>
+                            <!-- GIẢNG VIÊN ĐÃ CHẤP THUẬN -> BIẾN MẤT FORM, HIỆN KẾT QUẢ ĐÃ DUYỆT -->
+                            <div class="p-4 bg-emerald-50 border-2 border-emerald-300 rounded-2xl space-y-2 text-xs text-emerald-950 shadow-2xs">
+                                <div class="font-bold flex items-center justify-between flex-wrap gap-2 border-b border-emerald-200 pb-2">
+                                    <span class="flex items-center gap-1.5 font-black text-sm text-emerald-900">
+                                        <span>🎓</span> KẾT QUẢ XỬ LÝ HỌC VỤ: GIẢNG VIÊN ĐÃ CHẤP THUẬN GIA HẠN DEADLINE
+                                    </span>
+                                    <span class="font-mono text-[11px] text-emerald-700 font-semibold"><?php echo htmlspecialchars($ticket['lecturer_decision_at'] ?? ''); ?></span>
+                                </div>
+                                <p class="text-[12px] leading-relaxed">
+                                    ✅ <strong>Thầy/Cô đã chấp thuận mở lại Deadline cho Buổi <?php echo (int)$ticket['lesson_number']; ?>:</strong>
+                                    Hạn nộp mới: <strong class="font-mono text-emerald-800"><?php echo htmlspecialchars($ticket['lesson_deadline_at'] ?? ''); ?></strong>
+                                </p>
+                                <?php if (!empty($ticket['lecturer_decision_note'])): ?>
+                                    <p class="text-[11.5px] italic text-emerald-800 bg-white/70 p-2.5 rounded-xl border border-emerald-200">
+                                        "<?php echo htmlspecialchars($ticket['lecturer_decision_note']); ?>"
+                                    </p>
+                                <?php endif; ?>
+                                <span class="text-[10.5px] text-emerald-700 block italic">Phiếu sự cố đã được giải quyết và tự động hoàn tất & đóng.</span>
+                            </div>
+
+                        <?php elseif (($ticket['lecturer_decision'] ?? '') === 'rejected'): ?>
+                            <!-- GIẢNG VIÊN ĐÃ TỪ CHỐI -> BIẾN MẤT FORM, HIỆN KẾT QUẢ TỪ CHỐI -->
+                            <div class="p-4 bg-rose-50 border-2 border-rose-300 rounded-2xl space-y-2 text-xs text-rose-950 shadow-2xs">
+                                <div class="font-bold flex items-center justify-between flex-wrap gap-2 border-b border-rose-200 pb-2">
+                                    <span class="flex items-center gap-1.5 font-black text-sm text-rose-900">
+                                        <span>🎓</span> KẾT QUẢ XỬ LÝ HỌC VỤ: GIẢNG VIÊN ĐÃ TỪ CHỐI GIA HẠN DEADLINE
+                                    </span>
+                                    <span class="font-mono text-[11px] text-rose-700 font-semibold"><?php echo htmlspecialchars($ticket['lecturer_decision_at'] ?? ''); ?></span>
+                                </div>
+                                <p class="text-[12px] leading-relaxed">
+                                    🚫 <strong>Thầy/Cô đã từ chối yêu cầu gia hạn Deadline cho Buổi <?php echo (int)$ticket['lesson_number']; ?>:</strong>
+                                    Hạn nộp bài ban đầu được giữ nguyên theo quy chế đào tạo.
+                                </p>
+                                <?php if (!empty($ticket['lecturer_decision_note'])): ?>
+                                    <p class="text-[11.5px] italic text-rose-800 bg-white/70 p-2.5 rounded-xl border border-rose-200">
+                                        "<?php echo htmlspecialchars($ticket['lecturer_decision_note']); ?>"
+                                    </p>
+                                <?php endif; ?>
+                                <span class="text-[10.5px] text-rose-700 block italic">Yêu cầu gia hạn đã bị từ chối và phiếu đã tự động hoàn tất & đóng.</span>
+                            </div>
+
+                        <?php elseif ((int)($ticket['it_verified'] ?? 0) === 1): ?>
+                            <!-- KTV ĐÃ XÁC NHẬN & GV CHƯA QUYẾT ĐỊNH: HIỆN 2 LỰA CHỌN -->
                             <div class="p-4 bg-gradient-to-r from-purple-100/90 via-indigo-100/90 to-purple-50 border-2 border-purple-300 rounded-2xl space-y-3 text-xs">
                                 <div class="flex items-center justify-between flex-wrap gap-2 border-b border-purple-200 pb-2">
                                     <span class="font-black text-purple-950 flex items-center gap-1.5 text-sm">
@@ -798,20 +930,178 @@ $flash   = get_flash();
                         <?php endif; ?>
                     <?php endif; ?>
 
-                    <!-- 3. THÔNG BÁO CHO SINH VIÊN KHI THẦY/CÔ ĐÃ MỞ LẠI DEADLINE -->
-                    <?php if ($userRole === 'requester' && !$isLecturer && ((int)($ticket['it_verified'] ?? 0) === 1 || $ticket['status'] === 'resolved')): ?>
-                        <div class="p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs text-emerald-900">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xl">🎉</span>
-                                <div>
-                                    <strong>Thầy/Cô đã chấp thuận gia hạn Deadline cho Buổi này!</strong>
-                                    <div class="text-[11px] text-emerald-700 mt-0.5">Hạn nộp hiện tại: <span class="font-mono font-bold"><?php echo htmlspecialchars($ticket['lesson_deadline_at'] ?? ''); ?></span></div>
+                    <!-- 3. THÔNG BÁO CHO SINH VIÊN -->
+                    <?php if ($userRole === 'requester' && !$isLecturer): ?>
+                        <?php if (($ticket['lecturer_decision'] ?? '') === 'approved'): ?>
+                            <!-- THẦY/CÔ ĐÃ CHẤP THUẬN -> HIỆN NÚT NỘP BÀI -->
+                            <div class="p-3.5 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs text-emerald-900 shadow-2xs">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-2xl">🎉</span>
+                                    <div>
+                                        <strong class="text-emerald-950 font-bold block">Thầy/Cô đã chấp thuận gia hạn Deadline cho Buổi này!</strong>
+                                        <div class="text-[11px] text-emerald-700 mt-0.5">Hạn nộp hiện tại: <span class="font-mono font-bold"><?php echo htmlspecialchars($ticket['lesson_deadline_at'] ?? ''); ?></span></div>
+                                    </div>
                                 </div>
+                                <a href="../student/courses.php?view_course_id=<?php echo (int)($ticket['course_id'] ?? 1); ?>" 
+                                   class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs flex items-center gap-1 cursor-pointer">
+                                    <span>📤</span> Vào Cổng Học Tập Nộp Bài Ngay →
+                                </a>
                             </div>
-                            <a href="../student/courses.php?view_course_id=<?php echo (int)($ticket['course_id'] ?? 1); ?>" 
-                               class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs flex items-center gap-1">
-                                <span>📤</span> Vào Cổng Học Tập Nộp Bài Ngay →
-                            </a>
+
+                        <?php elseif (($ticket['lecturer_decision'] ?? '') === 'rejected'): ?>
+                            <!-- THẦY/CÔ ĐÃ TỪ CHỐI -> THÔNG BÁO RÕ RÀNG, KHÔNG CÓ NÚT NỘP -->
+                            <div class="p-3.5 bg-rose-50 border border-rose-300 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs text-rose-900 shadow-2xs">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-2xl">🚫</span>
+                                    <div>
+                                        <strong class="text-rose-950 font-bold block">Thầy/Cô bộ môn đã từ chối yêu cầu gia hạn Deadline cho Buổi này.</strong>
+                                        <?php if (!empty($ticket['lecturer_decision_note'])): ?>
+                                            <div class="text-[11px] text-rose-800 mt-0.5">Lý do: "<em><?php echo htmlspecialchars($ticket['lecturer_decision_note']); ?></em>"</div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-rose-200 text-rose-800">
+                                    Đã Đóng
+                                </span>
+                            </div>
+
+                        <?php elseif ((int)($ticket['it_verified'] ?? 0) === 1): ?>
+                            <!-- KTV MỚI XÁC NHẬN, THẦY CÔ CHƯA DUYỆT -> CHỜ THẦY/CÔ, CHƯA HIỆN NÚT NỘP -->
+                            <div class="p-3.5 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs text-indigo-900 shadow-2xs">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="text-2xl">⏳</span>
+                                    <div>
+                                        <strong class="text-indigo-950 font-bold block">Kỹ thuật viên đã kiểm tra và xác nhận sự cố kỹ thuật hợp lệ!</strong>
+                                        <div class="text-[11px] text-indigo-700 mt-0.5">Biên bản đã được chuyển đến Thầy/Cô bộ môn xem xét gia hạn. Vui lòng chờ phản hồi chính thức từ Thầy/Cô.</div>
+                                    </div>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-full text-[10.5px] font-bold bg-indigo-100 text-indigo-700">
+                                    Đang chờ Thầy/Cô xét duyệt
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+            <!-- THÔNG TIN PHIẾU CỨU HỘ KHẨN CẤP (GUEST RESCUE TICKET) -->
+            <?php if (!empty($ticket['is_guest_ticket'])): ?>
+                <?php
+                // Lấy thông tin tài khoản đích trong hệ thống
+                $guestUserStmt = db()->prepare("SELECT id, user_code, name, email, is_locked, lock_reason, failed_attempts FROM users WHERE id = :uid");
+                $guestUserStmt->execute([':uid' => (int)$ticket['requester_id']]);
+                $guestUser = $guestUserStmt->fetch(PDO::FETCH_ASSOC);
+                ?>
+                <div class="bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 border-2 border-rose-300 rounded-3xl p-5 shadow-sm space-y-4">
+                    <div class="flex items-center justify-between flex-wrap gap-2 border-b border-rose-200 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-2xl">🚑</span>
+                            <div>
+                                <h3 class="text-sm font-black text-rose-950 flex items-center gap-2">
+                                    <span>PHIẾU CỨU HỘ KHẨN CẤP (GUEST RESCUE TICKET)</span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-600 text-white">
+                                        Trạm Cứu Hộ Ngoài Cổng
+                                    </span>
+                                </h3>
+                                <p class="text-[11.5px] text-rose-800 mt-0.5">
+                                    Sinh viên bị khóa tài khoản hoặc quên mật khẩu gửi yêu cầu từ Trạm cứu hộ trực tuyến.
+                                </p>
+                            </div>
+                        </div>
+                        <?php if ($guestUser && !empty($guestUser['is_locked'])): ?>
+                            <span class="px-3 py-1 rounded-xl text-xs font-black bg-rose-600 text-white flex items-center gap-1 shadow-2xs">
+                                🔒 Tài Khoản Đang Bị Khóa
+                            </span>
+                        <?php else: ?>
+                            <span class="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                                🔓 Tài Khoản Bình Thường
+                            </span>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-white/80 p-3 rounded-2xl border border-rose-200">
+                        <div>
+                            <span class="text-slate-400 block text-[11px] font-semibold">Mã SV/CB cần cứu hộ:</span>
+                            <strong class="font-mono text-indigo-700 text-sm"><?php echo htmlspecialchars($ticket['requester_code'] ?? $guestUser['user_code'] ?? 'N/A'); ?></strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[11px] font-semibold">Họ và tên:</span>
+                            <strong class="text-slate-800 text-sm"><?php echo htmlspecialchars($ticket['requester_name'] ?? $guestUser['name'] ?? 'N/A'); ?></strong>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 block text-[11px] font-semibold">Email cá nhân nhận kết quả:</span>
+                            <strong class="text-rose-700 font-mono text-xs"><?php echo htmlspecialchars($ticket['contact_email'] ?? 'Chưa cung cấp'); ?></strong>
+                        </div>
+                    </div>
+
+                    <!-- THAO TÁC KTV TIẾP NHẬN: XÁC MINH & CHUYỂN ADMIN DUYỆT -->
+                    <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                        <?php if ((int)($ticket['rescue_verified'] ?? 0) === 0 && $ticket['status'] !== 'closed'): ?>
+                            <div class="p-3 bg-white/90 rounded-2xl border border-amber-300 space-y-2 text-xs">
+                                <span class="font-bold text-amber-900 flex items-center gap-1">
+                                    <span>🔍</span> Thao Tác KTV Trực Ca: Kiểm tra thẻ SV / CMND & Chuyển tiếp Admin
+                                </span>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline">
+                                        <input type="hidden" name="action" value="ktv_verify_rescue" />
+                                        <button type="submit" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer flex items-center gap-1">
+                                            <span>✓</span> KTV Xác Thực Hợp Lệ & Chuyển Admin Mở Khóa
+                                        </button>
+                                    </form>
+                                    <button type="button" onclick="document.getElementById('ktvRejectRescueForm').classList.toggle('hidden')" 
+                                            class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-2xs cursor-pointer flex items-center gap-1">
+                                        <span>❌</span> Bác Bỏ (Spam / Nghịch Trạm Cứu Hộ)
+                                    </button>
+                                </div>
+                                <form id="ktvRejectRescueForm" method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="hidden pt-2 border-t border-rose-200 space-y-2">
+                                    <input type="hidden" name="action" value="ktv_reject_rescue" />
+                                    <label class="block font-bold text-rose-800 text-[11px]">Lý do KTV bác bỏ đơn cứu hộ:</label>
+                                    <input type="text" name="rescue_reject_note" value="Thông tin không trùng khớp với hồ sơ nhà trường hoặc có dấu hiệu nghịch trạm cứu hộ." 
+                                           class="w-full px-3 py-1.5 bg-white border border-rose-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500" />
+                                    <button type="submit" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-800 text-white font-bold rounded-xl text-xs transition">
+                                        Xác Nhận Đóng Đơn Cứu Hộ
+                                    </button>
+                                </form>
+                            </div>
+                        <?php elseif ((int)($ticket['rescue_verified'] ?? 0) === 1): ?>
+                            <div class="p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex items-center justify-between text-xs text-emerald-900">
+                                <span class="flex items-center gap-2 font-bold">
+                                    <span>✅</span> KTV Đã Xác Thực Danh Tính & Đang Chuyển Ban Quản Trị (Admin) Phê Duyệt Mở Khóa
+                                </span>
+                                <span class="font-mono text-[11px] text-emerald-700"><?php echo htmlspecialchars($ticket['rescue_verified_at'] ?? ''); ?></span>
+                            </div>
+                        <?php elseif ((int)($ticket['rescue_verified'] ?? 0) === 2): ?>
+                            <div class="p-3 bg-rose-50 border border-rose-300 rounded-2xl flex items-center justify-between text-xs text-rose-900">
+                                <span class="flex items-center gap-2 font-bold">
+                                    <span>❌</span> Đơn cứu hộ đã bị bác bỏ do vi phạm quy chế hoặc không đủ căn cứ.
+                                </span>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <!-- THẨM QUYỀN ADMIN: DUYỆT MỞ KHÓA & RESET PASS -->
+                    <?php if ($userRole === 'admin' && $ticket['status'] !== 'closed'): ?>
+                        <div class="p-3.5 bg-purple-50 border-2 border-purple-300 rounded-2xl space-y-2 text-xs">
+                            <span class="font-black text-purple-950 flex items-center gap-1.5 text-xs">
+                                <span>⚡</span> Thẩm Quyền Admin: Phê Duyệt Cứu Hộ & Mở Khóa Tài Khoản
+                            </span>
+                            <p class="text-[11.5px] text-purple-900">
+                                Admin có thẩm quyền đặt lại mật khẩu về mặc định (123456) và mở khóa tài khoản ngay lập tức:
+                            </p>
+                            <div class="flex items-center gap-2 flex-wrap pt-1">
+                                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn MỞ KHÓA tài khoản và đặt mật khẩu về 123456?');">
+                                    <input type="hidden" name="action" value="admin_unlock_account" />
+                                    <button type="submit" class="px-4 py-2 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-md flex items-center gap-1.5 cursor-pointer">
+                                        <span>🔓</span> Phê Duyệt Mở Khóa & Reset Mật Khẩu (123456)
+                                    </button>
+                                </form>
+                                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn TỪ CHỐI đơn cứu hộ này?');">
+                                    <input type="hidden" name="action" value="admin_reject_rescue" />
+                                    <button type="submit" class="px-3 py-2 bg-slate-200 hover:bg-rose-100 hover:text-rose-700 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">
+                                        <span>🔒</span> Từ Chối & Giữ Khóa
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     <?php endif; ?>
                 </div>
