@@ -32,13 +32,9 @@ if ($status === 'warning') {
     $warningType = 'sla';
     $status = '';
 }
-$hasWarning = !empty($warningType) ? $warningType : false;
+$hasWarning = ($warningType === 'sla') ? 'sla' : false;
 
-// Nếu là Giảng viên và đang lọc xem Sinh viên vi phạm do KTV báo cáo:
-// Không ép điều kiện requester_id = ID giảng viên để giảng viên xem được phiếu của sinh viên vi phạm
-if ($isLecturer && $warningType === 'violation') {
-    $filterReqId = 0;
-} elseif ($userRole === 'requester') {
+if ($userRole === 'requester') {
     $filterReqId = (int)$currentUser['id'];
 } else {
     $filterReqId = 0;
@@ -59,7 +55,6 @@ if ($page > $totalPages && $totalTickets > 0) {
 $tickets        = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning);
 $categories     = TicketRepository::getCategories();
 $slaCount       = TicketRepository::countSlaOverdue($filterReqId, $filterAgentId);
-$violationCount = TicketRepository::countViolations($filterReqId, $filterAgentId, $isLecturer);
 $flash        = get_flash();
 ?>
 <!DOCTYPE html>
@@ -141,15 +136,15 @@ $flash        = get_flash();
                 <span class="text-slate-400 text-[11px]">Tìm thấy: <strong class="text-indigo-600"><?php echo $totalTickets; ?></strong> phiếu</span>
             </div>
 
-            <!-- CÁC TAB LỌC NHANH TRẠNG THÁI & 2 BỘ LỌC CẢNH BÁO CHO ADMIN (SLA QUÁ GIỜ & SV VI PHẠM) -->
+            <!-- CÁC TAB LỌC NHANH TRẠNG THÁI & BỘ LỌC CẢNH BÁO SLA CHO ADMIN & KTV -->
             <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-                <a href="index.php?kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
+                <a href="index.php<?= !empty($keyword) ? '?kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? (empty($keyword) ? '?' : '&') . 'category_id=' . $categoryId : '' ?>" 
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= (empty($warningType) && empty($status)) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>📋 Tất Cả Phiếu</span>
                 </a>
 
-                <!-- 1. CẢNH BÁO SLA QUÁ GIỜ -->
-                <a href="index.php?warning=sla&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
+                <!-- CẢNH BÁO SLA QUÁ GIỜ -->
+                <a href="index.php?warning=sla<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                    title="Xem danh sách các phiếu sự cố đã quá hạn giải quyết theo cam kết SLA"
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'sla') ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-400' : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200' ?>">
                     <span class="flex h-2 w-2 relative">
@@ -160,43 +155,35 @@ $flash        = get_flash();
                     <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'sla') ? 'bg-white text-rose-700' : 'bg-rose-600 text-white' ?>"><?= $slaCount ?></span>
                 </a>
 
-                <!-- 2. CẢNH BÁO SINH VIÊN VI PHẠM (KTV BÁO CÁO) -->
-                <a href="index.php?warning=violation&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
-                   title="Xem danh sách các phiếu sinh viên vi phạm/spam do KTV báo cáo để Admin xử lý"
-                   class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'violation') ? 'bg-purple-700 text-white shadow-sm ring-2 ring-purple-400' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' ?>">
-                    <span>🚨 SV Vi Phạm (KTV Báo Cáo)</span>
-                    <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'violation') ? 'bg-white text-purple-700' : 'bg-purple-700 text-white' ?>"><?= $violationCount ?></span>
-                </a>
-
-                <a href="index.php?status=new&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
+                <a href="index.php?status=new<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'new' && empty($warningType)) ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>⏳ Mới Tiếp Nhận</span>
                 </a>
 
-                <a href="index.php?status=in_progress&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
+                <a href="index.php?status=in_progress<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'in_progress' && empty($warningType)) ? 'bg-amber-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>⚙️ Đang Xử Lý</span>
                 </a>
 
-                <a href="index.php?status=waiting_requester&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
+                <a href="index.php?status=waiting_requester<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'waiting_requester' && empty($warningType)) ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>💬 Chờ Phản Hồi</span>
                 </a>
 
-                <a href="index.php?status=resolved&kw=<?= urlencode($keyword) ?>&category_id=<?= $categoryId ?>" 
+                <a href="index.php?status=resolved<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 <?= ($status === 'resolved' && empty($warningType)) ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>✅ Đã Xong / Đóng</span>
                 </a>
             </div>
 
             <form method="GET" action="index.php" class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
-                <?php if (!empty($warningType)): ?>
-                    <input type="hidden" name="warning" value="<?php echo htmlspecialchars($warningType); ?>" />
+                <?php if ($warningType === 'sla'): ?>
+                    <input type="hidden" name="warning" value="sla" />
                 <?php endif; ?>
                 <!-- Từ khóa -->
-                <div class="md:col-span-5">
+                <div class="md:col-span-6">
                     <label class="block font-bold text-slate-600 mb-1">Mã phiếu hoặc tiêu đề sự cố:</label>
-                    <input type="text" name="kw" value="<?php echo htmlspecialchars($keyword); ?>" placeholder="Ví dụ: HD-2026-2910, L0H004, Canvas, Wi-Fi..." 
+                    <input type="text" name="kw" value="<?php echo htmlspecialchars($keyword); ?>" placeholder="Ví dụ: HD-2026-2910, Canvas, Wi-Fi..." 
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
                 </div>
 
@@ -204,8 +191,7 @@ $flash        = get_flash();
                 <div class="md:col-span-3">
                     <label class="block font-bold text-slate-600 mb-1">Trạng thái phiếu:</label>
                     <select name="status" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold text-slate-700">
-                                                <option value="">-- Tất cả trạng thái --</option>
-                        <option value="warning" <?php echo $hasWarning ? 'selected' : ''; ?>>🚨 Phiếu có cảnh báo (Quá hạn SLA / SOS / Khẩn cấp)</option>
+                        <option value="">-- Tất cả trạng thái --</option>
                         <option value="new" <?php echo $status === 'new' ? 'selected' : ''; ?>>1. Mới tiếp nhận (new)</option>
                         <option value="in_progress" <?php echo $status === 'in_progress' ? 'selected' : ''; ?>>2. Đang xử lý (in_progress)</option>
                         <option value="waiting_requester" <?php echo $status === 'waiting_requester' ? 'selected' : ''; ?>>3. Chờ phản hồi (waiting)</option>

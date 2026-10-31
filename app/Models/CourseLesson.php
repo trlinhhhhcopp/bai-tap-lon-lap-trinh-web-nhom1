@@ -361,39 +361,65 @@ class CourseLesson
     }
 
     /**
-     * Lấy danh sách toàn bộ bài tập sinh viên đã nộp cho buổi học này
+     * Lấy danh sách toàn bộ sinh viên trong lớp học phần kèm trạng thái nộp bài (đã nộp & chưa nộp)
      */
     public function getSubmissionsForLesson(int $lessonId, int $classId = 0): array
     {
-        $whereClass = ($classId > 0) ? " AND u.class_id = :cid" : "";
-        $sql = "SELECT s.*, 
-                       u.name AS student_name, u.user_code AS student_code, u.email AS student_email,
-                       l.title AS lesson_title, l.lesson_number, l.deadline_at,
-                       cl.class_code,
-                       (SELECT COUNT(*) FROM tickets t_sp WHERE t_sp.requester_id = u.id AND t_sp.is_spam = 1) AS spam_ticket_count,
-                       (SELECT t_sp.spam_reason FROM tickets t_sp WHERE t_sp.requester_id = u.id AND t_sp.is_spam = 1 ORDER BY t_sp.id DESC LIMIT 1) AS spam_reason
-                FROM student_assignment_submissions s
-                JOIN users u ON s.student_id = u.id
-                JOIN course_lessons l ON s.lesson_id = l.id
-                LEFT JOIN classes cl ON u.class_id = cl.id
-                WHERE s.lesson_id = :lid {$whereClass}
+        if ($classId <= 0) {
+            $stmtL = $this->pdo->prepare("SELECT ca.class_id FROM course_lessons l JOIN course_assignments ca ON ca.course_id = l.course_id WHERE l.id = :lid LIMIT 1");
+            $stmtL->execute([':lid' => $lessonId]);
+            $classId = (int)$stmtL->fetchColumn();
+            if ($classId <= 0) {
+                $classId = 1; // Lớp mặc định D24-CNTT1
+            }
+        }
+
+        $sql = "SELECT 
+                    u.id AS student_id,
+                    u.name AS student_name,
+                    u.user_code AS student_code,
+                    u.email AS student_email,
+                    cl.class_code,
+                    s.id AS submission_id,
+                    s.id,
+                    s.file_path,
+                    s.file_name,
+                    s.file_size,
+                    s.notes,
+                    s.submitted_at,
+                    s.score,
+                    s.star_rating,
+                    s.feedback,
+                    s.graded_at,
+                    s.graded_by,
+                    l.id AS lesson_id,
+                    l.title AS lesson_title,
+                    l.lesson_number,
+                    l.deadline_at,
+                    (SELECT COUNT(*) FROM tickets t_sp WHERE t_sp.requester_id = u.id AND t_sp.is_spam = 1) AS spam_ticket_count,
+                    (SELECT t_sp.spam_reason FROM tickets t_sp WHERE t_sp.requester_id = u.id AND t_sp.is_spam = 1 ORDER BY t_sp.id DESC LIMIT 1) AS spam_reason
+                FROM users u
+                JOIN classes cl ON u.class_id = cl.id
+                JOIN course_lessons l ON l.id = :lid
+                LEFT JOIN student_assignment_submissions s ON (s.student_id = u.id AND s.lesson_id = :lid)
+                WHERE u.class_id = :cid
+                  AND u.user_type = 'student'
                   AND u.is_active = 1
                   AND (u.lock_reason IS NULL OR u.lock_reason = 'none' OR u.lock_reason = '')
-                  AND NOT EXISTS (SELECT 1 FROM tickets t_sp WHERE t_sp.requester_id = u.id AND t_sp.is_spam = 1)
-                ORDER BY s.submitted_at DESC";
+                ORDER BY (s.id IS NULL) ASC, s.submitted_at DESC, u.name ASC";
         $stmt = $this->pdo->prepare($sql);
-        $params = [':lid' => $lessonId];
-        if ($classId > 0) {
-            $params[':cid'] = $classId;
-        }
-        $stmt->execute($params);
+        $stmt->execute([
+            ':lid' => $lessonId,
+            ':cid' => $classId
+        ]);
         $subs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         foreach ($subs as &$sub) {
+            $sub['has_submitted'] = !empty($sub['submission_id']);
             $deadline = !empty($sub['deadline_at']) ? new DateTime($sub['deadline_at'], new DateTimeZone('Asia/Ho_Chi_Minh')) : null;
             $subTime  = !empty($sub['submitted_at']) ? new DateTime($sub['submitted_at'], new DateTimeZone('Asia/Ho_Chi_Minh')) : null;
             $sub['is_late'] = ($deadline && $subTime) ? ($subTime > $deadline) : false;
-            $sub['submitted_formatted'] = $subTime ? $subTime->format('d/m/Y H:i') : '';
+            $sub['submitted_formatted'] = $subTime ? $subTime->format('d/m/Y H:i') : '—';
         }
         unset($sub);
 
