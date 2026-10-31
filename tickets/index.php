@@ -23,6 +23,19 @@ $isLecturer    = ($userType === 'lecturer');
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
+// QUẢN TRỊ VIÊN (ADMIN) XÓA PHIẾU HỖ TRỢ
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'admin_delete_ticket') {
+    if ($userRole === 'admin') {
+        $delId = (int)($_POST['ticket_id'] ?? 0);
+        if ($delId > 0) {
+            TicketRepository::delete($delId);
+            set_flash('success', "Quản trị viên đã xóa thành công phiếu #{$delId} khỏi hệ thống!");
+        }
+        header("Location: index.php");
+        exit;
+    }
+}
+
 // 1. Tiếp nhận tham số tìm kiếm & lọc an toàn
 $keyword       = trim($_GET['kw'] ?? '');
 $status        = trim($_GET['status'] ?? '');
@@ -409,13 +422,24 @@ $flash        = get_flash();
                                         </a>
                                         <?php 
                                         $minsSinceCreated = (time() - strtotime($t['created_at'])) / 60;
-                                        $canEditThisRow = in_array($userRole, ['agent', 'admin']) 
-                                            || (in_array($userRole, ['requester', 'lecturer']) && ((int)$t['requester_id'] === (int)$currentUser['id']) && $minsSinceCreated <= 15 && in_array($t['status'], ['new', 'waiting_requester']));
+                                        $canRequesterEditRow = in_array($userRole, ['requester', 'lecturer']) 
+                                            && ((int)$t['requester_id'] === (int)$currentUser['id']) 
+                                            && $minsSinceCreated <= 15 
+                                            && in_array($t['status'], ['new', 'waiting_requester']);
                                         ?>
-                                        <?php if ($canEditThisRow): ?>
+                                        <?php if ($canRequesterEditRow): ?>
                                             <a href="edit.php?id=<?php echo $t['id']; ?>" class="px-2 py-1 bg-slate-100 hover:bg-amber-100 hover:text-amber-800 text-slate-700 rounded-lg text-[11px] font-medium transition inline-block" title="Sửa phiếu (trong 15 phút đầu)">
                                                 ✏️ Sửa
                                             </a>
+                                        <?php endif; ?>
+                                        <?php if ($userRole === 'admin'): ?>
+                                            <form method="POST" action="index.php" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn XÓA vĩnh viễn phiếu này khỏi hệ thống?');">
+                                                <input type="hidden" name="action" value="admin_delete_ticket" />
+                                                <input type="hidden" name="ticket_id" value="<?php echo $t['id']; ?>" />
+                                                <button type="submit" class="px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-[11px] font-medium transition cursor-pointer border border-rose-200" title="Xóa phiếu (Quyền Quản Trị)">
+                                                    🗑️ Xóa
+                                                </button>
+                                            </form>
                                         <?php endif; ?>
                                     </td>
                                 </tr>

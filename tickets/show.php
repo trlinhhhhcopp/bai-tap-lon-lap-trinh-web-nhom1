@@ -326,6 +326,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 }
 
 // -----------------------------------------------------------------------------
+// QUẢN TRỊ VIÊN (ADMIN) XÓA PHIẾU HỖ TRỢ
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'admin_delete_ticket') {
+    if ($userRole === 'admin') {
+        TicketRepository::delete($id);
+        set_flash('success', "Quản trị viên đã xóa vĩnh viễn phiếu {$ticket['ticket_code']} khỏi hệ thống!");
+        header("Location: index.php");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
 // XỬ LÝ SINH VIÊN / GIẢNG VIÊN XÓA LẠI PHIẾU TRONG VÒNG 15 PHÚT ĐẦU TIÊN
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'requester_delete_ticket') {
@@ -762,10 +774,13 @@ $flash   = get_flash();
                     </form>
                 <?php endif; ?>
 
-                <?php if ($userRole === 'admin' && !in_array($ticket['status'], ['closed']) && empty($currentRating)): ?>
-                    <a href="edit.php?id=<?php echo $ticket['id']; ?>" class="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full border border-indigo-200 transition">
-                        ✏️ Sửa phiếu
-                    </a>
+                <?php if ($userRole === 'admin'): ?>
+                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn XÓA vĩnh viễn phiếu này khỏi hệ thống? Hành động này không thể hoàn tác.');">
+                        <input type="hidden" name="action" value="admin_delete_ticket" />
+                        <button type="submit" class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-full border border-rose-300 transition flex items-center gap-1 shadow-2xs cursor-pointer" title="Xóa vĩnh viễn phiếu (Quyền Quản Trị)">
+                            <span>🗑️</span> Xóa phiếu
+                        </button>
+                    </form>
                 <?php endif; ?>
                 <a href="index.php" class="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium rounded-full transition flex items-center gap-1">
                     ← Danh sách phiếu

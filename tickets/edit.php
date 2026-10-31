@@ -33,8 +33,18 @@ $isRequesterOwner    = ((int)$ticket['requester_id'] === (int)$currentUser['id']
 $isWithin15m         = ($minutesSinceCreated <= 15);
 $isRequesterEdit     = in_array($userRole, ['requester', 'lecturer']) && $isRequesterOwner && $isWithin15m && in_array($ticket['status'], ['new', 'waiting_requester']);
 
-// Chỉ KTV, Quản trị viên HOẶC người gửi (SV, Giảng viên trong 15 phút đầu) mới có quyền sửa
-if (!in_array($userRole, ['agent', 'admin']) && !$isRequesterEdit) {
+// KTV và Admin không có quyền sửa phiếu (yêu cầu: "ktv ko được có nút sửa phiếu, admin chỉ có nút xóa phiếu")
+if ($userRole === 'agent') {
+    set_flash('error', "Kỹ thuật viên không có quyền chỉnh sửa nội dung phiếu của người dùng!");
+    header('Location: show.php?id=' . $id);
+    exit;
+}
+if ($userRole === 'admin') {
+    set_flash('error', "Quản trị viên không chỉnh sửa nội dung phiếu. Quản trị viên chỉ có quyền xóa phiếu!");
+    header('Location: show.php?id=' . $id);
+    exit;
+}
+if (!$isRequesterEdit) {
     if ($isRequesterOwner && !$isWithin15m) {
         set_flash('error', "Đã quá 15 phút kể từ khi gửi phiếu! Bạn không còn quyền chỉnh sửa phiếu này nữa.");
     } else {
