@@ -21,7 +21,9 @@ class TicketRepository {
         int $categoryId = 0,
         int $requesterId = 0,
         int $assignedTo = 0,
-        $hasWarning = false
+        $hasWarning = false,
+        int $lecturerId = 0,
+        string $lecturerScope = ''
     ): array {
         $db = db();
         $offset = ($page - 1) * $perPage;
@@ -49,7 +51,21 @@ class TicketRepository {
             $conditions[] = "t.category_id = :cat_id";
             $params['cat_id'] = $categoryId;
         }
-        if ($requesterId > 0) {
+        if ($lecturerId > 0) {
+            if ($lecturerScope === 'mine') {
+                $conditions[] = "t.requester_id = :lid_req";
+                $params['lid_req'] = $lecturerId;
+            } elseif ($lecturerScope === 'course_incidents') {
+                $conditions[] = "(t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                $params['lid_ca'] = $lecturerId;
+                $params['lid_ca2'] = $lecturerId;
+            } else {
+                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
+                $params['lid_req'] = $lecturerId;
+                $params['lid_ca'] = $lecturerId;
+                $params['lid_ca2'] = $lecturerId;
+            }
+        } elseif ($requesterId > 0) {
             $conditions[] = "t.requester_id = :req_id";
             $params['req_id'] = $requesterId;
         }
@@ -119,7 +135,9 @@ class TicketRepository {
         int $categoryId = 0,
         int $requesterId = 0,
         int $assignedTo = 0,
-        $hasWarning = false
+        $hasWarning = false,
+        int $lecturerId = 0,
+        string $lecturerScope = ''
     ): int {
         $db = db();
         $conditions = [];
@@ -140,7 +158,21 @@ class TicketRepository {
             $conditions[] = "t.category_id = :cat_id";
             $params['cat_id'] = $categoryId;
         }
-        if ($requesterId > 0) {
+        if ($lecturerId > 0) {
+            if ($lecturerScope === 'mine') {
+                $conditions[] = "t.requester_id = :lid_req";
+                $params['lid_req'] = $lecturerId;
+            } elseif ($lecturerScope === 'course_incidents') {
+                $conditions[] = "(t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                $params['lid_ca'] = $lecturerId;
+                $params['lid_ca2'] = $lecturerId;
+            } else {
+                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
+                $params['lid_req'] = $lecturerId;
+                $params['lid_ca'] = $lecturerId;
+                $params['lid_ca2'] = $lecturerId;
+            }
+        } elseif ($requesterId > 0) {
             $conditions[] = "t.requester_id = :req_id";
             $params['req_id'] = $requesterId;
         }
@@ -240,7 +272,21 @@ class TicketRepository {
             )"
         ];
         $params = [];
-        if ($requesterId > 0) {
+        if ($lecturerId > 0) {
+            if ($lecturerScope === 'mine') {
+                $conditions[] = "t.requester_id = :lid_req";
+                $params['lid_req'] = $lecturerId;
+            } elseif ($lecturerScope === 'course_incidents') {
+                $conditions[] = "(t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                $params['lid_ca'] = $lecturerId;
+                $params['lid_ca2'] = $lecturerId;
+            } else {
+                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
+                $params['lid_req'] = $lecturerId;
+                $params['lid_ca'] = $lecturerId;
+                $params['lid_ca2'] = $lecturerId;
+            }
+        } elseif ($requesterId > 0) {
             $conditions[] = "t.requester_id = :req_id";
             $params['req_id'] = $requesterId;
         }
@@ -603,4 +649,43 @@ class TicketRepository {
         }
     }
 
+
+    /**
+     * Đếm số phiếu sự cố học tập liên quan đến lớp/học phần của Giảng viên phụ trách
+     */
+    public static function countLecturerCourseIncidents(int $lecturerId): int {
+        $db = db();
+        $sql = "SELECT COUNT(*) FROM tickets t 
+                WHERE t.lesson_id IS NOT NULL 
+                  AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid) 
+                       OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid2))";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':lid' => $lecturerId, ':lid2' => $lecturerId]);
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Lấy danh sách các phiếu sự cố học tập cần Giảng viên xem xét (ưu tiên phiếu KTV đã xác thực)
+     */
+    public static function getPendingCourseIncidentsForLecturer(int $lecturerId): array {
+        $db = db();
+        $sql = "SELECT t.*, u_req.name AS student_name, u_req.user_code AS student_code,
+                       COALESCE(cl.class_code, u_cl.class_code, 'D24-CNTT1') AS class_code,
+                       co.name AS course_name, co.course_code,
+                       cln.lesson_number, cln.title AS lesson_title, cln.deadline_at AS lesson_deadline_at
+                FROM tickets t
+                JOIN users u_req ON t.requester_id = u_req.id
+                LEFT JOIN classes cl ON t.class_id = cl.id
+                LEFT JOIN classes u_cl ON u_req.class_id = u_cl.id
+                LEFT JOIN courses co ON t.course_id = co.id
+                LEFT JOIN course_lessons cln ON t.lesson_id = cln.id
+                WHERE t.lesson_id IS NOT NULL
+                  AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid)
+                       OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid2))
+                ORDER BY t.it_verified DESC, t.id DESC
+                LIMIT 10";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([':lid' => $lecturerId, ':lid2' => $lecturerId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

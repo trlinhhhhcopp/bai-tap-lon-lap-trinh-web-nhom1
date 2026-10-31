@@ -1692,7 +1692,7 @@ if ($userType === 'lecturer') {
                 </div>
             </div>
 
-            <!-- Thống Kê Nhanh Phân Hệ Giảng Viên (Đã bỏ card cảnh báo theo yêu cầu) -->
+            <!-- Thống Kê Nhanh Phân Hệ Giảng Viên -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between">
                     <div>
@@ -1713,6 +1713,85 @@ if ($userType === 'lecturer') {
                     </div>
                 </div>
             </div>
+
+            <!-- BẢNG CÁC PHIẾU SỰ CỐ HỌC TẬP CỦA SINH VIÊN CẦN GIẢNG VIÊN XEM XÉT (KTV ĐÃ BÁO CÁO / XÁC NHẬN) -->
+            <?php if (!empty($pendingCourseIncidents)): ?>
+                <div class="bg-gradient-to-r from-purple-50 via-indigo-50 to-amber-50 border-2 border-purple-300 rounded-3xl p-5 shadow-sm space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2 border-b border-purple-200 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">🎓</span>
+                            <div>
+                                <h3 class="text-sm font-black text-purple-950 flex items-center gap-2">
+                                    <span>PHIẾU SỰ CỐ HỌC TẬP CỦA SINH VIÊN CẦN THẦY/CÔ XEM XÉT</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs font-black bg-purple-700 text-white"><?php echo count($pendingCourseIncidents); ?> phiếu</span>
+                                </h3>
+                                <p class="text-[11px] text-purple-800/90 mt-0.5">
+                                    Sinh viên thuộc lớp môn học của Thầy/Cô báo sự cố nộp bài / rớt mạng. KTV đã tiếp nhận và cấp biên bản xác nhận lỗi kỹ thuật để Thầy/Cô mở lại Deadline.
+                                </p>
+                            </div>
+                        </div>
+                        <a href="<?php echo $appBase; ?>tickets/index.php?scope=course_incidents" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-xs">
+                            Xem Danh Sách Đầy Đủ →
+                        </a>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-purple-100/70 text-purple-900 font-bold border-b border-purple-200 text-[11px]">
+                                    <th class="py-2.5 px-3">Mã Phiếu</th>
+                                    <th class="py-2.5 px-3">Sinh Viên</th>
+                                    <th class="py-2.5 px-3">Lớp & Môn Học</th>
+                                    <th class="py-2.5 px-3">Buổi Học</th>
+                                    <th class="py-2.5 px-3">Xác Thực Của KTV</th>
+                                    <th class="py-2.5 px-3 text-center">Trạng Thái</th>
+                                    <th class="py-2.5 px-3 text-center">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-purple-100 bg-white/80">
+                                <?php foreach ($pendingCourseIncidents as $pi): ?>
+                                    <tr class="hover:bg-purple-50 transition">
+                                        <td class="py-2.5 px-3 font-mono font-bold text-indigo-700"><?php echo htmlspecialchars($pi['ticket_code']); ?></td>
+                                        <td class="py-2.5 px-3">
+                                            <strong class="text-slate-900 block"><?php echo htmlspecialchars($pi['student_name']); ?></strong>
+                                            <span class="font-mono text-slate-400 text-[10.5px]"><?php echo htmlspecialchars($pi['student_code']); ?></span>
+                                        </td>
+                                        <td class="py-2.5 px-3">
+                                            <strong class="text-slate-800 block"><?php echo htmlspecialchars($pi['course_name']); ?></strong>
+                                            <span class="text-slate-500 font-mono text-[11px]">Lớp: <?php echo htmlspecialchars($pi['class_code']); ?></span>
+                                        </td>
+                                        <td class="py-2.5 px-3">
+                                            <span class="px-2 py-0.5 rounded-lg text-[10.5px] font-bold bg-indigo-100 text-indigo-700">Buổi <?php echo (int)$pi['lesson_number']; ?></span>
+                                            <span class="block text-[11px] text-slate-600 truncate max-w-[150px]" title="<?php echo htmlspecialchars($pi['lesson_title']); ?>"><?php echo htmlspecialchars($pi['lesson_title']); ?></span>
+                                        </td>
+                                        <td class="py-2.5 px-3">
+                                            <?php if (!empty($pi['it_verified'])): ?>
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                                    ✅ KTV Đã Xác Nhận Lỗi Kỹ Thuật
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                                    ⏳ Chờ KTV Kiểm Tra
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+                                        <td class="py-2.5 px-3 text-center">
+                                            <span class="px-2 py-0.5 rounded text-[10.5px] font-bold <?php echo $pi['status'] === 'resolved' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'; ?>">
+                                                <?php echo $pi['status'] === 'resolved' ? 'Đã Giải Quyết' : 'Đang Xử Lý'; ?>
+                                            </span>
+                                        </td>
+                                        <td class="py-2.5 px-3 text-center">
+                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo (int)$pi['id']; ?>" class="px-3 py-1 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition inline-flex items-center gap-1 shadow-2xs">
+                                                <span>🔍</span> Xem & Mở Lại DL
+                                            </a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php endif; ?>
 
             <?php if ($flash): ?>
                 <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold <?php echo $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'; ?>">

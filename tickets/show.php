@@ -178,12 +178,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
     }
     $message = trim($_POST['message'] ?? '');
     
+    // Đăng nhập tài khoản của ai thì lấy trực tiếp ID người đó làm tác giả phản hồi
+    $userId = (int)$currentUser['id'];
     if ($userRole === 'requester') {
-        $userId = (int)$currentUser['id'];
         $isInternal = false;
         $forceStatus = null;
     } else {
-        $userId = (int)($_POST['user_id'] ?? ($ticket['assigned_to'] ?: $currentUser['id']));
         $isInternal = isset($_POST['is_internal']) && $_POST['is_internal'] === '1';
         $forceStatus = !empty($_POST['quick_status']) ? trim($_POST['quick_status']) : null;
     }
@@ -971,17 +971,15 @@ $flash   = get_flash();
                     <?php if (in_array($userRole, ['agent', 'admin'])): ?>
                         <!-- Dành cho Kỹ thuật viên / Quản trị viên: Có đầy đủ công cụ chuyển trạng thái & ghi chú nội bộ -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                                <label class="block font-bold text-slate-700 mb-1">Người gửi phản hồi:</label>
-                                <select name="user_id" id="senderSelect" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                    <optgroup label="Kỹ thuật viên IT:">
-                                        <?php foreach ($agents as $ag): ?>
-                                            <option value="<?php echo $ag['id']; ?>" <?php echo ($currentUser['id'] == $ag['id'] || ($ticket['assigned_to'] == $ag['id'])) ? 'selected' : ''; ?>>
-                                                KTV: <?php echo htmlspecialchars($ag['name']); ?> (<?php echo htmlspecialchars($ag['user_code']); ?>)
-                                            </option>
-                                        <?php endforeach; ?>
-                                    </optgroup>
-                                </select>
+                            <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
+                                <div>
+                                    <span class="block text-[10.5px] font-bold text-slate-400 uppercase">Người gửi phản hồi:</span>
+                                    <strong class="text-slate-900 font-bold text-xs"><?php echo htmlspecialchars($currentUser['name']); ?></strong>
+                                    <span class="text-indigo-600 font-mono text-[11px]">(<?php echo htmlspecialchars($currentUser['user_code']); ?>)</span>
+                                </div>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">
+                                    <?php echo $userRole === 'admin' ? 'Quản Trị Viên' : ($userRole === 'agent' ? 'Kỹ Thuật Viên IT' : 'Người Dùng'); ?>
+                                </span>
                             </div>
 
                             <div>

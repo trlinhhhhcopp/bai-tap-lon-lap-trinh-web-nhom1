@@ -24,17 +24,21 @@ $isLecturer    = ($userType === 'lecturer');
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 
 // 1. Tiếp nhận tham số tìm kiếm & lọc an toàn
-$keyword     = trim($_GET['kw'] ?? '');
-$status      = trim($_GET['status'] ?? '');
-$categoryId  = (int)($_GET['category_id'] ?? 0);
-$warningType = trim($_GET['warning'] ?? '');
+$keyword       = trim($_GET['kw'] ?? '');
+$status        = trim($_GET['status'] ?? '');
+$categoryId    = (int)($_GET['category_id'] ?? 0);
+$warningType   = trim($_GET['warning'] ?? '');
+$lecturerScope = trim($_GET['scope'] ?? '');
 if ($status === 'warning') {
     $warningType = 'sla';
     $status = '';
 }
 $hasWarning = ($warningType === 'sla') ? 'sla' : false;
 
-if ($userRole === 'requester') {
+$lecturerId = $isLecturer ? (int)$currentUser['id'] : 0;
+if ($isLecturer) {
+    $filterReqId = 0; // Để cho phép TicketRepository lọc theo lecturerScope
+} elseif ($userRole === 'requester') {
     $filterReqId = (int)$currentUser['id'];
 } else {
     $filterReqId = 0;
@@ -45,16 +49,17 @@ $filterAgentId = ($userRole === 'agent') ? (int)$currentUser['id'] : 0;
 $perPage    = 5;
 $page       = max(1, (int)($_GET['page'] ?? 1));
 
-$totalTickets   = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning);
+$totalTickets   = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning, $lecturerId, $lecturerScope);
 $totalPages     = max(1, (int)ceil($totalTickets / $perPage));
 
 if ($page > $totalPages && $totalTickets > 0) {
     $page = $totalPages;
 }
 
-$tickets        = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning);
+$tickets        = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning, $lecturerId, $lecturerScope);
 $categories     = TicketRepository::getCategories();
 $slaCount       = TicketRepository::countSlaOverdue($filterReqId, $filterAgentId);
+$lecturerIncidentsCount = $isLecturer ? TicketRepository::countLecturerCourseIncidents((int)$currentUser['id']) : 0;
 $flash        = get_flash();
 ?>
 <!DOCTYPE html>
@@ -142,6 +147,15 @@ $flash        = get_flash();
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= (empty($warningType) && empty($status)) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>📋 Tất Cả Phiếu</span>
                 </a>
+
+                <?php if ($isLecturer): ?>
+                    <a href="index.php?scope=course_incidents<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                       title="Xem danh sách các phiếu sự cố học tập / nộp bài của sinh viên các lớp Thầy/Cô phụ trách"
+                       class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($lecturerScope === 'course_incidents') ? 'bg-purple-700 text-white shadow-sm ring-2 ring-purple-400' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' ?>">
+                        <span>🎓 Sự Cố Học Tập (Sinh Viên Gửi)</span>
+                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($lecturerScope === 'course_incidents') ? 'bg-white text-purple-700' : 'bg-purple-700 text-white' ?>"><?= $lecturerIncidentsCount ?></span>
+                    </a>
+                <?php endif; ?>
 
                 <!-- CẢNH BÁO SLA QUÁ GIỜ -->
                 <a href="index.php?warning=sla<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
