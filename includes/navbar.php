@@ -172,6 +172,9 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>assignments/index.php" <?php echo $navAttributes(['assignments/index.php'], ['', 'index', 'create', 'edit', 'delete', 'export_csv', 'toggle_lock', 'import_assignments']); ?>>
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Phân Công Giảng Dạy</span>
                     </a>
+                    <a href="<?php echo $appBase; ?>student/index.php?action=courses" <?php echo $navAttributes(['student/index.php', 'student/courses.php'], ['courses', 'course_detail', '']); ?>>
+                        <span aria-hidden="true">📖</span><span class="sidebar-label">Mục Lục Học Phần & Bài Tập</span>
+                    </a>
                     <a href="<?php echo $appBase; ?>admin/holidays.php" <?php echo $navAttributes(['admin/holidays.php']); ?>>
                         <span aria-hidden="true">📅</span><span class="sidebar-label">Lịch Nghỉ Lễ & SLA</span>
                     </a>
@@ -221,13 +224,13 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Học Phần & Bài Tập</span>
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/create.php" <?php echo $navAttributes(['tickets/create.php']); ?>>
-                        <span>➕</span> Gửi Yêu Cầu Hỗ Trợ
+                        <span aria-hidden="true">➕</span><span class="sidebar-label">Gửi Yêu Cầu Hỗ Trợ</span>
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
-                        <span>📋</span> Phiếu Của Tôi
+                        <span aria-hidden="true">📋</span><span class="sidebar-label">Phiếu Của Tôi</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
-                        <span>⭐</span> Đánh Giá Dịch Vụ (CSAT)
+                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/index.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
+                        <span aria-hidden="true">⭐</span><span class="sidebar-label">Đánh Giá Dịch Vụ (CSAT)</span>
                     </a>
                 <?php endif; ?>
                 <?php if ($hasFixedSidebar): ?>

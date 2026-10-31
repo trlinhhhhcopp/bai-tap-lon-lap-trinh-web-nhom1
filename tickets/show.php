@@ -469,8 +469,9 @@ $flash   = get_flash();
             <!-- KHỐI NGHIỆM THU & ĐÁNH GIÁ CSAT (IMAGE 2 DESIGN & CHỈ RIÊNG NGƯỜI TẠO PHIẾU THẤY) -->
             <?php 
             $isRequester = ((int)$currentUser['id'] === (int)$ticket['requester_id']);
+            $canShowCsatBox = (!empty($currentRating) || (in_array($ticket['status'], ['resolved', 'closed']) && $isRequester));
             ?>
-            <?php if (in_array($ticket['status'], ['resolved', 'closed']) && $isRequester): ?>
+            <?php if ($canShowCsatBox): ?>
                 <div id="csat-box" class="bg-amber-50/40 border border-amber-200/90 rounded-3xl p-6 shadow-sm space-y-4">
                     
                     <div class="flex items-center justify-between flex-wrap gap-2">
@@ -480,7 +481,7 @@ $flash   = get_flash();
                                 NGHIỆM THU KẾT QUẢ XỬ LÝ & ĐÁNH GIÁ CSAT (1 - 5 SAO)
                             </h3>
                         </div>
-                        <?php if ($currentRating): ?>
+                        <?php if ($currentRating && $isRequester): ?>
                             <button type="button" onclick="document.getElementById('editRatingContainer').classList.toggle('hidden')" 
                                     class="px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 rounded-xl font-bold transition flex items-center gap-1.5 text-xs shadow-2xs">
                                 <span>✏️</span> Thay Đổi / Chấm Lại Đánh Giá
@@ -491,13 +492,17 @@ $flash   = get_flash();
                     <?php if ($currentRating): ?>
                         <div class="p-4 bg-white/95 border border-amber-200 rounded-2xl flex items-center justify-between flex-wrap gap-2 text-xs">
                             <div>
-                                <span class="font-bold text-slate-800">Đánh giá của bạn:</span>
-                                <span class="text-amber-500 font-bold ml-1.5">
-                                    <?php echo str_repeat('★', (int)$currentRating['score']); ?>
+                                <span class="font-bold text-slate-800">
+                                    <?php echo $isRequester ? 'Đánh giá của bạn:' : 'Đánh giá từ người gửi (' . htmlspecialchars($currentRating['user_name'] ?? 'Người dùng') . '):'; ?>
+                                </span>
+                                <span class="text-amber-500 font-bold ml-1.5 font-mono text-sm">
+                                    <?php echo str_repeat('★', (int)$currentRating['score']) . str_repeat('☆', 5 - (int)$currentRating['score']); ?>
                                     (<?php echo (int)$currentRating['score']; ?>/5 sao)
                                 </span>
                                 <?php if (!empty($currentRating['comment'])): ?>
                                     <p class="text-slate-600 mt-1 italic">"<?php echo htmlspecialchars($currentRating['comment']); ?>"</p>
+                                <?php else: ?>
+                                    <p class="text-slate-400 mt-0.5 text-[11px] italic">(Không có nhận xét thêm)</p>
                                 <?php endif; ?>
                             </div>
                             <span class="text-[11px] text-slate-400">Đã nghiệm thu lúc <?php echo htmlspecialchars($currentRating['created_at']); ?></span>

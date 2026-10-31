@@ -1354,6 +1354,18 @@ if ($userType === 'student') {
     $myActiveCount   = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId} AND status IN ('new', 'in_progress', 'waiting_requester')")->fetchColumn();
     $myResolvedCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId} AND status IN ('resolved', 'closed')")->fetchColumn();
 
+    // Thống kê học phần & bài tập
+    require_once __DIR__ . '/app/Models/CourseLesson.php';
+    $courseModel = new CourseLesson();
+    $myStudentCourses = $courseModel->getStudentCourses($userId);
+    $myCoursesCount = count($myStudentCourses);
+    $totalLessonsCount = 0;
+    $completedLessonsCount = 0;
+    foreach ($myStudentCourses as $mc) {
+        $totalLessonsCount += (int)$mc['total_lessons'];
+        $completedLessonsCount += (int)$mc['completed_lessons'];
+    }
+
     // Lấy danh sách phiếu của riêng sinh viên này
     $myTickets = $pdo->query("
         SELECT t.*, c.name AS category_name, p.name AS priority_name, p.code AS priority_code,
@@ -1412,6 +1424,19 @@ if ($userType === 'student') {
                     </div>
                 </div>
 
+                <!-- CÁC NÚT TRUY CẬP NHANH DÀNH CHO SINH VIÊN -->
+                <div class="flex items-center gap-2.5 flex-wrap relative z-10">
+                    <a href="<?php echo $appBase; ?>student/index.php?action=courses" class="px-4 py-2.5 bg-white text-indigo-700 hover:bg-sky-50 font-black rounded-2xl shadow-md transition flex items-center gap-2 text-xs border border-white/40">
+                        <span>📚</span> Học Phần & Bài Tập (<?php echo $myCoursesCount; ?> môn)
+                    </a>
+                    <a href="<?php echo $appBase; ?>student/ratings.php" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
+                        <span>⭐</span> Đánh Giá CSAT 5★
+                    </a>
+                    <a href="<?php echo $appBase; ?>tickets/create.php" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
+                        <span>➕</span> Gửi Phiếu Mới
+                    </a>
+                </div>
+
             </div>
 
             <?php if ($flash): ?>
@@ -1420,15 +1445,30 @@ if ($userType === 'student') {
                 </div>
             <?php endif; ?>
 
-            <!-- Các chỉ số chính của sinh viên -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <!-- Các chỉ số chính của sinh viên (4 CỘT) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a href="<?php echo $appBase; ?>student/index.php?action=courses" class="bg-gradient-to-br from-indigo-50 to-white border border-indigo-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between hover:shadow-md transition group">
+                    <div>
+                        <span class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider block mb-1">Học Phần & Bài Tập</span>
+                        <div class="flex items-baseline gap-2">
+                            <span class="text-2xl font-black text-indigo-900"><?php echo $myCoursesCount; ?></span>
+                            <span class="text-xs text-indigo-600 font-bold">môn đang học</span>
+                        </div>
+                        <div class="text-[10.5px] text-indigo-500 font-semibold mt-1">Đã nộp: <?= $completedLessonsCount ?>/<?= $totalLessonsCount ?> buổi</div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">
+                        📚
+                    </div>
+                </a>
+
                 <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
-                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Thông Báo & Yêu Cầu</span>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Tổng Phiếu Đã Gửi</span>
                         <div class="flex items-baseline gap-2">
                             <span class="text-2xl font-black text-slate-900"><?php echo $myTicketsCount; ?></span>
-                            <span class="text-xs text-sky-600 font-bold">phiếu hỗ trợ</span>
+                            <span class="text-xs text-sky-600 font-bold">yêu cầu hỗ trợ</span>
                         </div>
+                        <div class="text-[10.5px] text-slate-400 mt-1">Lịch sử sự cố học thuật</div>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center text-xl shrink-0">
                         🔔
@@ -1437,29 +1477,31 @@ if ($userType === 'student') {
 
                 <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
                     <div>
-                        <span class="text-[11px] font-bold text-amber-600 uppercase tracking-wider block mb-1">Phiếu Đang Xử Lý & Công Nợ</span>
+                        <span class="text-[11px] font-bold text-amber-600 uppercase tracking-wider block mb-1">Đang Xử Lý</span>
                         <div class="flex items-baseline gap-2">
                             <span class="text-2xl font-black text-amber-600"><?php echo $myActiveCount; ?></span>
                             <span class="text-xs text-amber-700 font-bold">đang khắc phục</span>
                         </div>
+                        <div class="text-[10.5px] text-amber-600/80 mt-1">KTV đang tiếp nhận & xử lý</div>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shrink-0">
                         ⏳
                     </div>
                 </div>
 
-                <div class="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between">
+                <a href="<?php echo $appBase; ?>student/ratings.php" class="bg-gradient-to-br from-amber-50/50 to-white border border-amber-200/90 rounded-2xl p-5 shadow-sm flex items-center justify-between hover:shadow-md transition group">
                     <div>
-                        <span class="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block mb-1">Đã Giải Quyết & Tiến Độ</span>
+                        <span class="text-[11px] font-bold text-amber-700 uppercase tracking-wider block mb-1">Đã Hoàn Thành & CSAT</span>
                         <div class="flex items-baseline gap-2">
                             <span class="text-2xl font-black text-emerald-600"><?php echo $myResolvedCount; ?></span>
                             <span class="text-xs text-emerald-700 font-bold">đã hoàn tất</span>
                         </div>
+                        <div class="text-[10.5px] text-amber-700 font-bold mt-1">⭐ Bấm nghiệm thu & chấm sao</div>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shrink-0">
-                        ✅
+                    <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">
+                        ⭐
                     </div>
-                </div>
+                </a>
             </div>
 
             <!-- BẢNG DANH SÁCH PHIẾU CỦA RIÊNG SINH VIÊN NÀY -->

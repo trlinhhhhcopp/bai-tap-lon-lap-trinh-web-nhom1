@@ -257,3 +257,4 @@ class CourseLesson
         return $stmtDel->execute([':id' => $submissionId, ':sid' => $studentId]);
     }
 }
+

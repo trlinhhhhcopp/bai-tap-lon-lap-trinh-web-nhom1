@@ -46,6 +46,23 @@ if (empty($_SESSION['user'])) {
             </div>
         <?php endif; ?>
 
+        <?php if (empty($tickets)): ?>
+            <div class="p-5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 space-y-2">
+                <div class="font-bold text-amber-950 flex items-center gap-2">
+                    <span>ℹ️</span> Hiện chưa có phiếu nào cần chấm điểm:
+                </div>
+                <p>Toàn bộ phiếu hỗ trợ của bạn đã được đánh giá CSAT hoặc KTV đang trong quá trình xử lý. Bạn cũng có thể mở trực tiếp phiếu đã hoàn thành để xem lại hoặc chỉnh sửa đánh giá.</p>
+                <div class="pt-2 flex items-center gap-2">
+                    <a href="../tickets/index.php" class="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-950 font-bold rounded-xl transition">
+                        📋 Xem Danh Sách Phiếu Của Tôi
+                    </a>
+                    <a href="ratings.php" class="px-3 py-1.5 bg-white border border-amber-300 hover:bg-amber-100 text-amber-900 font-bold rounded-xl transition">
+                        ⭐ Xem Toàn Bộ Đánh Giá
+                    </a>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <form method="post" action="index.php?action=rating_create" novalidate class="space-y-4 text-xs" onsubmit="return confirmRatingSubmit(this);">
             <div>
                 <label for="ticket_id" class="block font-bold text-slate-700 mb-1">

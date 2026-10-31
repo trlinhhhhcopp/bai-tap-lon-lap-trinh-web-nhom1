@@ -20,7 +20,8 @@ class TicketRepository {
         string $status = '',
         int $categoryId = 0,
         int $requesterId = 0,
-        int $assignedTo = 0
+        int $assignedTo = 0,
+        bool $hasWarning = false
     ): array {
         $db = db();
         $offset = ($page - 1) * $perPage;
@@ -52,6 +53,20 @@ class TicketRepository {
         if ($assignedTo > 0) {
             $conditions[] = "t.assigned_to = :assigned_to";
             $params['assigned_to'] = $assignedTo;
+        }
+
+                if ($hasWarning) {
+            $conditions[] = "(
+                t.status NOT IN ('resolved', 'closed')
+                AND (
+                    (t.due_at IS NOT NULL AND t.due_at < NOW())
+                    OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
+                    OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
+                    OR (p.code IN ('urgent', 'high'))
+                    OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
+                    OR (t.reopen_count > 0)
+                )
+            )";
         }
 
         $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
@@ -88,38 +103,90 @@ class TicketRepository {
     /**
      * Đếm tổng số phiếu thỏa mãn điều kiện để tính tổng số trang (Slide 11)
      */
-    public static function countAll(string $keyword = '', string $status = '', int $categoryId = 0, int $requesterId = 0, int $assignedTo = 0): int {
+    public static function countAll(
+        string $keyword = '',
+        string $status = '',
+        int $categoryId = 0,
+        int $requesterId = 0,
+        int $assignedTo = 0,
+        bool $hasWarning = false
+    ): int {
         $db = db();
         $conditions = [];
         $params = [];
 
         if (!empty($keyword)) {
-            $conditions[] = "(ticket_code LIKE :kw OR title LIKE :kw OR description LIKE :kw)";
+            $conditions[] = "(t.ticket_code LIKE :kw OR t.title LIKE :kw OR t.description LIKE :kw)";
             $params['kw'] = '%' . $keyword . '%';
         }
         if (!empty($status)) {
-            $conditions[] = "status = :status";
+            $conditions[] = "t.status = :status";
             $params['status'] = $status;
         }
         if ($categoryId > 0) {
-            $conditions[] = "category_id = :cat_id";
+            $conditions[] = "t.category_id = :cat_id";
             $params['cat_id'] = $categoryId;
         }
         if ($requesterId > 0) {
-            $conditions[] = "requester_id = :req_id";
+            $conditions[] = "t.requester_id = :req_id";
             $params['req_id'] = $requesterId;
         }
         if ($assignedTo > 0) {
-            $conditions[] = "assigned_to = :assigned_to";
+            $conditions[] = "t.assigned_to = :assigned_to";
             $params['assigned_to'] = $assignedTo;
+        }
+        if ($hasWarning) {
+            $conditions[] = "(
+                t.status NOT IN ('resolved', 'closed')
+                AND (
+                    (t.due_at IS NOT NULL AND t.due_at < NOW())
+                    OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
+                    OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
+                    OR (p.code IN ('urgent', 'high'))
+                    OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
+                    OR (t.reopen_count > 0)
+                )
+            )";
         }
 
         $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
-        $sql = "SELECT COUNT(*) FROM tickets {$whereClause}";
+        $sql = "SELECT COUNT(*) FROM tickets t INNER JOIN priorities p ON t.priority_id = p.id {$whereClause}";
 
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
 
+        return (int) $stmt->fetchColumn();
+    }
+
+    /**
+     * Đếm số phiếu đang có cảnh báo khẩn cấp / quá hạn SLA
+     */
+    public static function countWarnings(int $requesterId = 0, int $assignedTo = 0): int {
+        $db = db();
+        $conditions = [
+            "t.status NOT IN ('resolved', 'closed')",
+            "(
+                (t.due_at IS NOT NULL AND t.due_at < NOW())
+                OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
+                OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
+                OR (p.code IN ('urgent', 'high'))
+                OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
+                OR (t.reopen_count > 0)
+            )"
+        ];
+        $params = [];
+        if ($requesterId > 0) {
+            $conditions[] = "t.requester_id = :req_id";
+            $params['req_id'] = $requesterId;
+        }
+        if ($assignedTo > 0) {
+            $conditions[] = "t.assigned_to = :assigned_to";
+            $params['assigned_to'] = $assignedTo;
+        }
+        $whereClause = 'WHERE ' . implode(' AND ', $conditions);
+        $sql = "SELECT COUNT(*) FROM tickets t INNER JOIN priorities p ON t.priority_id = p.id {$whereClause}";
+        $stmt = $db->prepare($sql);
+        $stmt->execute($params);
         return (int) $stmt->fetchColumn();
     }
 

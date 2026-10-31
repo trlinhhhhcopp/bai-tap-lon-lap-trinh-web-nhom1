@@ -6,7 +6,7 @@
  */
 ?>
 <!-- THẺ THỐNG KÊ NHIỆM VỤ CỦA RIÊNG KTV NÀY -->
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4">
 
     <!-- 1. Tổng số phiếu của riêng KTV -->
     <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-2">
@@ -82,6 +82,23 @@
             Ngưỡng điều phối tràn tải chuẩn: <strong>≥ 15 phiếu / KTV</strong>
         </p>
     </div>
+
+    <!-- 5. Điểm sao CSAT trung bình kiểu Be/Grab -->
+    <a href="ratings.php<?php echo $isAdmin ? '?agent_id=' . $agentId : ''; ?>" 
+       class="bg-gradient-to-br from-amber-50/60 to-white border border-amber-200/90 rounded-3xl p-5 shadow-sm space-y-2 hover:shadow-md transition group block">
+        <div class="flex items-center justify-between text-amber-700">
+            <span class="text-xs font-bold uppercase tracking-wider">Điểm Sao CSAT</span>
+            <span class="text-xl group-hover:scale-125 transition-transform">⭐</span>
+        </div>
+        <div class="flex items-baseline gap-1.5">
+            <span class="text-3xl font-black text-amber-500 font-mono"><?php echo number_format($avgScore, 1); ?></span>
+            <span class="text-xs text-amber-700 font-bold">/ 5.0 ★</span>
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+            <span><strong><?php echo $totalRatings; ?></strong> lượt đánh giá</span>
+            <span class="text-amber-600 font-bold group-hover:translate-x-0.5 transition-transform">Xem nhận xét →</span>
+        </div>
+    </a>
 
 </div>
 

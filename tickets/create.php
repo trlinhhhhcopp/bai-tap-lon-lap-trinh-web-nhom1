@@ -22,7 +22,12 @@ $currentUser = $_SESSION['user'];
 $userRole    = $currentUser['role'] ?? 'requester';
 $userType    = $currentUser['user_type'] ?? 'student';
 
-// Kỹ thuật viên không có chức năng tạo phiếu hỗ trợ (chỉ tiếp nhận và xử lý sự cố)
+// Kỹ thuật viên & Quản trị viên không có chức năng tạo phiếu hỗ trợ (chỉ tiếp nhận, giám sát và xử lý)
+if ($userRole === 'admin') {
+    set_flash('error', 'Quản trị viên là người quản trị và điều phối hệ thống, không cần gửi yêu cầu hỗ trợ.');
+    header('Location: index.php');
+    exit;
+}
 if ($userRole === 'agent') {
     set_flash('error', 'Kỹ thuật viên IT không có chức năng tự gửi phiếu hỗ trợ. Nhiệm vụ của bạn là tiếp nhận và giải quyết phiếu sự cố!');
     header('Location: ../agent/index.php');

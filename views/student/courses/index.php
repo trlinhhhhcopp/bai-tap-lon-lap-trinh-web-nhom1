@@ -151,3 +151,4 @@ $overallProgress = $totalLessonsAll > 0 ? (int)round(($totalCompletedAll / $tota
 <?php require_once __DIR__ . '/../../../includes/footer.php'; ?>
 </body>
 </html>
+

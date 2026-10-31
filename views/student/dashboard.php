@@ -176,9 +176,12 @@
                         Theo dõi tiến độ giải quyết trực tiếp từ 5 Kỹ thuật viên phụ trách
                     </p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <a href="student/index.php?action=courses" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-xs rounded-xl border border-indigo-200 transition flex items-center gap-1.5 shadow-sm">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <a href="<?php echo $appBase; ?>student/index.php?action=courses" class="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-extrabold text-xs rounded-xl border border-indigo-200 transition flex items-center gap-1.5 shadow-sm">
                         <span>📚</span> Học Phần & Bài Tập
+                    </a>
+                    <a href="<?php echo $appBase; ?>student/ratings.php" class="px-3.5 py-2 bg-amber-50 hover:bg-amber-100 text-amber-800 font-extrabold text-xs rounded-xl border border-amber-200 transition flex items-center gap-1.5 shadow-sm">
+                        <span>⭐</span> Đánh Giá 5★
                     </a>
                     <button id="btnOpenTicketForm" type="button" onclick="openTicketForm()" 
                         class="px-4 py-2 bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-sky-500/20 transition flex items-center gap-1.5 transform hover:-translate-y-0.5 active:translate-y-0">

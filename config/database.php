@@ -91,6 +91,30 @@ if (!function_exists('get_flash')) {
     }
 }
 
+/**
+ * Helper lấy URL gốc của ứng dụng (dùng chung cho mọi view & controller)
+ */
+if (!function_exists('get_app_base_url')) {
+    function get_app_base_url(): string {
+        $docRoot = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'] ?? '') ?: ($_SERVER['DOCUMENT_ROOT'] ?? ''));
+        $appRoot = str_replace('\\', '/', realpath(__DIR__ . '/..') ?: dirname(__DIR__));
+        
+        if ($docRoot && str_starts_with($appRoot, $docRoot)) {
+            $rel = substr($appRoot, strlen($docRoot));
+            $base = '/' . trim(str_replace('\\', '/', $rel), '/') . '/';
+            return str_replace('//', '/', $base);
+        }
+        
+        $script = $_SERVER['SCRIPT_NAME'] ?? '';
+        $folder = 'bai-tap-lon-lap-trinh-web-nhom1';
+        $pos = strpos($script, $folder);
+        if ($pos !== false) {
+            return substr($script, 0, $pos + strlen($folder)) . '/';
+        }
+        return '/';
+    }
+}
+
 // Trả về mảng cấu hình cho App\Core\Database
 return [
     'driver'    => 'mysql',

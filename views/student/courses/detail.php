@@ -375,3 +375,4 @@ async function handleFormSubmit(event, form, lessonId) {
 <?php require_once __DIR__ . '/../../../includes/footer.php'; ?>
 </body>
 </html>
+
