@@ -56,15 +56,15 @@ if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'admin') {
             </div>
             <form method="post" action="index.php?action=add_class" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <label class="font-bold text-slate-700">Mã lớp <span class="text-rose-500">*</span>
-                    <input type="text" name="class_code" required placeholder="VD: D24-CNTT3" <?= $isLocked ? 'disabled' : '' ?>
+                    <input type="text" name="class_code" required pattern="[A-Za-z0-9\-_]{3,20}" title="Mã lớp từ 3-20 ký tự, không dấu, không khoảng trắng (VD: D24-CNTT3)" placeholder="VD: D24-CNTT3" <?= $isLocked ? 'disabled' : '' ?>
                            class="mt-1 w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono">
                 </label>
                 <label class="font-bold text-slate-700">Tên lớp <span class="text-rose-500">*</span>
                     <input type="text" name="class_name" required placeholder="VD: Công nghệ thông tin D24-3" <?= $isLocked ? 'disabled' : '' ?>
                            class="mt-1 w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500">
                 </label>
-                <label class="font-bold text-slate-700">Niên khóa
-                    <input type="text" name="cohort" value="D24" placeholder="VD: D24" <?= $isLocked ? 'disabled' : '' ?>
+                <label class="font-bold text-slate-700">Niên khóa <span class="text-rose-500">*</span>
+                    <input type="text" name="cohort" value="D24" required pattern="[A-Za-z0-9\-_]{2,15}" title="Niên khóa từ 2-15 ký tự (VD: D24, K24)" placeholder="VD: D24" <?= $isLocked ? 'disabled' : '' ?>
                            class="mt-1 w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono">
                 </label>
                 <label class="font-bold text-slate-700">Khoa / Viện
@@ -166,7 +166,7 @@ if (empty($_SESSION['user']) || ($_SESSION['user']['role'] ?? '') !== 'admin') {
             </div>
             <form method="post" action="index.php?action=add_course" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <label class="font-bold text-slate-700">Mã môn <span class="text-rose-500">*</span>
-                    <input type="text" name="course_code" required placeholder="VD: INT1316" <?= $isLocked ? 'disabled' : '' ?>
+                    <input type="text" name="course_code" required pattern="[A-Za-z0-9\-_]{2,15}" title="Mã môn học từ 2-15 ký tự không dấu (VD: INT1316, WEB101, SQL101)" placeholder="VD: INT1316" <?= $isLocked ? 'disabled' : '' ?>
                            class="mt-1 w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono">
                 </label>
                 <label class="font-bold text-slate-700">Tên môn <span class="text-rose-500">*</span>

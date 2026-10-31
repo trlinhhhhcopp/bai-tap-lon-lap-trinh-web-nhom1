@@ -27,7 +27,7 @@ require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
 $keyword       = trim($_GET['kw'] ?? '');
 $status        = trim($_GET['status'] ?? '');
 $categoryId    = (int)($_GET['category_id'] ?? 0);
-$warningType   = trim($_GET['warning'] ?? '');
+$warningType   = trim($_GET['warning'] ?? ($_GET['has_warning'] ?? ''));
 $lecturerScope = trim($_GET['scope'] ?? '');
 if ($status === 'warning') {
     $warningType = 'sla';
@@ -48,7 +48,8 @@ if ($isLecturer) {
 } else {
     $filterReqId = 0;
 }
-$filterAgentId = ($userRole === 'agent') ? (int)$currentUser['id'] : 0;
+// Nếu đang xem Trạm Cứu Hộ, hiển thị toàn bộ phiếu cứu hộ cho cả Admin và mọi KTV cùng hỗ trợ
+$filterAgentId = ($userRole === 'agent' && $warningType !== 'guest') ? (int)$currentUser['id'] : 0;
 
 // 2. Phân trang an toàn (5 bản ghi / trang)
 $perPage    = 5;

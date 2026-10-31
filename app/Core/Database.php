@@ -28,6 +28,7 @@ class Database {
             foreach ($passwords as $pwd) {
                 try {
                     self::$instance = new PDO($dsn, $config['username'], $pwd, $config['options']);
+                    self::$instance->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;");
                     self::$isFallback = false;
                     $connected = true;
 

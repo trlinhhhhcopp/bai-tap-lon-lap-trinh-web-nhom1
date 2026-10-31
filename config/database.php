@@ -8,8 +8,12 @@
  * ==============================================================================
  */
 
+ini_set('default_charset', 'UTF-8');
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=UTF-8');
 }
 
 /**
@@ -56,7 +60,9 @@ if (!function_exists('db')) {
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => true,
+                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
             ]);
+            $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;");
         } catch (PDOException $e) {
             die("<strong>Lỗi kết nối CSDL:</strong> " . htmlspecialchars($e->getMessage()));
         }
@@ -129,5 +135,6 @@ return [
         PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
         PDO::ATTR_EMULATE_PREPARES   => true,
+        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
     ],
 ];

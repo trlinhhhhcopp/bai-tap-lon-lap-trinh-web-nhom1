@@ -275,9 +275,11 @@ $flash = get_flash();
         .modal-card {
             background: #fff;
             width: 100%;
-            max-width: 600px;
-            border-radius: 12px;
-            overflow: hidden;
+            max-width: 620px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-sizing: border-box;
+            border-radius: 16px;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
             animation: slideDown 0.3s ease;
         }
@@ -289,19 +291,24 @@ $flash = get_flash();
             justify-content: space-between;
             align-items: center;
         }
-        .modal-body { padding: 20px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .modal-body { padding: 20px; box-sizing: border-box; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; box-sizing: border-box; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; box-sizing: border-box; min-width: 0; }
         .form-group.full { grid-column: span 2; }
         .form-label { font-size: 12.5px; font-weight: 600; color: #334155; }
         .form-control {
-            padding: 8px 12px;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 100%;
+            padding: 9px 12px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 13.5px;
+            border-radius: 8px;
+            font-size: 13px;
             outline: none;
+            background: #fff;
+            color: var(--text-main);
         }
-        .form-control:focus { border-color: var(--primary); }
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
         .modal-footer {
             padding: 14px 20px;
             background: #f8fafc;

@@ -179,6 +179,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // KIỂM TRA CHỐNG TRÙNG LẶP SỰ CỐ (ANTI-DUPLICATE / SPAM CHECK)
+    if (empty($errors)) {
+        $stmtDup = db()->prepare("
+            SELECT id, ticket_code, title, status, created_at 
+            FROM tickets 
+            WHERE requester_id = :uid 
+              AND category_id = :cat_id
+              AND (
+                  LOWER(TRIM(title)) = LOWER(:title) 
+                  OR (created_at >= (NOW() - INTERVAL 10 MINUTE) AND LOWER(TRIM(title)) LIKE CONCAT('%', LOWER(:kw), '%'))
+              )
+              AND status IN ('new', 'in_progress', 'waiting_requester')
+            ORDER BY id DESC LIMIT 1
+        ");
+        $stmtDup->execute([
+            ':uid'    => $requesterId,
+            ':cat_id' => $categoryId,
+            ':title'  => trim($title),
+            ':kw'     => mb_substr(trim($title), 0, 15)
+        ]);
+        $dupTicket = $stmtDup->fetch();
+        if ($dupTicket) {
+            $statusText = match($dupTicket['status']) {
+                'new' => 'Mới tiếp nhận (đang chờ KTV nhận việc)',
+                'in_progress' => 'Đang xử lý kỹ thuật',
+                'waiting_requester' => 'Đang chờ bạn phản hồi',
+                default => $dupTicket['status']
+            };
+            $errors[] = "⚠️ PHÁT HIỆN SỰ CỐ TRÙNG LẶP: Bạn đã có phiếu #" . htmlspecialchars($dupTicket['ticket_code']) . " (\"" . htmlspecialchars($dupTicket['title']) . "\") cùng chuyên mục đang ở trạng thái \"{$statusText}\". Hệ thống tự động chặn gửi trùng lặp nhiều lần để tránh quá tải KTV! Vui lòng vào chi tiết phiếu hiện có để trao đổi thêm.";
+        }
+    }
+
     if (empty($errors)) {
         try {
             $ticketId = TicketRepository::create([

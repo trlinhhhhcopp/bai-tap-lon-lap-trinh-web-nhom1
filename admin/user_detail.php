@@ -164,8 +164,27 @@ if (!$user) {
                 </div>
 
                 <div class="info-item">
-                    <div class="info-label">Trạng thái học vụ (Vòng đời SV):</div>
-                    <div class="info-value"><?= htmlspecialchars($user['academic_status']) ?> (Khóa <?= htmlspecialchars($user['cohort'] ?: 'N/A') ?>)</div>
+                    <div class="info-label">
+                        <?= (in_array($user['user_type'], ['lecturer', 'staff']) || $user['role'] === 'agent') ? 'Trạng thái công tác:' : 'Trạng thái học vụ (Vòng đời SV):' ?>
+                    </div>
+                    <div class="info-value">
+                        <?php if (in_array($user['user_type'], ['lecturer', 'staff']) || $user['role'] === 'agent'): ?>
+                            <span style="color: #059669; font-weight: 700;">● Đang công tác</span> 
+                            <span style="color: #64748b; font-size: 13px; font-weight: 500;">(<?= $user['user_type'] === 'lecturer' ? 'Cán bộ - Giảng viên cơ hữu' : 'Kỹ thuật viên chuyên trách' ?>)</span>
+                        <?php else: ?>
+                            <?php
+                            $academicVi = match($user['academic_status'] ?? '') {
+                                'studying'  => 'Đang theo học',
+                                'graduated' => 'Đã tốt nghiệp',
+                                'expelled'  => 'Buộc thôi học',
+                                'suspended' => 'Tạm đình chỉ',
+                                default     => htmlspecialchars($user['academic_status'] ?? 'Đang học')
+                            };
+                            ?>
+                            <span style="color: #0284c7; font-weight: 700;"><?= $academicVi ?></span>
+                            <span style="color: #64748b; font-size: 13px; font-weight: 500;">(Khóa <?= htmlspecialchars($user['cohort'] ?: 'D24') ?>)</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="info-item">

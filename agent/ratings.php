@@ -34,43 +34,83 @@ $isAdmin = ($userRole === 'admin');
 if ($isAgent) {
     $agentId = (int)$currentUser['id'];
 } else {
-    // Admin có thể xem đánh giá của từng KTV
-    $agentId = (int)($_GET['agent_id'] ?? 2);
+    // Admin mặc định xem toàn hệ thống (0), hoặc có thể chọn từng KTV
+    $agentId = isset($_GET['agent_id']) ? (int)$_GET['agent_id'] : 0;
 }
 
 $db = db();
 
 // 2. Lấy thông tin KTV
-$agentStmt = $db->prepare("
-    SELECT u.*, c.name AS specialty_name, c.code AS specialty_code 
-    FROM users u 
-    LEFT JOIN categories c ON u.specialty_category_id = c.id 
-    WHERE u.id = :id AND u.role = 'agent'
-");
-$agentStmt->execute([':id' => $agentId]);
-$currentAgent = $agentStmt->fetch();
-
-if (!$currentAgent) {
-    $agentId = 2;
-    $agentStmt->execute([':id' => 2]);
+if ($agentId === 0 && $isAdmin) {
+    $currentAgent = [
+        'id'             => 0,
+        'name'           => 'Toàn Bộ Đội Ngũ Kỹ Thuật Viên',
+        'user_code'      => 'ALL-AGENTS',
+        'specialty_name' => 'Toàn Trường (CSAT Toàn Hệ Thống)',
+        'department'     => 'Trung tâm CNTT & Thư viện',
+    ];
+} else {
+    $agentStmt = $db->prepare("
+        SELECT u.*, c.name AS specialty_name, c.code AS specialty_code 
+        FROM users u 
+        LEFT JOIN categories c ON u.specialty_category_id = c.id 
+        WHERE u.id = :id AND u.role = 'agent'
+    ");
+    $agentStmt->execute([':id' => $agentId]);
     $currentAgent = $agentStmt->fetch();
+
+    if (!$currentAgent) {
+        if ($isAdmin) {
+            $currentAgent = [
+                'id'             => 0,
+                'name'           => 'Toàn Bộ Đội Ngũ Kỹ Thuật Viên',
+                'user_code'      => 'ALL-AGENTS',
+                'specialty_name' => 'Toàn Trường (CSAT Toàn Hệ Thống)',
+            ];
+            $agentId = 0;
+        } else {
+            $currentAgent = [
+                'id'             => (int)$currentUser['id'],
+                'name'           => $currentUser['name'] ?? 'Kỹ thuật viên IT',
+                'user_code'      => $currentUser['user_code'] ?? 'KTV',
+                'specialty_name' => 'Hỗ trợ CNTT',
+            ];
+            $agentId = (int)$currentUser['id'];
+        }
+    }
 }
 
 // 3. Thống kê tổng quan CSAT (Điểm TB kiểu Be/Grab và số lượng từng loại sao)
-$csatStatsStmt = $db->prepare("
-    SELECT 
-        COUNT(*) as total_ratings,
-        AVG(r.score) as avg_score,
-        SUM(CASE WHEN r.score = 5 THEN 1 ELSE 0 END) as count_5,
-        SUM(CASE WHEN r.score = 4 THEN 1 ELSE 0 END) as count_4,
-        SUM(CASE WHEN r.score = 3 THEN 1 ELSE 0 END) as count_3,
-        SUM(CASE WHEN r.score = 2 THEN 1 ELSE 0 END) as count_2,
-        SUM(CASE WHEN r.score = 1 THEN 1 ELSE 0 END) as count_1
-    FROM ticket_ratings r
-    JOIN tickets t ON r.ticket_id = t.id
-    WHERE t.assigned_to = :agent_id
-");
-$csatStatsStmt->execute([':agent_id' => $agentId]);
+if ($agentId > 0) {
+    $csatStatsStmt = $db->prepare("
+        SELECT 
+            COUNT(*) as total_ratings,
+            AVG(r.score) as avg_score,
+            SUM(CASE WHEN r.score = 5 THEN 1 ELSE 0 END) as count_5,
+            SUM(CASE WHEN r.score = 4 THEN 1 ELSE 0 END) as count_4,
+            SUM(CASE WHEN r.score = 3 THEN 1 ELSE 0 END) as count_3,
+            SUM(CASE WHEN r.score = 2 THEN 1 ELSE 0 END) as count_2,
+            SUM(CASE WHEN r.score = 1 THEN 1 ELSE 0 END) as count_1
+        FROM ticket_ratings r
+        JOIN tickets t ON r.ticket_id = t.id
+        WHERE t.assigned_to = :agent_id
+    ");
+    $csatStatsStmt->execute([':agent_id' => $agentId]);
+} else {
+    // Admin xem toàn hệ thống
+    $csatStatsStmt = $db->query("
+        SELECT 
+            COUNT(*) as total_ratings,
+            AVG(r.score) as avg_score,
+            SUM(CASE WHEN r.score = 5 THEN 1 ELSE 0 END) as count_5,
+            SUM(CASE WHEN r.score = 4 THEN 1 ELSE 0 END) as count_4,
+            SUM(CASE WHEN r.score = 3 THEN 1 ELSE 0 END) as count_3,
+            SUM(CASE WHEN r.score = 2 THEN 1 ELSE 0 END) as count_2,
+            SUM(CASE WHEN r.score = 1 THEN 1 ELSE 0 END) as count_1
+        FROM ticket_ratings r
+        JOIN tickets t ON r.ticket_id = t.id
+    ");
+}
 $stats = $csatStatsStmt->fetch() ?: [];
 
 $totalRatings = (int)($stats['total_ratings'] ?? 0);
@@ -95,18 +135,29 @@ $sql = "
     SELECT r.*, 
            t.id as ticket_id, t.ticket_code, t.title as ticket_title, t.system_affected, t.created_at as ticket_created_at,
            c.name as category_name, c.code as category_code,
-           u.name as student_name, u.user_code as student_code, u.email as student_email
+           u.name as student_name, u.user_code as student_code, u.email as student_email,
+           ag.name as agent_name, ag.user_code as agent_code
     FROM ticket_ratings r
     JOIN tickets t ON r.ticket_id = t.id
     JOIN categories c ON t.category_id = c.id
     JOIN users u ON r.user_id = u.id
-    WHERE t.assigned_to = :agent_id
+    LEFT JOIN users ag ON t.assigned_to = ag.id
 ";
-$params = [':agent_id' => $agentId];
+$whereParts = [];
+$params = [];
+
+if ($agentId > 0) {
+    $whereParts[] = "t.assigned_to = :agent_id";
+    $params[':agent_id'] = $agentId;
+}
 
 if ($starFilter > 0) {
-    $sql .= " AND r.score = :star";
+    $whereParts[] = "r.score = :star";
     $params[':star'] = $starFilter;
+}
+
+if (!empty($whereParts)) {
+    $sql .= " WHERE " . implode(' AND ', $whereParts);
 }
 
 $sql .= " ORDER BY r.created_at DESC";
@@ -190,6 +241,10 @@ $flash = get_flash();
                     <span class="text-base">👔</span> <span>Admin giám sát chất lượng KTV:</span>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap">
+                    <a href="ratings.php?agent_id=0" 
+                       class="px-3 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 <?php echo ($agentId === 0) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'; ?>">
+                        <span>🌐 Toàn Bộ Đội Ngũ KTV</span>
+                    </a>
                     <?php foreach ($allAgents as $ag): 
                         $isSelected = ((int)$ag['id'] === $agentId);
                         $agAvg = $ag['agent_avg'] ? number_format((float)$ag['agent_avg'], 1) : '5.0';
@@ -308,9 +363,9 @@ $flash = get_flash();
 
             <!-- Các nút bấm lọc trực quan -->
             <div class="flex items-center gap-2 flex-wrap text-xs">
-                <!-- Nút Tất cả -->
+                <!-- Nút Tất cả (màu trung tính slate để không trùng màu vàng sao) -->
                 <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=0" 
-                   class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 <?php echo ($starFilter === 0) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'; ?>">
+                   class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 <?php echo ($starFilter === 0) ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'; ?>">
                     <span>Tất cả</span>
                     <span class="px-2 py-0.5 rounded-full text-[10.5px] font-mono <?php echo ($starFilter === 0) ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'; ?>">
                         <?php echo $totalRatings; ?>
@@ -461,6 +516,12 @@ $flash = get_flash();
                                 <span class="text-[11px] text-slate-400">
                                     Hệ thống: <strong class="text-slate-600"><?php echo htmlspecialchars($r['system_affected']); ?></strong>
                                 </span>
+                                <?php if ($agentId === 0 || $isAdmin): ?>
+                                    <span>•</span>
+                                    <span class="text-[11px] text-indigo-700 font-bold bg-indigo-50 border border-indigo-100 px-2 py-0.5 rounded-md">
+                                        👨‍💻 KTV: <?php echo htmlspecialchars($r['agent_name'] ?? 'KTV'); ?> (<?php echo htmlspecialchars($r['agent_code'] ?? ''); ?>)
+                                    </span>
+                                <?php endif; ?>
                             </div>
 
                             <a href="../tickets/show.php?id=<?php echo $r['ticket_id']; ?>" 

@@ -621,20 +621,40 @@ class CourseAssignmentController
             exit;
         }
 
-        $code       = trim($_POST['class_code'] ?? '');
+        $code       = strtoupper(trim($_POST['class_code'] ?? ''));
         $name       = trim($_POST['class_name'] ?? '');
-        $cohort     = trim($_POST['cohort'] ?? 'D24');
+        $cohort     = strtoupper(trim($_POST['cohort'] ?? ''));
         $department = trim($_POST['department'] ?? 'Khoa Công Nghệ Thông Tin');
 
-        if ($code !== '' && $name !== '') {
-            try {
-                CourseAssignment::addClass($code, $name, $cohort, $department);
-                $_SESSION['flash'] = ['type' => 'success', 'msg' => "Đã thêm lớp học mới: {$code} - {$name} thành công!"];
-            } catch (\Exception $e) {
-                $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Lỗi thêm lớp học: ' . $e->getMessage()];
-            }
-        } else {
+        if ($code === '' || $name === '') {
             $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Vui lòng nhập đầy đủ Mã lớp và Tên lớp học!'];
+            header('Location: index.php?action=manage_catalog');
+            exit;
+        }
+
+        if ($cohort === '') {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Niên khóa không được để trống (bắt buộc nhập, VD: D24, K24)!'];
+            header('Location: index.php?action=manage_catalog');
+            exit;
+        }
+
+        if (!preg_match('/^[A-Za-z0-9\-_]{3,20}$/', $code)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Mã lớp không đúng định dạng! Chỉ chấp nhận chữ cái, số và dấu gạch nối (VD: D24-CNTT1), không có khoảng trắng hoặc ký tự có dấu.'];
+            header('Location: index.php?action=manage_catalog');
+            exit;
+        }
+
+        if (!preg_match('/^[A-Za-z0-9\-_]{2,15}$/', $cohort)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Niên khóa không đúng định dạng! Chỉ chấp nhận chữ cái và số (VD: D24, K24), không có khoảng trắng.'];
+            header('Location: index.php?action=manage_catalog');
+            exit;
+        }
+
+        try {
+            CourseAssignment::addClass($code, $name, $cohort, $department);
+            $_SESSION['flash'] = ['type' => 'success', 'msg' => "Đã thêm lớp học mới: {$code} - {$name} (Khóa {$cohort}) thành công!"];
+        } catch (\Exception $e) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Lỗi thêm lớp học: ' . $e->getMessage()];
         }
         header('Location: index.php?action=manage_catalog');
         exit;
@@ -660,20 +680,28 @@ class CourseAssignmentController
             exit;
         }
 
-        $code       = trim($_POST['course_code'] ?? '');
+        $code       = strtoupper(trim($_POST['course_code'] ?? ''));
         $name       = trim($_POST['course_name'] ?? '');
         $credits    = max(1, (int)($_POST['credits'] ?? 3));
         $department = trim($_POST['department'] ?? 'Khoa Công Nghệ Thông Tin');
 
-        if ($code !== '' && $name !== '') {
-            try {
-                CourseAssignment::addCourse($code, $name, $credits, $department);
-                $_SESSION['flash'] = ['type' => 'success', 'msg' => "Đã thêm môn học mới: {$code} - {$name} ({$credits} tín chỉ) thành công!"];
-            } catch (\Exception $e) {
-                $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Lỗi thêm môn học: ' . $e->getMessage()];
-            }
-        } else {
+        if ($code === '' || $name === '') {
             $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Vui lòng nhập đầy đủ Mã môn và Tên môn học!'];
+            header('Location: index.php?action=manage_catalog');
+            exit;
+        }
+
+        if (!preg_match('/^[A-Za-z0-9\-_]{2,15}$/', $code)) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Mã môn học không đúng định dạng! Chỉ chấp nhận mã viết liền không dấu (VD: WEB101, SQL101, INT1316), không cho phép nhập khoảng trắng hay câu văn.'];
+            header('Location: index.php?action=manage_catalog');
+            exit;
+        }
+
+        try {
+            CourseAssignment::addCourse($code, $name, $credits, $department);
+            $_SESSION['flash'] = ['type' => 'success', 'msg' => "Đã thêm môn học mới: {$code} - {$name} ({$credits} tín chỉ) thành công!"];
+        } catch (\Exception $e) {
+            $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Lỗi thêm môn học: ' . $e->getMessage()];
         }
         header('Location: index.php?action=manage_catalog');
         exit;

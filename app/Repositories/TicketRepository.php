@@ -101,15 +101,18 @@ class TicketRepository {
         $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
 
         $sql = "SELECT t.*, 
-                       u_req.name AS requester_name, u_req.user_code AS requester_code,
+                       COALESCE(u_req.name, t.contact_email, 'Khách gửi cứu hộ') AS requester_name, 
+                       COALESCE(u_req.user_code, 'GUEST') AS requester_code,
                        u_agent.name AS agent_name,
-                       c.name AS category_name, c.code AS category_code,
-                       p.name AS priority_name, p.code AS priority_code
+                       COALESCE(c.name, 'Cứu hộ tài khoản') AS category_name, 
+                       COALESCE(c.code, 'CAT_SSO') AS category_code,
+                       COALESCE(p.name, 'Cao') AS priority_name, 
+                       COALESCE(p.code, 'HIGH') AS priority_code
                 FROM tickets t
-                INNER JOIN users u_req ON t.requester_id = u_req.id
+                LEFT JOIN users u_req ON t.requester_id = u_req.id
                 LEFT JOIN users u_agent ON t.assigned_to = u_agent.id
-                INNER JOIN categories c ON t.category_id = c.id
-                INNER JOIN priorities p ON t.priority_id = p.id
+                LEFT JOIN categories c ON t.category_id = c.id
+                LEFT JOIN priorities p ON t.priority_id = p.id
                 {$whereClause}
                 ORDER BY t.created_at DESC
                 LIMIT :limit OFFSET :offset";
@@ -208,7 +211,7 @@ class TicketRepository {
         }
 
         $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
-        $sql = "SELECT COUNT(*) FROM tickets t INNER JOIN priorities p ON t.priority_id = p.id {$whereClause}";
+        $sql = "SELECT COUNT(*) FROM tickets t LEFT JOIN priorities p ON t.priority_id = p.id {$whereClause}";
 
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
@@ -302,7 +305,7 @@ class TicketRepository {
             $params['assigned_to'] = $assignedTo;
         }
         $whereClause = 'WHERE ' . implode(' AND ', $conditions);
-        $sql = "SELECT COUNT(*) FROM tickets t INNER JOIN priorities p ON t.priority_id = p.id {$whereClause}";
+        $sql = "SELECT COUNT(*) FROM tickets t LEFT JOIN priorities p ON t.priority_id = p.id {$whereClause}";
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
         return (int) $stmt->fetchColumn();
@@ -313,19 +316,23 @@ class TicketRepository {
      */
     public static function findById(int $id): ?array {
         $sql = "SELECT t.*, 
-                       u_req.name AS requester_name, u_req.user_code AS requester_code, u_req.email AS requester_email,
+                       COALESCE(u_req.name, t.contact_email, 'Khách gửi cứu hộ') AS requester_name, 
+                       COALESCE(u_req.user_code, 'GUEST') AS requester_code, 
+                       COALESCE(u_req.email, t.contact_email, 'Chưa có email') AS requester_email,
                        u_agent.name AS agent_name, u_agent.user_code AS agent_code,
-                       c.name AS category_name, c.code AS category_code,
-                       p.name AS priority_name, p.code AS priority_code,
+                       COALESCE(c.name, 'Cứu hộ tài khoản') AS category_name, 
+                       COALESCE(c.code, 'CAT_SSO') AS category_code,
+                       COALESCE(p.name, 'Cao') AS priority_name, 
+                       COALESCE(p.code, 'HIGH') AS priority_code,
                        COALESCE(cl.class_code, u_cl.class_code, u_req.cohort, 'D24-CNTT1') AS class_code,
                        COALESCE(cl.name, u_cl.name, 'Đại học CNTT K24') AS class_name,
                        co.course_code, co.name AS course_name,
                        cln.lesson_number, cln.title AS lesson_title, cln.deadline_at AS lesson_deadline_at, cln.assignment_requirement AS lesson_requirement
                 FROM tickets t
-                INNER JOIN users u_req ON t.requester_id = u_req.id
+                LEFT JOIN users u_req ON t.requester_id = u_req.id
                 LEFT JOIN users u_agent ON t.assigned_to = u_agent.id
-                INNER JOIN categories c ON t.category_id = c.id
-                INNER JOIN priorities p ON t.priority_id = p.id
+                LEFT JOIN categories c ON t.category_id = c.id
+                LEFT JOIN priorities p ON t.priority_id = p.id
                 LEFT JOIN classes cl ON t.class_id = cl.id
                 LEFT JOIN classes u_cl ON u_req.class_id = u_cl.id
                 LEFT JOIN courses co ON t.course_id = co.id
@@ -418,6 +425,26 @@ class TicketRepository {
                 $assignedTo = null;
             }
         }
+        if (!empty($assignedTo)) {
+            $stmtChkAgent = $db->prepare("SELECT id FROM users WHERE id = :aid AND role = 'agent' LIMIT 1");
+            $stmtChkAgent->execute([':aid' => $assignedTo]);
+            if (!$stmtChkAgent->fetchColumn()) {
+                $assignedTo = null;
+            }
+        } else {
+            $assignedTo = null;
+        }
+
+        $requesterId = (int)($data['requester_id'] ?? 0);
+        if ($requesterId > 0) {
+            $stmtChkReq = $db->prepare("SELECT id FROM users WHERE id = :rid LIMIT 1");
+            $stmtChkReq->execute([':rid' => $requesterId]);
+            if (!$stmtChkReq->fetchColumn()) {
+                $requesterId = (int)($db->query("SELECT id FROM users ORDER BY id ASC LIMIT 1")->fetchColumn() ?: 1);
+            }
+        } else {
+            $requesterId = (int)($db->query("SELECT id FROM users ORDER BY id ASC LIMIT 1")->fetchColumn() ?: 1);
+        }
 
         $courseId = !empty($data['course_id']) ? (int)$data['course_id'] : null;
         $lessonId = !empty($data['lesson_id']) ? (int)$data['lesson_id'] : null;
@@ -445,7 +472,7 @@ class TicketRepository {
         $stmt = $db->prepare($sql);
         $stmt->execute([
             'ticket_code'     => $ticketCode,
-            'requester_id'    => (int)$data['requester_id'],
+            'requester_id'    => $requesterId,
             'assigned_to'     => $assignedTo,
             'category_id'     => (int)$data['category_id'],
             'priority_id'     => (int)$data['priority_id'],

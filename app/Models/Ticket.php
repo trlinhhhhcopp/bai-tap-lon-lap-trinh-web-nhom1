@@ -21,15 +21,15 @@ class Ticket {
         $sql = "SELECT t.*, 
                        c.name AS category_name, 
                        p.name AS priority_name,
-                       req.name AS requester_name,
-                       req.user_code AS requester_code,
-                       req.email AS requester_email,
+                       COALESCE(req.name, t.contact_email, 'Khách vãng lai') AS requester_name,
+                       COALESCE(req.user_code, 'GUEST') AS requester_code,
+                       COALESCE(req.email, t.contact_email) AS requester_email,
                        COALESCE(agent.name, 'Đang chờ phân công') AS agent_name,
                        COALESCE(agent.user_code, '') AS agent_code
                 FROM tickets t
-                JOIN categories c ON c.id = t.category_id
-                JOIN priorities p ON p.id = t.priority_id
-                JOIN users req ON req.id = t.requester_id
+                LEFT JOIN categories c ON c.id = t.category_id
+                LEFT JOIN priorities p ON p.id = t.priority_id
+                LEFT JOIN users req ON req.id = t.requester_id
                 LEFT JOIN users agent ON agent.id = t.assigned_to
                 WHERE t.id = :id LIMIT 1";
         $stmt = $pdo->prepare($sql);
@@ -140,12 +140,12 @@ class Ticket {
         $sql = "SELECT t.*, 
                        c.name AS category_name, 
                        p.name AS priority_name,
-                       req.name AS requester_name,
+                       COALESCE(req.name, t.contact_email, 'Khách vãng lai') AS requester_name,
                        COALESCE(agent.name, 'Đang chờ phân công') AS agent_name
                 FROM tickets t
-                JOIN categories c ON c.id = t.category_id
-                JOIN priorities p ON p.id = t.priority_id
-                JOIN users req ON req.id = t.requester_id
+                LEFT JOIN categories c ON c.id = t.category_id
+                LEFT JOIN priorities p ON p.id = t.priority_id
+                LEFT JOIN users req ON req.id = t.requester_id
                 LEFT JOIN users agent ON agent.id = t.assigned_to
                 WHERE UPPER(t.ticket_code) = UPPER(:code) LIMIT 1";
         $stmt = $pdo->prepare($sql);

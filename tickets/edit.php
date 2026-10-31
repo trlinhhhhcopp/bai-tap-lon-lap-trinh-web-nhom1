@@ -50,6 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $assignedTo     = (int)($_POST['assigned_to'] ?? 0);
     $status         = trim($_POST['status'] ?? $ticket['status']);
 
+    // Khóa điều chuyển phân công khi phiếu đã hoàn tất / đã giải quyết
+    if (in_array($ticket['status'], ['closed', 'resolved'])) {
+        $assignedTo = (int)$ticket['assigned_to'];
+    }
+
     if (empty($title)) {
         $errors[] = "Tiêu đề sự cố không được để trống.";
     }
@@ -172,14 +177,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <!-- Phân công KTV -->
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Kỹ thuật viên phụ trách xử lý:</label>
-                <select name="assigned_to" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
-                    <option value="0">-- Chưa phân công (Để trống) --</option>
-                    <?php foreach ($agents as $ag): ?>
-                        <option value="<?php echo $ag['id']; ?>" <?php echo (int)$ticket['assigned_to'] === (int)$ag['id'] ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($ag['name']); ?> (Mã KTV: <?php echo htmlspecialchars($ag['user_code']); ?>)
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <?php if (in_array($ticket['status'], ['closed', 'resolved'])): ?>
+                    <input type="hidden" name="assigned_to" value="<?php echo (int)$ticket['assigned_to']; ?>" />
+                    <div class="p-3 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-600 flex items-center justify-between">
+                        <span>
+                            👨‍💻 <strong><?php echo htmlspecialchars($ticket['agent_name'] ?: 'Chưa phân công'); ?></strong>
+                            <?php if (!empty($ticket['agent_code'])): ?>
+                                (Mã KTV: <?php echo htmlspecialchars($ticket['agent_code']); ?>)
+                            <?php endif; ?>
+                        </span>
+                        <span class="text-[11px] text-slate-500 italic">🔒 Phiếu đã hoàn tất & đóng. Quyền điều chuyển phân công đã khóa.</span>
+                    </div>
+                <?php else: ?>
+                    <select name="assigned_to" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800">
+                        <option value="0">-- Chưa phân công (Để trống) --</option>
+                        <?php foreach ($agents as $ag): ?>
+                            <option value="<?php echo $ag['id']; ?>" <?php echo (int)$ticket['assigned_to'] === (int)$ag['id'] ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($ag['name']); ?> (Mã KTV: <?php echo htmlspecialchars($ag['user_code']); ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php endif; ?>
             </div>
 
             <!-- Hệ thống bị ảnh hưởng -->

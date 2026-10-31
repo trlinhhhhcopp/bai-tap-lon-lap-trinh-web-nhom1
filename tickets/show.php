@@ -438,7 +438,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         }
         if (in_array($newStatus, ['new', 'in_progress', 'waiting_requester', 'resolved', 'closed'])) {
             TicketRepository::updateStatus($id, $newStatus);
-            set_flash('success', "Đã cập nhật trạng thái phiếu sang '{$newStatus}'!");
+            $statusLabelsVi = [
+                'new'               => 'mới tiếp nhận',
+                'in_progress'       => 'đang xử lý',
+                'waiting_requester' => 'chờ phản hồi',
+                'resolved'          => 'đã giải quyết',
+                'closed'            => 'đã hoàn tất & đóng',
+            ];
+            $statusVi = $statusLabelsVi[$newStatus] ?? $newStatus;
+            set_flash('success', "Đã cập nhật trạng thái phiếu sang {$statusVi}!");
             header("Location: show.php?id={$id}&view_as={$viewAs}");
             exit;
         }
@@ -450,6 +458,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'assign_agent') {
     if (in_array($userRole, ['agent', 'admin'])) {
+        // Phiếu đã hoàn tất & đóng -> Không được điều chuyển phân công
+        if (in_array($ticket['status'], ['closed', 'resolved'])) {
+            set_flash('error', "Phiếu sự cố đã hoàn tất/đóng nên không thể điều chuyển phân công. Bạn chỉ có quyền xem và ghi lại lịch sử.");
+            header("Location: show.php?id={$id}&view_as={$viewAs}");
+            exit;
+        }
         $newAgentId = (int)($_POST['assigned_to'] ?? 0);
         if ($newAgentId > 0) {
             $agStmt = db()->prepare("SELECT name, user_code FROM users WHERE id = :id AND role = 'agent' LIMIT 1");
@@ -988,7 +1002,12 @@ $flash   = get_flash();
             <?php if (!empty($ticket['is_guest_ticket'])): ?>
                 <?php
                 // Lấy thông tin tài khoản đích trong hệ thống
-                $guestUserStmt = db()->prepare("SELECT id, user_code, name, email, is_locked, lock_reason, failed_attempts FROM users WHERE id = :uid");
+                $guestUserStmt = db()->prepare("
+                    SELECT id, user_code, name, email, lock_reason, failed_attempts, is_active, locked_until,
+                           CASE WHEN (is_active = 0 OR (locked_until IS NOT NULL AND locked_until > NOW()) OR (lock_reason IS NOT NULL AND lock_reason != 'none')) THEN 1 ELSE 0 END AS is_locked
+                    FROM users 
+                    WHERE id = :uid
+                ");
                 $guestUserStmt->execute([':uid' => (int)$ticket['requester_id']]);
                 $guestUser = $guestUserStmt->fetch(PDO::FETCH_ASSOC);
                 ?>
@@ -1553,23 +1572,29 @@ $flash   = get_flash();
                     <?php endif; ?>
 
                     <?php if (in_array($userRole, ['agent', 'admin'])): ?>
-                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="mt-2.5 pt-2 border-t border-slate-100 space-y-2">
-                            <input type="hidden" name="action" value="assign_agent" />
-                            <label class="block text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                                <span>🔄</span> Điều Chuyển Chuyên Môn KTV:
-                            </label>
-                            <select name="assigned_to" required class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500">
-                                <option value="">-- Chọn KTV tiếp nhận --</option>
-                                <?php foreach ($agents as $ag): ?>
-                                    <option value="<?php echo $ag['id']; ?>" <?php echo ((int)$ticket['assigned_to'] === (int)$ag['id']) ? 'selected' : ''; ?>>
-                                        <?php echo htmlspecialchars($ag['name']); ?> (<?php echo htmlspecialchars($ag['user_code']); ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <button type="submit" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition text-[11px] shadow-xs flex items-center justify-center gap-1">
-                                <span>💾</span> Lưu Phân Công
-                            </button>
-                        </form>
+                        <?php if (in_array($ticket['status'], ['closed', 'resolved'])): ?>
+                            <div class="mt-2.5 pt-2 border-t border-slate-100 text-[11px] text-slate-500 italic flex items-center gap-1.5 bg-slate-50 p-2 rounded-xl">
+                                <span>🔒</span> Phiếu đã hoàn tất & đóng. Quyền điều chuyển phân công đã khóa (chỉ xem & lưu lịch sử).
+                            </div>
+                        <?php else: ?>
+                            <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="mt-2.5 pt-2 border-t border-slate-100 space-y-2">
+                                <input type="hidden" name="action" value="assign_agent" />
+                                <label class="block text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                                    <span>🔄</span> Điều Chuyển Chuyên Môn KTV:
+                                </label>
+                                <select name="assigned_to" required class="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-indigo-500">
+                                    <option value="">-- Chọn KTV tiếp nhận --</option>
+                                    <?php foreach ($agents as $ag): ?>
+                                        <option value="<?php echo $ag['id']; ?>" <?php echo ((int)$ticket['assigned_to'] === (int)$ag['id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($ag['name']); ?> (<?php echo htmlspecialchars($ag['user_code']); ?>)
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <button type="submit" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition text-[11px] shadow-xs flex items-center justify-center gap-1">
+                                    <span>💾</span> Lưu Phân Công
+                                </button>
+                            </form>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
 
