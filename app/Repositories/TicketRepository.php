@@ -31,8 +31,11 @@ class TicketRepository {
 
         // 1. Tìm kiếm theo từ khóa (Mã vé hoặc Tiêu đề)
         if (!empty($keyword)) {
-            $conditions[] = "(t.ticket_code LIKE :kw OR t.title LIKE :kw OR t.description LIKE :kw)";
-            $params['kw'] = '%' . $keyword . '%';
+            $conditions[] = "(t.ticket_code LIKE :kw1 OR t.title LIKE :kw2 OR t.description LIKE :kw3)";
+            $kwVal = '%' . $keyword . '%';
+            $params['kw1'] = $kwVal;
+            $params['kw2'] = $kwVal;
+            $params['kw3'] = $kwVal;
         }
 
         // 2. Lọc theo trạng thái
@@ -123,8 +126,11 @@ class TicketRepository {
         $params = [];
 
         if (!empty($keyword)) {
-            $conditions[] = "(t.ticket_code LIKE :kw OR t.title LIKE :kw OR t.description LIKE :kw)";
-            $params['kw'] = '%' . $keyword . '%';
+            $conditions[] = "(t.ticket_code LIKE :kw1 OR t.title LIKE :kw2 OR t.description LIKE :kw3)";
+            $kwVal = '%' . $keyword . '%';
+            $params['kw1'] = $kwVal;
+            $params['kw2'] = $kwVal;
+            $params['kw3'] = $kwVal;
         }
         if (!empty($status)) {
             $conditions[] = "t.status = :status";

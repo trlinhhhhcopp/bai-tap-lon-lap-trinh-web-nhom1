@@ -262,6 +262,33 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 }
 
 // -----------------------------------------------------------------------------
+// 5.5.1. XỬ LÝ HỦY CẢNH BÁO SPAM / GIẢI OAN CHO SINH VIÊN (DÀNH CHO ADMIN)
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'unmark_spam') {
+    if ($userRole === 'admin') {
+        $pdo = db();
+        // 1. Hủy bỏ cảnh báo spam của phiếu
+        $pdo->prepare("UPDATE tickets SET is_spam = 0, spam_reason = NULL WHERE id = :id")->execute(['id' => $id]);
+        
+        // 2. Mở khóa lại tài khoản sinh viên nếu bị khóa do spam
+        $pdo->prepare("UPDATE users SET is_active = 1, lock_reason = 'none' WHERE id = :uid AND lock_reason IN ('banned_rescue_abuse', 'spam_reported')")
+            ->execute(['uid' => $ticket['requester_id']]);
+
+        // 3. Ghi chú lịch sử hệ thống
+        TicketRepository::addReply(
+            $id, 
+            (int)$currentUser['id'], 
+            "🛡️ [QUẢN TRỊ VIÊN XEM XÉT & GIẢI OAN]: Admin đã rà soát toàn bộ cuộc trò chuyện, xác định nội dung trao đổi là hỗ trợ hợp lệ (KTV có phần nóng tính bấm cảnh báo nhầm). Admin đã HỦY CẢNH BÁO VI PHẠM và bảo lưu quyền lợi trọn vẹn cho sinh viên.", 
+            true
+        );
+
+        set_flash('success', "Đã HỦY BỎ CẢNH BÁO SPAM thành công! Phiếu đã trở lại bình thường và tài khoản sinh viên đã được khôi phục uy tín.");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
 // 5.6. XỬ LÝ NGHIỆM THU XONG / HOÀN TẤT KỸ THUẬT (PAGE 8)
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'quick_resolve') {
@@ -390,14 +417,24 @@ $flash   = get_flash();
                 </div>
             </div>
             <?php if ($userRole === 'admin'): ?>
-                <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn KHÓA VĨNH VIỄN tài khoản này và chặn vĩnh viễn trạm cứu hộ?');">
-                    <input type="hidden" name="action" value="report_spam" />
-                    <input type="hidden" name="lock_permanent" value="1" />
-                    <input type="hidden" name="spam_reason" value="Admin xử lý báo cáo: Khóa vĩnh viễn do spam/nghịch trạm cứu hộ" />
-                    <button type="submit" class="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-black rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
-                        <span>🔒</span> Khóa Vĩnh Viễn Tài Khoản Này
-                    </button>
-                </form>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <!-- NÚT ADMIN HỦY CẢNH BÁO SPAM / GIẢI OAN CHO SINH VIÊN KHI KTV NÓNG TÍNH -->
+                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Admin xác nhận: Cuộc nói chuyện không có yếu tố vi phạm, KTV bấm nhầm/nóng tính.\nBạn muốn HỦY CẢNH BÁO VI PHẠM và bảo lưu uy tín cho sinh viên?');">
+                        <input type="hidden" name="action" value="unmark_spam" />
+                        <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                            <span>🛡️</span> Hủy Cảnh Báo Vi Phạm (Giải Oan Cho SV)
+                        </button>
+                    </form>
+
+                    <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn KHÓA VĨNH VIỄN tài khoản này và chặn vĩnh viễn trạm cứu hộ?');">
+                        <input type="hidden" name="action" value="report_spam" />
+                        <input type="hidden" name="lock_permanent" value="1" />
+                        <input type="hidden" name="spam_reason" value="Admin xử lý báo cáo: Khóa vĩnh viễn do spam/nghịch trạm cứu hộ" />
+                        <button type="submit" class="px-4 py-2 bg-rose-700 hover:bg-rose-800 text-white font-black rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
+                            <span>🔒</span> Khóa Vĩnh Viễn
+                        </button>
+                    </form>
+                </div>
             <?php endif; ?>
         </div>
     <?php endif; ?>

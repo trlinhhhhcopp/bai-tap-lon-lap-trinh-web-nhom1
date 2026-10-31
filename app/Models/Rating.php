@@ -17,8 +17,12 @@ class Rating
         $params = [];
 
         if ($keyword !== '') {
-            $sql .= " AND (t.ticket_code LIKE :kw OR t.title LIKE :kw OR u.name LIKE :kw OR r.comment LIKE :kw)";
-            $params['kw'] = '%' . $keyword . '%';
+            $sql .= " AND (t.ticket_code LIKE :kw1 OR t.title LIKE :kw2 OR u.name LIKE :kw3 OR r.comment LIKE :kw4)";
+            $kwVal = '%' . $keyword . '%';
+            $params['kw1'] = $kwVal;
+            $params['kw2'] = $kwVal;
+            $params['kw3'] = $kwVal;
+            $params['kw4'] = $kwVal;
         }
         if ($score !== null && $score >= 1 && $score <= 5) {
             $sql .= " AND r.score = :score";
@@ -48,8 +52,12 @@ class Rating
         $params = [];
 
         if ($keyword !== '') {
-            $sql .= " AND (t.ticket_code LIKE :kw OR t.title LIKE :kw OR u.name LIKE :kw OR r.comment LIKE :kw)";
-            $params['kw'] = '%' . $keyword . '%';
+            $sql .= " AND (t.ticket_code LIKE :kw1 OR t.title LIKE :kw2 OR u.name LIKE :kw3 OR r.comment LIKE :kw4)";
+            $kwVal = '%' . $keyword . '%';
+            $params['kw1'] = $kwVal;
+            $params['kw2'] = $kwVal;
+            $params['kw3'] = $kwVal;
+            $params['kw4'] = $kwVal;
         }
         if ($score !== null && $score >= 1 && $score <= 5) {
             $sql .= " AND r.score = :score";

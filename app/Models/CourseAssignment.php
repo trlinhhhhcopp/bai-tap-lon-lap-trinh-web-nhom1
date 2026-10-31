@@ -38,10 +38,16 @@ class CourseAssignment
             $params['lecturer_filter_id'] = $lecturerFilterId;
         }
         if ($keyword !== '') {
-            $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
-                       OR co.course_code LIKE :kw OR co.name LIKE :kw
-                       OR u.name LIKE :kw OR ca.semester LIKE :kw)";
-            $params['kw'] = '%' . $keyword . '%';
+            $sql .= " AND (cl.class_code LIKE :kw1 OR cl.name LIKE :kw2
+                       OR co.course_code LIKE :kw3 OR co.name LIKE :kw4
+                       OR u.name LIKE :kw5 OR ca.semester LIKE :kw6)";
+            $kwVal = '%' . $keyword . '%';
+            $params['kw1'] = $kwVal;
+            $params['kw2'] = $kwVal;
+            $params['kw3'] = $kwVal;
+            $params['kw4'] = $kwVal;
+            $params['kw5'] = $kwVal;
+            $params['kw6'] = $kwVal;
         }
 
         $stmt = db()->prepare($sql);
@@ -85,10 +91,16 @@ class CourseAssignment
             $params['lecturer_filter_id'] = $lecturerFilterId;
         }
         if ($keyword !== '') {
-            $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
-                       OR co.course_code LIKE :kw OR co.name LIKE :kw
-                       OR u.name LIKE :kw OR ca.semester LIKE :kw)";
-            $params['kw'] = '%' . $keyword . '%';
+            $sql .= " AND (cl.class_code LIKE :kw1 OR cl.name LIKE :kw2
+                       OR co.course_code LIKE :kw3 OR co.name LIKE :kw4
+                       OR u.name LIKE :kw5 OR ca.semester LIKE :kw6)";
+            $kwVal = '%' . $keyword . '%';
+            $params['kw1'] = $kwVal;
+            $params['kw2'] = $kwVal;
+            $params['kw3'] = $kwVal;
+            $params['kw4'] = $kwVal;
+            $params['kw5'] = $kwVal;
+            $params['kw6'] = $kwVal;
         }
 
         $sql .= " ORDER BY ca.semester DESC, cl.class_code, co.course_code
@@ -269,10 +281,16 @@ class CourseAssignment
             $params['lecturer_filter_id'] = $lecturerFilterId;
         }
         if ($keyword !== '') {
-            $sql .= " AND (cl.class_code LIKE :kw OR cl.name LIKE :kw
-                       OR co.course_code LIKE :kw OR co.name LIKE :kw
-                       OR u.name LIKE :kw OR ca.semester LIKE :kw)";
-            $params['kw'] = '%' . $keyword . '%';
+            $sql .= " AND (cl.class_code LIKE :kw1 OR cl.name LIKE :kw2
+                       OR co.course_code LIKE :kw3 OR co.name LIKE :kw4
+                       OR u.name LIKE :kw5 OR ca.semester LIKE :kw6)";
+            $kwVal = '%' . $keyword . '%';
+            $params['kw1'] = $kwVal;
+            $params['kw2'] = $kwVal;
+            $params['kw3'] = $kwVal;
+            $params['kw4'] = $kwVal;
+            $params['kw5'] = $kwVal;
+            $params['kw6'] = $kwVal;
         }
         $sql .= " ORDER BY ca.semester DESC, cl.class_code, co.course_code";
         $stmt = db()->prepare($sql);

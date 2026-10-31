@@ -429,5 +429,24 @@ class CourseLesson
             ':id'        => $submissionId,
         ]);
     }
-}
 
+    /**
+     * Giảng viên tạo thêm buổi học / bài tập mới cho môn học
+     */
+    public function createLesson(int $courseId, int $lessonNumber, string $title, string $description, string $requirement, string $deadlineAt): int
+    {
+        $stmt = $this->pdo->prepare("
+            INSERT INTO course_lessons (course_id, lesson_number, title, description, assignment_requirement, deadline_at)
+            VALUES (:course_id, :lesson_number, :title, :description, :requirement, :deadline_at)
+        ");
+        $stmt->execute([
+            ':course_id'       => $courseId,
+            ':lesson_number'   => $lessonNumber,
+            ':title'           => $title,
+            ':description'     => $description,
+            ':requirement'     => $requirement,
+            ':deadline_at'     => $deadlineAt,
+        ]);
+        return (int)$this->pdo->lastInsertId();
+    }
+}

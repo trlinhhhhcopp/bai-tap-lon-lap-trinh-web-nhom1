@@ -150,11 +150,17 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 <div class="flex items-center justify-between flex-wrap gap-3 pb-4 border-b border-slate-100">
                     <div>
                         <h2 class="text-base font-black text-slate-900 flex items-center gap-2">
-                            <span>📖</span> Danh Sách 9 Buổi Học Môn: <?php echo htmlspecialchars($selectedCourse['course_name']); ?> (<?php echo htmlspecialchars($selectedCourse['course_code']); ?>)
+                            <span>📖</span> Danh Sách Buổi Học & Bài Tập Môn: <?php echo htmlspecialchars($selectedCourse['course_name']); ?> (<?php echo htmlspecialchars($selectedCourse['course_code']); ?>)
                         </h2>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            Lớp: <strong><?php echo htmlspecialchars($selectedCourse['class_name']); ?></strong> (<?php echo htmlspecialchars($selectedCourse['class_code']); ?>) · Đề cương chuẩn Bài 1 đến Bài 9
+                            Lớp: <strong><?php echo htmlspecialchars($selectedCourse['class_name']); ?></strong> (<?php echo htmlspecialchars($selectedCourse['class_code']); ?>) · Giảng viên quản lý đề bài, chấm điểm trực tiếp
                         </p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button type="button" onclick="openCreateLessonModal()" 
+                                class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 cursor-pointer">
+                            <span>➕</span> Thêm Bài Tập / Buổi Học Mới
+                        </button>
                     </div>
                 </div>
 
@@ -331,11 +337,19 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                                 <?php endif; ?>
                                             </td>
                                             <td class="py-3.5 px-4 text-center">
-                                                <button type="button" 
-                                                        onclick='openGradeModal(<?php echo json_encode($sub, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>)' 
-                                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition shadow-xs cursor-pointer">
-                                                    <span>⭐</span> Chấm Điểm
-                                                </button>
+                                                <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                                                    <button type="button" 
+                                                            onclick="previewSubmissionOnApp(<?php echo (int)$sub['id']; ?>)" 
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-xs cursor-pointer" 
+                                                            title="Xem trực tiếp nội dung bài nộp / code / file ngay trên ứng dụng không cần tải về máy">
+                                                        <span>👁️</span> Xem Trên App
+                                                    </button>
+                                                    <button type="button" 
+                                                            onclick='openGradeModal(<?php echo json_encode($sub, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>)' 
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition shadow-xs cursor-pointer">
+                                                        <span>⭐</span> Chấm Điểm
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -511,7 +525,240 @@ $csrfToken = $_SESSION['csrf'] ?? '';
     </script>
 
     <!-- FOOTER CHUẨN TOÀN TRƯỜNG -->
-    <?php require_once __DIR__ . '/../../../includes/footer.php'; ?>
+    
+    <!-- MODAL THÊM BÀI TẬP / BUỔI HỌC MỚI (DÀNH CHO GIẢNG VIÊN) -->
+    <div id="createLessonModal" class="hidden fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-slate-200 animate-scale-up">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">➕</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm">Giao Thêm Bài Tập / Buổi Học Mới</h4>
+                        <span class="text-[11px] text-slate-500">Thêm bài tập lớn, tiểu luận hoặc buổi học bổ sung</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closeCreateLessonModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold text-sm">✕</button>
+            </div>
+
+            <form method="POST" action="lessons.php" class="space-y-4 text-xs">
+                <input type="hidden" name="action" value="create" />
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
+                <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
+                <input type="hidden" name="ca_id" value="<?php echo (int)$selectedCaId; ?>" />
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Số Buổi (Tùy chọn):</label>
+                        <input type="number" name="lesson_number" min="1" max="100" placeholder="Tự động" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-bold text-slate-800" />
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block font-bold text-slate-700 mb-1">Tiêu Đề Bài Tập / Buổi Học: <span class="text-rose-500">*</span></label>
+                        <input type="text" name="title" required placeholder="Ví dụ: Bài Tập Lớn Cuối Kỳ / Buổi 10" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-semibold text-slate-800" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Mô Tả Nội Dung:</label>
+                    <textarea name="description" rows="2" placeholder="Tóm tắt yêu cầu thực hiện, mục tiêu bài tập..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800 text-xs"></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        Yêu Cầu Bài Tập & Đính Kèm Tệp: <span class="text-rose-500">*</span>
+                    </label>
+                    <textarea name="assignment_requirement" rows="3" required placeholder="Nêu rõ yêu cầu sinh viên phải đính kèm tệp gì (mã nguồn .zip, báo cáo .pdf, minh chứng link github...)..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800 text-xs"></textarea>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        Hạn Chót Nộp Bài (Deadline): <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="datetime-local" name="deadline_at" required class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-mono font-bold text-slate-800" />
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="closeCreateLessonModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
+                        Hủy
+                    </button>
+                    <button type="submit" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl transition shadow-md shadow-emerald-200 flex items-center gap-1.5">
+                        <span>➕</span> Ban Hành Bài Tập Mới
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL XEM TRỰC TIẾP BÀI NỘP TRÊN APP (IN-APP PREVIEWER) -->
+    <div id="previewSubmissionModal" class="hidden fixed inset-0 z-[96] flex items-center justify-center p-3 md:p-6 bg-slate-900/70 backdrop-blur-xs">
+        <div class="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 animate-scale-up overflow-hidden">
+            <!-- HEADER MODAL -->
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/70">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">👁️</span>
+                    <div>
+                        <h4 class="font-black text-slate-900 text-sm flex items-center gap-2" id="previewStudentHeader">
+                            Xem Trực Tiếp Bài Nộp Của Sinh Viên
+                        </h4>
+                        <span class="text-[11px] text-slate-500" id="previewMetaHeader">Xem và chấm điểm trực tiếp trên web app</span>
+                    </div>
+                </div>
+                <button type="button" onclick="closePreviewModal()" class="w-8 h-8 rounded-full bg-slate-200 hover:bg-slate-300 text-slate-700 flex items-center justify-center font-bold text-sm">✕</button>
+            </div>
+
+            <!-- NỘI DUNG CUỘN XEM BÀI & CHẤM ĐIỂM -->
+            <div class="p-5 overflow-y-auto space-y-5 flex-1 text-xs">
+                <!-- THÔNG TIN TỆP NỘP & GHI CHÚ -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-indigo-50/40 p-4 rounded-2xl border border-indigo-100">
+                    <div class="space-y-1">
+                        <div class="text-slate-500">Tệp nộp: <strong class="text-indigo-900 font-mono" id="previewFileName">—</strong> (<span id="previewFileSize">0 KB</span>)</div>
+                        <div class="text-slate-500">Thời gian nộp: <span class="font-mono text-slate-700 font-semibold" id="previewSubmitTime">—</span></div>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="text-slate-500 font-semibold">Ghi chú của sinh viên:</div>
+                        <div class="p-2 bg-white rounded-xl border border-indigo-200/60 text-slate-700 italic" id="previewNotes">—</div>
+                    </div>
+                </div>
+
+                <!-- KHUNG HIỂN THỊ NỘI DUNG BÀI LÀM (CODE / MEDIA / ZIP STRUCTURE) -->
+                <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                    <div class="bg-slate-100 px-4 py-2 border-b border-slate-200 font-bold text-slate-700 flex items-center justify-between text-[11.5px]">
+                        <span id="previewContentTitle">📄 Nội dung bài làm</span>
+                        <a id="previewDownloadLink" href="#" target="_blank" download class="text-indigo-600 hover:underline flex items-center gap-1 font-semibold text-[11px]">
+                            <span>⬇️</span> Tải bản sao dự phòng
+                        </a>
+                    </div>
+                    <div id="previewContentBody" class="p-4 bg-slate-900 text-slate-100 font-mono text-[11.5px] max-h-80 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+                        Đang nạp dữ liệu bài nộp...
+                    </div>
+                </div>
+
+                <!-- KHUNG CHẤM ĐIỂM & ĐÁNH GIÁ NHANH TRỰC TIẾP -->
+                <div class="bg-amber-50/50 border border-amber-200 rounded-2xl p-4 space-y-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-base">⭐</span>
+                        <strong class="text-amber-950 font-black text-xs uppercase tracking-wide">Chấm Điểm & Góp Ý Nhanh Cho Sinh Viên</strong>
+                    </div>
+
+                    <form method="POST" action="lessons.php" class="space-y-3">
+                        <input type="hidden" name="action" value="grade" />
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
+                        <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
+                        <input type="hidden" name="ca_id" value="<?php echo (int)$selectedCaId; ?>" />
+                        <input type="hidden" name="lesson_id" value="<?php echo (int)$viewLessonId; ?>" />
+                        <input type="hidden" name="submission_id" id="previewFormSubmissionId" value="0" />
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block font-bold text-slate-700 mb-1">Điểm (Thang 10): <span class="text-rose-500">*</span></label>
+                                <div class="relative">
+                                    <input type="number" name="score" id="previewFormScore" required min="0" max="10" step="0.1" placeholder="8.5" class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 font-bold text-amber-900 font-mono" />
+                                    <span class="absolute right-3 top-2 text-xs font-bold text-amber-500">/ 10</span>
+                                </div>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="block font-bold text-slate-700 mb-1">Lời Nhận Xét & Đánh Giá:</label>
+                                <input type="text" name="feedback" id="previewFormFeedback" placeholder="Nhận xét ưu điểm, mặt cần cải thiện..." class="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 text-slate-800" />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end gap-2 pt-1">
+                            <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-md shadow-amber-200 flex items-center gap-1.5 cursor-pointer">
+                                <span>💾</span> Lưu Điểm & Nhận Xét
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+
+        function openCreateLessonModal() {
+            document.getElementById("createLessonModal").classList.remove("hidden");
+        }
+
+        function closeCreateLessonModal() {
+            document.getElementById("createLessonModal").classList.add("hidden");
+        }
+
+        function previewSubmissionOnApp(submissionId) {
+            const modal = document.getElementById("previewSubmissionModal");
+            const body = document.getElementById("previewContentBody");
+            const title = document.getElementById("previewContentTitle");
+            const dlLink = document.getElementById("previewDownloadLink");
+
+            body.className = "p-4 bg-slate-900 text-slate-100 font-mono text-[11.5px] max-h-80 overflow-y-auto whitespace-pre-wrap leading-relaxed";
+            body.innerHTML = "⏳ Đang tải nội dung bài làm từ máy chủ...";
+            modal.classList.remove("hidden");
+
+            fetch("lessons.php?action=preview&submission_id=" + submissionId)
+                .then(r => r.json())
+                .then(res => {
+                    if (res.status !== "success" || !res.data) {
+                        body.innerHTML = "⚠️ Không thể nạp bài nộp: " + (res.message || "Lỗi không xác định");
+                        return;
+                    }
+                    const d = res.data;
+                    document.getElementById("previewStudentHeader").innerText = d.student_name + " (" + d.student_code + ")";
+                    document.getElementById("previewMetaHeader").innerText = "Lớp: " + (d.class_code || "D24-CNTT1") + " · Buổi " + d.lesson_number + ": " + d.lesson_title;
+                    document.getElementById("previewFileName").innerText = d.file_name || "—";
+                    document.getElementById("previewFileSize").innerText = (d.file_info ? d.file_info.size_kb : 0) + " KB";
+                    document.getElementById("previewSubmitTime").innerText = d.submitted_at || "—";
+                    document.getElementById("previewNotes").innerText = d.notes ? `"${d.notes}"` : "Không có ghi chú thêm.";
+                    dlLink.href = "<?php echo $appBase; ?>" + (d.file_path || "");
+
+                    document.getElementById("previewFormSubmissionId").value = d.id;
+                    document.getElementById("previewFormScore").value = d.score !== null ? parseFloat(d.score) : "";
+                    document.getElementById("previewFormFeedback").value = d.feedback || "";
+
+                    const fi = d.file_info || {};
+                    if (fi.preview_type === "text" && fi.content) {
+                        title.innerText = "💻 Mã nguồn / Nội dung tệp: " + d.file_name;
+                        body.innerText = fi.content;
+                    } else if (fi.preview_type === "media") {
+                        title.innerText = "🖼️ Minh chứng / Tài liệu: " + d.file_name;
+                        const fileUrl = "<?php echo $appBase; ?>" + d.file_path;
+                        if (fi.extension === "pdf") {
+                            body.className = "p-0 h-96 overflow-hidden bg-slate-100";
+                            body.innerHTML = `<iframe src="${fileUrl}" class="w-full h-full border-0"></iframe>`;
+                        } else {
+                            body.className = "p-4 bg-slate-900 flex justify-center";
+                            body.innerHTML = `<img src="${fileUrl}" alt="Bài làm" class="max-h-80 rounded-lg shadow-md" />`;
+                        }
+                    } else if (fi.preview_type === "zip" && fi.zip_files && fi.zip_files.length > 0) {
+                        title.innerText = "📦 Cấu trúc tệp mã nguồn bên trong file ZIP (" + fi.zip_files.length + " tệp/thư mục)";
+                        body.className = "p-4 bg-slate-900 text-slate-200 font-mono text-[11px] max-h-80 overflow-y-auto leading-relaxed";
+                        let html = "<div class='text-amber-400 font-bold mb-2'>📁 Danh sách cây thư mục dự án sinh viên đã nén nộp:</div><ul class='space-y-1'>";
+                        fi.zip_files.forEach(f => {
+                            html += `<li class="flex items-center justify-between border-b border-slate-800 py-0.5">
+                                <span class="${f.is_dir ? "text-indigo-400 font-bold" : "text-emerald-300"}">${f.is_dir ? "📂 " : "📄 "}${f.name}</span>
+                                <span class="text-slate-500 text-[10px]">${f.size}</span>
+                            </li>`;
+                        });
+                        html += "</ul>";
+                        body.innerHTML = html;
+                    } else {
+                        title.innerText = "📦 Tệp đính kèm: " + d.file_name;
+                        body.className = "p-6 bg-slate-800 text-center text-slate-300 space-y-2";
+                        body.innerHTML = `
+                            <span class="text-3xl block">📦</span>
+                            <div class="font-bold">Đã lưu trữ tệp bài làm trên hệ thống Helpdesk.</div>
+                            <div class="text-xs text-slate-400">Định dạng .${fi.extension} có thể xem ghi chú sinh viên ở trên hoặc tải về máy nếu muốn chạy trực tiếp.</div>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    body.innerHTML = "⚠️ Lỗi kết nối máy chủ: " + err;
+                });
+        }
+
+        function closePreviewModal() {
+            document.getElementById("previewSubmissionModal").classList.add("hidden");
+        }
+
+</script>
+<?php require_once __DIR__ . '/../../../includes/footer.php'; ?>
 
 </body>
 </html>

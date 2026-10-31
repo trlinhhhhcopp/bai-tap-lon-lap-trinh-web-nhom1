@@ -42,14 +42,17 @@ class User {
                 LEFT JOIN classes c ON c.id = u.class_id ";
 
         if ($kw !== '') {
-            $sql .= "WHERE u.user_code LIKE :kw OR u.name LIKE :kw OR u.email LIKE :kw ";
+            $sql .= "WHERE u.user_code LIKE :kw1 OR u.name LIKE :kw2 OR u.email LIKE :kw3 ";
         }
 
         $sql .= "ORDER BY u.id DESC LIMIT :limit OFFSET :offset";
 
         $stmt = $pdo->prepare($sql);
         if ($kw !== '') {
-            $stmt->bindValue(':kw', '%' . $kw . '%', PDO::PARAM_STR);
+            $kwVal = '%' . $kw . '%';
+            $stmt->bindValue(':kw1', $kwVal, PDO::PARAM_STR);
+            $stmt->bindValue(':kw2', $kwVal, PDO::PARAM_STR);
+            $stmt->bindValue(':kw3', $kwVal, PDO::PARAM_STR);
         }
         $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
@@ -64,9 +67,10 @@ class User {
 
         $sql = "SELECT COUNT(*) FROM users u ";
         if ($kw !== '') {
-            $sql .= "WHERE u.user_code LIKE :kw OR u.name LIKE :kw OR u.email LIKE :kw";
+            $sql .= "WHERE u.user_code LIKE :kw1 OR u.name LIKE :kw2 OR u.email LIKE :kw3";
             $stmt = $pdo->prepare($sql);
-            $stmt->execute([':kw' => '%' . $kw . '%']);
+            $kwVal = '%' . $kw . '%';
+            $stmt->execute([':kw1' => $kwVal, ':kw2' => $kwVal, ':kw3' => $kwVal]);
         } else {
             $stmt = $pdo->query($sql);
         }
