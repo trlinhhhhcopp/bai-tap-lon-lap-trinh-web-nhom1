@@ -83,15 +83,8 @@ $flash        = get_flash();
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-3 sm:pt-4 pb-8 space-y-6">
 
-        <!-- NÚT KHÔI PHỤC BANNER SỰ CỐ KHI BỊ ẨN -->
-        <div id="banner_tickets_restore" class="hidden flex justify-end">
-            <button type="button" onclick="toggleAppBanner('banner_tickets')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
-                <span>👁️</span> <span>Hiện lại banner sự cố</span>
-            </button>
-        </div>
-
         <!-- BANNER ĐẦU TRANG THEO THIẾT KẾ TRẦN THỤC LINH & CORE NHÓM 1 -->
-        <div id="banner_tickets" data-banner-id="banner_tickets" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="space-y-1.5">
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
@@ -131,9 +124,6 @@ $flash        = get_flash();
                         <span>➕</span> Gửi Phiếu Mới
                     </a>
                 <?php endif; ?>
-                <button type="button" onclick="toggleAppBanner('banner_tickets')" title="Thu gọn banner" class="px-3 py-2 text-xs font-bold rounded-2xl bg-white/10 hover:bg-white/20 text-white/90 transition flex items-center gap-1 backdrop-blur-sm border border-white/10 cursor-pointer">
-                    <span>✕</span> <span>Ẩn banner</span>
-                </button>
             </div>
         </div>
 
@@ -271,9 +261,16 @@ $flash        = get_flash();
                     </h2>
                     <p class="text-[11.5px] text-slate-500 mt-0.5">Dữ liệu kết nối đồng nhất với CSDL <code>helpdesk_thudo</code>.</p>
                 </div>
-                <span class="text-slate-500 font-medium">Trang <strong><?php echo $page; ?></strong> / <strong><?php echo $totalPages; ?></strong></span>
+                <div class="flex items-center gap-2.5">
+                    <button type="button" data-target-table="all_tickets_table_body" onclick="toggleTableCollapse('all_tickets_table_body', this)" title="Ẩn hoặc hiện bảng dữ liệu sự cố" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                        <span class="toggle-table-icon">✕</span>
+                        <span class="toggle-table-text">Ẩn bảng</span>
+                    </button>
+                    <span class="text-slate-500 font-medium">Trang <strong><?php echo $page; ?></strong> / <strong><?php echo $totalPages; ?></strong></span>
+                </div>
             </div>
 
+            <div id="all_tickets_table_body" data-collapsible-table>
             <?php if (empty($tickets)): ?>
                 <div class="p-12 text-center text-slate-400 text-xs space-y-2">
                     <span class="text-4xl block">📭</span>
@@ -456,6 +453,7 @@ $flash        = get_flash();
                 <?php endif; ?>
 
             <?php endif; ?>
+            </div>
         </div>
 
     </main>

@@ -146,33 +146,47 @@
     });
 
     // ==============================================================================
-    // TÍNH NĂNG ẨN / HIỆN BANNER TOÀN DIỆN CÁC PHÂN HỆ (LOCAL STORAGE PERSISTENCE)
+    // TÍNH NĂNG ẨN / THU GỌN TẤT CẢ CÁC BẢNG TRONG HỆ THỐNG (TABLE COLLAPSE & PERSIST)
     // ==============================================================================
-    window.toggleAppBanner = function(id) {
-        const banner = document.getElementById(id);
-        const restore = document.getElementById(id + '_restore');
-        if (!banner) return;
-        const isHidden = banner.classList.toggle('hidden');
-        if (restore) {
+    window.toggleTableCollapse = function(wrapperId, buttonElement) {
+        const wrapper = document.getElementById(wrapperId);
+        if (!wrapper) return;
+        const isHidden = wrapper.classList.toggle('hidden');
+        
+        const btn = buttonElement || document.querySelector(`[data-target-table="${wrapperId}"]`);
+        if (btn) {
+            const textSpan = btn.querySelector('.toggle-table-text');
+            const iconSpan = btn.querySelector('.toggle-table-icon');
+            if (textSpan) textSpan.textContent = isHidden ? 'Hiện bảng' : 'Ẩn bảng';
+            if (iconSpan) iconSpan.textContent = isHidden ? '👁️' : '✕';
             if (isHidden) {
-                restore.classList.remove('hidden');
+                btn.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-300');
+                btn.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-200');
             } else {
-                restore.classList.add('hidden');
+                btn.classList.remove('bg-indigo-50', 'text-indigo-700', 'border-indigo-300');
+                btn.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-200');
             }
         }
         try {
-            localStorage.setItem('hide_' + id, isHidden ? '1' : '0');
+            localStorage.setItem('collapse_table_' + wrapperId, isHidden ? '1' : '0');
         } catch (e) {}
     };
 
-    // Khởi tạo trạng thái banner khi tải trang
-    document.querySelectorAll('[data-banner-id]').forEach(function(el) {
-        const id = el.getAttribute('data-banner-id');
+    // Tự động khôi phục trạng thái bảng từ localStorage
+    document.querySelectorAll('[data-collapsible-table]').forEach(function(wrapper) {
+        const id = wrapper.id;
         try {
-            if (localStorage.getItem('hide_' + id) === '1') {
-                el.classList.add('hidden');
-                const restore = document.getElementById(id + '_restore');
-                if (restore) restore.classList.remove('hidden');
+            if (localStorage.getItem('collapse_table_' + id) === '1') {
+                wrapper.classList.add('hidden');
+                const btn = document.querySelector(`[data-target-table="${id}"]`);
+                if (btn) {
+                    const textSpan = btn.querySelector('.toggle-table-text');
+                    const iconSpan = btn.querySelector('.toggle-table-icon');
+                    if (textSpan) textSpan.textContent = 'Hiện bảng';
+                    if (iconSpan) iconSpan.textContent = '👁️';
+                    btn.classList.add('bg-indigo-50', 'text-indigo-700', 'border-indigo-300');
+                    btn.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-200');
+                }
             }
         } catch (e) {}
     });

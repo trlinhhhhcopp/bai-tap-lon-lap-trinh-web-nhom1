@@ -16,8 +16,12 @@
             <p class="text-xs text-slate-500 mt-0.5">Ưu tiên xử lý các sự cố sắp tới hạn SLA cam kết với Nhà trường.</p>
         </div>
 
-        <!-- Bộ lọc tab trạng thái nhanh -->
+        <!-- Bộ lọc tab trạng thái nhanh & Nút Ẩn / Hiện -->
         <div class="flex items-center gap-1.5 flex-wrap text-xs">
+            <button type="button" data-target-table="ktv_queue_table_body" onclick="toggleTableCollapse('ktv_queue_table_body', this)" title="Ẩn hoặc hiện hàng đợi nhiệm vụ" class="px-3 py-1.5 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                <span class="toggle-table-icon">✕</span>
+                <span class="toggle-table-text">Ẩn bảng</span>
+            </button>
             <a href="index.php?agent_id=<?php echo $agentId; ?>&status=all" 
                class="px-3 py-1.5 rounded-xl font-bold transition <?php echo ($statusFilter === 'all' || empty($statusFilter)) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'; ?>">
                 Tất cả (<?php echo $countAll; ?>)
@@ -38,6 +42,7 @@
     </div>
 
     <!-- Danh sách phiếu trong hàng đợi -->
+    <div id="ktv_queue_table_body" data-collapsible-table>
     <?php if (empty($queue)): ?>
         <div class="text-center py-12 text-slate-400 text-xs italic bg-slate-50 rounded-2xl border border-dashed border-slate-200 space-y-2">
             <span class="text-3xl block">🎉</span>
@@ -167,6 +172,7 @@
             <?php endforeach; ?>
         </div>
     <?php endif; ?>
+    </div>
 
 </div>
 

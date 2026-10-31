@@ -67,13 +67,19 @@ function holidayEscape($value): string
                 </a>
             <?php endif; ?>
         </form>
-        <div class="text-slate-500 font-semibold">
-            Tìm thấy: <strong class="text-indigo-600"><?= (int)$total ?></strong> ngày nghỉ lễ trong CSDL
+        <div class="flex items-center gap-3">
+            <button type="button" data-target-table="admin_holidays_table_body" onclick="toggleTableCollapse('admin_holidays_table_body', this)" title="Ẩn hoặc hiện bảng ngày nghỉ lễ" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                <span class="toggle-table-icon">✕</span>
+                <span class="toggle-table-text">Ẩn bảng</span>
+            </button>
+            <div class="text-slate-500 font-semibold">
+                Tìm thấy: <strong class="text-indigo-600"><?= (int)$total ?></strong> ngày nghỉ lễ trong CSDL
+            </div>
         </div>
     </div>
 
-    <!-- BẢNG DỮ LIỆU HOLIDAYS -->
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden text-xs">
+    <!-- BẢNG DỮ LIỆU HOLIDAYS (CÓ THỂ ẨN / THU GỌN) -->
+    <div id="admin_holidays_table_body" data-collapsible-table class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden text-xs">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>

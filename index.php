@@ -1397,15 +1397,8 @@ if ($userType === 'student') {
 
         <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-            <!-- NÚT KHÔI PHỤC BANNER SINH VIÊN KHI BỊ ẨN -->
-            <div id="banner_student_restore" class="hidden flex justify-end">
-                <button type="button" onclick="toggleAppBanner('banner_student')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
-                    <span>👁️</span> <span>Hiện lại banner sinh viên</span>
-                </button>
-            </div>
-
             <!-- 1. BANNER CHÀO MỪNG SINH VIÊN (TƯƠI SÁNG, HIỆN ĐẠI THEO CHUẨN CỔNG TRƯỜNG ĐH) -->
-            <div id="banner_student" data-banner-id="banner_student" class="bg-gradient-to-r from-sky-600 via-indigo-600 to-indigo-800 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div class="bg-gradient-to-r from-sky-600 via-indigo-600 to-indigo-800 text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-5">
                 <div class="absolute -right-8 -bottom-8 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="flex items-center gap-4 relative z-10">
                     <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md text-white border border-white/30 flex items-center justify-center text-2xl font-black shadow-lg shrink-0">
@@ -1445,9 +1438,6 @@ if ($userType === 'student') {
                     <a href="<?php echo $appBase; ?>tickets/create.php" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
                         <span>➕</span> Gửi Phiếu Mới
                     </a>
-                    <button type="button" onclick="toggleAppBanner('banner_student')" title="Thu gọn banner" class="px-3 py-2.5 bg-black/25 hover:bg-black/40 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1 text-xs border border-white/20 cursor-pointer">
-                        <span>✕</span> <span>Ẩn</span>
-                    </button>
                 </div>
 
             </div>
@@ -1526,11 +1516,18 @@ if ($userType === 'student') {
                         </h2>
                         <p class="text-[11.5px] text-slate-500 mt-0.5">Sinh viên chỉ xem và trao đổi trên các phiếu do chính mình gửi, bảo mật tuyệt đối.</p>
                     </div>
-                    <a href="<?php echo $appBase; ?>tickets/create.php" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
-                        <span>➕</span> Gửi Phiếu Mới
-                    </a>
+                    <div class="flex items-center gap-2">
+                        <button type="button" data-target-table="student_tickets_body" onclick="toggleTableCollapse('student_tickets_body', this)" title="Ẩn hoặc hiện bảng này" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                            <span class="toggle-table-icon">✕</span>
+                            <span class="toggle-table-text">Ẩn bảng</span>
+                        </button>
+                        <a href="<?php echo $appBase; ?>tickets/create.php" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                            <span>➕</span> Gửi Phiếu Mới
+                        </a>
+                    </div>
                 </div>
 
+                <div id="student_tickets_body" data-collapsible-table>
                 <?php if (empty($myTickets)): ?>
                     <div class="p-10 text-center text-slate-400 text-xs space-y-2">
                         <span class="text-3xl block">📭</span>
@@ -1622,6 +1619,8 @@ if ($userType === 'student') {
                         </table>
                     </div>
                 <?php endif; ?>
+                </div>
+            </div>
             </div>
 
         </main>
@@ -1695,15 +1694,8 @@ if ($userType === 'lecturer') {
 
         <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-            <!-- NÚT KHÔI PHỤC BANNER GIẢNG VIÊN KHI BỊ ẨN -->
-            <div id="banner_lecturer_restore" class="hidden flex justify-end">
-                <button type="button" onclick="toggleAppBanner('banner_lecturer')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
-                    <span>👁️</span> <span>Hiện lại banner giảng viên</span>
-                </button>
-            </div>
-
             <!-- Banner Chào Mừng Giảng Viên -->
-            <div id="banner_lecturer" data-banner-id="banner_lecturer" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div class="space-y-1">
                     <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                         👨‍🏫 CỔNG GIẢNG VIÊN (LECTURER PORTAL)
@@ -1712,11 +1704,6 @@ if ($userType === 'lecturer') {
                         Kính chào Thầy/Cô: <?php echo htmlspecialchars($currentUser['name']); ?>
                     </h1>
                     <p class="text-xs text-indigo-200/80">Mã cán bộ: <strong class="text-white"><?php echo htmlspecialchars($currentUser['user_code']); ?></strong> • Đơn vị: <?php echo htmlspecialchars($currentUser['department'] ?? 'Khoa Công Nghệ Thông Tin'); ?></p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button type="button" onclick="toggleAppBanner('banner_lecturer')" title="Thu gọn banner" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white/90 transition flex items-center gap-1 backdrop-blur-sm border border-white/10 cursor-pointer">
-                        <span>✕</span> <span>Ẩn banner</span>
-                    </button>
                 </div>
             </div>
 
@@ -1758,12 +1745,18 @@ if ($userType === 'lecturer') {
                                 </p>
                             </div>
                         </div>
-                        <a href="<?php echo $appBase; ?>tickets/index.php?scope=course_incidents" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-xs">
-                            Xem Danh Sách Đầy Đủ →
-                        </a>
+                        <div class="flex items-center gap-2">
+                            <button type="button" data-target-table="lecturer_pending_incidents_body" onclick="toggleTableCollapse('lecturer_pending_incidents_body', this)" title="Ẩn hoặc hiện bảng này" class="px-3 py-1.5 bg-white/80 hover:bg-white text-purple-900 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-purple-200 cursor-pointer shadow-xs">
+                                <span class="toggle-table-icon">✕</span>
+                                <span class="toggle-table-text">Ẩn bảng</span>
+                            </button>
+                            <a href="<?php echo $appBase; ?>tickets/index.php?scope=course_incidents" class="px-3 py-1.5 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl text-xs transition shadow-xs">
+                                Xem Danh Sách Đầy Đủ →
+                            </a>
+                        </div>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div id="lecturer_pending_incidents_body" data-collapsible-table class="overflow-x-auto">
                         <table class="w-full text-left border-collapse text-xs">
                             <thead>
                                 <tr class="bg-purple-100/70 text-purple-900 font-bold border-b border-purple-200 text-[11px]">
@@ -1829,7 +1822,7 @@ if ($userType === 'lecturer') {
 
             <!-- BẢNG LỚP HỌC PHẦN PHỤ TRÁCH (1 LỚP HP = 1 GIẢNG VIÊN) -->
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-3">
-                <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                             <span>📚</span> LỚP HỌC PHẦN PHỤ TRÁCH GIẢNG DẠY (COURSE ASSIGNMENTS)
@@ -1837,6 +1830,10 @@ if ($userType === 'lecturer') {
                         <p class="text-[11.5px] text-slate-500 mt-0.5">Mỗi lớp học phần chỉ có duy nhất 1 giảng viên phụ trách theo nguyên tắc đào tạo.</p>
                     </div>
                     <div class="flex items-center gap-2">
+                        <button type="button" data-target-table="lecturer_courses_table_body" onclick="toggleTableCollapse('lecturer_courses_table_body', this)" title="Ẩn hoặc hiện bảng này" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                            <span class="toggle-table-icon">✕</span>
+                            <span class="toggle-table-text">Ẩn bảng</span>
+                        </button>
                         <a href="<?php echo $appBase; ?>lecturer/lessons.php" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition inline-flex items-center gap-1 shadow-xs">
                             📝 Giao Bài Tập Từng Buổi →
                         </a>
@@ -1846,7 +1843,7 @@ if ($userType === 'lecturer') {
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div id="lecturer_courses_table_body" data-collapsible-table class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
@@ -1887,16 +1884,20 @@ if ($userType === 'lecturer') {
 
             <!-- BẢNG PHIẾU ĐÃ BÁO CỦA GIẢNG VIÊN -->
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-3">
-                <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                             <span>🎫</span> PHIẾU YÊU CẦU HỖ TRỢ ĐÃ GỬI
                         </h2>
                         <p class="text-[11.5px] text-slate-500 mt-0.5">Theo dõi phản hồi kỹ thuật từ Đội ngũ KTV trực ca.</p>
                     </div>
+                    <button type="button" data-target-table="lecturer_my_tickets_body" onclick="toggleTableCollapse('lecturer_my_tickets_body', this)" title="Ẩn hoặc hiện bảng này" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                        <span class="toggle-table-icon">✕</span>
+                        <span class="toggle-table-text">Ẩn bảng</span>
+                    </button>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div id="lecturer_my_tickets_body" data-collapsible-table class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
@@ -2076,15 +2077,8 @@ $pendingGuestCount   = count($pendingGuestTickets);
 
     <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        <!-- NÚT KHÔI PHỤC BANNER QUẢN TRỊ KHI BỊ ẨN -->
-        <div id="banner_admin_restore" class="hidden flex justify-end">
-            <button type="button" onclick="toggleAppBanner('banner_admin')" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200 transition flex items-center gap-1.5 shadow-xs cursor-pointer">
-                <span>👁️</span> <span>Hiện lại banner quản trị</span>
-            </button>
-        </div>
-
         <!-- Banner Admin Control Center -->
-        <div id="banner_admin" data-banner-id="banner_admin" class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="space-y-1">
                 <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
                     🛡️ TRUNG TÂM QUẢN TRỊ VIÊN (ADMIN CONTROL CENTER)
@@ -2100,9 +2094,6 @@ $pendingGuestCount   = count($pendingGuestTickets);
                         <span>🚑</span> <span>Trạm Cứu Hộ: <?php echo $pendingGuestCount; ?> phiếu</span>
                     </a>
                 <?php endif; ?>
-                <button type="button" onclick="toggleAppBanner('banner_admin')" title="Thu gọn banner" class="px-3 py-1.5 text-xs font-bold rounded-xl bg-white/10 hover:bg-white/20 text-white/90 transition flex items-center gap-1 backdrop-blur-sm border border-white/10 cursor-pointer">
-                    <span>✕</span> <span>Ẩn banner</span>
-                </button>
             </div>
         </div>
 
@@ -2150,12 +2141,18 @@ $pendingGuestCount   = count($pendingGuestTickets);
                             </p>
                         </div>
                     </div>
-                    <a href="<?php echo $appBase; ?>tickets/index.php?has_warning=guest" class="shrink-0 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-xs">
-                        Xem Tất Cả Trạm Cứu Hộ →
-                    </a>
+                    <div class="flex items-center gap-2">
+                        <button type="button" data-target-table="admin_rescue_table_body" onclick="toggleTableCollapse('admin_rescue_table_body', this)" title="Ẩn hoặc hiện bảng này" class="shrink-0 px-3 py-1.5 bg-white/80 hover:bg-white text-rose-800 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-rose-200 cursor-pointer shadow-xs">
+                            <span class="toggle-table-icon">✕</span>
+                            <span class="toggle-table-text">Ẩn bảng</span>
+                        </button>
+                        <a href="<?php echo $appBase; ?>tickets/index.php?has_warning=guest" class="shrink-0 px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-xs">
+                            Xem Tất Cả Trạm Cứu Hộ →
+                        </a>
+                    </div>
                 </div>
 
-                <div class="overflow-x-auto bg-white rounded-2xl border border-rose-200 shadow-2xs">
+                <div id="admin_rescue_table_body" data-collapsible-table class="overflow-x-auto bg-white rounded-2xl border border-rose-200 shadow-2xs">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-rose-50/80 text-rose-950 font-bold border-b border-rose-200 text-[11px]">
@@ -2240,13 +2237,19 @@ $pendingGuestCount   = count($pendingGuestTickets);
                         </h2>
                         <p class="hidden sm:block text-[11.5px] text-slate-500 mt-0.5">Quản trị viên có thẩm quyền nâng mức URGENT diện rộng và điều phối KTV.</p>
                     </div>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" class="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
-                        <span class="sm:hidden">Tất cả →</span>
-                        <span class="hidden sm:inline">Xem Tất Cả →</span>
-                    </a>
+                    <div class="flex items-center gap-2">
+                        <button type="button" data-target-table="admin_triage_table_body" onclick="toggleTableCollapse('admin_triage_table_body', this)" title="Ẩn hoặc hiện bảng này" class="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                            <span class="toggle-table-icon">✕</span>
+                            <span class="toggle-table-text">Ẩn bảng</span>
+                        </button>
+                        <a href="<?php echo $appBase; ?>tickets/index.php" class="shrink-0 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">
+                            <span class="sm:hidden">Tất cả →</span>
+                            <span class="hidden sm:inline">Xem Tất Cả →</span>
+                        </a>
+                    </div>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div id="admin_triage_table_body" data-collapsible-table class="overflow-x-auto">
                     <table class="admin-ticket-table w-full text-left border-collapse text-xs">
                         <thead>
                             <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
@@ -2300,10 +2303,16 @@ $pendingGuestCount   = count($pendingGuestTickets);
                     <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                         <span>👨‍💻</span> Giám Sát Tải KTV (Ngưỡng 15 Phiếu)
                     </h3>
-                    <a href="<?php echo $appBase; ?>agent/index.php" class="text-indigo-600 hover:underline text-[11px] font-bold">Xem Workspace</a>
+                    <div class="flex items-center gap-2">
+                        <button type="button" data-target-table="admin_agents_load_body" onclick="toggleTableCollapse('admin_agents_load_body', this)" title="Ẩn hoặc hiện danh sách tải KTV" class="text-slate-500 hover:text-slate-800 text-[11px] font-bold flex items-center gap-1 cursor-pointer">
+                            <span class="toggle-table-icon">✕</span>
+                            <span class="toggle-table-text">Ẩn</span>
+                        </button>
+                        <a href="<?php echo $appBase; ?>agent/index.php" class="text-indigo-600 hover:underline text-[11px] font-bold">Xem Workspace</a>
+                    </div>
                 </div>
 
-                <div class="space-y-3">
+                <div id="admin_agents_load_body" data-collapsible-table class="space-y-3">
                     <?php foreach ($agents as $ag): ?>
                         <?php 
                         $maxCapacity = 15;

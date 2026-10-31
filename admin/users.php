@@ -369,11 +369,18 @@ $flash = get_flash();
             <a class="btn filter-button <?= $type === 'student' ? 'active' : '' ?>" href="users.php?kw=<?= urlencode($kw) ?>&amp;type=student&amp;class_id=<?= $classId ?>" <?= $type === 'student' ? 'aria-current="page"' : '' ?>>SV</a>
         </nav>
 
-        <button type="button" class="btn btn-primary" onclick="openCreateModal()">
-            ➕ Thêm tài khoản mới
-        </button>
+        <div style="display: flex; gap: 8px;">
+            <button type="button" class="btn btn-secondary" data-target-table="admin_users_table_body" onclick="toggleTableCollapse('admin_users_table_body', this)">
+                <span class="toggle-table-icon">✕</span> <span class="toggle-table-text">Ẩn bảng</span>
+            </button>
+            <button type="button" class="btn btn-primary" onclick="openCreateModal()">
+                ➕ Thêm tài khoản mới
+            </button>
+        </div>
     </div>
 
+    <!-- Khối Bọc Bảng Có Thể Ẩn / Hiện -->
+    <div id="admin_users_table_body" data-collapsible-table>
     <!-- Users Table -->
     <div class="table-responsive">
         <table>
@@ -482,6 +489,7 @@ $flash = get_flash();
             </ul>
         <?php endif; ?>
     </div>
+    </div> <!-- /#admin_users_table_body -->
 </div>
 
 <!-- ============================================================================== -->

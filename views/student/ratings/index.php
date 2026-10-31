@@ -80,13 +80,19 @@ $appBase = get_app_base_url();
                 Lọc
             </button>
         </form>
-        <div class="text-slate-500 font-mono text-[11.5px]">
-            Tổng số: <strong class="text-slate-800"><?= $total ?></strong> đánh giá · Trang <?= $page ?>/<?= $totalPages ?>
+        <div class="flex items-center gap-3">
+            <button type="button" data-target-table="ratings_table_body" onclick="toggleTableCollapse('ratings_table_body', this)" title="Ẩn hoặc hiện bảng đánh giá" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                <span class="toggle-table-icon">✕</span>
+                <span class="toggle-table-text">Ẩn bảng</span>
+            </button>
+            <div class="text-slate-500 font-mono text-[11.5px]">
+                Tổng số: <strong class="text-slate-800"><?= $total ?></strong> đánh giá · Trang <?= $page ?>/<?= $totalPages ?>
+            </div>
         </div>
     </div>
 
-    <!-- BẢNG DANH SÁCH -->
-    <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+    <!-- BẢNG DANH SÁCH (CÓ THỂ ẨN / THU GỌN) -->
+    <div id="ratings_table_body" data-collapsible-table class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
                 <thead>
