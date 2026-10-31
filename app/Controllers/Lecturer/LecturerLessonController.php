@@ -101,8 +101,8 @@ class LecturerLessonController
             $lessonSubmissions = $this->model->getSubmissionsForLesson($viewLessonId, $selectedClassId);
         }
 
-        // Lấy danh sách sinh viên thuộc các lớp mà Giảng viên này phụ trách bị KTV báo cáo vi phạm
-        $violatingStudents = $this->model->getViolatingStudentsForLecturer($lecturerId, $isAdmin);
+        // Quy tắc nghiệp vụ: Giảng viên không nhìn thấy sinh viên bị cảnh báo vi phạm
+        $violatingStudents = [];
 
         if (empty($_SESSION['csrf'])) {
             $_SESSION['csrf'] = bin2hex(random_bytes(32));
@@ -160,6 +160,7 @@ class LecturerLessonController
 
         $submissionId = (int)($_POST['submission_id'] ?? 0);
         $scoreRaw     = trim($_POST['score'] ?? '');
+        $starRaw      = (int)($_POST['star_rating'] ?? 0);
         $feedback     = trim($_POST['feedback'] ?? '');
         $caId         = (int)($_POST['ca_id'] ?? 0);
         $courseId     = (int)($_POST['course_id'] ?? 0);
@@ -167,24 +168,37 @@ class LecturerLessonController
 
         $redirectUrl = "lessons.php?" . ($caId > 0 ? "ca_id={$caId}" : "course_id={$courseId}") . ($viewLessonId > 0 ? "&view_lesson_id={$viewLessonId}" : "");
 
-        if ($submissionId <= 0 || $scoreRaw === '') {
-            set_flash('error', 'Vui lòng nhập điểm hợp lệ từ 0.0 đến 10.0 cho sinh viên!');
+        if ($submissionId <= 0 || ($scoreRaw === '' && $starRaw <= 0)) {
+            set_flash('error', 'Vui lòng chọn số sao (1-5★) hoặc nhập điểm hợp lệ cho bài làm của sinh viên!');
             header("Location: {$redirectUrl}");
             exit;
         }
 
-        $score = (float)$scoreRaw;
+        if ($scoreRaw === '' && $starRaw > 0) {
+            // Tự động chuyển đổi mức sao sang thang điểm 10
+            $scoreMap = [5 => 10.0, 4 => 8.5, 3 => 7.0, 2 => 5.0, 1 => 3.0];
+            $score = $scoreMap[$starRaw] ?? 10.0;
+        } else {
+            $score = (float)$scoreRaw;
+        }
+
         if ($score < 0 || $score > 10) {
             set_flash('error', 'Điểm chấm phải nằm trong thang điểm từ 0.0 đến 10.0!');
             header("Location: {$redirectUrl}");
             exit;
         }
 
+        // Nếu chưa chọn số sao thì tự động tính từ điểm số
+        if ($starRaw < 1 || $starRaw > 5) {
+            $starRaw = ($score >= 9.0) ? 5 : (($score >= 8.0) ? 4 : (($score >= 6.5) ? 3 : (($score >= 5.0) ? 2 : 1)));
+        }
+
         $lecturerId = (int)$currentUser['id'];
-        $success = $this->model->gradeSubmission($submissionId, $score, $feedback, $lecturerId);
+        $success = $this->model->gradeSubmission($submissionId, $score, $starRaw, $feedback, $lecturerId);
 
         if ($success) {
-            set_flash('success', "Đã lưu điểm (⭐ " . number_format($score, 1) . "/10.0) và lời nhận xét đánh giá cho sinh viên thành công!");
+            $starsDisplay = str_repeat('★', $starRaw);
+            set_flash('success', "Đã lưu đánh giá {$starsDisplay} ({$starRaw} sao - " . number_format($score, 1) . "/10.0) và lời nhận xét cho sinh viên thành công!");
         } else {
             set_flash('error', 'Không thể lưu điểm, vui lòng thử lại!');
         }

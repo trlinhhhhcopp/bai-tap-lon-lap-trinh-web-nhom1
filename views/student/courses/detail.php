@@ -250,6 +250,7 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
 
                             <!-- KHỐI ĐIỂM SỐ & NHẬN XÉT CỦA GIẢNG VIÊN -->
                             <?php if ($item['score'] !== null): ?>
+                                <?php $stars = !empty($item['star_rating']) ? (int)$item['star_rating'] : (($item['score'] >= 9) ? 5 : (($item['score'] >= 8) ? 4 : (($item['score'] >= 6.5) ? 3 : (($item['score'] >= 5) ? 2 : 1)))); ?>
                                 <div class="mt-3 bg-gradient-to-r from-amber-50/80 via-white to-amber-50/50 border border-amber-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
                                     <div class="flex items-start gap-3">
                                         <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-sm">
@@ -259,7 +260,7 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                                             <div class="flex items-center gap-2 flex-wrap">
                                                 <span class="text-xs font-black text-slate-800">ĐÁNH GIÁ CỦA GIẢNG VIÊN:</span>
                                                 <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-400 text-slate-900 shadow-2xs">
-                                                    ⭐ <?= number_format((float)$item['score'], 1) ?> / 10.0
+                                                    <?= str_repeat('★', $stars) ?> <?= $stars ?>.0 / 5 sao (Điểm: <?= number_format((float)$item['score'], 1) ?>/10.0)
                                                 </span>
                                                 <?php if (!empty($item['graded_at'])): ?>
                                                     <span class="text-[11px] text-slate-400 font-medium">

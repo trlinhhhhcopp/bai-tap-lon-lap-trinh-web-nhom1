@@ -119,7 +119,7 @@ class CourseLesson
                     s.file_name,
                     s.file_size,
                     s.notes,
-                    s.score,
+                    s.score, s.star_rating,
                     s.feedback,
                     s.graded_at,
                     s.graded_by,
@@ -276,7 +276,10 @@ class CourseLesson
             $sql = "SELECT l.*,
                            (SELECT COUNT(*) FROM student_assignment_submissions s 
                             JOIN users u_sub ON s.student_id = u_sub.id 
-                            WHERE s.lesson_id = l.id AND s.is_completed = 1 AND u_sub.class_id = :class_id) AS submission_count
+                            WHERE s.lesson_id = l.id AND s.is_completed = 1 AND u_sub.class_id = :class_id
+                              AND u_sub.is_active = 1
+                              AND (u_sub.lock_reason IS NULL OR u_sub.lock_reason = 'none' OR u_sub.lock_reason = '')
+                              AND NOT EXISTS (SELECT 1 FROM tickets t_sp WHERE t_sp.requester_id = u_sub.id AND t_sp.is_spam = 1)) AS submission_count
                     FROM course_lessons l
                     WHERE l.course_id = :cid
                     ORDER BY l.lesson_number ASC";
@@ -284,7 +287,12 @@ class CourseLesson
             $stmt->execute([':cid' => $courseId, ':class_id' => $classId]);
         } else {
             $sql = "SELECT l.*,
-                           (SELECT COUNT(*) FROM student_assignment_submissions s WHERE s.lesson_id = l.id AND s.is_completed = 1) AS submission_count
+                           (SELECT COUNT(*) FROM student_assignment_submissions s 
+                            JOIN users u_sub ON s.student_id = u_sub.id
+                            WHERE s.lesson_id = l.id AND s.is_completed = 1
+                              AND u_sub.is_active = 1
+                              AND (u_sub.lock_reason IS NULL OR u_sub.lock_reason = 'none' OR u_sub.lock_reason = '')
+                              AND NOT EXISTS (SELECT 1 FROM tickets t_sp WHERE t_sp.requester_id = u_sub.id AND t_sp.is_spam = 1)) AS submission_count
                     FROM course_lessons l
                     WHERE l.course_id = :cid
                     ORDER BY l.lesson_number ASC";
@@ -369,6 +377,9 @@ class CourseLesson
                 JOIN course_lessons l ON s.lesson_id = l.id
                 LEFT JOIN classes cl ON u.class_id = cl.id
                 WHERE s.lesson_id = :lid {$whereClass}
+                  AND u.is_active = 1
+                  AND (u.lock_reason IS NULL OR u.lock_reason = 'none' OR u.lock_reason = '')
+                  AND NOT EXISTS (SELECT 1 FROM tickets t_sp WHERE t_sp.requester_id = u.id AND t_sp.is_spam = 1)
                 ORDER BY s.submitted_at DESC";
         $stmt = $this->pdo->prepare($sql);
         $params = [':lid' => $lessonId];
@@ -413,16 +424,17 @@ class CourseLesson
     /**
      * Giảng viên chấm điểm và nhận xét bài nộp của sinh viên
      */
-    public function gradeSubmission(int $submissionId, float $score, string $feedback, int $lecturerId): bool
+    public function gradeSubmission(int $submissionId, float $score, int $starRating, string $feedback, int $lecturerId): bool
     {
         $now = date('Y-m-d H:i:s');
         $stmt = $this->pdo->prepare("
             UPDATE student_assignment_submissions 
-            SET score = :score, feedback = :feedback, graded_at = :graded_at, graded_by = :graded_by 
+            SET score = :score, star_rating = :star, feedback = :feedback, graded_at = :graded_at, graded_by = :graded_by 
             WHERE id = :id
         ");
         return $stmt->execute([
             ':score'     => $score,
+            ':star'      => max(1, min(5, $starRating)),
             ':feedback'  => $feedback,
             ':graded_at' => $now,
             ':graded_by' => $lecturerId,

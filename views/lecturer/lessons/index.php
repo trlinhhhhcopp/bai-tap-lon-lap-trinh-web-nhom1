@@ -87,63 +87,6 @@ $csrfToken = $_SESSION['csrf'] ?? '';
             </div>
         </div>
 
-        <!-- KHỐI LỌC CẢNH BÁO SINH VIÊN BỊ KTV BÁO CÁO VI PHẠM (DÀNH CHO GIẢNG VIÊN ĐÀO TẠO) -->
-        <?php if (!empty($violatingStudents)): ?>
-            <div class="bg-gradient-to-r from-purple-50 via-rose-50 to-amber-50 border-2 border-purple-300 rounded-3xl p-5 shadow-sm space-y-3">
-                <div class="flex items-center justify-between flex-wrap gap-2 border-b border-purple-200 pb-3">
-                    <div class="flex items-center gap-2">
-                        <span class="text-2xl">🚨</span>
-                        <div>
-                            <h3 class="text-sm font-black text-purple-950 flex items-center gap-2">
-                                <span>CẢNH BÁO SINH VIÊN THUỘC LỚP BỊ KTV BÁO CÁO VI PHẠM / SPAM</span>
-                                <span class="px-2 py-0.5 rounded-full text-xs font-black bg-rose-600 text-white"><?php echo count($violatingStudents); ?> trường hợp</span>
-                            </h3>
-                            <p class="text-[11px] text-purple-800/90 mt-0.5">
-                                Kỹ thuật viên IT đã lập biên bản báo cáo các sinh viên sau có hành vi gửi yêu cầu spam, phá hoại hoặc vi phạm nội quy. Giảng viên lưu ý khi chấm điểm và đánh giá rèn luyện.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead>
-                            <tr class="bg-purple-100/70 text-purple-900 font-bold border-b border-purple-200 text-[11px]">
-                                <th class="py-2.5 px-3">Mã SV</th>
-                                <th class="py-2.5 px-3">Họ và Tên</th>
-                                <th class="py-2.5 px-3">Lớp Sinh Viên</th>
-                                <th class="py-2.5 px-3">Mã Phiếu Sự Cố</th>
-                                <th class="py-2.5 px-3">Lý Do KTV Báo Cáo Vi Phạm</th>
-                                <th class="py-2.5 px-3 text-center">Thời Điểm Báo Cáo</th>
-                                <th class="py-2.5 px-3 text-center">Thao Tác</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-purple-100 bg-white/70">
-                            <?php foreach ($violatingStudents as $vs): ?>
-                                <tr class="hover:bg-purple-50 transition">
-                                    <td class="py-2.5 px-3 font-mono font-bold text-purple-900"><?php echo htmlspecialchars($vs['user_code']); ?></td>
-                                    <td class="py-2.5 px-3 font-bold text-slate-900"><?php echo htmlspecialchars($vs['student_name']); ?></td>
-                                    <td class="py-2.5 px-3 font-mono text-slate-700"><?php echo htmlspecialchars($vs['class_code']); ?></td>
-                                    <td class="py-2.5 px-3 font-mono text-indigo-700 font-semibold"><?php echo htmlspecialchars($vs['ticket_code']); ?></td>
-                                    <td class="py-2.5 px-3 text-rose-700 font-medium">
-                                        <span class="inline-flex items-center gap-1">
-                                            <span>⚠️</span> <?php echo htmlspecialchars($vs['spam_reason'] ?: 'Gửi tin nhắn spam, tin rác nhiều lần'); ?>
-                                        </span>
-                                    </td>
-                                    <td class="py-2.5 px-3 text-center font-mono text-slate-500 text-[11px]"><?php echo htmlspecialchars($vs['reported_at']); ?></td>
-                                    <td class="py-2.5 px-3 text-center">
-                                        <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo (int)$vs['ticket_id']; ?>" target="_blank" class="px-2.5 py-1 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-[11px] transition inline-flex items-center gap-1 shadow-2xs">
-                                            <span>🔍</span> Xem Phiếu
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        <?php endif; ?>
-
         <?php if ($selectedCourse): ?>
             <!-- KHỐI DANH SÁCH CÁC BUỔI HỌC CỦA MÔN NÀY -->
             <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden space-y-4 p-6">
@@ -506,12 +449,31 @@ $csrfToken = $_SESSION['csrf'] ?? '';
             document.getElementById('editLessonModal').classList.add('hidden');
         }
 
+        
+        function selectGradeStar(star) {
+            document.getElementById("formGradeStarRating").value = star;
+            const scoreMap = { 5: 10.0, 4: 8.5, 3: 7.0, 2: 5.0, 1: 3.0 };
+            document.getElementById("formGradeScore").value = scoreMap[star] || 10.0;
+            
+            document.querySelectorAll(".grade-star-btn").forEach(btn => {
+                const s = parseInt(btn.getAttribute("data-star"));
+                if (s === star) {
+                    btn.className = "grade-star-btn px-1.5 py-2 rounded-xl border-2 border-amber-500 bg-amber-400 font-bold text-slate-950 text-center transition flex flex-col items-center gap-0.5 shadow-xs";
+                } else {
+                    btn.className = "grade-star-btn px-1.5 py-2 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5";
+                }
+            });
+        }
+
         function openGradeModal(sub) {
             document.getElementById('formSubmissionId').value = sub.id;
             document.getElementById('gradeStudentName').innerText = sub.student_name || '—';
             document.getElementById('gradeStudentCode').innerText = sub.student_code || '—';
             document.getElementById('gradeFileName').innerText = sub.file_name || 'Không có tên file';
-            document.getElementById('formGradeScore').value = sub.score !== null ? parseFloat(sub.score) : '';
+            const curScore = sub.score !== null ? parseFloat(sub.score) : 10.0;
+            document.getElementById('formGradeScore').value = sub.score !== null ? curScore : '';
+            const curStar = sub.star_rating ? parseInt(sub.star_rating) : (curScore >= 9 ? 5 : (curScore >= 8 ? 4 : (curScore >= 6.5 ? 3 : (curScore >= 5 ? 2 : 1))));
+            selectGradeStar(curStar);
             document.getElementById('formGradeFeedback').value = sub.feedback || '';
             document.getElementById('gradeSubmissionModal').classList.remove('hidden');
             setTimeout(function() {
