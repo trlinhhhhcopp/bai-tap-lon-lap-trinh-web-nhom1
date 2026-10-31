@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Báo Cáo Bài Tập Lớn Lập Trình Web - Nhóm 1 - Hệ Thống Helpdesk CNTT Trực Tuyến</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 18mm 14mm 18mm 14mm;
+            @bottom-right {
+                content: "Trang " counter(page);
+                font-size: 9.5px;
+                color: #64748b;
+                font-family: 'Segoe UI', Tahoma, sans-serif;
+            }
+        }
+        
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11.5px;
+            line-height: 1.55;
+            color: #1e293b;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Cover Page */
+        .cover-page {
+            page-break-after: always;
+            height: 96vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 36px 28px;
+            border: 3px double #0284c7;
+            border-radius: 8px;
+            background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%);
+            text-align: center;
+        }
+
+        .cover-header {
+            border-bottom: 2px solid #0284c7;
+            padding-bottom: 18px;
+        }
+
+        .cover-org {
+            font-size: 14px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #0369a1;
+            margin-bottom: 6px;
+        }
+
+        .cover-suborg {
+            font-size: 13px;
+            color: #475569;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .cover-body {
+            margin: auto 0;
+            padding: 20px 0;
+        }
+
+        .badge-subject {
+            display: inline-block;
+            background-color: #0284c7;
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 18px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            letter-spacing: 1px;
+        }
+
+        .cover-title {
+            font-size: 23px;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1.35;
+            text-transform: uppercase;
+            margin: 12px 0 16px 0;
+        }
+
+        .cover-subtitle {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #0284c7;
+            margin-bottom: 24px;
+        }
+
+        .cover-meta-box {
+            display: inline-block;
+            text-align: left;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 5px solid #0284c7;
+            border-radius: 8px;
+            padding: 16px 24px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            font-size: 12px;
+            margin: 0 auto;
+            width: 85%;
+        }
+
+        .cover-meta-row {
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .cover-footer {
+            border-top: 1px solid #cbd5e1;
+            padding-top: 14px;
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Headings */
+        h1.section-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase;
+            border-bottom: 2px solid #0284c7;
+            padding-bottom: 5px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h2.sub-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0369a1;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            border-left: 3px solid #0284c7;
+            padding-left: 8px;
+        }
+
+        h3.part-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #334155;
+            margin-top: 12px;
+            margin-bottom: 6px;
+        }
+
+        p {
+            margin: 0 0 8px 0;
+            text-align: justify;
+        }
+
+        /* Tables */
+        table.report-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin: 10px 0 14px 0;
+            background: #ffffff;
+        }
+
+        table.report-table th, table.report-table td {
+            border: 1px solid #cbd5e1;
+            padding: 6.5px 9px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table.report-table th {
+            background-color: #f1f5f9;
+            color: #0f172a;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        table.report-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        .highlight-cell {
+            background-color: #e0f2fe !important;
+            font-weight: 600;
+            color: #0369a1;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin: 10px 0;
+            font-size: 11px;
+            border-left: 4px solid;
+        }
+
+        .callout-info {
+            background-color: #f0f9ff;
+            border-color: #0284c7;
+            color: #0c4a6e;
+        }
+
+        .callout-success {
+            background-color: #f0fdf4;
+            border-color: #16a34a;
+            color: #14532d;
+        }
+
+        .callout-warning {
+            background-color: #fffbeb;
+            border-color: #d97706;
+            color: #78350f;
+        }
+
+        .callout-danger {
+            background-color: #fef2f2;
+            border-color: #dc2626;
+            color: #7f1d1d;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-blue { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .badge-green { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .badge-purple { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+        .badge-amber { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .badge-rose { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        ul, ol {
+            margin: 4px 0 8px 18px;
+            padding: 0;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        code {
+            font-family: Consolas, Monaco, monospace;
+            background-color: #f1f5f9;
+            color: #b91c1c;
+            padding: 1.5px 4px;
+            border-radius: 3px;
+            font-size: 10.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TRANG BÌA CHUẨN HỌC THUẬT -->
+    <div class="cover-page">
+        <div class="cover-header">
+            <div class="cover-org">TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI</div>
+            <div class="cover-suborg">KHOA CÔNG NGHỆ THÔNG TIN · BỘ MÔN CÔNG NGHỆ PHẦN MỀM & WEB</div>
+        </div>
+
+        <div class="cover-body">
+            <div class="badge-subject">BÁO CÁO TỔNG KẾT BÀI TẬP LỚN LẬP TRÌNH WEB (WEB101)</div>
+            <div class="cover-title">
+                HỆ THỐNG TIẾP NHẬN &amp; XỬ LÝ HỖ TRỢ CNTT TRỰC TUYẾN<br>
+                (HELPDESK ONLINE ITIL v4 SERVICE DESK)
+            </div>
+            <div class="cover-subtitle">
+                Kiến trúc Clean MVC Phân tầng · MySQL 8 InnoDB 3NF · RBAC 4 Roles · Auto-SLA Lịch Hành Chính · Trạm Cứu Hộ Tài Khoản Khách
+            </div>
+
+            <div class="cover-meta-box">
+                <div class="cover-meta-row">
+                    <strong>Giảng viên hướng dẫn:</strong>
+                    <span>TS. Nguyễn Văn Giảng</span>
+                </div>
+                <div class="cover-meta-row">
+                    <strong>Lớp học phần:</strong>
+                    <span>D24-CNTT1 (Lập trình Web &amp; Ứng dụng)</span>
+                </div>
+                <div class="cover-meta-row">
+                    <strong>Nhóm thực hiện:</strong>
+                    <span><strong style="color: #0284c7;">NHÓM 1</strong> (5 thành viên)</span>
+                </div>
+                <div class="cover-meta-row">
+                    <strong>Trưởng nhóm:</strong>
+                    <span>Phạm Thị Thanh Ngân (MSSV: 224001736)</span>
+                </div>
+                <div class="cover-meta-row">
+                    <strong>Trạng thái mã nguồn:</strong>
+                    <span>Hoàn thiện 100% · Đã kiểm thử nghiêm ngặt</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="cover-footer">
+            HÀ NỘI — HỌC KỲ I · NĂM HỌC 2026 - 2027
+        </div>
+    </div>
+
+    <!-- MỤC LỤC & TỔNG QUAN -->
+    <h1 class="section-title"><span>📑</span> 1. DANH SÁCH THÀNH VIÊN &amp; PHÂN CÔNG MODEL ĐỘC LẬP (RACI)</h1>
+    <p>Hệ thống tuân thủ nghiêm ngặt nguyên tắc thiết kế phân tầng Clean MVC: 5 thành viên phụ trách 5 phân hệ độc lập, sở hữu trọn vẹn các Model và bảng CSDL tương ứng, đảm bảo phát triển song song không chồng chéo mã nguồn:</p>
+
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">STT</th>
+                <th style="width: 22%;">Thành viên thực hiện</th>
+                <th style="width: 13%;">Mã Sinh Viên</th>
+                <th style="width: 25%;">Phân hệ phụ trách</th>
+                <th style="width: 35%;">Model &amp; Bảng CSDL phụ trách</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="text-align: center;"><strong>1</strong></td>
+                <td><strong>Phạm Thị Thanh Ngân</strong><br><span class="badge badge-rose">Trưởng nhóm</span></td>
+                <td><strong>224001736</strong></td>
+                <td><strong>Core Architecture &amp; Ticket Engine</strong></td>
+                <td>• <code>Ticket.php</code> (Bảng <code>tickets</code>)<br>• <code>Reply.php</code> (Bảng <code>ticket_replies</code>)<br>• Core MVC, Router, Triage SLA, RBAC</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;"><strong>2</strong></td>
+                <td><strong>Trần Thục Linh</strong><br><span class="badge badge-blue">Thành viên</span></td>
+                <td><strong>224001729</strong></td>
+                <td><strong>User Management &amp; Auth Security</strong></td>
+                <td>• <code>User.php</code> (Bảng <code>users</code>)<br>• <code>PasswordReset.php</code> (Bảng <code>password_resets</code>)<br>• SSPR Email, Guest Station cứu hộ tài khoản</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;"><strong>3</strong></td>
+                <td><strong>Lê Hà My</strong><br><span class="badge badge-purple">Thành viên</span></td>
+                <td><strong>224001735</strong></td>
+                <td><strong>Academic &amp; Lecturer Portal</strong></td>
+                <td>• <code>CourseAssignment.php</code> (<code>course_assignments</code>)<br>• <code>ClassModel.php</code>, <code>Course.php</code>, <code>ClassStudent.php</code><br>• Cổng Giảng viên, Thẩm quyền gia hạn Deadline</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;"><strong>4</strong></td>
+                <td><strong>Nguyễn Ánh Nhi</strong><br><span class="badge badge-green">Thành viên</span></td>
+                <td><strong>224001742</strong></td>
+                <td><strong>Student Portal &amp; CSAT Rating</strong></td>
+                <td>• <code>Rating.php</code> (Bảng <code>ticket_ratings</code>)<br>• <code>Category.php</code>, <code>Priority.php</code><br>• Cổng Sinh viên, Đánh giá 5 sao CSAT, Đính kèm bài</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;"><strong>5</strong></td>
+                <td><strong>Phan Công Thành</strong><br><span class="badge badge-amber">Thành viên</span></td>
+                <td><strong>224001746</strong></td>
+                <td><strong>Admin Center &amp; Holiday Engine</strong></td>
+                <td>• <code>Holiday.php</code> (Bảng <code>holidays</code>)<br>• Báo cáo thống kê, Quản lý ngày nghỉ lễ SLA<br>• Script CLI đồng bộ lịch Canvas LMS</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h1 class="section-title"><span>🌟</span> 2. TỔNG HỢP DANH SÁCH TÍNH NĂNG MỚI ĐÃ CẬP NHẬT HOÀN THIỆN</h1>
+    <div class="callout callout-info">
+        <strong>GHI CHÚ THEO YÊU CẦU CỦA GIẢNG VIÊN HƯỚNG DẪN:</strong> Toàn bộ các yêu cầu đính chính về nghiệp vụ, logic phân quyền, thuật toán giờ làm việc SLA, và các quy tắc kiểm tra trùng lặp đã được hoàn thiện 100%, vượt qua toàn bộ các bộ test case thực tế.
+    </div>
+
+    <h2 class="sub-title">2.1. Phân quyền vai trò chuẩn xác và kiểm soát thao tác nghiêm ngặt (RBAC)</h2>
+    <ul>
+        <li>
+            <strong>Kỹ thuật viên (KTV / Agent):</strong>
+            <ul>
+                <li><strong>Tuyệt đối KHÔNG có nút sửa phiếu</strong>: KTV không được phép thay đổi tiêu đề, mô tả hay thông tin gốc do người dùng khai báo (chặn cả ở giao diện và backend guard <code>tickets/edit.php</code>).</li>
+                <li><strong>Thẩm quyền kiểm tra sự cố kỹ thuật:</strong> KTV kiểm tra log mạng/hệ thống & bấm nút <em>"KTV Xác Nhận Có Lỗi"</em> để chuyển biên bản kỹ thuật chính thức sang Giảng viên bộ môn xem xét gia hạn nộp bài.</li>
+                <li><strong>Nút Hủy Báo Lỗi (SV Báo Sai):</strong> Nếu KTV xác định sinh viên báo cáo sai sự thật hoặc không có lỗi khách quan, KTV bấm nút hủy báo lỗi &rarr; Phiếu tự động chuyển sang trạng thái <code>closed</code> (Đã hoàn tất &amp; Đóng), giúp Giảng viên không phải xử lý phiếu rác.</li>
+                <li><strong>Duyệt trạm cứu hộ tài khoản:</strong> KTV có nút duyệt xác thực thông tin đơn cứu hộ tài khoản khách trước khi chuyển lên Admin phê duyệt mở khóa.</li>
+                <li><strong>Báo cáo Sinh viên vi phạm quy chế:</strong> Nếu phát hiện sinh viên spam phá hoại hệ thống, KTV bấm báo cáo &rarr; Phiếu tự động chuyển về <code>resolved</code> gửi sang Admin xem xét kỷ luật/khóa tài khoản. KTV có nút <em>"Hủy báo cáo vi phạm"</em> nếu xác minh lại.</li>
+                <li><strong>Nghiệm thu kỹ thuật:</strong> KTV nghiệm thu giải pháp kỹ thuật và đưa phiếu về trạng thái <code>resolved</code> (không được tự ý đóng phiếu <code>closed</code>; việc đóng phiếu thuộc về Sinh viên chấm sao CSAT hoặc đóng tự động sau 24h).</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Quản trị viên (Admin):</strong>
+            <ul>
+                <li><strong>Admin KHÔNG có nút sửa phiếu:</strong> Quản trị viên tôn trọng tính toàn vẹn dữ liệu gốc của người gửi.</li>
+                <li><strong>Admin CHỈ CÓ NÚT XÓA PHIẾU:</strong> Bổ sung nút <code>🗑️ Xóa</code> màu đỏ trên từng dòng danh sách phiếu (<code>tickets/index.php</code>) và nút <code>🗑️ Xóa phiếu</code> trên thanh công cụ chi tiết (<code>tickets/show.php</code>), thực thi qua phương thức POST an toàn kèm hộp thoại xác nhận.</li>
+                <li><strong>Quyền xem &amp; ghi nhận lịch sử:</strong> Admin không chat phản hồi trực tiếp với người dùng như KTV, chỉ theo dõi tiến độ, ghi chép nhật ký và điều chuyển phân công chuyên môn sang KTV khác.</li>
+                <li><strong>Khóa quyền điều chuyển khi hoàn tất:</strong> Phiếu đã ở trạng thái <code>resolved</code> hoặc <code>closed</code> sẽ bị khóa điều chuyển phân công.</li>
+                <li><strong>Toàn quyền cứu hộ &amp; kỷ luật:</strong> Admin trực tiếp duyệt mở khóa đơn cứu hộ và đặt lại mật khẩu về <code>123456</code>, hoặc thực hiện Khóa cứng tài khoản sinh viên vi phạm.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Người gửi phiếu (Sinh viên &amp; Giảng viên tạo phiếu):</strong>
+            <ul>
+                <li><strong>Đặc quyền Sửa &amp; Xóa trong 15 phút đầu:</strong> Người tạo phiếu chính chủ có quyền chỉnh sửa lại nội dung hoặc thu hồi (xóa) phiếu trong vòng <strong>15 phút đầu tiên</strong> kể từ khi tạo (khi phiếu đang ở trạng thái <code>new</code> hoặc <code>waiting_requester</code>).</li>
+                <li><strong>Tự động khóa sau 15 phút:</strong> Khi quá 15 phút, hệ thống tự động khóa toàn bộ quyền sửa và xóa nhằm bảo đảm tính minh bạch khi KTV đã bắt đầu tiếp nhận xử lý.</li>
+                <li><strong>Nghiệm thu CSAT:</strong> Sinh viên chấm sao 1-5 sao và để lại nhận xét đóng góp chất lượng dịch vụ.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Giảng viên bộ môn (Lecturer):</strong>
+            <ul>
+                <li><strong>Xem xét mở lại hạn nộp Deadline:</strong> Khi KTV đã cấp biên bản xác nhận lỗi kỹ thuật hợp lệ, phiếu sẽ hiển thị khung thẩm quyền học thuật trên bàn làm việc của Giảng viên.</li>
+                <li><strong>Phương án 1 (Chấp thuận):</strong> Giảng viên chọn thời hạn nộp bài mới và gửi lời nhắn &rarr; Phiếu tự động chuyển trạng thái hoàn tất, sinh viên nhận thông báo và nút nộp bài ngay.</li>
+                <li><strong>Phương án 2 (Từ chối):</strong> Giảng viên từ chối gia hạn kèm lý do sư phạm &rarr; Phiếu tự động chuyển trạng thái hoàn tất &amp; đóng.</li>
+                <li><strong>Giao diện một chiều:</strong> Sau khi Giảng viên đã bấm Chấp thuận hoặc Từ chối, toàn bộ form nhập sẽ tự động ẩn đi và thay bằng biên bản quyết định chính thức, ngăn ngừa việc giảng viên thao tác chọn nhiều lần.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h2 class="sub-title">2.2. Kiểm tra &amp; Cảnh báo phiếu trùng lặp thông minh (Duplicate Incident Detection)</h2>
+    <p>Nhằm chống tình trạng người dùng gửi liên tiếp nhiều phiếu cho cùng một sự cố làm quá tải hàng đợi KTV:</p>
+    <ul>
+        <li><strong>Định nghĩa trùng lặp:</strong> Cùng một người gửi, cùng nhóm dịch vụ sự cố hoặc cùng buổi học, nếu đã gửi trong ngày hoặc phiếu trước đó đang trong quá trình xử lý (<code>new</code>, <code>in_progress</code>, <code>waiting_requester</code>).</li>
+        <li><strong>Phạm vi áp dụng toàn diện:</strong> Kiểm tra tự động trên tất cả các luồng: Form gửi phiếu Sinh viên, Form gửi phiếu Giảng viên, và Form Trạm cứu hộ tài khoản khách.</li>
+        <li><strong>Cảnh báo trực quan chuẩn HTML:</strong> Hiển thị hộp cảnh báo màu vàng nổi bật, trích xuất rõ mã phiếu cũ (ví dụ <code>#HD-2026-3110-0G04V1</code>), tiêu đề, trạng thái và đường dẫn xem chi tiết phiếu hiện tại để trao đổi tiếp với KTV thay vì tạo mới.</li>
+        <li><strong>Sửa lỗi hiển thị thẻ HTML:</strong> Sửa triệt để lỗi in thô thẻ <code>&lt;strong&gt; &lt;&gt;</code> trên giao diện web, đảm bảo render đậm chữ và màu sắc sắc nét.</li>
+    </ul>
+
+    <h2 class="sub-title">2.3. Hiệu chỉnh thuật toán tính hạn cam kết SLA theo Lịch hành chính &amp; Lịch nghỉ lễ</h2>
+    <ul>
+        <li><strong>Khung giờ làm việc chuẩn KTV:</strong> Chỉ làm việc từ <strong>Thứ Hai đến Thứ Sáu</strong>, sáng: <code>08:00 - 12:00</code>, chiều: <code>13:30 - 17:30</code> (tổng cộng 8 giờ làm việc/ngày).</li>
+        <li><strong>Loại trừ Thứ 7, Chủ Nhật và Ngày Lễ:</strong> Thuật toán <code>SlaService</code> tự động cộng dời hạn xử lý bỏ qua ngày cuối tuần và các ngày lễ toàn trường được cấu hình trong bảng <code>holidays</code>.</li>
+        <li><strong>Xử lý phiếu ngoài giờ:</strong> Các phiếu gửi sau 17h30 hoặc trong ngày nghỉ sẽ tự động bắt đầu tính hạn SLA từ <code>08:00</code> của ngày làm việc kế tiếp.</li>
+        <li><strong>SLA Trạm cứu hộ tài khoản:</strong> Cố định chính xác <strong>2.0 giờ làm việc hành chính</strong>, đảm bảo sinh viên được mở khóa tài khoản kịp thời cho buổi học.</li>
+    </ul>
+
+    <h2 class="sub-title">2.4. Trạm cứu hộ tài khoản khách (Guest Rescue Station)</h2>
+    <ul>
+        <li><strong>Xác thực tài khoản thực tế:</strong> Kiểm tra sinh viên có tồn tại trong hệ thống trước khi tiếp nhận đơn cứu hộ; từ chối các mã sinh viên ảo hoặc spam.</li>
+        <li><strong>Quy trình phê duyệt 2 bước bảo mật:</strong>
+            <ol>
+                <li>KTV kiểm tra biên bản lỗi và xác thực hồ sơ hợp lệ.</li>
+                <li>Hồ sơ được chuyển sang mục riêng của Quản trị viên (Admin) để Admin quyết định mở khóa và đặt lại mật khẩu về <code>123456</code>.</li>
+            </ol>
+        </li>
+        <li><strong>Tra cứu tiến độ bảo mật:</strong> Người dùng theo dõi tiến độ giải quyết trực tiếp qua Mã vé cứu hộ kết hợp mã PIN bí mật.</li>
+    </ul>
+
+    <h2 class="sub-title">2.5. Tối ưu hóa Giao diện (UI/UX) và Bộ lọc Dữ liệu</h2>
+    <ul>
+        <li><strong>Lược bỏ các nút lọc trùng lặp:</strong> Đã bỏ 4 pill trạng thái dư thừa ở đầu trang <code>tickets/index.php</code> (vì đã có form lọc trạng thái chi tiết bên dưới).</li>
+        <li><strong>Bộ lọc bảo mật SV Vi Phạm:</strong> Nút lọc <em>"SV Vi Phạm (KTV Báo Cáo)"</em> chỉ hiển thị trên giao diện của Admin và chính sinh viên vi phạm, đảm bảo tính sư phạm và riêng tư.</li>
+        <li><strong>Tính năng Ẩn/Hiện bảng dữ liệu (Collapsible Tables):</strong> Trang bị nút <em>"Ẩn bảng / Hiện bảng"</em> với icon mượt mà trên tất cả các bảng dữ liệu ở mọi vai trò (Sinh viên, Giảng viên, KTV, Admin), giúp người dùng tùy biến không gian làm việc gọn gàng.</li>
+        <li><strong>Sửa lỗi chức năng đánh giá CSAT:</strong> Xử lý mượt mà luồng chấm điểm sao (1 - 5 sao) và nhận xét của sinh viên, tự động cập nhật điểm trung bình CSAT của KTV.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h1 class="section-title"><span>📊</span> 3. THIẾT KẾ CƠ SỞ DỮ LIỆU CHUẨN HÓA (12 BẢNG 3NF)</h1>
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">STT</th>
+                <th style="width: 20%;">Tên Bảng (Table)</th>
+                <th style="width: 35%;">Khóa Chính &amp; Ràng Buộc Độc Nhất</th>
+                <th style="width: 40%;">Ý nghĩa nghiệp vụ &amp; Mối quan hệ liên kết</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="text-align: center;">1</td>
+                <td><code>categories</code></td>
+                <td>PK: <code>id</code> | UK: <code>code</code></td>
+                <td>5 nhóm dịch vụ CNTT (SSO, Mail, QLĐT, LMS, Wi-Fi) kèm thời lượng SLA.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">2</td>
+                <td><code>priorities</code></td>
+                <td>PK: <code>id</code> | UK: <code>code</code></td>
+                <td>4 mức ưu tiên (URGENT, HIGH, MED, LOW) kèm hệ số nhân rút ngắn SLA.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">3</td>
+                <td><code>classes</code></td>
+                <td>PK: <code>id</code> | UK: <code>class_code</code></td>
+                <td>Lớp sinh hoạt chính quy (D24-CNTT1, D24-CNTT2) khóa D24 Đại học Thủ Đô.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">4</td>
+                <td><code>courses</code></td>
+                <td>PK: <code>id</code> | UK: <code>course_code</code></td>
+                <td>6 môn học trong học kỳ (WEB101, NET201, DB102, OS101, SE201, LMS301).</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">5</td>
+                <td><code>users</code></td>
+                <td>PK: <code>id</code> | UK: <code>user_code</code>, <code>email</code></td>
+                <td>Quản lý SV, GV, KTV, Admin; cờ khóa mềm/khóa cứng; mật khẩu mặc định <code>123456</code>.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">6</td>
+                <td><code>class_students</code></td>
+                <td>PK: <code>id</code> | UK: <code>(class_id, student_id)</code></td>
+                <td>Quan hệ N-N giữa Lớp sinh hoạt và Sinh viên.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">7</td>
+                <td><code>course_assignments</code></td>
+                <td>PK: <code>id</code> | UK: <code>(class_id, course_id, semester)</code></td>
+                <td><strong>1 lớp học phần chỉ có 1 giảng viên phụ trách duy nhất</strong> trong 1 học kỳ.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">8</td>
+                <td><code>holidays</code></td>
+                <td>PK: <code>id</code></td>
+                <td>Danh mục ngày nghỉ lễ toàn trường phục vụ loại trừ giờ làm việc tính SLA.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">9</td>
+                <td><code>password_resets</code></td>
+                <td>PK: <code>id</code></td>
+                <td>Lưu token SHA-256 khôi phục mật khẩu qua email hiệu lực 15 phút.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">10</td>
+                <td><code>tickets</code></td>
+                <td>PK: <code>id</code> | UK: <code>ticket_code</code></td>
+                <td>Bảng trung tâm lưu trữ phiếu hỗ trợ, mốc thời gian SLA, cờ xác nhận KTV, gia hạn GV.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">11</td>
+                <td><code>ticket_replies</code></td>
+                <td>PK: <code>id</code></td>
+                <td>Lưu nội dung trao đổi hai chiều và ghi chú nội bộ bảo mật (<code>is_internal = 1</code>).</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">12</td>
+                <td><code>ticket_ratings</code></td>
+                <td>PK: <code>id</code> | UK: <code>ticket_id</code> (1-1)</td>
+                <td>Đánh giá chất lượng CSAT (1-5 sao) và nhận xét của sinh viên sau khi giải quyết.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h1 class="section-title"><span>🔑</span> 4. DANH SÁCH TÀI KHOẢN KIỂM THỬ DEMO (TEST ACCOUNTS)</h1>
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th style="width: 22%;">Vai trò (Role)</th>
+                <th style="width: 15%;">Mã Người Dùng</th>
+                <th style="width: 28%;">Email Đăng Nhập</th>
+                <th style="width: 12%;">Mật Khẩu</th>
+                <th style="width: 23%;">Nhiệm vụ &amp; Thẩm quyền kiểm thử</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Quản trị viên (Admin)</strong></td>
+                <td><code>ADMIN001</code></td>
+                <td><code>admin@daihocthudo.edu.vn</code></td>
+                <td><code>123456</code></td>
+                <td>Xóa phiếu, duyệt mở khóa cứu hộ, quản lý user &amp; lịch lễ.</td>
+            </tr>
+            <tr>
+                <td><strong>Kỹ thuật viên 1 (SSO)</strong></td>
+                <td><code>KTV001</code></td>
+                <td><code>ktv.an@daihocthudo.edu.vn</code></td>
+                <td><code>123456</code></td>
+                <td>Tiếp nhận sự cố tài khoản, duyệt đơn cứu hộ khách.</td>
+            </tr>
+            <tr>
+                <td><strong>Kỹ thuật viên 2 (Mạng)</strong></td>
+                <td><code>KTV002</code></td>
+                <td><code>ktv.binh@daihocthudo.edu.vn</code></td>
+                <td><code>123456</code></td>
+                <td>Xác nhận lỗi mạng KTX, hủy báo lỗi nếu SV báo sai.</td>
+            </tr>
+            <tr>
+                <td><strong>Giảng viên (Lecturer)</strong></td>
+                <td><code>GV001</code></td>
+                <td><code>nguyenvangiang@daihocthudo.edu.vn</code></td>
+                <td><code>123456</code></td>
+                <td>TS. Nguyễn Văn Giảng: Xem xét gia hạn / từ chối mở lại Deadline.</td>
+            </tr>
+            <tr>
+                <td><strong>Sinh viên 1 (Trưởng nhóm)</strong></td>
+                <td><code>224001736</code></td>
+                <td><code>224001736@daihocthudo.edu.vn</code></td>
+                <td><code>123456</code></td>
+                <td>Phạm Thị Thanh Ngân: Gửi phiếu, sửa/xóa 15p, chấm sao CSAT.</td>
+            </tr>
+            <tr>
+                <td><strong>Sinh viên 2 (Thành viên)</strong></td>
+                <td><code>224001729</code></td>
+                <td><code>224001729@daihocthudo.edu.vn</code></td>
+                <td><code>123456</code></td>
+                <td>Trần Thục Linh: Test nộp bài tập, tra cứu tiến độ xử lý.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h1 class="section-title"><span>🏆</span> 5. KẾT LUẬN &amp; CAM KẾT CHẤT LƯỢNG ĐỒ ÁN</h1>
+    <p>Hệ thống <strong>Helpdesk CNTT Trực Tuyến - Đại học Thủ Đô Hà Nội</strong> của Nhóm 1 đã hoàn thành xuất sắc toàn bộ các tiêu chí đề ra:</p>
+    <ul>
+        <li><strong>Kiến trúc chuẩn Clean MVC:</strong> Phân tách độc lập tầng Controller, Service, Repository, Model và View, không để câu truy vấn SQL lọt vào tầng hiển thị giao diện.</li>
+        <li><strong>Bảo mật toàn diện:</strong> 100% Prepared Statements chống SQL Injection, mã hóa mật khẩu Bcrypt, CSRF Protection, lọc Formula Injection khi xuất CSV, kiểm soát 5 lớp tệp tin tải lên ngoài Webroot.</li>
+        <li><strong>Quy trình nghiệp vụ thực tế:</strong> Phản ánh chính xác mô hình vận hành trường đại học với sự phối hợp chặt chẽ giữa Sinh viên - Kỹ thuật viên - Giảng viên - Ban Quản trị.</li>
+    </ul>
+
+    <div class="callout callout-success" style="margin-top: 14px;">
+        <strong>CAM KẾT CỦA NHÓM 1:</strong> Toàn bộ thành viên trong nhóm đều nắm vững kiến trúc, làm chủ 100% mã nguồn phân hệ được giao và sẵn sàng tự tin vấn đáp, demo trực tiếp trước Hội đồng chấm Bài tập lớn!
+    </div>
+
+</body>
+</html>
