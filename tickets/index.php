@@ -66,7 +66,7 @@ if ($page > $totalPages && $totalTickets > 0) {
 
 $tickets        = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning, $lecturerId, $lecturerScope);
 $categories     = TicketRepository::getCategories();
-$slaCount       = TicketRepository::countSlaOverdue($filterReqId, $filterAgentId);
+$slaCount       = TicketRepository::countSlaOverdue($filterReqId, $filterAgentId, $lecturerId, $lecturerScope);
 $lecturerIncidentsCount = $isLecturer ? TicketRepository::countLecturerCourseIncidents((int)$currentUser['id']) : 0;
 $guestCount     = in_array($userRole, ['agent', 'admin']) ? TicketRepository::countPendingGuestTickets() : 0;
 $canSeeViolations = ($userRole === 'admin' || ($userRole === 'requester' && !$isLecturer));

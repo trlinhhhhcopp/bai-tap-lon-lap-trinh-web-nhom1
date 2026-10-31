@@ -42,6 +42,27 @@ class GuestTicketController extends Controller {
                 $name = $user['name'];
             }
             $userId = (int)$user['id'];
+
+            // 1. KIỂM TRA ĐƠN CỨU HỘ TRÙNG LẶP (ANTI-DUPLICATE RESCUE TICKET)
+            require_once __DIR__ . '/../Repositories/TicketRepository.php';
+            $dupRescue = \TicketRepository::findDuplicateGuest($userId);
+            if ($dupRescue) {
+                $statusLabels = [
+                    'new'               => 'Mới tiếp nhận (Chờ KTV xác thực)',
+                    'in_progress'       => 'Đang xử lý kỹ thuật',
+                    'waiting_requester' => 'Đang chờ phản hồi',
+                    'resolved'          => 'KTV đã duyệt (Chờ Admin phê duyệt mở khóa)',
+                    'closed'            => 'Đã hoàn tất / Đóng',
+                ];
+                $stText = $statusLabels[$dupRescue['status']] ?? $dupRescue['status'];
+                $sentTime = date('H:i d/m/Y', strtotime($dupRescue['created_at']));
+                $existingCode = $dupRescue['ticket_code'];
+
+                $this->flash('warning', "⚠️ <strong>PHÁT HIỆN ĐƠN CỨU HỘ TRÙNG LẶP:</strong> Bạn đã có đơn cứu hộ mã <strong>{$existingCode}</strong> (Gửi lúc {$sentTime}, trạng thái: <strong>{$stText}</strong>). Theo quy định, mỗi sinh viên/cán bộ chỉ gửi 1 đơn cứu hộ trong 1 ngày hoặc khi đơn trước đó đang được xử lý. Bạn có thể theo dõi tiến độ ngay tại đây!");
+                $this->redirect("/guest/lookup?code=" . urlencode($existingCode));
+                return;
+            }
+
             $issueTitle = trim($_POST['issue_title'] ?? 'Yêu cầu mở khóa tài khoản');
 
             $attachmentPath = null;

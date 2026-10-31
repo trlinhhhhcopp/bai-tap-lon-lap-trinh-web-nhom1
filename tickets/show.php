@@ -292,6 +292,40 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 }
 
 // -----------------------------------------------------------------------------
+// ADMIN TRỰC TIẾP KHÓA / MỞ KHÓA TÀI KHOẢN NGƯỜI DÙNG TỪ PHIẾU
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && in_array($_POST['action'], ['admin_lock_requester', 'admin_unlock_requester'])) {
+    if ($userRole === 'admin') {
+        $reqUid = (int)$ticket['requester_id'];
+        if ($_POST['action'] === 'admin_lock_requester') {
+            db()->prepare("UPDATE users SET is_active = 0, lock_reason = 'admin_locked' WHERE id = :uid")->execute(['uid' => $reqUid]);
+            TicketRepository::addReply($id, (int)$currentUser['id'], "🔒 [ADMIN KHÓA TÀI KHOẢN]: Quản trị viên đã khóa tài khoản sinh viên/người dùng này.", false);
+            set_flash('success', "Đã khóa tài khoản của người dùng {$ticket['requester_name']} thành công!");
+        } else {
+            db()->prepare("UPDATE users SET is_active = 1, lock_reason = 'none', failed_attempts = 0 WHERE id = :uid")->execute(['uid' => $reqUid]);
+            TicketRepository::addReply($id, (int)$currentUser['id'], "🔓 [ADMIN MỞ KHÓA TÀI KHOẢN]: Quản trị viên đã mở khóa tài khoản cho sinh viên/người dùng này.", false);
+            set_flash('success', "Đã mở khóa tài khoản của người dùng {$ticket['requester_name']} thành công!");
+        }
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// KTV & ADMIN ĐÓNG PHIẾU VỚI LÝ DO TRÙNG LẶP (DUPLICATE TICKET)
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'close_duplicate') {
+    if (in_array($userRole, ['agent', 'admin'])) {
+        $dupNote = trim($_POST['duplicate_note'] ?? 'Đóng phiếu do phát hiện sự cố trùng lặp với phiếu đã gửi trước đó.');
+        db()->prepare("UPDATE tickets SET status = 'closed', closed_at = NOW(), closed_reason = 'duplicate' WHERE id = :id")->execute(['id' => $id]);
+        TicketRepository::addReply($id, (int)$currentUser['id'], "📑 [ĐÓNG DO TRÙNG LẶP]: {$dupNote}", false, 'closed');
+        set_flash('info', "Đã đóng phiếu với lý do Trùng lặp sự cố (duplicate)!");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
 // XỬ LÝ SINH VIÊN / GIẢNG VIÊN XÓA LẠI PHIẾU TRONG VÒNG 15 PHÚT ĐẦU TIÊN
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'requester_delete_ticket') {
@@ -677,11 +711,37 @@ $flash   = get_flash();
                     </form>
                 <?php endif; ?>
 
-                <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                <?php if ($userRole === 'agent'): ?>
                     <button type="button" onclick="document.getElementById('reportSpamModal').classList.remove('hidden')" 
-                            class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-full border border-rose-200 transition flex items-center gap-1">
+                            class="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-full border border-rose-200 transition flex items-center gap-1 cursor-pointer">
                         <span>🚨</span> Báo Cáo SV Spam
                     </button>
+                <?php endif; ?>
+
+                <?php if (in_array($userRole, ['agent', 'admin']) && !in_array($ticket['status'], ['closed'])): ?>
+                    <button type="button" onclick="document.getElementById('closeDuplicateModal').classList.remove('hidden')" 
+                            class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-full border border-slate-300 transition flex items-center gap-1 cursor-pointer">
+                        <span>📑</span> Đóng Trùng Lặp
+                    </button>
+                <?php endif; ?>
+
+                <?php if ($userRole === 'admin' && !empty($ticket['requester_id'])): ?>
+                    <?php $reqIsLocked = ((int)($ticket['requester_is_active'] ?? 1) === 0 || in_array($ticket['requester_lock_reason'] ?? '', ['admin_locked', 'expelled', 'spam_lock'])); ?>
+                    <?php if ($reqIsLocked): ?>
+                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Mở khóa tài khoản cho sinh viên/người dùng này?');">
+                            <input type="hidden" name="action" value="admin_unlock_requester" />
+                            <button type="submit" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-full shadow-sm transition flex items-center gap-1 cursor-pointer">
+                                <span>🔓</span> Mở Khóa SV
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Khóa tài khoản sinh viên này ngay lập tức do vi phạm quy chế?');">
+                            <input type="hidden" name="action" value="admin_lock_requester" />
+                            <button type="submit" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-full shadow-sm transition flex items-center gap-1 cursor-pointer">
+                                <span>🔒</span> Khóa Tài Khoản SV
+                            </button>
+                        </form>
+                    <?php endif; ?>
                 <?php endif; ?>
                 <?php 
                 $minutesSinceCreated = (time() - strtotime($ticket['created_at'])) / 60;
@@ -1899,6 +1959,40 @@ $flash   = get_flash();
                 </button>
                 <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition shadow-sm flex items-center gap-1.5">
                     <span>🚨</span> Xác Nhận Báo Cáo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL ĐÓNG PHIẾU DO TRÙNG LẶP -->
+<div id="closeDuplicateModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <span class="text-slate-600 text-lg">📑</span> Đóng Phiếu Do Trùng Lặp Sự Cố
+            </h3>
+            <button type="button" onclick="document.getElementById('closeDuplicateModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-xl leading-none">&times;</button>
+        </div>
+
+        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-4 text-xs">
+            <input type="hidden" name="action" value="close_duplicate" />
+
+            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 leading-relaxed text-[11.5px]">
+                Phiếu #<strong><?php echo htmlspecialchars($ticket['ticket_code']); ?></strong> sẽ được chuyển sang trạng thái <strong>Đã hoàn tất / Đóng</strong> với lý do trùng lặp sự cố đã gửi.
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Ghi chú lý do đóng trùng: <span class="text-rose-500">*</span></label>
+                <textarea name="duplicate_note" rows="3" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 font-medium">Đóng phiếu do phát hiện sự cố trùng lặp với phiếu đã tiếp nhận trước đó trong hệ thống.</textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('closeDuplicateModal').classList.add('hidden')" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition shadow-sm flex items-center gap-1.5 cursor-pointer">
+                    <span>📑</span> Xác Nhận Đóng Trùng Lặp
                 </button>
             </div>
         </form>

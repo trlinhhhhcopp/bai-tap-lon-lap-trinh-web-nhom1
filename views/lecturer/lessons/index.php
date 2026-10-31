@@ -181,7 +181,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                 </span>
                             </div>
                             <h3 class="text-base font-black text-slate-900">
-                                Danh Sách Sinh Viên Bài Nộp: Buổi <?php echo $activeLesson['lesson_number']; ?>: <?php echo htmlspecialchars($activeLesson['title']); ?>
+                                Danh Sách Sinh Viên & Bài Nộp Của Lớp: Buổi <?php echo $activeLesson['lesson_number']; ?>: <?php echo htmlspecialchars($activeLesson['title']); ?>
                             </h3>
                             <p class="text-xs text-slate-500">
                                 Hạn chót nộp bài: <strong class="text-rose-600 font-mono"><?php echo htmlspecialchars($activeLesson['deadline_at']); ?></strong> · Yêu cầu: <span class="text-slate-700 font-medium"><?php echo htmlspecialchars($activeLesson['assignment_requirement'] ?: 'Chưa cập nhật đề bài'); ?></span>

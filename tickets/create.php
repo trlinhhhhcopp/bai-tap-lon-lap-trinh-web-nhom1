@@ -179,35 +179,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // KIỂM TRA CHỐNG TRÙNG LẶP SỰ CỐ (ANTI-DUPLICATE / SPAM CHECK)
+    // KIỂM TRA CHỐNG TRÙNG LẶP SỰ CỐ (ANTI-DUPLICATE CHECK THEO ĐẶC TẢ)
+    // Định nghĩa: Cùng 1 người gửi 1 dịch vụ sự cố gặp vấn đề nhiều lần trong 1 ngày HOẶC vấn đề đó đang xử lý đều tính là phiếu trùng
     if (empty($errors)) {
-        $stmtDup = db()->prepare("
-            SELECT id, ticket_code, title, status, created_at 
-            FROM tickets 
-            WHERE requester_id = :uid 
-              AND category_id = :cat_id
-              AND (
-                  LOWER(TRIM(title)) = LOWER(:title) 
-                  OR (created_at >= (NOW() - INTERVAL 10 MINUTE) AND LOWER(TRIM(title)) LIKE CONCAT('%', LOWER(:kw), '%'))
-              )
-              AND status IN ('new', 'in_progress', 'waiting_requester')
-            ORDER BY id DESC LIMIT 1
-        ");
-        $stmtDup->execute([
-            ':uid'    => $requesterId,
-            ':cat_id' => $categoryId,
-            ':title'  => trim($title),
-            ':kw'     => mb_substr(trim($title), 0, 15)
-        ]);
-        $dupTicket = $stmtDup->fetch();
+        $dupTicket = TicketRepository::findDuplicate($requesterId, $categoryId, $reqLessonId);
         if ($dupTicket) {
-            $statusText = match($dupTicket['status']) {
-                'new' => 'Mới tiếp nhận (đang chờ KTV nhận việc)',
-                'in_progress' => 'Đang xử lý kỹ thuật',
+            $statusLabels = [
+                'new'               => 'Mới tiếp nhận (đang chờ KTV nhận việc)',
+                'in_progress'       => 'Đang xử lý kỹ thuật',
                 'waiting_requester' => 'Đang chờ bạn phản hồi',
-                default => $dupTicket['status']
-            };
-            $errors[] = "⚠️ PHÁT HIỆN SỰ CỐ TRÙNG LẶP: Bạn đã có phiếu #" . htmlspecialchars($dupTicket['ticket_code']) . " (\"" . htmlspecialchars($dupTicket['title']) . "\") cùng chuyên mục đang ở trạng thái \"{$statusText}\". Hệ thống tự động chặn gửi trùng lặp nhiều lần để tránh quá tải KTV! Vui lòng vào chi tiết phiếu hiện có để trao đổi thêm.";
+                'resolved'          => 'Đã có giải pháp xử lý',
+                'closed'            => 'Đã hoàn tất / Đóng',
+            ];
+            $statusText = $statusLabels[$dupTicket['status']] ?? $dupTicket['status'];
+            $createdTime = date('H:i d/m/Y', strtotime($dupTicket['created_at']));
+            $catName = db()->query("SELECT name FROM categories WHERE id = " . (int)$categoryId)->fetchColumn() ?: 'nhóm dịch vụ này';
+
+            if (in_array($dupTicket['status'], ['new', 'in_progress', 'waiting_requester'])) {
+                $errors[] = "⚠️ <strong>PHÁT HIỆN SỰ CỐ TRÙNG LẶP:</strong> Bạn đang có phiếu <strong>#{$dupTicket['ticket_code']}</strong> (\"" . htmlspecialchars($dupTicket['title']) . "\") thuộc dịch vụ <strong>{$catName}</strong> đang trong quá trình xử lý (<em>{$statusText}</em>). Theo quy định, vấn đề đang xử lý không được tạo thêm phiếu mới để tránh quá tải hệ thống. Vui lòng vào chi tiết phiếu hiện có để trao đổi thêm với KTV!";
+            } else {
+                $errors[] = "⚠️ <strong>PHÁT HIỆN SỰ CỐ TRÙNG LẶP:</strong> Bạn đã gửi yêu cầu hỗ trợ cho dịch vụ <strong>{$catName}</strong> trong ngày hôm nay (phiếu <strong>#{$dupTicket['ticket_code']}</strong> gửi lúc {$createdTime}). Theo quy định, cùng một người gửi một dịch vụ sự cố nhiều lần trong một ngày đều tính là phiếu trùng lặp. Vui lòng trao đổi thêm trên phiếu đã gửi!";
+            }
         }
     }
 

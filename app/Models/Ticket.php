@@ -103,33 +103,61 @@ class Ticket {
         $userName = $data['requester_name'] ?? null;
         $ticketCode = $data['ticket_code'] ?? self::generateUniqueTicketCode('HD', $userName);
 
+        $requesterId = (int)($data['requester_id'] ?? 0);
+        $categoryId  = (int)($data['category_id'] ?? 1);
+        $priorityId  = (int)($data['priority_id'] ?? 2);
+        $isGuest     = !empty($data['is_guest_ticket']) ? 1 : 0;
+        $lessonId    = !empty($data['lesson_id']) ? (int)$data['lesson_id'] : 0;
+
+        // 1. Kiểm tra chống trùng lặp sự cố chuẩn ITIL
+        require_once __DIR__ . '/../Repositories/TicketRepository.php';
+        if ($isGuest) {
+            $dupGuest = \TicketRepository::findDuplicateGuest($requesterId);
+            if ($dupGuest) {
+                throw new \Exception("Phát hiện đơn cứu hộ trùng lặp: Đã có đơn cứu hộ #{$dupGuest['ticket_code']} gửi trong ngày hoặc đang trong quá trình xử lý!");
+            }
+        } else {
+            $dup = \TicketRepository::findDuplicate($requesterId, $categoryId, $lessonId);
+            if ($dup) {
+                throw new \Exception("Phát hiện phiếu sự cố trùng lặp: Đã có phiếu #{$dup['ticket_code']} cùng nhóm dịch vụ gửi trong ngày hoặc đang trong quá trình xử lý!");
+            }
+        }
+
+        // 2. Tính toán SLA chuẩn theo giờ hành chính (T2-T6, trừ ngày nghỉ lễ & ngoài giờ)
+        require_once __DIR__ . '/../Services/SlaService.php';
+        $sla = \App\Services\SlaService::calculateSlaDeadlines($categoryId, $priorityId);
+
         $sql = "INSERT INTO tickets (
                     ticket_code, requester_id, assigned_to, category_id, priority_id,
                     class_id, course_id, is_guest_ticket, contact_email, lookup_pin,
-                    title, description, system_affected, attachment_path, status, due_at
+                    title, description, system_affected, attachment_path, status,
+                    created_at, sla_started_at, triage_due_at, due_at
                 ) VALUES (
                     :ticket_code, :requester_id, :assigned_to, :category_id, :priority_id,
                     :class_id, :course_id, :is_guest, :contact_email, :lookup_pin,
-                    :title, :description, :system_affected, :attachment_path, 'new', :due_at
+                    :title, :description, :system_affected, :attachment_path, 'new',
+                    NOW(), :sla_started_at, :triage_due_at, :due_at
                 )";
 
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':ticket_code'      => $ticketCode,
-            ':requester_id'     => $data['requester_id'],
+            ':requester_id'     => $requesterId,
             ':assigned_to'      => $data['assigned_to'] ?? null,
-            ':category_id'      => $data['category_id'],
-            ':priority_id'      => $data['priority_id'] ?? 3,
+            ':category_id'      => $categoryId,
+            ':priority_id'      => $priorityId,
             ':class_id'         => $data['class_id'] ?? null,
             ':course_id'        => $data['course_id'] ?? null,
-            ':is_guest'         => $data['is_guest_ticket'] ?? 0,
+            ':is_guest'         => $isGuest,
             ':contact_email'    => $data['contact_email'] ?? null,
             ':lookup_pin'       => $data['lookup_pin'] ?? null,
             ':title'            => trim($data['title']),
             ':description'      => trim($data['description']),
             ':system_affected'  => trim($data['system_affected'] ?? 'Chung'),
             ':attachment_path'  => $data['attachment_path'] ?? null,
-            ':due_at'           => date('Y-m-d H:i:s', strtotime('+4 hours')),
+            ':sla_started_at'   => $sla['sla_started_at'],
+            ':triage_due_at'    => $sla['triage_due_at'],
+            ':due_at'           => $sla['due_at'],
         ]);
 
         return (int) $pdo->lastInsertId();

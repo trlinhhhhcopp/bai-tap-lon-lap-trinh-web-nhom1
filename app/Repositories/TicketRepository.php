@@ -56,8 +56,8 @@ class TicketRepository {
                 $conditions[] = "t.requester_id = :lid_req";
                 $params['lid_req'] = $lecturerId;
             } elseif ($lecturerScope === 'course_incidents') {
-                // Chỉ hiển thị các phiếu mà KTV đã xác thực có lỗi kỹ thuật (it_verified = 1)
-                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                // Chỉ hiển thị các phiếu mà KTV đã xác thực có lỗi kỹ thuật (it_verified = 1) và chưa được GV xử lý
+                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.lecturer_decision IS NULL OR t.lecturer_decision = 'pending') AND t.status NOT IN ('closed', 'resolved') AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
                 $params['lid_ca'] = $lecturerId;
                 $params['lid_ca2'] = $lecturerId;
             } else {
@@ -169,8 +169,8 @@ class TicketRepository {
                 $conditions[] = "t.requester_id = :lid_req";
                 $params['lid_req'] = $lecturerId;
             } elseif ($lecturerScope === 'course_incidents') {
-                // Chỉ hiển thị các phiếu mà KTV đã xác thực có lỗi kỹ thuật (it_verified = 1)
-                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                // Chỉ hiển thị các phiếu mà KTV đã xác thực có lỗi kỹ thuật (it_verified = 1) và chưa được GV xử lý
+                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.lecturer_decision IS NULL OR t.lecturer_decision = 'pending') AND t.status NOT IN ('closed', 'resolved') AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
                 $params['lid_ca'] = $lecturerId;
                 $params['lid_ca2'] = $lecturerId;
             } else {
@@ -246,14 +246,28 @@ class TicketRepository {
     /**
      * Đếm số phiếu quá hạn SLA nghiêm trọng
      */
-    public static function countSlaOverdue(int $requesterId = 0, int $assignedTo = 0): int {
+    public static function countSlaOverdue(int $requesterId = 0, int $assignedTo = 0, int $lecturerId = 0, string $lecturerScope = ''): int {
         $db = db();
         $conditions = [
             "t.status NOT IN ('resolved', 'closed')",
             "((t.due_at IS NOT NULL AND t.due_at < NOW()) OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL))"
         ];
         $params = [];
-        if ($requesterId > 0) {
+        if ($lecturerId > 0) {
+            if ($lecturerScope === 'mine') {
+                $conditions[] = "t.requester_id = :lid_req";
+                $params['lid_req'] = $lecturerId;
+            } elseif ($lecturerScope === 'course_incidents') {
+                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.lecturer_decision IS NULL OR t.lecturer_decision = 'pending') AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                $params['lid_ca'] = $lecturerId;
+                $params['lid_ca2'] = $lecturerId;
+            } else {
+                $conditions[] = "(t.requester_id = :lid_req OR (t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.lecturer_decision IS NULL OR t.lecturer_decision = 'pending') AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2))))";
+                $params['lid_req'] = $lecturerId;
+                $params['lid_ca'] = $lecturerId;
+                $params['lid_ca2'] = $lecturerId;
+            }
+        } elseif ($requesterId > 0) {
             $conditions[] = "t.requester_id = :req_id";
             $params['req_id'] = $requesterId;
         }
@@ -286,8 +300,8 @@ class TicketRepository {
                 $conditions[] = "t.requester_id = :lid_req";
                 $params['lid_req'] = $lecturerId;
             } elseif ($lecturerScope === 'course_incidents') {
-                // Chỉ hiển thị các phiếu mà KTV đã xác thực có lỗi kỹ thuật (it_verified = 1)
-                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
+                // Chỉ hiển thị các phiếu mà KTV đã xác thực có lỗi kỹ thuật (it_verified = 1) và chưa được GV xử lý
+                $conditions[] = "(t.lesson_id IS NOT NULL AND t.it_verified = 1 AND (t.lecturer_decision IS NULL OR t.lecturer_decision = 'pending') AND t.status NOT IN ('closed', 'resolved') AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid_ca) OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid_ca2)))";
                 $params['lid_ca'] = $lecturerId;
                 $params['lid_ca2'] = $lecturerId;
             } else {
@@ -319,6 +333,8 @@ class TicketRepository {
                        COALESCE(u_req.name, t.contact_email, 'Khách gửi cứu hộ') AS requester_name, 
                        COALESCE(u_req.user_code, 'GUEST') AS requester_code, 
                        COALESCE(u_req.email, t.contact_email, 'Chưa có email') AS requester_email,
+                       COALESCE(u_req.is_active, 1) AS requester_is_active,
+                       COALESCE(u_req.lock_reason, 'none') AS requester_lock_reason,
                        u_agent.name AS agent_name, u_agent.user_code AS agent_code,
                        COALESCE(c.name, 'Cứu hộ tài khoản') AS category_name, 
                        COALESCE(c.code, 'CAT_SSO') AS category_code,
@@ -392,6 +408,67 @@ class TicketRepository {
         $suffix = implode('', $chars);
         return "HD-{$year}-{$dayMonth}-{$suffix}";
     }
+
+    /**
+     * Kiểm tra sự cố trùng lặp của người dùng nội bộ (Sinh viên / Giảng viên)
+     * Quy định ITIL: Cùng 1 người gửi 1 dịch vụ sự cố gặp vấn đề nhiều lần trong 1 ngày HOẶC vấn đề đó đang xử lý.
+     */
+    public static function findDuplicate(int $requesterId, int $categoryId, int $lessonId = 0, int $excludeTicketId = 0): ?array {
+        $db = db();
+        $sql = "SELECT id, ticket_code, title, status, created_at, category_id, lesson_id
+                FROM tickets
+                WHERE requester_id = :uid
+                  AND id != :exclude_id
+                  AND is_guest_ticket = 0
+                  AND (
+                      -- 1. Cùng dịch vụ sự cố đang trong quá trình xử lý
+                      (category_id = :cat_id AND status IN ('new', 'in_progress', 'waiting_requester'))
+                      -- 2. Hoặc cùng dịch vụ sự cố đã gửi nhiều lần trong ngày hôm nay
+                      OR (category_id = :cat_id2 AND DATE(created_at) = CURDATE())
+                      -- 3. Hoặc cùng bài tập buổi học (nếu có) chưa hoàn tất đóng
+                      OR (:lesson_id > 0 AND lesson_id = :lesson_id2 AND status NOT IN ('closed'))
+                  )
+                ORDER BY id DESC LIMIT 1";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([
+            ':uid'          => $requesterId,
+            ':exclude_id'   => $excludeTicketId,
+            ':cat_id'       => $categoryId,
+            ':cat_id2'      => $categoryId,
+            ':lesson_id'    => $lessonId,
+            ':lesson_id2'   => $lessonId,
+        ]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    /**
+     * Kiểm tra đơn cứu hộ trùng lặp ngoài cổng (Trạm cứu hộ)
+     * Quy định: Cùng 1 người gửi đơn cứu hộ nhiều lần trong 1 ngày HOẶC đơn trước đó đang xử lý.
+     */
+    public static function findDuplicateGuest(int $requesterId, int $excludeTicketId = 0): ?array {
+        $db = db();
+        $sql = "SELECT id, ticket_code, title, status, created_at, rescue_verified
+                FROM tickets
+                WHERE requester_id = :uid
+                  AND is_guest_ticket = 1
+                  AND id != :exclude_id
+                  AND (
+                      -- Đơn cứu hộ đang xử lý (chưa đóng hoàn tất)
+                      status NOT IN ('closed')
+                      -- Hoặc đã gửi đơn cứu hộ trong ngày hôm nay
+                      OR DATE(created_at) = CURDATE()
+                  )
+                ORDER BY id DESC LIMIT 1";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([
+            ':uid'        => $requesterId,
+            ':exclude_id' => $excludeTicketId,
+        ]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
     public static function create(array $data): int {
         $db = db();
 
@@ -448,6 +525,19 @@ class TicketRepository {
 
         $courseId = !empty($data['course_id']) ? (int)$data['course_id'] : null;
         $lessonId = !empty($data['lesson_id']) ? (int)$data['lesson_id'] : null;
+
+        // Chặn trùng lặp sự cố chuẩn ITIL
+        if (empty($data['is_guest_ticket'])) {
+            $dup = self::findDuplicate($requesterId, (int)$data['category_id'], (int)($data['lesson_id'] ?? 0));
+            if ($dup) {
+                throw new \Exception("Phát hiện phiếu sự cố trùng lặp: Đã có phiếu #{$dup['ticket_code']} cùng nhóm dịch vụ gửi trong ngày hoặc đang trong quá trình xử lý!");
+            }
+        } else {
+            $dupGuest = self::findDuplicateGuest($requesterId);
+            if ($dupGuest) {
+                throw new \Exception("Phát hiện đơn cứu hộ trùng lặp: Đã có đơn cứu hộ #{$dupGuest['ticket_code']} gửi trong ngày hoặc đang trong quá trình xử lý!");
+            }
+        }
 
         // Tính toán SLA chuẩn theo giờ hành chính (T2-T6, trừ ngày nghỉ lễ & ngoài giờ)
         require_once __DIR__ . '/../Services/SlaService.php';
