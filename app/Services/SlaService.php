@@ -167,7 +167,7 @@ class SlaService {
     }
 
     /**
-     * Tính toán toàn bộ hạn chót SLA (Triage 30 phút và Giải quyết Due At) theo giờ hành chính
+     * Tính toán toàn bộ hạn chót SLA (Tiếp nhận/Triage 15 phút và Giải quyết Due At) theo giờ hành chính
      */
     public static function calculateSlaDeadlines(int $categoryId, int $priorityId, ?DateTime $startTime = null): array {
         $pdo = db();
@@ -186,7 +186,7 @@ class SlaService {
         }
 
         $now = $startTime ?: new DateTime();
-        $triageDueDt = self::addBusinessMinutes($now, 30);
+        $triageDueDt = self::addBusinessMinutes($now, 15);
         $dueDt       = self::addBusinessMinutes($now, $effectiveMinutes);
 
         return [

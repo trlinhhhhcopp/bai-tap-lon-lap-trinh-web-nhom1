@@ -56,6 +56,8 @@ Hệ thống đã được tinh chỉnh, nâng cấp và hoàn thiện 100% theo
 * **Cảnh báo chuẩn HTML:** Render thông báo đẹp mắt kèm mã phiếu cũ, tiêu đề, trạng thái hiện tại và link truy cập nhanh để trao đổi tiếp thay vì tạo thêm phiếu mới gây quá tải hệ thống. Sửa triệt để lỗi in thô thẻ `<strong> < >`.
 
 ### 2.3. Hiệu chỉnh chuẩn xác SLA theo Giờ làm việc hành chính & Lịch nghỉ lễ
+* **Hạn tiếp nhận cam kết (First Response SLA):** Cố định **15 phút làm việc hành chính** kể từ khi gửi phiếu (tự động bỏ qua Thứ 7, Chủ Nhật và ngày nghỉ lễ; nếu gửi ngoài giờ sẽ tính từ 08:00 ngày làm việc tiếp theo + 15 phút = 08:15:00).
+* **Thời gian giải quyết sự cố (Due At):** Giữ nguyên chuẩn hóa theo danh mục dịch vụ và mức độ ưu tiên của phiếu.
 * **Khung giờ làm việc KTV:** Kỹ thuật viên chỉ làm việc từ **Thứ 2 đến Thứ 6** (Sáng: 08:00 - 12:00, Chiều: 13:30 - 17:30).
 * **Bỏ qua ngày nghỉ:** Tự động loại trừ Thứ Bảy, Chủ Nhật và các ngày nghỉ lễ cấu hình trong CSDL (`holidays`).
 * **Phiếu gửi ngoài giờ:** Phiếu gửi sau 17h30 hoặc trong ngày nghỉ sẽ tự động bắt đầu tính hạn SLA từ **08:00 của ngày làm việc tiếp theo**.
