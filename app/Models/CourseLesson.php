@@ -276,10 +276,11 @@ class CourseLesson
             $sql = "SELECT l.*,
                            (SELECT COUNT(*) FROM student_assignment_submissions s 
                             JOIN users u_sub ON s.student_id = u_sub.id 
-                            WHERE s.lesson_id = l.id AND s.is_completed = 1 AND u_sub.class_id = :class_id
-                              AND u_sub.is_active = 1
-                              AND (u_sub.lock_reason IS NULL OR u_sub.lock_reason = 'none' OR u_sub.lock_reason = '')
-                              AND NOT EXISTS (SELECT 1 FROM tickets t_sp WHERE t_sp.requester_id = u_sub.id AND t_sp.is_spam = 1)) AS submission_count
+                            WHERE s.lesson_id = l.id 
+                              AND s.is_completed = 1 
+                              AND u_sub.class_id = :class_id
+                              AND u_sub.user_type = 'student'
+                              AND u_sub.is_active = 1) AS submission_count
                     FROM course_lessons l
                     WHERE l.course_id = :cid
                     ORDER BY l.lesson_number ASC";
@@ -289,10 +290,10 @@ class CourseLesson
             $sql = "SELECT l.*,
                            (SELECT COUNT(*) FROM student_assignment_submissions s 
                             JOIN users u_sub ON s.student_id = u_sub.id
-                            WHERE s.lesson_id = l.id AND s.is_completed = 1
-                              AND u_sub.is_active = 1
-                              AND (u_sub.lock_reason IS NULL OR u_sub.lock_reason = 'none' OR u_sub.lock_reason = '')
-                              AND NOT EXISTS (SELECT 1 FROM tickets t_sp WHERE t_sp.requester_id = u_sub.id AND t_sp.is_spam = 1)) AS submission_count
+                            WHERE s.lesson_id = l.id 
+                              AND s.is_completed = 1
+                              AND u_sub.user_type = 'student'
+                              AND u_sub.is_active = 1) AS submission_count
                     FROM course_lessons l
                     WHERE l.course_id = :cid
                     ORDER BY l.lesson_number ASC";

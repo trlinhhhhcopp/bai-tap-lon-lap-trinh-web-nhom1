@@ -73,6 +73,7 @@ Hệ thống đã được tinh chỉnh, nâng cấp và hoàn thiện 100% theo
 * **Bộ lọc bảo mật SV Vi Phạm:** Nút lọc *"SV Vi Phạm (KTV Báo Cáo)"* chỉ hiển thị với Admin và chính sinh viên đó.
 * **Nút Ẩn/Hiện bảng dữ liệu (Collapsible Table):** Bổ sung nút toggle bảng dữ liệu kèm icon chuyển đổi trên tất cả các bảng ở mọi vai trò (Sinh viên, Giảng viên, KTV, Admin).
 * **Hoàn thiện CSAT:** Sinh viên chấm điểm 1-5 sao mượt mà, tự động cập nhật điểm trung bình CSAT của từng KTV.
+* **Chuẩn hóa Chấm điểm Thang 10 & Khắc phục Đếm số bài nộp:** Chuyển đổi toàn diện luồng chấm điểm bài tập của Giảng viên sang thang điểm 10 chuẩn học vụ (0.0 - 10.0, cho phép số lẻ), đồng bộ nhận xét góp ý tới Cổng Sinh viên; sửa lỗi hàm thống kê đếm thiếu số bài nộp của lớp, bảo đảm phản ánh chính xác 100% sinh viên đã nộp bài (5/5 bạn nộp) mà không bị loại trừ sai lệch do cờ vi phạm vé hỗ trợ.
 
 ### 2.6. Hệ thống Thông báo Thời gian thực Đa vai trò (Notification Center & Banner Đầu Trang)
 * **Nút Quả Chuông 🔔 trên Navbar:** Tích hợp đồng bộ trên thanh điều hướng cho tất cả các role, có badge đếm số thông báo chưa đọc và Dropdown panel quản lý thông báo.

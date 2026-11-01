@@ -179,6 +179,13 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                 <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-600">
                                     Lớp: <strong><?php echo htmlspecialchars($selectedCourse['class_name']); ?></strong> (<?php echo htmlspecialchars($selectedCourse['class_code']); ?>)
                                 </span>
+                                <?php 
+                                $submittedCountInList = count(array_filter($lessonSubmissions, fn($s) => !empty($s['has_submitted'])));
+                                $totalStudentsInList  = count($lessonSubmissions);
+                                ?>
+                                <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    Đã nộp: <strong><?= $submittedCountInList ?> / <?= $totalStudentsInList ?></strong> sinh viên
+                                </span>
                             </div>
                             <h3 class="text-base font-black text-slate-900">
                                 Danh Sách Sinh Viên & Bài Nộp Của Lớp: Buổi <?php echo $activeLesson['lesson_number']; ?>: <?php echo htmlspecialchars($activeLesson['title']); ?>
@@ -218,7 +225,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                         <th class="py-3 px-4">Ghi Chú Sinh Viên</th>
                                         <th class="py-3 px-4">Thời Gian Nộp</th>
                                         <th class="py-3 px-4 text-center">Trạng Thái</th>
-                                        <th class="py-3 px-4 text-center">⭐ Điểm & Đánh Giá</th>
+                                        <th class="py-3 px-4 text-center">🎯 Điểm (Thang 10) & Nhận Xét</th>
                                         <th class="py-3 px-4 text-center">Thao Tác</th>
                                     </tr>
                                 </thead>
@@ -271,8 +278,8 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                                     <span class="text-slate-300 font-mono text-[11px]">—</span>
                                                 <?php elseif ($sub['score'] !== null): ?>
                                                     <div class="space-y-1">
-                                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-amber-400 text-slate-900 shadow-2xs">
-                                                            ⭐ <?php echo number_format((float)$sub['score'], 1); ?> / 10.0
+                                                        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black bg-amber-400 text-slate-900 shadow-2xs">
+                                                            🎯 <?php echo number_format((float)$sub['score'], 1); ?> / 10.0
                                                         </span>
                                                         <?php if (!empty($sub['feedback'])): ?>
                                                             <div class="text-[10.5px] text-slate-600 italic max-w-[180px] mx-auto truncate" title="<?php echo htmlspecialchars($sub['feedback']); ?>">
@@ -286,7 +293,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                                         <?php endif; ?>
                                                     </div>
                                                 <?php else: ?>
-                                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10.5px] font-medium bg-slate-100 text-slate-500 border border-slate-200">
                                                         ⏳ Chưa chấm
                                                     </span>
                                                 <?php endif; ?>
@@ -304,8 +311,9 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                                         </button>
                                                         <button type="button" 
                                                                 onclick='openGradeModal(<?php echo json_encode($sub, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>)' 
-                                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition shadow-xs cursor-pointer">
-                                                            <span>⭐</span> Chấm Điểm
+                                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition shadow-xs cursor-pointer"
+                                                                title="Chấm điểm bài nộp theo thang điểm 10">
+                                                            <span>🎯</span> Chấm Điểm
                                                         </button>
                                                     </div>
                                                 <?php endif; ?>
@@ -380,18 +388,18 @@ $csrfToken = $_SESSION['csrf'] ?? '';
         </div>
     </div>
 
-    <!-- MODAL CHẤM ĐIỂM & ĐÁNH GIÁ BÀI NỘP CỦA SINH VIÊN -->
+    <!-- MODAL CHẤM ĐIỂM & ĐÁNH GIÁ BÀI NỘP CỦA SINH VIÊN (CHỈ CHẤM THEO THANG 10) -->
     <div id="gradeSubmissionModal" class="hidden fixed inset-0 z-[95] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200 animate-scale-up">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div class="flex items-center gap-2">
-                    <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">⭐</span>
+                    <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">🎯</span>
                     <div>
-                        <h4 class="font-black text-slate-900 text-sm">Chấm Điểm & Đánh Giá Bài Nộp</h4>
-                        <span class="text-[11px] text-slate-500">Giảng viên ghi nhận điểm số và lời nhận xét</span>
+                        <h4 class="font-black text-slate-900 text-sm">Chấm Điểm Bài Nộp (Thang Điểm 10)</h4>
+                        <span class="text-[11px] text-slate-500">Giảng viên chấm điểm số thang 10 và ghi nhận xét cho sinh viên</span>
                     </div>
                 </div>
-                <button type="button" onclick="closeGradeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold text-sm">✕</button>
+                <button type="button" onclick="closeGradeModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold text-sm cursor-pointer">✕</button>
             </div>
 
             <!-- THÔNG TIN SINH VIÊN & BÀI NỘP -->
@@ -417,63 +425,34 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 <input type="hidden" name="ca_id" value="<?php echo (int)$selectedCaId; ?>" />
                 <input type="hidden" name="lesson_id" value="<?php echo (int)$viewLessonId; ?>" />
                 <input type="hidden" name="submission_id" id="formSubmissionId" value="0" />
-                <input type="hidden" name="star_rating" id="formGradeStarRating" value="5" />
 
-                <!-- Đánh giá mức sao (1-5 sao) -->
+                <!-- ĐIỂM CHẤM THEO THANG ĐIỂM 10 -->
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">
-                        Xếp Loại Chất Lượng (1 - 5 Sao): <span class="text-amber-500">★</span>
-                    </label>
-                    <div class="grid grid-cols-5 gap-1.5">
-                        <button type="button" data-star="1" onclick="selectGradeStar(1)" class="grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer">
-                            <span class="text-sm">⭐</span>
-                            <span class="text-[9.5px]">1 Sao</span>
-                        </button>
-                        <button type="button" data-star="2" onclick="selectGradeStar(2)" class="grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer">
-                            <span class="text-sm">⭐⭐</span>
-                            <span class="text-[9.5px]">2 Sao</span>
-                        </button>
-                        <button type="button" data-star="3" onclick="selectGradeStar(3)" class="grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer">
-                            <span class="text-sm">⭐⭐⭐</span>
-                            <span class="text-[9.5px]">3 Sao</span>
-                        </button>
-                        <button type="button" data-star="4" onclick="selectGradeStar(4)" class="grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer">
-                            <span class="text-sm">⭐⭐⭐⭐</span>
-                            <span class="text-[9.5px]">4 Sao</span>
-                        </button>
-                        <button type="button" data-star="5" onclick="selectGradeStar(5)" class="grade-star-btn px-1 py-1.5 rounded-xl border-2 border-amber-500 bg-amber-400 font-bold text-slate-950 text-center transition flex flex-col items-center gap-0.5 shadow-xs cursor-pointer">
-                            <span class="text-sm">⭐⭐⭐⭐⭐</span>
-                            <span class="text-[9.5px]">5 Sao</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1">
+                    <label class="block font-bold text-slate-800 mb-1">
                         Điểm Chấm (Thang điểm 10.0): <span class="text-rose-500">*</span>
                     </label>
                     <div class="relative">
                         <input type="number" name="score" id="formGradeScore" required min="0" max="10" step="0.1" placeholder="Ví dụ: 8.5 hoặc 10" 
-                               class="w-full px-3.5 py-2.5 bg-amber-50/40 border border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 font-mono font-black text-amber-900 text-sm" />
-                        <span class="absolute right-3 top-2.5 text-xs font-bold text-amber-600">/ 10.0</span>
+                               class="w-full px-4 py-2.5 bg-amber-50/40 border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:bg-white font-mono font-black text-amber-950 text-base transition" />
+                        <span class="absolute right-3.5 top-3 text-xs font-bold text-amber-700">/ 10.0</span>
                     </div>
-                    <span class="text-[11px] text-slate-400 mt-1 block">Cho phép nhập số thập phân (ví dụ: 7.5, 8.2, 9.0, 10).</span>
+                    <span class="text-[11px] text-slate-500 mt-1 block">Quy chuẩn học vụ: Thang điểm 10 (0.0 - 10.0, cho phép số lẻ như 7.5, 8.2, 9.0).</span>
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">
+                    <label class="block font-bold text-slate-800 mb-1">
                         Lời Nhận Xét & Đánh Giá Bài Làm:
                     </label>
                     <textarea name="feedback" id="formGradeFeedback" rows="3" 
                               placeholder="Nhận xét ưu điểm, mặt cần cải thiện hoặc góp ý sửa mã nguồn cho sinh viên..." 
-                              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-400 font-medium text-slate-800 text-xs"></textarea>
+                              class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-400 font-medium text-slate-800 text-xs"></textarea>
                 </div>
 
                 <div class="pt-2 flex items-center justify-end gap-2">
-                    <button type="button" onclick="closeGradeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
+                    <button type="button" onclick="closeGradeModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition cursor-pointer">
                         Hủy
                     </button>
-                    <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-md shadow-amber-200 flex items-center gap-1.5">
+                    <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-md shadow-amber-200 flex items-center gap-1.5 cursor-pointer">
                         <span>💾</span> Lưu Điểm & Nhận Xét
                     </button>
                 </div>
@@ -497,36 +476,12 @@ $csrfToken = $_SESSION['csrf'] ?? '';
         }
 
         
-        function selectGradeStar(star) {
-            const starInput = document.getElementById("formGradeStarRating");
-            if (starInput) {
-                starInput.value = star;
-            }
-            const scoreMap = { 5: 10.0, 4: 8.5, 3: 7.0, 2: 5.0, 1: 3.0 };
-            const scoreInput = document.getElementById("formGradeScore");
-            if (scoreInput) {
-                scoreInput.value = scoreMap[star] || 10.0;
-            }
-            
-            document.querySelectorAll(".grade-star-btn").forEach(btn => {
-                const s = parseInt(btn.getAttribute("data-star"));
-                if (s === star) {
-                    btn.className = "grade-star-btn px-1 py-1.5 rounded-xl border-2 border-amber-500 bg-amber-400 font-bold text-slate-950 text-center transition flex flex-col items-center gap-0.5 shadow-xs cursor-pointer";
-                } else {
-                    btn.className = "grade-star-btn px-1 py-1.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50 font-bold text-slate-700 text-center transition flex flex-col items-center gap-0.5 cursor-pointer";
-                }
-            });
-        }
-
         function openGradeModal(sub) {
             document.getElementById('formSubmissionId').value = sub.id;
             document.getElementById('gradeStudentName').innerText = sub.student_name || '—';
             document.getElementById('gradeStudentCode').innerText = sub.student_code || '—';
             document.getElementById('gradeFileName').innerText = sub.file_name || 'Không có tên file';
-            const curScore = sub.score !== null ? parseFloat(sub.score) : 10.0;
-            document.getElementById('formGradeScore').value = sub.score !== null ? curScore : '';
-            const curStar = sub.star_rating ? parseInt(sub.star_rating) : (curScore >= 9 ? 5 : (curScore >= 8 ? 4 : (curScore >= 6.5 ? 3 : (curScore >= 5 ? 2 : 1))));
-            selectGradeStar(curStar);
+            document.getElementById('formGradeScore').value = (sub.score !== null && sub.score !== '') ? parseFloat(sub.score) : '';
             document.getElementById('formGradeFeedback').value = sub.feedback || '';
             document.getElementById('gradeSubmissionModal').classList.remove('hidden');
             setTimeout(function() {
