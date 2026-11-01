@@ -240,6 +240,10 @@ class CourseAssignmentController
                 $errors[] = 'Dòng ' . $rowNumber . ': thiếu dữ liệu hoặc không tìm thấy mã lớp/môn/giảng viên.';
                 continue;
             }
+            if (!preg_match('/^(\d{4})-(\d{4})$/', $academicYear, $yearMatches) || ((int)$yearMatches[2] !== (int)$yearMatches[1] + 1)) {
+                $errors[] = 'Dòng ' . $rowNumber . ": năm học '{$academicYear}' không hợp lệ (phải theo định dạng YYYY-YYYY, năm sau lớn hơn năm trước 1 năm, ví dụ 2025-2026).";
+                continue;
+            }
             if (CourseAssignment::exists($classId, $courseId, $semester)) {
                 $errors[] = 'Dòng ' . $rowNumber . ': lớp, môn và học kỳ đã được phân công.';
                 continue;
@@ -487,17 +491,13 @@ class CourseAssignmentController
             header('Location: index.php?action=index');
             exit;
         }
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            exit('Method Not Allowed – Chỉ chấp nhận POST');
-        }
 
-        $id = (int) ($_POST['id'] ?? 0);
-        if (!CourseAssignment::findById($id)) {
+        $id = (int) ($_POST['id'] ?? ($_GET['id'] ?? 0));
+        if ($id <= 0 || !CourseAssignment::findById($id)) {
             $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Không tìm thấy phân công.'];
         } else {
             CourseAssignment::delete($id);
-            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Đã xóa phân công giảng dạy.'];
+            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Đã xóa phân công giảng dạy thành công!'];
         }
         header('Location: index.php?action=index');
         exit;
@@ -521,7 +521,17 @@ class CourseAssignmentController
         if ($data['course_id'] <= 0)   $errors[] = 'Vui lòng chọn Môn học.';
         if ($data['lecturer_id'] <= 0) $errors[] = 'Vui lòng chọn Giảng viên phụ trách.';
         if ($data['semester'] === '')  $errors[] = 'Học kỳ không được để trống.';
-        if ($data['academic_year'] === '') $errors[] = 'Năm học không được để trống.';
+        if ($data['academic_year'] === '') {
+            $errors[] = 'Năm học không được để trống.';
+        } elseif (!preg_match('/^(\d{4})-(\d{4})$/', $data['academic_year'], $yearM)) {
+            $errors[] = 'Năm học phải theo đúng định dạng YYYY-YYYY (ví dụ: 2025-2026).';
+        } else {
+            $yStart = (int)$yearM[1];
+            $yEnd = (int)$yearM[2];
+            if ($yEnd !== $yStart + 1) {
+                $errors[] = "Năm học không hợp lệ ({$data['academic_year']}): Năm học phải hơn kém nhau 1 năm và số sau ({$yEnd}) phải lớn hơn số trước ({$yStart}) (ví dụ: 2025-2026).";
+            }
+        }
 
         if ($data['class_id'] > 0 && $data['course_id'] > 0 && $data['semester'] !== '') {
             if (CourseAssignment::exists($data['class_id'], $data['course_id'], $data['semester'], $excludeId)) {

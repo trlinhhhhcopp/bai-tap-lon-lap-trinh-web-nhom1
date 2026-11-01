@@ -63,29 +63,53 @@ function holidayEscape($value): string
         </div>
     <?php endif; ?>
 
-    <!-- THANH TÌM KIẾM & BỘ LỌC -->
-    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-3 text-xs">
-        <form method="GET" action="holidays.php" class="flex items-center gap-2 flex-1 max-w-lg">
-            <input type="hidden" name="controller" value="holiday">
-            <input type="hidden" name="action" value="index">
-            <input type="text" name="keyword" value="<?= holidayEscape($keyword) ?>" placeholder="Tìm kiếm theo tên ngày nghỉ lễ (Tết, Giỗ Tổ, 30/4...)" 
-                   class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
-            <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition">
-                Tìm
-            </button>
-            <?php if ($keyword !== ''): ?>
-                <a href="holidays.php" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition">
-                    Xóa lọc
-                </a>
-            <?php endif; ?>
-        </form>
-        <div class="flex items-center gap-3">
-            <button type="button" data-target-table="admin_holidays_table_body" onclick="toggleTableCollapse('admin_holidays_table_body', this)" title="Ẩn hoặc hiện bảng ngày nghỉ lễ" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
-                <span class="toggle-table-icon">✕</span>
-                <span class="toggle-table-text">Ẩn bảng</span>
-            </button>
-            <div class="text-slate-500 font-semibold">
-                Tìm thấy: <strong class="text-indigo-600"><?= (int)$total ?></strong> ngày nghỉ lễ trong CSDL
+    <!-- THANH TÌM KIẾM & BỘ LỌC CHẾ ĐỘ NGHỈ -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3 text-xs">
+        <!-- Bộ lọc phân loại ngày nghỉ (Cố định vs Đột xuất) -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+            <span class="text-slate-500 font-bold mr-1 flex items-center gap-1">
+                <span>🏷️</span> Phân loại:
+            </span>
+            <a href="holidays.php?keyword=<?= urlencode($keyword) ?>" 
+               class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= empty($type) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
+                <span>📋 Tất Cả (<?= $countAll ?>)</span>
+            </a>
+            <a href="holidays.php?type=recurring&keyword=<?= urlencode($keyword) ?>" 
+               class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= $type === 'recurring' ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-300' : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200' ?>">
+                <span>🔁 Ngày Nghỉ Hàng Năm (Cố định) (<?= $countRecurring ?>)</span>
+            </a>
+            <a href="holidays.php?type=once&keyword=<?= urlencode($keyword) ?>" 
+               class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= $type === 'once' ? 'bg-amber-600 text-white shadow-sm ring-2 ring-amber-300' : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200' ?>">
+                <span>⚡ Ngày Nghỉ Đột Xuất (Không cố định) (<?= $countOnce ?>)</span>
+            </a>
+        </div>
+
+        <div class="flex items-center justify-between flex-wrap gap-3 pt-2 border-t border-slate-100">
+            <form method="GET" action="holidays.php" class="flex items-center gap-2 flex-1 max-w-lg">
+                <input type="hidden" name="controller" value="holiday">
+                <input type="hidden" name="action" value="index">
+                <?php if (!empty($type)): ?>
+                    <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>">
+                <?php endif; ?>
+                <input type="text" name="keyword" value="<?= holidayEscape($keyword) ?>" placeholder="Tìm kiếm theo tên ngày nghỉ lễ (Tết, Giỗ Tổ, 30/4...)" 
+                       class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
+                <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition">
+                    Tìm
+                </button>
+                <?php if ($keyword !== '' || !empty($type)): ?>
+                    <a href="holidays.php" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition">
+                        Xóa lọc
+                    </a>
+                <?php endif; ?>
+            </form>
+            <div class="flex items-center gap-3">
+                <button type="button" data-target-table="admin_holidays_table_body" onclick="toggleTableCollapse('admin_holidays_table_body', this)" title="Ẩn hoặc hiện bảng ngày nghỉ lễ" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                    <span class="toggle-table-icon">✕</span>
+                    <span class="toggle-table-text">Ẩn bảng</span>
+                </button>
+                <div class="text-slate-500 font-semibold">
+                    Tìm thấy: <strong class="text-indigo-600"><?= (int)$total ?></strong> ngày nghỉ lễ trong CSDL
+                </div>
             </div>
         </div>
     </div>
@@ -162,13 +186,13 @@ function holidayEscape($value): string
                 </div>
                 <div class="flex items-center gap-1.5">
                     <?php if ($page > 1): ?>
-                        <a href="holidays.php?page=<?= $page - 1 ?>&keyword=<?= urlencode($keyword) ?>" 
+                        <a href="holidays.php?page=<?= $page - 1 ?>&keyword=<?= urlencode($keyword) ?>&type=<?= urlencode($type) ?>" 
                            class="px-3 py-1 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 font-medium">
                             ← Trang trước
                         </a>
                     <?php endif; ?>
                     <?php if ($page < $totalPages): ?>
-                        <a href="holidays.php?page=<?= $page + 1 ?>&keyword=<?= urlencode($keyword) ?>" 
+                        <a href="holidays.php?page=<?= $page + 1 ?>&keyword=<?= urlencode($keyword) ?>&type=<?= urlencode($type) ?>" 
                            class="px-3 py-1 bg-white border border-slate-300 rounded-lg hover:bg-slate-100 font-medium">
                             Trang sau →
                         </a>

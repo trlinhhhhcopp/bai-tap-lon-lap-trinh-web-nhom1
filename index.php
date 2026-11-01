@@ -1669,8 +1669,8 @@ if ($userType === 'student') {
                                         <td class="py-3.5 px-4 text-slate-600">
                                             <?php echo htmlspecialchars($t['category_name']); ?>
                                         </td>
-                                        <td class="py-3.5 px-4 text-center">
-                                            <span class="px-2.5 py-1 rounded-full text-[10.5px] font-bold border <?php echo $statusBadges[$t['status']] ?? 'bg-slate-100 text-slate-600 border-slate-200'; ?>">
+                                        <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                            <span class="inline-flex items-center justify-center gap-1 px-3 py-1 rounded-full text-[11px] font-bold border whitespace-nowrap <?php echo $statusBadges[$t['status']] ?? 'bg-slate-100 text-slate-600 border-slate-200'; ?>">
                                                 ● <?php echo $statusLabels[$t['status']] ?? $t['status']; ?>
                                             </span>
                                         </td>

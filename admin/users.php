@@ -434,7 +434,7 @@ $flash = get_flash();
                                 <?php endif; ?>
                             </td>
                             <td><?= htmlspecialchars($u['class_name']) ?></td>
-                            <td>
+                            <td class="user-status-cell">
                                 <?php if ($u['is_active'] == 1): ?>
                                     <span class="badge badge-active">● Hoạt động</span>
                                 <?php else: ?>
@@ -449,8 +449,8 @@ $flash = get_flash();
                                     <!-- Nút Sửa -->
                                     <button type="button" class="btn btn-outline" onclick='openEditModal(<?= json_encode($u) ?>)'>✏️ Sửa</button>
 
-                                    <!-- Nút Khóa / Mở khóa bằng POST (Slide 15) -->
-                                    <form method="POST" action="user_action.php" onsubmit="return confirm('Bạn có chắc muốn đổi trạng thái khóa tài khoản này?');" style="display:inline;">
+                                    <!-- Nút Khóa / Mở khóa bằng POST không load lại cả trang -->
+                                    <form method="POST" action="user_action.php" onsubmit="return handleToggleLock(event, this, <?= $u['id'] ?>);" style="display:inline;">
                                         <input type="hidden" name="action" value="toggle_lock">
                                         <input type="hidden" name="id" value="<?= $u['id'] ?>">
                                         <?php if ($u['is_active'] == 1): ?>
@@ -522,7 +522,8 @@ $flash = get_flash();
                     </div>
                     <div class="form-group full">
                         <label class="form-label">Email trường học (*):</label>
-                        <input type="email" name="email" class="form-control" required placeholder="VD: nam224@daihocthudo.edu.vn">
+                        <input type="email" name="email" class="form-control" required placeholder="VD: nam224@daihocthudo.edu.vn" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" title="Vui lòng nhập đúng email có tên miền và dấu chấm hợp lệ (VD: abc@daihocthudo.edu.vn)">
+                        <small style="font-size: 11px; color: #64748b;">Định dạng: tên@daihocthudo.edu.vn hoặc email có dấu chấm tên miền đầy đủ.</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Vai trò (Role):</label>
@@ -590,7 +591,7 @@ $flash = get_flash();
                     </div>
                     <div class="form-group full">
                         <label class="form-label">Email trường (*):</label>
-                        <input type="email" name="email" id="edit_email" class="form-control" required>
+                        <input type="email" name="email" id="edit_email" class="form-control" required pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" title="Vui lòng nhập đúng email có tên miền và dấu chấm hợp lệ (VD: abc@daihocthudo.edu.vn)">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Lớp sinh hoạt:</label>
@@ -640,6 +641,55 @@ window.onclick = function(event) {
     if (event.target.classList.contains('modal-overlay')) {
         event.target.style.display = 'none';
     }
+}
+
+// Xử lý Khóa / Mở khóa bằng AJAX - Giữ nguyên vị trí trang, không reload lại toàn bộ
+function handleToggleLock(event, form, userId) {
+    event.preventDefault();
+    const btn = form.querySelector('button[type="submit"]');
+    const isLocking = btn.classList.contains('btn-danger');
+    const confirmMsg = isLocking ? 'Bạn có chắc chắn muốn KHÓA tài khoản này?' : 'Bạn có chắc chắn muốn MỞ KHÓA tài khoản này?';
+    if (!confirm(confirmMsg)) {
+        return false;
+    }
+
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳...';
+
+    const formData = new FormData(form);
+    fetch('user_action.php', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        btn.disabled = false;
+        if (data.ok) {
+            const row = form.closest('tr');
+            if (row) {
+                const statusCell = row.querySelector('.user-status-cell');
+                if (statusCell) {
+                    statusCell.innerHTML = data.badge_html;
+                }
+            }
+            btn.className = data.btn_class;
+            btn.innerHTML = data.btn_text;
+            btn.title = (data.is_active == 1) ? 'Khóa tài khoản' : 'Mở khóa tài khoản';
+        } else {
+            btn.innerHTML = originalText;
+            alert(data.message || 'Có lỗi xảy ra khi đổi trạng thái!');
+        }
+    })
+    .catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        alert('Lỗi kết nối tới máy chủ!');
+    });
+    return false;
 }
 </script>
 

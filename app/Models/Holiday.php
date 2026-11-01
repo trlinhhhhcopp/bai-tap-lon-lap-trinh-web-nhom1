@@ -1,4 +1,3 @@
-
 <?php
 /**
  * Model Holiday
@@ -10,8 +9,8 @@ require_once __DIR__ . '/../../config/database.php';
 
 class Holiday
 {
-    // Đếm số ngày nghỉ lễ, có hỗ trợ tìm kiếm
-    public static function count(string $keyword = ''): int
+    // Đếm số ngày nghỉ lễ, có hỗ trợ tìm kiếm và lọc loại (hàng năm / đột xuất)
+    public static function count(string $keyword = '', ?int $isRecurring = null): int
     {
         $sql = "SELECT COUNT(*) AS total FROM holidays WHERE 1 = 1";
         $params = [];
@@ -21,17 +20,23 @@ class Holiday
             $params['keyword'] = '%' . $keyword . '%';
         }
 
+        if ($isRecurring !== null) {
+            $sql .= " AND is_recurring = :is_recurring";
+            $params['is_recurring'] = $isRecurring;
+        }
+
         $stmt = db()->prepare($sql);
         $stmt->execute($params);
 
         return (int) $stmt->fetch()['total'];
     }
 
-    // Lấy danh sách ngày nghỉ lễ, hỗ trợ tìm kiếm và phân trang
+    // Lấy danh sách ngày nghỉ lễ, hỗ trợ tìm kiếm, lọc loại và phân trang
     public static function findAll(
         string $keyword = '',
         int $page = 1,
-        int $perPage = 10
+        int $perPage = 10,
+        ?int $isRecurring = null
     ): array {
         $page = max(1, $page);
         $perPage = max(1, $perPage);
@@ -48,13 +53,22 @@ class Holiday
             $params['keyword'] = '%' . $keyword . '%';
         }
 
+        if ($isRecurring !== null) {
+            $sql .= " AND is_recurring = :is_recurring";
+            $params['is_recurring'] = $isRecurring;
+        }
+
         $sql .= " ORDER BY start_date DESC
                   LIMIT :limit OFFSET :offset";
 
         $stmt = db()->prepare($sql);
 
         foreach ($params as $key => $value) {
-            $stmt->bindValue(':' . $key, $value);
+            if ($key === 'is_recurring') {
+                $stmt->bindValue(':' . $key, $value, PDO::PARAM_INT);
+            } else {
+                $stmt->bindValue(':' . $key, $value);
+            }
         }
 
         $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);

@@ -7,17 +7,28 @@ class HolidayController
     public function index(): void
     {
         $keyword = trim($_GET['keyword'] ?? '');
+        $type = trim($_GET['type'] ?? '');
+        $isRecurring = match($type) {
+            'recurring', '1' => 1,
+            'once', '0'      => 0,
+            default          => null
+        };
+
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $perPage = 10;
 
-        $total = Holiday::count($keyword);
+        $countAll = Holiday::count($keyword);
+        $countRecurring = Holiday::count($keyword, 1);
+        $countOnce = Holiday::count($keyword, 0);
+
+        $total = Holiday::count($keyword, $isRecurring);
         $totalPages = max(1, (int) ceil($total / $perPage));
 
         if ($page > $totalPages) {
             $page = $totalPages;
         }
 
-        $holidays = Holiday::findAll($keyword, $page, $perPage);
+        $holidays = Holiday::findAll($keyword, $page, $perPage, $isRecurring);
 
         require __DIR__ . '/../../../views/admin/holidays/index.php';
     }

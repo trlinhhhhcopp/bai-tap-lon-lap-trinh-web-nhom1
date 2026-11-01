@@ -109,10 +109,11 @@ if (empty($_SESSION['user'])) {
                 </div>
                 <div>
                     <label for="academic_year" class="block font-bold text-slate-700 mb-1">
-                        Năm Học: <span class="text-rose-500">*</span>
+                        Năm Học (YYYY-YYYY): <span class="text-rose-500">*</span>
                     </label>
-                    <input type="text" id="academic_year" name="academic_year" value="<?= htmlspecialchars($old['academic_year']) ?>" placeholder="Ví dụ: 2026-2027" required
+                    <input type="text" id="academic_year" name="academic_year" value="<?= htmlspecialchars($old['academic_year']) ?>" placeholder="Ví dụ: 2026-2027" pattern="[0-9]{4}-[0-9]{4}" title="Định dạng YYYY-YYYY (ví dụ: 2026-2027), năm sau lớn hơn năm trước đúng 1 năm" required
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-slate-800">
+                    <p class="text-[11px] text-slate-400 mt-1">Định dạng YYYY-YYYY, 2 năm hơn kém nhau 1 năm (ví dụ: 2026-2027).</p>
                 </div>
             </div>
 

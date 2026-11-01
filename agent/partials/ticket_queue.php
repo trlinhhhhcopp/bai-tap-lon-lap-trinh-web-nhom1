@@ -5,7 +5,7 @@
  * Tác giả: Nhóm 1 - ĐH Thủ Đô Hà Nội
  */
 ?>
-<div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-5">
+<div id="ktv_queue_container" class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-5 transition-opacity duration-200">
     
     <!-- Tiêu đề hàng đợi & Bộ lọc nhanh trạng thái -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
@@ -22,19 +22,19 @@
                 <span class="toggle-table-icon">✕</span>
                 <span class="toggle-table-text">Ẩn bảng</span>
             </button>
-            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=all" 
+            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=all" onclick="filterQueueTab(event, this)" 
                class="px-3 py-1.5 rounded-xl font-bold transition <?php echo ($statusFilter === 'all' || empty($statusFilter)) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'; ?>">
                 Tất cả (<?php echo $countAll; ?>)
             </a>
-            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=in_progress" 
+            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=in_progress" onclick="filterQueueTab(event, this)" 
                class="px-3 py-1.5 rounded-xl font-bold transition <?php echo $statusFilter === 'in_progress' ? 'bg-amber-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'; ?>">
                 Đang xử lý (<?php echo $countInProgress; ?>)
             </a>
-            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=waiting_requester" 
+            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=waiting_requester" onclick="filterQueueTab(event, this)" 
                class="px-3 py-1.5 rounded-xl font-bold transition <?php echo $statusFilter === 'waiting_requester' ? 'bg-purple-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'; ?>">
                 Chờ SV (<?php echo $countWaiting; ?>)
             </a>
-            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=resolved" 
+            <a href="index.php?agent_id=<?php echo $agentId; ?>&status=resolved" onclick="filterQueueTab(event, this)" 
                class="px-3 py-1.5 rounded-xl font-bold transition <?php echo in_array($statusFilter, ['resolved', 'closed', 'done']) ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'; ?>">
                 Đã xong (<?php echo $countResolved; ?>)
             </a>
@@ -175,4 +175,36 @@
     </div>
 
 </div>
+
+<script>
+if (typeof filterQueueTab !== 'function') {
+    function filterQueueTab(event, link) {
+        event.preventDefault();
+        const url = link.href;
+        const container = document.getElementById('ktv_queue_container');
+        if (!container) {
+            window.location.href = url;
+            return;
+        }
+        container.style.opacity = '0.4';
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.getElementById('ktv_queue_container');
+                if (newContent) {
+                    container.innerHTML = newContent.innerHTML;
+                    container.style.opacity = '1';
+                    window.history.pushState(null, '', url);
+                } else {
+                    window.location.href = url;
+                }
+            })
+            .catch(() => {
+                window.location.href = url;
+            });
+    }
+}
+</script>
 

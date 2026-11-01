@@ -50,17 +50,20 @@ $appBase = get_app_base_url();
         </div>
     <?php endif; ?>
 
+    <!-- KHUNG LỌC & DANH SÁCH ĐÁNH GIÁ (HỖ TRỢ AJAX KHÔNG LOAD LẠI TRANG) -->
+    <div id="student_ratings_container" class="space-y-4 transition-opacity duration-200">
     <!-- BỘ NÚT LỌC NHANH SỐ SAO (5 SAO, 4 SAO, 3 SAO, 2 SAO, 1 SAO) -->
     <div class="flex items-center gap-2 flex-wrap">
-        <a href="ratings.php?q=<?= urlencode($keyword) ?>" 
+        <a href="ratings.php?q=<?= urlencode($keyword) ?>" onclick="filterStudentRatingsTab(event, this)" 
            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 <?= ($scoreFilter === null || $scoreFilter === '') ? 'bg-slate-900 text-white shadow-sm' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100' ?>">
             <span>Tất cả số sao</span>
         </a>
         <?php for ($s = 5; $s >= 1; $s--): ?>
-            <a href="ratings.php?score=<?= $s ?>&q=<?= urlencode($keyword) ?>" 
-               class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 <?= ($scoreFilter == $s) ? 'bg-amber-500 text-slate-950 shadow-sm' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100' ?>">
-                <span class="text-amber-500 font-bold"><?= str_repeat('★', $s) ?></span>
-                <span><?= $s ?> sao</span>
+            <?php $isActive = ((string)$scoreFilter === (string)$s); ?>
+            <a href="ratings.php?score=<?= $s ?>&q=<?= urlencode($keyword) ?>" onclick="filterStudentRatingsTab(event, this)" 
+               class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 <?= $isActive ? 'bg-slate-900 text-white shadow-sm ring-2 ring-amber-400' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100' ?>">
+                <span class="<?= $isActive ? 'text-amber-400' : 'text-amber-500' ?> font-black"><?= str_repeat('★', $s) ?></span>
+                <span class="<?= $isActive ? 'text-white' : 'text-slate-800' ?>"><?= $s ?> sao</span>
             </a>
         <?php endfor; ?>
     </div>
@@ -156,8 +159,39 @@ $appBase = get_app_base_url();
             </div>
         <?php endif; ?>
     </div>
+    </div>
 
 </main>
+
+<script>
+function filterStudentRatingsTab(event, link) {
+    event.preventDefault();
+    const url = link.href;
+    const container = document.getElementById('student_ratings_container');
+    if (!container) {
+        window.location.href = url;
+        return;
+    }
+    container.style.opacity = '0.4';
+    fetch(url)
+        .then(res => res.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newContent = doc.getElementById('student_ratings_container');
+            if (newContent) {
+                container.innerHTML = newContent.innerHTML;
+                container.style.opacity = '1';
+                window.history.pushState(null, '', url);
+            } else {
+                window.location.href = url;
+            }
+        })
+        .catch(() => {
+            window.location.href = url;
+        });
+}
+</script>
 
 <?php require_once __DIR__ . '/../../../includes/footer.php'; ?>
 </body>

@@ -417,8 +417,8 @@ $flash        = get_flash();
                                             <span class="text-amber-600 italic block text-[11px]">Đang phân công...</span>
                                         <?php endif; ?>
                                     </td>
-                                    <td class="py-3.5 px-4 text-center">
-                                        <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border <?php echo $statusBadge; ?>">
+                                    <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                                        <span class="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border whitespace-nowrap <?php echo $statusBadge; ?>">
                                             ● <?php echo $statusLabel; ?>
                                         </span>
                                     </td>

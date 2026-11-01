@@ -347,6 +347,7 @@ $flash = get_flash();
         </div>
 
         <!-- CÁC NÚT LỌC SỐ SAO (TẤT CẢ, 5 SAO, 4 SAO, 3 SAO, 2 SAO, 1 SAO) -->
+        <div id="agent_ratings_container" class="space-y-6 transition-opacity duration-200">
         <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
                 <div>
@@ -364,7 +365,7 @@ $flash = get_flash();
             <!-- Các nút bấm lọc trực quan -->
             <div class="flex items-center gap-2 flex-wrap text-xs">
                 <!-- Nút Tất cả (màu trung tính slate để không trùng màu vàng sao) -->
-                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=0" 
+                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=0" onclick="filterRatingsTab(event, this)" 
                    class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 <?php echo ($starFilter === 0) ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'; ?>">
                     <span>Tất cả</span>
                     <span class="px-2 py-0.5 rounded-full text-[10.5px] font-mono <?php echo ($starFilter === 0) ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'; ?>">
@@ -373,7 +374,7 @@ $flash = get_flash();
                 </a>
 
                 <!-- Nút 5 sao -->
-                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=5" 
+                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=5" onclick="filterRatingsTab(event, this)" 
                    class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 <?php echo ($starFilter === 5) ? 'bg-emerald-600 text-white shadow-sm' : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'; ?>">
                     <span>⭐⭐⭐⭐⭐ 5 sao</span>
                     <span class="px-2 py-0.5 rounded-full text-[10.5px] font-mono <?php echo ($starFilter === 5) ? 'bg-white/20 text-white' : 'bg-emerald-200 text-emerald-900'; ?>">
@@ -382,7 +383,7 @@ $flash = get_flash();
                 </a>
 
                 <!-- Nút 4 sao -->
-                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=4" 
+                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=4" onclick="filterRatingsTab(event, this)" 
                    class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 <?php echo ($starFilter === 4) ? 'bg-sky-600 text-white shadow-sm' : 'bg-sky-50 text-sky-800 border border-sky-200 hover:bg-sky-100'; ?>">
                     <span>⭐⭐⭐⭐ 4 sao</span>
                     <span class="px-2 py-0.5 rounded-full text-[10.5px] font-mono <?php echo ($starFilter === 4) ? 'bg-white/20 text-white' : 'bg-sky-200 text-sky-900'; ?>">
@@ -391,7 +392,7 @@ $flash = get_flash();
                 </a>
 
                 <!-- Nút 3 sao -->
-                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=3" 
+                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=3" onclick="filterRatingsTab(event, this)" 
                    class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 <?php echo ($starFilter === 3) ? 'bg-amber-600 text-white shadow-sm' : 'bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100'; ?>">
                     <span>⭐⭐⭐ 3 sao</span>
                     <span class="px-2 py-0.5 rounded-full text-[10.5px] font-mono <?php echo ($starFilter === 3) ? 'bg-white/20 text-white' : 'bg-amber-200 text-amber-950'; ?>">
@@ -400,7 +401,7 @@ $flash = get_flash();
                 </a>
 
                 <!-- Nút 2 sao -->
-                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=2" 
+                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=2" onclick="filterRatingsTab(event, this)" 
                    class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 <?php echo ($starFilter === 2) ? 'bg-orange-600 text-white shadow-sm' : 'bg-orange-50 text-orange-900 border border-orange-200 hover:bg-orange-100'; ?>">
                     <span>⭐⭐ 2 sao</span>
                     <span class="px-2 py-0.5 rounded-full text-[10.5px] font-mono <?php echo ($starFilter === 2) ? 'bg-white/20 text-white' : 'bg-orange-200 text-orange-950'; ?>">
@@ -409,7 +410,7 @@ $flash = get_flash();
                 </a>
 
                 <!-- Nút 1 sao -->
-                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=1" 
+                <a href="ratings.php?agent_id=<?php echo $agentId; ?>&star=1" onclick="filterRatingsTab(event, this)" 
                    class="px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 <?php echo ($starFilter === 1) ? 'bg-rose-600 text-white shadow-sm' : 'bg-rose-50 text-rose-900 border border-rose-200 hover:bg-rose-100'; ?>">
                     <span>⭐ 1 sao</span>
                     <span class="px-2 py-0.5 rounded-full text-[10.5px] font-mono <?php echo ($starFilter === 1) ? 'bg-white/20 text-white' : 'bg-rose-200 text-rose-950'; ?>">
@@ -529,8 +530,39 @@ $flash = get_flash();
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+        </div>
 
     </main>
+
+    <script>
+    function filterRatingsTab(event, link) {
+        event.preventDefault();
+        const url = link.href;
+        const container = document.getElementById('agent_ratings_container');
+        if (!container) {
+            window.location.href = url;
+            return;
+        }
+        container.style.opacity = '0.4';
+        fetch(url)
+            .then(res => res.text())
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newContent = doc.getElementById('agent_ratings_container');
+                if (newContent) {
+                    container.innerHTML = newContent.innerHTML;
+                    container.style.opacity = '1';
+                    window.history.pushState(null, '', url);
+                } else {
+                    window.location.href = url;
+                }
+            })
+            .catch(() => {
+                window.location.href = url;
+            });
+    }
+    </script>
 
     <!-- FOOTER TOÀN TRƯỜNG -->
     <?php require_once __DIR__ . '/../includes/footer.php'; ?>

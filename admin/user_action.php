@@ -26,6 +26,20 @@ if (empty($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../app/Models/UserRepository.php';
 
+// Hàm kiểm tra định dạng email nghiêm ngặt
+function validateEmailStrict(string $email): void {
+    if ($email === '') {
+        throw new InvalidArgumentException("Địa chỉ email không được để trống!");
+    }
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !preg_match('/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/', $email)) {
+        throw new InvalidArgumentException("Địa chỉ email không đúng định dạng (thiếu dấu chấm tên miền hoặc có ký tự không hợp lệ)!");
+    }
+    // Nếu người dùng nhập tên miền của Trường Đại học Thủ Đô Hà Nội, bắt buộc phải đúng chuẩn @daihocthudo.edu.vn
+    if (stripos($email, 'daihocthudo') !== false && !preg_match('/@daihocthudo\.edu\.vn$/i', $email)) {
+        throw new InvalidArgumentException("Email của Trường Đại học Thủ Đô phải có phần đuôi chuẩn: @daihocthudo.edu.vn (bạn đang thiếu dấu chấm hoặc viết sai tên miền)!");
+    }
+}
+
 // Chỉ chấp nhận phương thức POST (Bảo vệ an toàn dữ liệu, chống tấn công qua link GET)
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     set_flash('danger', 'Phương thức yêu cầu không hợp lệ!');
@@ -51,10 +65,8 @@ try {
             $classId    = !empty($_POST['class_id']) ? (int)$_POST['class_id'] : null;
             $cohort     = trim($_POST['cohort'] ?? 'D2024');
 
-            // Kiểm tra định dạng email trường học
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                throw new InvalidArgumentException("Địa chỉ email không đúng định dạng!");
-            }
+            // Kiểm tra định dạng email nghiêm ngặt
+            validateEmailStrict($email);
 
             $newId = UserRepository::create([
                 'user_code'   => $userCode,
@@ -87,6 +99,8 @@ try {
                 throw new InvalidArgumentException("ID người dùng không hợp lệ!");
             }
 
+            validateEmailStrict($email);
+
             UserRepository::update($id, [
                 'name'       => $name,
                 'email'      => $email,
@@ -110,6 +124,23 @@ try {
             $result = UserRepository::toggleLock($id);
             $type = ($result['is_active'] == 1) ? 'success' : 'warning';
             set_flash($type, "[Tài khoản #{$id}] " . $result['status_text']);
+
+            // Hỗ trợ AJAX cập nhật giữ nguyên trang
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'ok' => true,
+                    'id' => $id,
+                    'is_active' => (int)$result['is_active'],
+                    'status_text' => $result['status_text'],
+                    'badge_html' => ($result['is_active'] == 1) 
+                        ? '<span class="badge badge-active">● Hoạt động</span>' 
+                        : '<span class="badge badge-locked">🔒 Bị khóa (' . htmlspecialchars($result['lock_reason'] ?? 'Bởi Quản trị viên') . ')</span>',
+                    'btn_text' => ($result['is_active'] == 1) ? '🔒 Khóa' : '🔓 Mở',
+                    'btn_class' => ($result['is_active'] == 1) ? 'btn btn-danger' : 'btn btn-success'
+                ]);
+                exit;
+            }
             break;
 
         default:
@@ -118,14 +149,28 @@ try {
     }
 
 } catch (InvalidArgumentException $e) {
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => false, 'message' => $e->getMessage()]);
+        exit;
+    }
     set_flash('danger', 'Lỗi dữ liệu: ' . $e->getMessage());
 } catch (RuntimeException $e) {
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => false, 'message' => $e->getMessage()]);
+        exit;
+    }
     set_flash('danger', 'Lỗi thực thi: ' . $e->getMessage());
 } catch (Exception $e) {
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok' => false, 'message' => $e->getMessage()]);
+        exit;
+    }
     set_flash('danger', 'Lỗi hệ thống: ' . $e->getMessage());
 }
 
 // Áp dụng mô hình chuẩn POST-Redirect-GET (Slide 2 & 8)
 header('Location: users.php');
 exit;
-

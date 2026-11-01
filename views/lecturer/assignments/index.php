@@ -246,9 +246,12 @@ if (empty($_SESSION['user'])) {
                                                 <a href="index.php?action=edit&id=<?= $row['id'] ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition text-[11px]">
                                                     Sửa
                                                 </a>
-                                                <a href="index.php?action=delete&id=<?= $row['id'] ?>" onclick="return confirm('Bạn có chắc muốn xóa phân công này?');" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition text-[11px]">
-                                                    Xóa
-                                                </a>
+                                                <form method="POST" action="index.php?action=delete" onsubmit="return confirm('Bạn có chắc muốn xóa phân công này?');" class="inline">
+                                                    <input type="hidden" name="id" value="<?= $row['id'] ?>">
+                                                    <button type="submit" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition text-[11px] cursor-pointer">
+                                                        Xóa
+                                                    </button>
+                                                </form>
                                             </div>
                                         <?php endif; ?>
                                     </td>
