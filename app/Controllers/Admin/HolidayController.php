@@ -1,4 +1,3 @@
-
 <?php
 
 require_once __DIR__ . '/../../Models/Holiday.php';
@@ -26,9 +25,16 @@ class HolidayController
     public function create(): void
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $data = $this->validateInput($_POST);
-            Holiday::create($data);
+            $validation = $this->validateInput($_POST);
+            if ($validation['error']) {
+                set_flash('error', $validation['error']);
+                $holiday = $_POST;
+                require __DIR__ . '/../../../views/admin/holidays/form.php';
+                return;
+            }
 
+            Holiday::create($validation['data']);
+            set_flash('success', 'Đã thêm ngày nghỉ lễ mới thành công!');
             header('Location: holidays.php');
             exit;
         }
@@ -43,14 +49,22 @@ class HolidayController
         $holiday = Holiday::findById($id);
 
         if (!$holiday) {
-            http_response_code(404);
-            exit('Không tìm thấy ngày nghỉ lễ.');
+            set_flash('error', 'Không tìm thấy ngày nghỉ lễ cần sửa!');
+            header('Location: holidays.php');
+            exit;
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $data = $this->validateInput($_POST);
-            Holiday::update($id, $data);
+            $validation = $this->validateInput($_POST);
+            if ($validation['error']) {
+                set_flash('error', $validation['error']);
+                $holiday = array_merge($_POST, ['id' => $id]);
+                require __DIR__ . '/../../../views/admin/holidays/form.php';
+                return;
+            }
 
+            Holiday::update($id, $validation['data']);
+            set_flash('success', 'Đã cập nhật ngày nghỉ lễ thành công!');
             header('Location: holidays.php');
             exit;
         }
@@ -61,14 +75,16 @@ class HolidayController
     public function delete(): void
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            http_response_code(405);
-            exit('Phương thức không được hỗ trợ.');
+            set_flash('error', 'Phương thức không được hỗ trợ.');
+            header('Location: holidays.php');
+            exit;
         }
 
         $id = max(0, (int) ($_POST['id'] ?? 0));
 
         if ($id > 0) {
             Holiday::delete($id);
+            set_flash('success', 'Đã xóa ngày nghỉ lễ thành công!');
         }
 
         header('Location: holidays.php');
@@ -78,12 +94,12 @@ class HolidayController
     private function validateInput(array $input): array
     {
         $name = trim($input['name'] ?? '');
-        $startDate = $input['start_date'] ?? '';
-        $endDate = $input['end_date'] ?? '';
+        $startDate = trim($input['start_date'] ?? '');
+        $endDate = trim($input['end_date'] ?? '');
         $isRecurring = (int) ($input['is_recurring'] ?? 0);
 
         if ($name === '') {
-            exit('Tên ngày nghỉ lễ không được để trống.');
+            return ['error' => 'Tên ngày nghỉ lễ không được để trống.', 'data' => []];
         }
 
         if (
@@ -93,18 +109,21 @@ class HolidayController
             !checkdate((int) substr($endDate, 5, 2), (int) substr($endDate, 8, 2), (int) substr($endDate, 0, 4)) ||
             $startDate > $endDate
         ) {
-            exit('Ngày bắt đầu hoặc ngày kết thúc không hợp lệ.');
+            return ['error' => 'Ngày bắt đầu hoặc ngày kết thúc không hợp lệ (Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc).', 'data' => []];
         }
 
         if (!in_array($isRecurring, [0, 1], true)) {
-            exit('Giá trị lặp lại không hợp lệ.');
+            return ['error' => 'Giá trị lặp lại không hợp lệ.', 'data' => []];
         }
 
         return [
-            'name' => $name,
-            'start_date' => $startDate,
-            'end_date' => $endDate,
-            'is_recurring' => $isRecurring,
+            'error' => null,
+            'data' => [
+                'name' => $name,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'is_recurring' => $isRecurring,
+            ]
         ];
     }
 }

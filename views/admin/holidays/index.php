@@ -51,6 +51,18 @@ function holidayEscape($value): string
         </div>
     </div>
 
+    <!-- THÔNG BÁO FLASH MESSAGE -->
+    <?php $flash = get_flash(); ?>
+    <?php if ($flash): ?>
+        <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold flex items-center justify-between <?= $flash['type'] === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'; ?>">
+            <div class="flex items-center gap-2">
+                <span><?= $flash['type'] === 'success' ? '✅' : '⚠️'; ?></span>
+                <span><?= htmlspecialchars($flash['message']); ?></span>
+            </div>
+            <span class="text-slate-400 text-[10px]">Hệ thống</span>
+        </div>
+    <?php endif; ?>
+
     <!-- THANH TÌM KIẾM & BỘ LỌC -->
     <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-3 text-xs">
         <form method="GET" action="holidays.php" class="flex items-center gap-2 flex-1 max-w-lg">

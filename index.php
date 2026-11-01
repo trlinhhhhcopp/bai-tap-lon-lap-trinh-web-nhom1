@@ -854,6 +854,27 @@ if ($action === 'guest_ticket') {
             $createdTicket = \App\Models\Ticket::findById($ticketId);
             $ticketCode = $createdTicket['ticket_code'];
 
+            // Gửi thông báo thời gian thực đến KTV chuyên trách SSO và toàn bộ đội ngũ KTV
+            try {
+                require_once __DIR__ . '/app/Services/NotificationService.php';
+                \NotificationService::send(
+                    2,
+                    "🚑 CÓ ĐƠN CỨU HỘ MỚI #{$ticketCode}",
+                    "Sinh viên {$name} ({$userCode}) vừa gửi đơn cứu hộ tài khoản khẩn cấp. Vui lòng kiểm tra và xác thực hồ sơ!",
+                    "tickets/show.php?id={$ticketId}",
+                    'guest_rescue',
+                    'agent'
+                );
+                \NotificationService::sendToRole(
+                    'agent',
+                    "🚑 ĐƠN CỨU HỘ KHẨN CẤP #{$ticketCode}",
+                    "Trạm cứu hộ vừa tiếp nhận đơn của sinh viên {$name} ({$userCode}). KTV vui lòng kiểm tra!",
+                    "tickets/index.php?warning=guest",
+                    'guest_rescue',
+                    2
+                );
+            } catch (\Throwable $e) {}
+
             $_SESSION['flash'] = [
                 'type'    => 'success',
                 'message' => "🎉 Đã gửi đơn cứu hộ thành công! Mã tra cứu duy nhất của bạn: <strong>{$ticketCode}</strong>. Yêu cầu đã được chuyển ngay đến <strong>KTV Nguyễn Văn An (Chuyên trách SSO)</strong> tiếp nhận xử lý trong vòng 2 giờ."
@@ -1008,6 +1029,21 @@ if ($action === 'guest_lookup') {
                 'uid' => $ticket['requester_id'] ?: 1,
                 'msg' => "[Người gửi bổ sung]: " . $msg
             ]);
+
+            // Gửi thông báo đến KTV phụ trách phiếu cứu hộ
+            try {
+                require_once __DIR__ . '/app/Services/NotificationService.php';
+                $assignedAgentId = !empty($ticket['assigned_to']) ? (int)$ticket['assigned_to'] : 2;
+                \NotificationService::send(
+                    $assignedAgentId,
+                    "💬 Khách vừa phản hồi phiếu cứu hộ #{$ticket['ticket_code']}",
+                    "Người gửi vừa bổ sung nội dung trong đơn cứu hộ #{$ticket['ticket_code']}. Vui lòng kiểm tra!",
+                    "tickets/show.php?id={$ticket['id']}",
+                    'ticket_reply',
+                    'agent'
+                );
+            } catch (\Throwable $e) {}
+
             $_SESSION['flash'] = [
                 'type'    => 'success',
                 'message' => 'Đã gửi phản hồi thành công đến Kỹ thuật viên!'

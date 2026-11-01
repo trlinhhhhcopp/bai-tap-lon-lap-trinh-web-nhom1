@@ -271,15 +271,22 @@ class NotificationService
                     }
                 }
 
-                // 2. Bài tập mới từ giảng viên
-                self::send(
-                    $userId,
-                    "Giảng viên vừa giao bài tập thực hành mới",
-                    "Thầy/Cô bộ môn Lập trình Web & Ứng dụng (WEB101) đã cập nhật đề bài và hạn nộp bài tập buổi học tiếp theo. Hãy vào Cổng Học Phần kiểm tra ngay!",
-                    "student/index.php?action=courses",
-                    'new_assignment',
-                    'student'
-                );
+                // 2. Bài tập mới từ giảng viên (liên kết đến bài học thực tế)
+                $latestLesson = db()->query("
+                    SELECT id, lesson_number, title, course_id 
+                    FROM course_lessons 
+                    ORDER BY id DESC LIMIT 1
+                ")->fetch(PDO::FETCH_ASSOC);
+                if ($latestLesson) {
+                    self::send(
+                        $userId,
+                        "📝 Bài tập thực hành Buổi {$latestLesson['lesson_number']}",
+                        "Đã cập nhật đề bài cho Buổi {$latestLesson['lesson_number']}: '{$latestLesson['title']}'. Bạn hãy vào Cổng Học Phần để xem chi tiết và nộp bài!",
+                        "student/index.php?action=courses",
+                        'new_assignment',
+                        'student'
+                    );
+                }
 
             } elseif ($userType === 'lecturer') {
                 // 1. Giảng viên: Lớp học phần được phân công
@@ -304,15 +311,30 @@ class NotificationService
                     );
                 }
 
-                // 2. Phiếu sự cố sinh viên cần GV xem xét gia hạn
-                self::send(
-                    $userId,
-                    "KTV đã xác nhận sự cố nộp bài của sinh viên",
-                    "Kỹ thuật viên đã kiểm tra nhật ký Access Point / Server LMS và xác nhận sự cố hợp lệ. Mời Thầy/Cô vào xem xét gia hạn Deadline cho sinh viên.",
-                    "tickets/show.php?id=40",
-                    'deadline_extended',
-                    'lecturer'
-                );
+                // 2. Phiếu sự cố sinh viên cần GV xem xét gia hạn (chỉ gửi khi có phiếu thật được KTV duyệt)
+                $verifiedInc = db()->prepare("
+                    SELECT t.id, t.ticket_code, t.title 
+                    FROM tickets t 
+                    WHERE t.lesson_id IS NOT NULL 
+                      AND t.it_verified = 1 
+                      AND (t.lecturer_decision IS NULL OR t.lecturer_decision = 'pending') 
+                      AND t.status NOT IN ('closed', 'resolved') 
+                      AND (t.course_id IN (SELECT ca.course_id FROM course_assignments ca WHERE ca.lecturer_id = :lid) 
+                           OR t.class_id IN (SELECT ca2.class_id FROM course_assignments ca2 WHERE ca2.lecturer_id = :lid2))
+                    ORDER BY t.id DESC LIMIT 1
+                ");
+                $verifiedInc->execute([':lid' => $userId, ':lid2' => $userId]);
+                $vRow = $verifiedInc->fetch(PDO::FETCH_ASSOC);
+                if ($vRow) {
+                    self::send(
+                        $userId,
+                        "KTV đã xác nhận sự cố nộp bài #{$vRow['ticket_code']}",
+                        "Kỹ thuật viên đã kiểm tra và xác nhận sự cố kỹ thuật '{$vRow['title']}'. Mời Thầy/Cô vào xem xét gia hạn nộp bài.",
+                        "tickets/show.php?id={$vRow['id']}",
+                        'deadline_extended',
+                        'lecturer'
+                    );
+                }
 
                 // 3. Phiếu hỗ trợ do chính Thầy/Cô tạo gửi Helpdesk CNTT
                 $gvTkStmt = db()->prepare("
@@ -366,14 +388,23 @@ class NotificationService
                     );
                 }
 
-                self::send(
-                    $userId,
-                    "Có đơn cứu hộ tài khoản sinh viên cần duyệt",
-                    "Một sinh viên vừa gửi đơn đề nghị cứu hộ tài khoản bị khóa qua Trạm cứu hộ trực tuyến. Vui lòng xác thực thông tin sự cố để chuyển Admin.",
-                    "index.php",
-                    'guest_rescue',
-                    'agent'
-                );
+                // Chỉ thông báo cứu hộ nếu thực tế có đơn cứu hộ thật đang chờ xử lý
+                $pendingRescue = db()->query("
+                    SELECT id, ticket_code, title 
+                    FROM tickets 
+                    WHERE is_guest_ticket = 1 AND status NOT IN ('closed') 
+                    ORDER BY id DESC LIMIT 1
+                ")->fetch(PDO::FETCH_ASSOC);
+                if ($pendingRescue) {
+                    self::send(
+                        $userId,
+                        "🚑 Đơn cứu hộ cần KTV xử lý #{$pendingRescue['ticket_code']}",
+                        "Trạm cứu hộ trực tuyến đang có đơn cứu hộ chưa hoàn tất (#{$pendingRescue['ticket_code']}). Vui lòng kiểm tra và xác thực hồ sơ!",
+                        "tickets/show.php?id={$pendingRescue['id']}",
+                        'guest_rescue',
+                        'agent'
+                    );
+                }
 
             } elseif ($role === 'admin') {
                 // Tự động kiểm tra 4 việc cần làm cấp bách của Admin:
