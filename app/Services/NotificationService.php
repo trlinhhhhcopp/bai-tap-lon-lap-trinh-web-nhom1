@@ -471,18 +471,18 @@ class NotificationService
                 }
             }
 
-            // 4. KTV BỊ TRÀN TẢI / PHIẾU QUÁ HẠN SLA (AGENT OVERFLOW)
+            // 4. KTV BỊ TRÀN TẢI / PHIẾU QUÁ HẠN SLA (AGENT OVERFLOW - ĐẠT HOẶC VƯỢT NGƯỠNG MAX_CAPACITY 15 PHIẾU)
             $stmtOverflow = $pdo->query("
-                SELECT u.name, COUNT(t.id) as active_tickets 
+                SELECT u.name, u.max_capacity, COUNT(t.id) as active_tickets 
                 FROM tickets t 
                 JOIN users u ON t.assigned_to = u.id 
                 WHERE t.status IN ('new', 'in_progress') 
-                GROUP BY t.assigned_to, u.name 
-                HAVING active_tickets >= 3
+                GROUP BY t.assigned_to, u.name, u.max_capacity 
+                HAVING active_tickets >= COALESCE(u.max_capacity, 15)
             ");
             $overflowAgents = $stmtOverflow ? $stmtOverflow->fetchAll(PDO::FETCH_ASSOC) : [];
             if (!empty($overflowAgents)) {
-                $agentNames = implode(', ', array_map(fn($a) => $a['name'] . " ({$a['active_tickets']} phiếu)", $overflowAgents));
+                $agentNames = implode(', ', array_map(fn($a) => $a['name'] . " ({$a['active_tickets']}/" . ($a['max_capacity'] ?: 15) . " phiếu)", $overflowAgents));
                 $stmtCheck = $pdo->prepare("
                     SELECT COUNT(*) FROM notifications 
                     WHERE user_id = :uid AND type = 'agent_overflow' AND created_at >= DATE_SUB(NOW(), INTERVAL 3 HOUR)

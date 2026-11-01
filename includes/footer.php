@@ -74,11 +74,11 @@
                 <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 space-y-3 text-xs">
                     <div class="flex items-center justify-between text-xs">
                         <span class="text-slate-400">Ca sáng:</span>
-                        <strong class="text-slate-100 font-semibold tracking-wide">07:30 – 11:30</strong>
+                        <strong class="text-slate-100 font-semibold tracking-wide">08:00 – 12:00</strong>
                     </div>
                     <div class="flex items-center justify-between text-xs">
                         <span class="text-slate-400">Ca chiều:</span>
-                        <strong class="text-slate-100 font-semibold tracking-wide">13:00 – 17:00</strong>
+                        <strong class="text-slate-100 font-semibold tracking-wide">13:30 – 17:30</strong>
                     </div>
                     <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between text-xs">
                         <span class="text-slate-400">Hạ tầng mạng:</span>
