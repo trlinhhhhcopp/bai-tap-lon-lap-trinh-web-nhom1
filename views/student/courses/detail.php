@@ -300,27 +300,51 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                             <?php endif; ?>
                         <?php else: ?>
                             <!-- NẾU CHƯA ĐÍNH KÈM BÀI TẬP -->
-                            <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                <div class="flex items-center gap-3 text-xs">
-                                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-lg shrink-0">
-                                        ⏳
-                                    </div>
-                                    <div>
-                                        <div class="font-bold text-amber-950">
-                                            Chưa đính kèm bài tập cho buổi học này!
+                            <?php if ($isOverdue): ?>
+                                <!-- NẾU ĐÃ QUÁ HẠN: KHÔNG CHO NỘP THÔNG THƯỜNG, YÊU CẦU BÁO LỖI ĐỂ THẦY CÔ GIA HẠN -->
+                                <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3 text-xs">
+                                        <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center text-lg shrink-0">
+                                            ⛔
                                         </div>
-                                        <div class="text-[11.5px] text-amber-800">
-                                            Mỗi buổi cần đính kèm tệp bài tập (zip, rar, pdf, docx, mã nguồn) mới được tính là hoàn thành.
+                                        <div>
+                                            <div class="font-bold text-rose-950">
+                                                ĐÃ HẾT HẠN NỘP BÀI (HẠN CHÓT: <?= htmlspecialchars($item['deadline_formatted'] ?? '') ?>)
+                                            </div>
+                                            <div class="text-[11.5px] text-rose-800">
+                                                Hệ thống đã khóa tiếp nhận bài nộp. Nếu bạn gặp sự cố kỹ thuật (lỗi mạng, hệ thống LMS, sự cố máy móc...), vui lòng gửi phiếu báo lỗi để KTV xác thực và Thầy/Cô xem xét mở lại Deadline!
+                                            </div>
                                         </div>
                                     </div>
+                                    <a href="../tickets/create.php?course_id=<?= (int)$course['id'] ?>&lesson_id=<?= $lessonId ?>&category_id=4" 
+                                       class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5 shrink-0">
+                                        <span>🚨</span> Báo Lỗi Để Thầy/Cô Xem Xét Gia Hạn
+                                    </a>
                                 </div>
-                                <button type="button" onclick="toggleSubmitForm(<?= $lessonId ?>)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5 shrink-0">
-                                    <span>📎</span> Đính Kèm Bài Tập Ngay
-                                </button>
-                            </div>
+                            <?php else: ?>
+                                <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3 text-xs">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-lg shrink-0">
+                                            ⏳
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-amber-950">
+                                                Chưa đính kèm bài tập cho buổi học này!
+                                            </div>
+                                            <div class="text-[11.5px] text-amber-800">
+                                                Mỗi buổi cần đính kèm tệp bài tập (zip, rar, pdf, docx, mã nguồn) mới được tính là hoàn thành.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="toggleSubmitForm(<?= $lessonId ?>)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5 shrink-0">
+                                        <span>📎</span> Đính Kèm Bài Tập Ngay
+                                    </button>
+                                </div>
+                            <?php endif; ?>
                         <?php endif; ?>
 
-                        <!-- FORM UPLOAD ĐÍNH KÈM BÀI TẬP (MẶC ĐỊNH ẨN HOẶC HIỆN KHI BẤM NÚT) -->
+                        <!-- FORM UPLOAD ĐÍNH KÈM BÀI TẬP (CHỈ HIỂN THỊ KHI CÒN HẠN) -->
+                        <?php if (!$isOverdue): ?>
                         <div id="submit-form-<?= $lessonId ?>" class="<?= $isSubmitted ? 'hidden' : 'block' ?> mt-4 bg-slate-50 border border-indigo-100 rounded-2xl p-4 space-y-3">
                             <div class="flex items-center justify-between text-xs font-bold text-slate-800 border-b border-slate-200 pb-2">
                                 <span class="flex items-center gap-1.5">
@@ -363,6 +387,7 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                                 </div>
                             </form>
                         </div>
+                        <?php endif; ?>
 
                     </div>
 

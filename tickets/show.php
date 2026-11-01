@@ -142,6 +142,13 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         if ($lessonId > 0 && !empty($newDeadline)) {
             $newDeadlineSql = date('Y-m-d H:i:s', strtotime(str_replace('T', ' ', $newDeadline)));
 
+            // Kiểm tra nghiệp vụ: Hạn Thầy/Cô xét duyệt bắt buộc phải lớn hơn thời điểm hiện tại (> hôm nay)
+            if (strtotime($newDeadlineSql) <= time()) {
+                set_flash('error', 'Thời hạn mới được gia hạn phải lớn hơn thời điểm hiện tại (hôm nay)!');
+                header("Location: show.php?id={$id}&view_as={$viewAs}");
+                exit;
+            }
+
             // 1. Cập nhật deadline_at của buổi học trong course_lessons
             db()->prepare("UPDATE course_lessons SET deadline_at = :dl WHERE id = :lid")
                 ->execute([':dl' => $newDeadlineSql, ':lid' => $lessonId]);
@@ -1395,7 +1402,7 @@ $flash   = get_flash();
                                                 <div>
                                                     <label class="block font-bold text-slate-700 text-[11px] mb-1">Thời hạn mới (Deadline gia hạn):</label>
                                                     <?php $suggestedDeadline = date('Y-m-d\TH:i', strtotime('+24 hours')); ?>
-                                                    <input type="datetime-local" name="new_deadline" value="<?php echo $suggestedDeadline; ?>" required 
+                                                    <input type="datetime-local" name="new_deadline" value="<?php echo $suggestedDeadline; ?>" min="<?php echo date('Y-m-d\TH:i'); ?>" required 
                                                            class="w-full px-2.5 py-1.5 bg-slate-50 border border-purple-300 rounded-lg font-mono text-purple-900 font-bold text-xs focus:ring-2 focus:ring-purple-500" />
                                                 </div>
                                                 <div>

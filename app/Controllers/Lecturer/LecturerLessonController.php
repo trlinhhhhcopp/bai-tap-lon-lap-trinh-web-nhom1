@@ -138,6 +138,13 @@ class LecturerLessonController
             $formattedDeadline .= ':00';
         }
 
+        // Kiểm tra thời hạn nộp bài phải lớn hơn thời điểm hiện tại (> hôm nay)
+        if (strtotime($formattedDeadline) <= time()) {
+            set_flash('error', 'Thời hạn nộp bài (Deadline) phải lớn hơn thời điểm hiện tại (hôm nay)!');
+            header("Location: {$redirectUrl}");
+            exit;
+        }
+
         // Xử lý tệp đính kèm đề bài nếu giáo viên upload
         $attachmentPath = null;
         $attachmentName = null;

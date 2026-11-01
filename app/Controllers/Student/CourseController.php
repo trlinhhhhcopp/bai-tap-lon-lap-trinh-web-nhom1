@@ -139,6 +139,21 @@ class CourseController
             return;
         }
 
+        // 1. Kiểm tra thời hạn nộp bài (Deadline Enforcement): Nộp quá hạn không cho nộp bài nữa, yêu cầu báo sự cố
+        if (!empty($lesson['deadline_at'])) {
+            $now = new \DateTime('now', new \DateTimeZone('Asia/Ho_Chi_Minh'));
+            $deadline = new \DateTime($lesson['deadline_at'], new \DateTimeZone('Asia/Ho_Chi_Minh'));
+            if ($now > $deadline) {
+                $formattedDl = $deadline->format('H:i d/m/Y');
+                $this->respondError(
+                    "⛔ ĐÃ QUÁ HẠN NỘP BÀI TẬP (Hạn chót: {$formattedDl})! Hệ thống đã khóa tiếp nhận bài nộp tự động. " .
+                    "Nếu gặp sự cố kỹ thuật (mạng chậm, lỗi Canvas LMS, mất điện, máy tính hỏng...), bạn vui lòng gửi phiếu 'Báo Lỗi Sự Cố Giờ Học' để Kỹ thuật viên xác thực và Giảng viên xem xét gia hạn nộp bài!",
+                    $courseId
+                );
+                return;
+            }
+        }
+
         // Kiểm tra file đính kèm
         if (empty($_FILES['assignment_file']) || $_FILES['assignment_file']['error'] !== UPLOAD_ERR_OK) {
             $this->respondError('Vui lòng chọn tệp đính kèm bài tập để hoàn thành buổi học!', $courseId);
@@ -190,15 +205,20 @@ class CourseController
             return;
         }
 
-        // Bắn thông báo đến Giảng viên phụ trách môn học
+        // Bắn thông báo đến Giảng viên phụ trách môn học (Ghi rõ tên và mã sinh viên nộp bài)
         try {
             require_once __DIR__ . '/../../Services/NotificationService.php';
             $lecturerId = (int)(db()->query("SELECT ca.lecturer_id FROM course_lessons cl JOIN course_assignments ca ON ca.course_id = cl.course_id WHERE cl.id = {$lessonId} LIMIT 1")->fetchColumn() ?: 0);
             if ($lecturerId > 0) {
+                $studentName = $currentUser['name'];
+                $studentCode = $currentUser['user_code'];
+                $lessonNum   = $lesson['lesson_number'];
+                $lessonTitle = $lesson['title'];
+
                 NotificationService::send(
                     $lecturerId,
-                    "📥 Sinh viên nộp bài tập Buổi {$lesson['lesson_number']}",
-                    "Sinh viên {$currentUser['name']} ({$currentUser['user_code']}) vừa nộp bài tập Buổi {$lesson['lesson_number']}. Kính mời Thầy/Cô vào chấm điểm!",
+                    "📥 SV {$studentName} ({$studentCode}) nộp bài Buổi {$lessonNum}",
+                    "Sinh viên {$studentName} ({$studentCode}) vừa nộp bài tập Buổi {$lessonNum}: '{$lessonTitle}'. Kính mời Thầy/Cô vào kiểm tra và chấm điểm!",
                     "lecturer/lessons.php?course_id={$courseId}&view_lesson_id={$lessonId}",
                     'assignment_submission',
                     'lecturer'

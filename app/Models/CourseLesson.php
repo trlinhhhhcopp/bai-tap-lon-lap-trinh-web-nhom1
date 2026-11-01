@@ -203,7 +203,7 @@ class CourseLesson
         $stmtCheck->execute([':lid' => $lessonId, ':sid' => $studentId]);
         $existing = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-        $now = date('Y-m-d H:i:s');
+        $now = (new \DateTime('now', new \DateTimeZone('Asia/Ho_Chi_Minh')))->format('Y-m-d H:i:s');
 
         if ($existing) {
             // Xóa file cũ nếu khác file mới
@@ -459,7 +459,7 @@ class CourseLesson
      */
     public function gradeSubmission(int $submissionId, float $score, int $starRating, string $feedback, int $lecturerId): bool
     {
-        $now = date('Y-m-d H:i:s');
+        $now = (new \DateTime('now', new \DateTimeZone('Asia/Ho_Chi_Minh')))->format('Y-m-d H:i:s');
         $stmt = $this->pdo->prepare("
             UPDATE student_assignment_submissions 
             SET score = :score, star_rating = :star, feedback = :feedback, graded_at = :graded_at, graded_by = :graded_by 
