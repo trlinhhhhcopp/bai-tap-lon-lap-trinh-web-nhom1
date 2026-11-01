@@ -296,3 +296,25 @@ CREATE TABLE `ticket_ratings` (
         REFERENCES `users` (`id`) ON DELETE CASCADE,
     CONSTRAINT `chk_ticket_ratings_score` CHECK (`score` BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ==============================================================================
+-- 13. BẢNG TRUNG TÂM THÔNG BÁO THỜI GIAN THỰC (NOTIFICATIONS)
+-- Phục vụ thông báo đa vai trò: SV, GV, KTV, Admin
+-- ==============================================================================
+CREATE TABLE `notifications` (
+    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `user_id` INT UNSIGNED NOT NULL,
+    `role` VARCHAR(20) NOT NULL DEFAULT 'all',
+    `title` VARCHAR(255) NOT NULL,
+    `content` TEXT NOT NULL,
+    `link` VARCHAR(255) NULL,
+    `type` VARCHAR(50) NOT NULL DEFAULT 'system',
+    `is_read` TINYINT(1) DEFAULT 0,
+    `created_at` DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX `idx_user_read` (`user_id`, `is_read`),
+    CONSTRAINT `fk_notifications_user` FOREIGN KEY (`user_id`) 
+        REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

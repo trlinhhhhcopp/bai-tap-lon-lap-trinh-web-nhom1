@@ -11,11 +11,26 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../app/Services/NotificationService.php';
 
 // Tính điểm sao CSAT trung bình kiểu Be/Grab cho KTV hiển thị trên đầu
 $navbarKtvAvgScore = null;
 $navbarKtvTotalRatings = 0;
 $currentUser = $_SESSION['user'] ?? null;
+
+// Lấy thông báo hệ thống cho người dùng đã đăng nhập
+$navUnreadNotifCount = 0;
+$navRecentNotifs     = [];
+if (!empty($currentUser['id'])) {
+    try {
+        NotificationService::ensureUserHasInitialNotifications($currentUser);
+        $navUnreadNotifCount = NotificationService::countUnread((int)$currentUser['id']);
+        $navRecentNotifs     = NotificationService::getAll((int)$currentUser['id'], 6);
+    } catch (\Throwable $e) {
+        $navUnreadNotifCount = 0;
+        $navRecentNotifs     = [];
+    }
+}
 if (!empty($currentUser) && ($currentUser['role'] ?? '') === 'agent') {
     try {
         $navAgentId = (int)$currentUser['id'];
@@ -268,9 +283,91 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                 <?php endif; ?>
             </nav>
 
-            <!-- Góc phải: Thông tin người dùng & Đăng xuất -->
+            <!-- Góc phải: Thông tin người dùng, Chuông thông báo & Đăng xuất -->
             <div class="flex items-center gap-2 shrink-0">
                 <?php if ($isLoggedIn): ?>
+                    <!-- NÚT CHUÔNG THÔNG BÁO CHO TẤT CẢ CÁC ROLE -->
+                    <div class="relative" id="nav_notification_dropdown_wrapper">
+                        <button type="button" 
+                                id="nav_notification_toggle_btn"
+                                onclick="toggleNotificationDropdown()"
+                                aria-label="Thông báo hệ thống" 
+                                title="Xem thông báo hệ thống"
+                                class="relative p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 transition flex items-center justify-center cursor-pointer">
+                            <span class="text-sm leading-none">🔔</span>
+                            <?php if ($navUnreadNotifCount > 0): ?>
+                                <span id="nav_notif_badge" class="absolute -top-1 -right-1 px-1.5 py-0.2 min-w-4 h-4 bg-rose-500 text-white font-black text-[10px] rounded-full flex items-center justify-center shadow-xs border border-slate-900 animate-pulse">
+                                    <?php echo $navUnreadNotifCount > 9 ? '9+' : $navUnreadNotifCount; ?>
+                                </span>
+                            <?php endif; ?>
+                        </button>
+
+                        <!-- DROPDOWN PANEL THÔNG BÁO -->
+                        <div id="nav_notification_dropdown" class="hidden absolute right-0 mt-2 w-80 sm:w-96 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 z-[999] overflow-hidden">
+                            <div class="p-3.5 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-base">🔔</span>
+                                    <span class="font-bold text-xs">Thông Báo Hệ Thống</span>
+                                    <?php if ($navUnreadNotifCount > 0): ?>
+                                        <span id="nav_dropdown_unread_pill" class="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black">
+                                            <?php echo $navUnreadNotifCount; ?> mới
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                <button type="button" onclick="markAllNotificationsRead()" class="text-[11px] text-indigo-300 hover:text-white font-semibold transition cursor-pointer">
+                                    ✓ Đã đọc tất cả
+                                </button>
+                            </div>
+
+                            <div id="nav_notifs_list_container" class="max-h-80 overflow-y-auto divide-y divide-slate-100 text-xs">
+                                <?php if (empty($navRecentNotifs)): ?>
+                                    <div class="p-6 text-center text-slate-400">
+                                        <span class="text-2xl block mb-1">🔕</span>
+                                        <p class="font-medium">Hiện bạn chưa có thông báo mới.</p>
+                                    </div>
+                                <?php else: ?>
+                                    <?php foreach ($navRecentNotifs as $notif): ?>
+                                        <?php 
+                                        $typeIcons = [
+                                            'ticket_reply'      => '💬',
+                                            'new_assignment'    => '📝',
+                                            'class_assigned'    => '🏫',
+                                            'ticket_assigned'   => '🎫',
+                                            'deadline_extended' => '⏳',
+                                            'guest_rescue'      => '🆘',
+                                            'system'            => '🔔',
+                                        ];
+                                        $nIcon = $typeIcons[$notif['type']] ?? '🔔';
+                                        $nUnread = ((int)$notif['is_read'] === 0);
+                                        $nLink = !empty($notif['link']) ? $appBase . ltrim($notif['link'], '/') : '#';
+                                        ?>
+                                        <a href="<?php echo htmlspecialchars($nLink); ?>" 
+                                           onclick="markNotificationRead(<?php echo (int)$notif['id']; ?>)"
+                                           class="p-3 flex items-start gap-3 hover:bg-indigo-50/50 transition block <?php echo $nUnread ? 'bg-sky-50/60' : 'bg-white'; ?>">
+                                            <span class="text-lg shrink-0 mt-0.5"><?php echo $nIcon; ?></span>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="flex items-center justify-between gap-1 mb-0.5">
+                                                    <h4 class="font-bold text-slate-900 truncate text-[11.5px] <?php echo $nUnread ? 'text-indigo-950 font-black' : ''; ?>">
+                                                        <?php echo htmlspecialchars($notif['title']); ?>
+                                                    </h4>
+                                                    <?php if ($nUnread): ?>
+                                                        <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <p class="text-[11px] text-slate-600 line-clamp-2 leading-relaxed">
+                                                    <?php echo htmlspecialchars($notif['content']); ?>
+                                                </p>
+                                                <span class="text-[10px] text-slate-400 font-mono mt-1 block">
+                                                    <?php echo date('H:i d/m', strtotime($notif['created_at'])); ?>
+                                                </span>
+                                            </div>
+                                        </a>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="hidden sm:flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1 rounded-xl text-xs">
                         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                         <span class="font-semibold text-white"><?php echo htmlspecialchars($currentUser['name']); ?></span>
@@ -325,4 +422,54 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
             outline-offset: 2px;
         }
     </style>
+    <script>
+    function toggleNotificationDropdown() {
+        const dd = document.getElementById('nav_notification_dropdown');
+        if (dd) {
+            dd.classList.toggle('hidden');
+        }
+    }
+
+    document.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('nav_notification_dropdown_wrapper');
+        const dd = document.getElementById('nav_notification_dropdown');
+        if (wrapper && dd && !wrapper.contains(e.target)) {
+            dd.classList.add('hidden');
+        }
+    });
+
+    function markNotificationRead(notifId) {
+        fetch('<?php echo $appBase; ?>index.php?action=api_mark_notification_read&id=' + notifId, { method: 'POST' })
+            .catch(err => console.log(err));
+    }
+
+    function markAllNotificationsRead() {
+        fetch('<?php echo $appBase; ?>index.php?action=api_mark_all_notifications_read', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const badge = document.getElementById('nav_notif_badge');
+                    if (badge) badge.remove();
+                    const pill = document.getElementById('nav_dropdown_unread_pill');
+                    if (pill) pill.remove();
+                    const container = document.getElementById('nav_notifs_list_container');
+                    if (container) {
+                        const unreadDots = container.querySelectorAll('.bg-rose-500.rounded-full');
+                        unreadDots.forEach(d => d.remove());
+                        const unreadCards = container.querySelectorAll('.bg-sky-50\\/60');
+                        unreadCards.forEach(c => {
+                            c.classList.remove('bg-sky-50/60');
+                            c.classList.add('bg-white');
+                        });
+                    }
+                    const banner = document.getElementById('app_notification_banner');
+                    if (banner) {
+                        banner.style.opacity = '0';
+                        setTimeout(() => banner.remove(), 300);
+                    }
+                }
+            })
+            .catch(err => console.log(err));
+    }
+    </script>
 </header>

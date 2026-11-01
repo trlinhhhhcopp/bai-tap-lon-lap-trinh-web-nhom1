@@ -4,7 +4,7 @@
 # 🎓 CHỦ ĐỀ 9: HỆ THỐNG TIẾP NHẬN & XỬ LÝ HỖ TRỢ CNTT TRỰC TUYẾN (HELPDESK ONLINE)
 > **Phiên bản:** Chuẩn Đại học Thủ Đô Hà Nội · ITIL v4 Service Desk · Pure Online Services · PHP 8 Clean MVC  
 > **Hệ thống Portal:** `https://it-support.daihocthudo.edu.vn`  
-> **📄 BẢN BÁO CÁO BÀI TẬP LỚN ĐẦY ĐỦ (PDF):** [**Bao_Cao_BTL_Helpdesk_Nhom1.pdf**](Bao_Cao_BTL_Helpdesk_Nhom1.pdf) *(Bản in A4 màu chuẩn học thuật nộp Giảng viên)*  
+> **📄 BẢN BÁO CÁO BÀI TẬP LỚN ĐẦY ĐỦ (PDF):** [**docs/Bao_Cao_BTL_Helpdesk_Nhom1.pdf**](docs/Bao_Cao_BTL_Helpdesk_Nhom1.pdf) *(Bản in A4 màu chuẩn học thuật nộp Giảng viên)*  
 
 ---
 
@@ -72,6 +72,16 @@ Hệ thống đã được tinh chỉnh, nâng cấp và hoàn thiện 100% theo
 * **Nút Ẩn/Hiện bảng dữ liệu (Collapsible Table):** Bổ sung nút toggle bảng dữ liệu kèm icon chuyển đổi trên tất cả các bảng ở mọi vai trò (Sinh viên, Giảng viên, KTV, Admin).
 * **Hoàn thiện CSAT:** Sinh viên chấm điểm 1-5 sao mượt mà, tự động cập nhật điểm trung bình CSAT của từng KTV.
 
+### 2.6. Hệ thống Thông báo Thời gian thực Đa vai trò (Notification Center & Banner Đầu Trang)
+* **Nút Quả Chuông 🔔 trên Navbar:** Tích hợp đồng bộ trên thanh điều hướng cho tất cả các role, có badge đếm số thông báo chưa đọc và Dropdown panel quản lý thông báo.
+* **Banner Thông Báo Nổi Bật Đặt Ở Đầu Trang (Sau Phần Tổng Quan):** Xuất hiện ngay sau phần thống kê tổng quan của từng vai trò (Sinh viên, Giảng viên, KTV, Admin) với đầy đủ thông tin sự cố, nút thao tác nhanh xem chi tiết và nút ẩn/đã đọc.
+* **Kịch bản thông báo tự động:**
+  * **Sinh viên:** Nhận thông báo khi KTV phản hồi phiếu, phiếu đã giải quyết cần chấm CSAT, hoặc Thầy/Cô giao bài tập / mở lại Deadline.
+  * **Giảng viên:** Nhận thông báo khi Phòng Đào tạo phân công lớp học phần mới, hoặc KTV xác nhận lỗi sự cố cần xem xét mở Deadline.
+  * **Kỹ thuật viên:** Nhận thông báo khi có phiếu sự cố mới được gán cho mình, người dùng phản hồi chat, hoặc có đơn cứu hộ mới cần xác thực.
+  * **Quản trị viên (Admin):** Nhận thông báo khi KTV xác thực đơn cứu hộ cần phê duyệt mở khóa, hoặc KTV báo cáo sinh viên vi phạm quy chế.
+* **Tương tác AJAX / Fetch API:** Đánh dấu đã đọc từng thông báo hoặc toàn bộ thông báo tức thì không cần tải lại trang.
+
 ---
 
 ## 🔑 3. BẢNG TÀI KHOẢN KIỂM THỬ TỪNG VAI TRÒ (TEST ACCOUNTS)
@@ -132,7 +142,7 @@ Hệ thống đã được tinh chỉnh, nâng cấp và hoàn thiện 100% theo
 
 ---
 
-## 🗄️ 6. THIẾT KẾ CƠ SỞ DỮ LIỆU (12 BẢNG CHUẨN HÓA 3NF)
+## 🗄️ 6. THIẾT KẾ CƠ SỞ DỮ LIỆU (13 BẢNG CHUẨN HÓA 3NF)
 
 1. **`categories`:** 5 nhóm dịch vụ trực tuyến (`CAT_SSO`, `CAT_MAIL`, `CAT_QLDT`, `CAT_CANVAS`, `CAT_WIFI`) kèm hạn SLA chuẩn.
 2. **`priorities`:** 4 mức ưu tiên (`URGENT`, `HIGH`, `MED`, `LOW`) kèm hệ số rút ngắn SLA `sla_factor`.
@@ -146,6 +156,7 @@ Hệ thống đã được tinh chỉnh, nâng cấp và hoàn thiện 100% theo
 10. **`tickets`:** Bảng trung tâm lưu trữ phiếu hỗ trợ, mốc SLA, cờ xác nhận KTV, phê duyệt mở hạn của GV.
 11. **`ticket_replies`:** Trao đổi hai chiều và ghi chú nội bộ bảo mật (`is_internal = 1`).
 12. **`ticket_ratings`:** Đánh giá độ hài lòng CSAT 1–5 sao của sinh viên (quan hệ 1-1 `UNIQUE (ticket_id)`).
+13. **`notifications`:** Hệ thống thông báo thời gian thực đa vai trò (SV, GV, KTV, Admin), hỗ trợ Banner nổi bật đầu trang & Quả chuông 🔔.
 
 ---
 

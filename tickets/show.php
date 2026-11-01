@@ -7,6 +7,7 @@
 // ==============================================================================
 
 require_once __DIR__ . '/../app/Repositories/TicketRepository.php';
+require_once __DIR__ . '/../app/Services/NotificationService.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -81,6 +82,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                         "👉 Kính chuyển Giảng viên phụ trách môn học xem xét chấp thuận mở lại Deadline / gia hạn nộp bài cho sinh viên.";
         TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'in_progress');
 
+        // Gửi thông báo đến Giảng viên phụ trách
+        if (!empty($courseAssignment['lecturer_id'])) {
+            NotificationService::send(
+                (int)$courseAssignment['lecturer_id'],
+                "KTV đã xác nhận sự cố nộp bài của sinh viên",
+                "Kỹ thuật viên đã cấp biên bản xác nhận lỗi cho phiếu #{$ticket['ticket_code']}. Kính mời Thầy/Cô vào xem xét gia hạn Deadline.",
+                "tickets/show.php?id={$id}",
+                'deadline_extended',
+                'lecturer'
+            );
+        }
+
         set_flash('success', "Đã cấp biên bản xác nhận sự cố kỹ thuật hợp lệ thành công và chuyển thông tin tới Giảng viên bộ môn!");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
@@ -118,6 +131,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
             // 4. Cập nhật quyết định của Giảng viên & tự động hoàn tất phiếu
             db()->prepare("UPDATE tickets SET lecturer_decision = 'approved', lecturer_decision_at = NOW(), lecturer_decision_note = :note, status = 'closed', closed_at = NOW(), closed_reason = 'completed' WHERE id = :id")
                 ->execute([':note' => $lecturerNote, ':id' => $id]);
+
+            // Gửi thông báo cho Sinh viên được mở Deadline
+            if (!empty($ticket['requester_id'])) {
+                NotificationService::send(
+                    (int)$ticket['requester_id'],
+                    "Thầy/Cô đã chấp thuận mở lại Deadline cho bạn!",
+                    "Giảng viên phụ trách đã mở lại hạn nộp bài Buổi {$lessonNum} đến {$formattedDl}. Vui lòng vào Cổng Học Tập nộp bài ngay!",
+                    "tickets/show.php?id={$id}",
+                    'deadline_extended',
+                    'student'
+                );
+            }
 
             set_flash('success', "Thầy/Cô đã mở lại Deadline thành công cho Buổi {$lessonNum} đến: <strong>{$formattedDl}</strong>! Phiếu tự động chuyển sang trạng thái Đã hoàn tất.");
             header("Location: show.php?id={$id}&view_as={$viewAs}");
@@ -205,6 +230,15 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                         "Ghi chú: \"" . $verifyNote . "\"\n" .
                         "👉 Kính chuyển Quản Trị Viên (Admin) xem xét phê duyệt mở khóa tài khoản và thiết lập lại mật khẩu.";
         TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'in_progress');
+
+        // Gửi thông báo đến Quản trị viên (Admin)
+        NotificationService::sendToRole(
+            'admin',
+            "KTV đã xác thực đơn cứu hộ #{$ticket['ticket_code']}",
+            "KTV {$currentUser['name']} đã duyệt xác thực đơn cứu hộ sinh viên. Kính mời Ban Quản Trị phê duyệt mở khóa.",
+            "tickets/show.php?id={$id}",
+            'guest_rescue'
+        );
 
         set_flash('success', "Đã xác thực đơn cứu hộ và chuyển tiếp Ban Quản Trị (Admin) thành công!");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
@@ -484,6 +518,34 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         }
 
         TicketRepository::addReply($id, $userId, $message, $isInternal, $forceStatus, $attachmentPath);
+        
+        // Gửi thông báo đến bên đối thoại
+        if (!$isInternal) {
+            $shortMsg = mb_strlen($message) > 100 ? mb_substr($message, 0, 100) . '...' : $message;
+            if ($userRole === 'agent') {
+                if (!empty($ticket['requester_id'])) {
+                    NotificationService::send(
+                        (int)$ticket['requester_id'],
+                        "Kỹ thuật viên vừa phản hồi phiếu #{$ticket['ticket_code']}",
+                        $shortMsg,
+                        "tickets/show.php?id={$id}",
+                        'ticket_reply',
+                        'user'
+                    );
+                }
+            } else {
+                if (!empty($ticket['assigned_to'])) {
+                    NotificationService::send(
+                        (int)$ticket['assigned_to'],
+                        "Người dùng vừa gửi phản hồi trên phiếu #{$ticket['ticket_code']}",
+                        $shortMsg,
+                        "tickets/show.php?id={$id}",
+                        'ticket_reply',
+                        'agent'
+                    );
+                }
+            }
+        }
         
         $statusLabels = [
             'new'               => 'Mới tiếp nhận (new)',

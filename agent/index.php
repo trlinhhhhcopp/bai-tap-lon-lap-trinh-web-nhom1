@@ -183,6 +183,9 @@ $flash = get_flash();
         <!-- KHỐI 1: THỐNG KÊ PHIẾU CỦA RIÊNG KTV (TỔNG, HOÀN THÀNH, CHƯA HOÀN THÀNH, TẢI TRỌNG) -->
         <?php require __DIR__ . '/partials/kpi_stats.php'; ?>
 
+        <!-- BANNER THÔNG BÁO HỆ THỐNG MỚI NHẤT (ĐẶT SAU PHẦN TỔNG QUAN) -->
+        <?php require __DIR__ . '/../includes/notification_banner.php'; ?>
+
         <!-- KHỐI 2: HÀNG ĐỢI XỬ LÝ THEO SLA (DUE_AT ASC) -->
         <?php require __DIR__ . '/partials/ticket_queue.php'; ?>
 

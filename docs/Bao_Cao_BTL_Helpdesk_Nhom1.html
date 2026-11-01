@@ -464,7 +464,24 @@
 
     <div class="page-break"></div>
 
-    <h1 class="section-title"><span>📊</span> 3. THIẾT KẾ CƠ SỞ DỮ LIỆU CHUẨN HÓA (12 BẢNG 3NF)</h1>
+    <h2 class="sub-title">2.6. Hệ thống Thông báo Thời gian thực Đa vai trò (Notification Center &amp; Banner Đầu Trang)</h2>
+    <ul>
+        <li><strong>Nút Quả Chuông 🔔 Thông Minh trên Thanh Header:</strong> Xuất hiện đồng bộ trên giao diện của tất cả các vai trò (Sinh viên, Giảng viên, KTV, Quản trị viên), tích hợp badge đếm số lượng thông báo chưa đọc nhấp nháy nổi bật và Dropdown panel quản lý thông báo.</li>
+        <li><strong>Banner Thông Báo Nổi Bật Đặt Ở Đầu Trang (Sau Phần Tổng Quan):</strong> Xuất hiện ngay sau phần thống kê tổng quan của từng vai trò, làm nổi bật ngay sự việc mới nhất để người dùng không bỏ lỡ thông tin quan trọng; trang bị nút thao tác nhanh (Xem chi tiết, Ẩn thông báo).</li>
+        <li><strong>Kịch bản thông báo tự động chuẩn nghiệp vụ:</strong>
+            <ul>
+                <li><em>Sinh viên:</em> Nhận thông báo khi KTV phản hồi giải pháp, khi phiếu hoàn tất cần chấm CSAT, hoặc khi Giảng viên giao bài tập / mở lại Deadline.</li>
+                <li><em>Giảng viên:</em> Nhận thông báo khi Phòng Đào tạo phân công lớp học phần mới, hoặc KTV xác nhận lỗi nộp bài cần xem xét mở Deadline.</li>
+                <li><em>Kỹ thuật viên:</em> Nhận thông báo khi có phiếu sự cố mới được điều phối gán cho mình, khi người dùng gửi phản hồi mới, hoặc có đơn cứu hộ tài khoản mới.</li>
+                <li><em>Quản trị viên (Admin):</em> Nhận thông báo khi KTV đã xác thực đơn cứu hộ cần Admin phê duyệt mở khóa, hoặc KTV báo cáo sinh viên vi phạm quy chế.</li>
+            </ul>
+        </li>
+        <li><strong>Tương tác mượt mà qua AJAX / Fetch API:</strong> Hỗ trợ đánh dấu đã đọc từng thông báo hoặc toàn bộ thông báo chỉ với 1 cú click chuột mà không cần tải lại trang.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h1 class="section-title"><span>📊</span> 3. THIẾT KẾ CƠ SỞ DỮ LIỆU CHUẨN HÓA (13 BẢNG 3NF)</h1>
     <table class="report-table">
         <thead>
             <tr>
@@ -546,6 +563,12 @@
                 <td><code>ticket_ratings</code></td>
                 <td>PK: <code>id</code> | UK: <code>ticket_id</code> (1-1)</td>
                 <td>Đánh giá chất lượng CSAT (1-5 sao) và nhận xét của sinh viên sau khi giải quyết.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">13</td>
+                <td><code>notifications</code></td>
+                <td>PK: <code>id</code> | FK: <code>user_id</code></td>
+                <td>Hệ thống thông báo thời gian thực đa vai trò (SV, GV, KTV, Admin), hỗ trợ Banner nổi bật đầu trang &amp; Quả chuông 🔔.</td>
             </tr>
         </tbody>
     </table>

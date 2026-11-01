@@ -50,6 +50,25 @@ $appBase = get_app_base_url();
 
 $action = $_GET['action'] ?? ($_POST['action'] ?? '');
 
+// API THÔNG BÁO HỆ THỐNG (NOTIFICATION AJAX ENDPOINTS)
+if ($action === 'api_mark_notification_read') {
+    header('Content-Type: application/json; charset=utf-8');
+    require_once __DIR__ . '/app/Services/NotificationService.php';
+    $notifId = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
+    $userId = (int)($_SESSION['user']['id'] ?? 0);
+    $res = NotificationService::markAsRead($notifId, $userId);
+    echo json_encode(['success' => $res]);
+    exit;
+}
+if ($action === 'api_mark_all_notifications_read') {
+    header('Content-Type: application/json; charset=utf-8');
+    require_once __DIR__ . '/app/Services/NotificationService.php';
+    $userId = (int)($_SESSION['user']['id'] ?? 0);
+    $res = NotificationService::markAllAsRead($userId);
+    echo json_encode(['success' => $res]);
+    exit;
+}
+
 // Bắt buộc đổi mật khẩu lần đầu: nếu user có is_first_login == 1 thì không được đi đâu khác ngoài first_login hoặc logout
 if (!empty($_SESSION['user']) && !empty($_SESSION['user']['is_first_login']) && $_SESSION['user']['is_first_login'] == 1) {
     if (!in_array($action, ['first_login', 'logout'], true)) {
@@ -1530,6 +1549,9 @@ if ($userType === 'student') {
                 </a>
             </div>
 
+            <!-- BANNER THÔNG BÁO HỆ THỐNG MỚI NHẤT (ĐẶT SAU PHẦN TỔNG QUAN) -->
+            <?php require __DIR__ . '/includes/notification_banner.php'; ?>
+
             <!-- BẢNG DANH SÁCH PHIẾU CỦA RIÊNG SINH VIÊN NÀY -->
             <div class="bg-white border border-slate-200/90 rounded-3xl shadow-sm overflow-hidden space-y-3">
                 <div class="p-5 border-b border-slate-100 flex items-center justify-between flex-wrap gap-3">
@@ -1744,6 +1766,9 @@ if ($userType === 'lecturer') {
                     </div>
                 </div>
             </div>
+
+            <!-- BANNER THÔNG BÁO HỆ THỐNG MỚI NHẤT (ĐẶT SAU PHẦN TỔNG QUAN) -->
+            <?php require __DIR__ . '/includes/notification_banner.php'; ?>
 
             <!-- BẢNG CÁC PHIẾU SỰ CỐ HỌC TẬP CỦA SINH VIÊN CẦN GIẢNG VIÊN XEM XÉT (KTV ĐÃ BÁO CÁO / XÁC NHẬN) -->
             <?php if (!empty($pendingCourseIncidents)): ?>
@@ -2146,6 +2171,9 @@ $pendingGuestCount   = count($pendingGuestTickets);
                 <span class="text-2xl font-black text-purple-600"><?php echo $totalUsers; ?></span>
             </div>
         </div>
+
+        <!-- BANNER THÔNG BÁO HỆ THỐNG MỚI NHẤT (ĐẶT SAU PHẦN TỔNG QUAN) -->
+        <?php require __DIR__ . '/includes/notification_banner.php'; ?>
 
         <!-- BẢNG PHIẾU CỨU HỘ KHẨN CẤP KTV ĐÃ DUYỆT CẦN ADMIN PHÊ DUYỆT MỞ KHÓA -->
         <?php if (!empty($pendingGuestTickets)): ?>
