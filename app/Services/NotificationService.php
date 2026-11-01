@@ -41,12 +41,28 @@ class NotificationService
 
     /**
      * Gửi thông báo tới toàn bộ người dùng của một vai trò (ví dụ: tất cả admin, hoặc tất cả sinh viên lớp)
+     * Hỗ trợ role: 'student' (chỉ SV, loại trừ GV), 'lecturer' (chỉ GV), 'agent', 'admin', 'requester'
      */
-    public static function sendToRole(string $role, string $title, string $content, ?string $link = null, string $type = 'system'): int
+    public static function sendToRole(string $role, string $title, string $content, ?string $link = null, string $type = 'system', ?int $excludeUserId = null): int
     {
         try {
-            $stmt = db()->prepare("SELECT id FROM users WHERE role = :role AND is_active = 1");
-            $stmt->execute([':role' => $role]);
+            $params = [];
+            if ($role === 'student') {
+                $sql = "SELECT id FROM users WHERE role = 'requester' AND (user_type = 'student' OR user_type IS NULL OR user_type = '') AND is_active = 1";
+            } elseif ($role === 'lecturer') {
+                $sql = "SELECT id FROM users WHERE user_type = 'lecturer' AND is_active = 1";
+            } else {
+                $sql = "SELECT id FROM users WHERE role = :role AND is_active = 1";
+                $params[':role'] = $role;
+            }
+
+            if ($excludeUserId && $excludeUserId > 0) {
+                $sql .= " AND id != :exclude_id";
+                $params[':exclude_id'] = $excludeUserId;
+            }
+
+            $stmt = db()->prepare($sql);
+            $stmt->execute($params);
             $users = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
             $count = 0;
@@ -293,10 +309,41 @@ class NotificationService
                     $userId,
                     "KTV đã xác nhận sự cố nộp bài của sinh viên",
                     "Kỹ thuật viên đã kiểm tra nhật ký Access Point / Server LMS và xác nhận sự cố hợp lệ. Mời Thầy/Cô vào xem xét gia hạn Deadline cho sinh viên.",
-                    "index.php",
+                    "tickets/show.php?id=40",
                     'deadline_extended',
                     'lecturer'
                 );
+
+                // 3. Phiếu hỗ trợ do chính Thầy/Cô tạo gửi Helpdesk CNTT
+                $gvTkStmt = db()->prepare("
+                    SELECT id, ticket_code, title, status 
+                    FROM tickets 
+                    WHERE requester_id = :user_id 
+                    ORDER BY id DESC LIMIT 2
+                ");
+                $gvTkStmt->execute([':user_id' => $userId]);
+                $gvTickets = $gvTkStmt->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($gvTickets as $gtk) {
+                    if (in_array($gtk['status'], ['resolved', 'closed'])) {
+                        self::send(
+                            $userId,
+                            "KTV đã xử lý xong phiếu hỗ trợ #{$gtk['ticket_code']}",
+                            "Sự cố '{$gtk['title']}' của Thầy/Cô đã có giải pháp kỹ thuật. Kính mời Thầy/Cô vào kiểm tra kết quả.",
+                            "tickets/show.php?id={$gtk['id']}",
+                            'ticket_reply',
+                            'lecturer'
+                        );
+                    } else {
+                        self::send(
+                            $userId,
+                            "Phiếu sự cố #{$gtk['ticket_code']} đang được xử lý",
+                            "Kỹ thuật viên chuyên trách đang kiểm tra và giải quyết sự cố '{$gtk['title']}' của Thầy/Cô.",
+                            "tickets/show.php?id={$gtk['id']}",
+                            'ticket_reply',
+                            'lecturer'
+                        );
+                    }
+                }
 
             } elseif ($role === 'agent') {
                 // Kỹ thuật viên: Phiếu mới được giao

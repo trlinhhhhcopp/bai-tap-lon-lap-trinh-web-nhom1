@@ -82,15 +82,45 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                         "👉 Kính chuyển Giảng viên phụ trách môn học xem xét chấp thuận mở lại Deadline / gia hạn nộp bài cho sinh viên.";
         TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'in_progress');
 
+        // Tìm Giảng viên phụ trách môn học / lớp học phần này
+        $lecturerId = 0;
+        if (!empty($ticket['course_id']) && !empty($ticket['class_id'])) {
+            $stmtLec = db()->prepare("SELECT lecturer_id FROM course_assignments WHERE course_id = :cid AND class_id = :clid LIMIT 1");
+            $stmtLec->execute([':cid' => $ticket['course_id'], ':clid' => $ticket['class_id']]);
+            $lecturerId = (int)$stmtLec->fetchColumn();
+        }
+        if (!$lecturerId && !empty($ticket['course_id'])) {
+            $stmtLec = db()->prepare("SELECT lecturer_id FROM course_assignments WHERE course_id = :cid LIMIT 1");
+            $stmtLec->execute([':cid' => $ticket['course_id']]);
+            $lecturerId = (int)$stmtLec->fetchColumn();
+        }
+        if (!$lecturerId && !empty($ticket['lesson_id'])) {
+            $stmtLec = db()->prepare("SELECT ca.lecturer_id FROM course_lessons cl JOIN course_assignments ca ON ca.course_id = cl.course_id WHERE cl.id = :lid LIMIT 1");
+            $stmtLec->execute([':lid' => $ticket['lesson_id']]);
+            $lecturerId = (int)$stmtLec->fetchColumn();
+        }
+
         // Gửi thông báo đến Giảng viên phụ trách
-        if (!empty($courseAssignment['lecturer_id'])) {
+        if ($lecturerId > 0) {
             NotificationService::send(
-                (int)$courseAssignment['lecturer_id'],
-                "KTV đã xác nhận sự cố nộp bài của sinh viên",
-                "Kỹ thuật viên đã cấp biên bản xác nhận lỗi cho phiếu #{$ticket['ticket_code']}. Kính mời Thầy/Cô vào xem xét gia hạn Deadline.",
+                $lecturerId,
+                "🆘 KTV đã xác nhận sự cố nộp bài của sinh viên",
+                "KTV vừa kiểm tra và xác nhận sự cố kỹ thuật buổi học trên phiếu #{$ticket['ticket_code']} ({$ticket['requester_name']}). Kính mời Thầy/Cô vào xem xét gia hạn Deadline!",
                 "tickets/show.php?id={$id}",
                 'deadline_extended',
                 'lecturer'
+            );
+        }
+
+        // Báo cho sinh viên biết KTV đã duyệt và đã chuyển sang GV
+        if (!empty($ticket['requester_id'])) {
+            NotificationService::send(
+                (int)$ticket['requester_id'],
+                "📋 KTV đã xác nhận sự cố kỹ thuật buổi học",
+                "Kỹ thuật viên đã cấp biên bản xác nhận lỗi cho phiếu #{$ticket['ticket_code']} và chuyển tới Giảng viên bộ môn xem xét gia hạn Deadline.",
+                "tickets/show.php?id={$id}",
+                'ticket_reply',
+                'student'
             );
         }
 
@@ -225,6 +255,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                         "Sinh viên lưu ý nộp bài đúng hạn ở các buổi học tiếp theo.";
         TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
 
+        // Bắn thông báo phản hồi cho sinh viên
+        if (!empty($ticket['requester_id'])) {
+            try {
+                NotificationService::send(
+                    (int)$ticket['requester_id'],
+                    "Thầy/Cô đã từ chối yêu cầu gia hạn Deadline",
+                    "Giảng viên bộ môn không chấp thuận mở lại Deadline cho Buổi " . ($ticket['lesson_number'] ?? '') . ". Lý do: {$rejectNote}",
+                    "tickets/show.php?id={$id}",
+                    'ticket_reply',
+                    'student'
+                );
+            } catch (\Throwable $e) {}
+        }
+
         set_flash('info', "Đã từ chối gia hạn Deadline cho sinh viên. Phiếu tự động chuyển sang Hoàn tất & Đóng.");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
@@ -276,6 +320,19 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                         "Đơn cứu hộ đã được đóng.";
         TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
 
+        if (!empty($ticket['requester_id'])) {
+            try {
+                NotificationService::send(
+                    (int)$ticket['requester_id'],
+                    "KTV đã bác bỏ đơn cứu hộ tài khoản",
+                    "Kỹ thuật viên đã kiểm tra và bác bỏ yêu cầu cứu hộ #{$ticket['ticket_code']}. Lý do: {$rejectNote}",
+                    "tickets/show.php?id={$id}",
+                    'guest_rescue',
+                    'student'
+                );
+            } catch (\Throwable $e) {}
+        }
+
         set_flash('info', "Đã bác bỏ đơn cứu hộ.");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
@@ -308,6 +365,19 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                         "📧 Hướng dẫn đã được xác nhận gửi về email liên hệ: " . ($ticket['contact_email'] ?? '') . ".";
         TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
 
+        if (!empty($targetUserId)) {
+            try {
+                NotificationService::send(
+                    $targetUserId,
+                    "🎉 Tài khoản của bạn đã được Admin phê duyệt mở khóa",
+                    "Ban Quản Trị đã phê duyệt đơn cứu hộ và mở khóa tài khoản. Mật khẩu tạm: 123456. Vui lòng đăng nhập và đổi mật khẩu mới!",
+                    "index.php",
+                    'guest_rescue',
+                    'student'
+                );
+            } catch (\Throwable $e) {}
+        }
+
         set_flash('success', "Đã mở khóa tài khoản thành công và đặt lại mật khẩu về '123456'!");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
@@ -333,6 +403,19 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                         "Ban Quản Trị từ chối yêu cầu cứu hộ mở khóa.\n" .
                         "Lý do: \"" . $reason . "\"";
         TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
+
+        if (!empty($ticket['requester_id'])) {
+            try {
+                NotificationService::send(
+                    (int)$ticket['requester_id'],
+                    "Ban Quản Trị từ chối yêu cầu cứu hộ mở khóa",
+                    "Đơn cứu hộ tài khoản #{$ticket['ticket_code']} bị từ chối. Lý do: {$reason}",
+                    "tickets/show.php?id={$id}",
+                    'guest_rescue',
+                    'student'
+                );
+            } catch (\Throwable $e) {}
+        }
 
         set_flash('info', "Đã từ chối đơn cứu hộ.");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
@@ -427,6 +510,22 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         TicketRepository::updateStatus($id, 'closed', 'completed');
     }
 
+    // BẮN THÔNG BÁO CHO KTV PHỤ TRÁCH KHI NGƯỜI DÙNG ĐÁNH GIÁ CSAT
+    if (!empty($ticket['assigned_to'])) {
+        try {
+            $scoreStars = str_repeat('⭐', $score);
+            $userRoleLabel = ($userType === 'lecturer') ? "Thầy/Cô" : "Sinh viên";
+            NotificationService::send(
+                (int)$ticket['assigned_to'],
+                "{$scoreStars} Đánh giá CSAT mới từ người dùng",
+                "{$userRoleLabel} {$currentUser['name']} vừa đánh giá {$score} sao cho phiếu #{$ticket['ticket_code']}: \"{$comment}\". Cảm ơn bạn đã tận tâm hỗ trợ!",
+                "agent/ratings.php?agent_id={$ticket['assigned_to']}",
+                'rating',
+                'agent'
+            );
+        } catch (\Throwable $e) {}
+    }
+
     set_flash('success', "Cảm ơn bạn đã nghiệm thu và đánh giá chất lượng dịch vụ: <strong>{$score} ★</strong>!");
     header("Location: show.php?id={$id}&view_as={$viewAs}");
     exit;
@@ -439,6 +538,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
     $reopenNote = trim($_POST['reopen_note'] ?? 'Sự cố vẫn chưa được khắc phục triệt để. Kính nhờ Kỹ thuật viên kiểm tra và hỗ trợ tiếp!');
     TicketRepository::addReply($id, (int)$currentUser['id'], $reopenNote, false, 'in_progress');
     db()->prepare("UPDATE tickets SET reopen_count = reopen_count + 1 WHERE id = :id")->execute(['id' => $id]);
+
+    // Bắn thông báo cho KTV phụ trách khi người dùng mở lại phiếu
+    if (!empty($ticket['assigned_to'])) {
+        try {
+            NotificationService::send(
+                (int)$ticket['assigned_to'],
+                "⚠️ Người dùng yêu cầu mở lại phiếu #{$ticket['ticket_code']}",
+                "{$currentUser['name']} báo chưa hài lòng và yêu cầu hỗ trợ tiếp: \"{$reopenNote}\".",
+                "tickets/show.php?id={$id}",
+                'ticket_reply',
+                'agent'
+            );
+        } catch (\Throwable $e) {}
+    }
+
     set_flash('info', "Đã gửi yêu cầu hỗ trợ tiếp! Phiếu đã được kích hoạt lại trạng thái <strong>Đang xử lý</strong>.");
     header("Location: show.php?id={$id}&view_as={$viewAs}");
     exit;
@@ -537,26 +651,37 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         // Gửi thông báo đến bên đối thoại
         if (!$isInternal) {
             $shortMsg = mb_strlen($message) > 100 ? mb_substr($message, 0, 100) . '...' : $message;
-            if (in_array($userRole, ['agent', 'admin', 'lecturer'])) {
-                if (!empty($ticket['requester_id'])) {
-                    NotificationService::send(
-                        (int)$ticket['requester_id'],
-                        "💬 Phản hồi mới trên phiếu #{$ticket['ticket_code']}",
-                        "{$currentUser['name']} vừa nhắn: \"{$shortMsg}\"",
-                        "tickets/show.php?id={$id}",
-                        'ticket_reply',
-                        'student'
-                    );
-                }
-            } else {
+            $isRequester = ((int)$ticket['requester_id'] === $userId);
+
+            if ($isRequester) {
+                // Người tạo phiếu nhắn (SV hoặc GV) -> Gửi thông báo cho KTV phụ trách
                 if (!empty($ticket['assigned_to'])) {
+                    $senderRole = ($userType === 'lecturer') ? "Thầy/Cô" : "Sinh viên";
                     NotificationService::send(
                         (int)$ticket['assigned_to'],
-                        "💬 Người dùng vừa phản hồi phiếu #{$ticket['ticket_code']}",
+                        "💬 {$senderRole} vừa phản hồi phiếu #{$ticket['ticket_code']}",
                         "{$currentUser['name']} vừa nhắn: \"{$shortMsg}\"",
                         "tickets/show.php?id={$id}",
                         'ticket_reply',
                         'agent'
+                    );
+                }
+            } else {
+                // KTV / Admin / GV bộ môn nhắn -> Gửi thông báo cho người tạo phiếu (SV hoặc GV)
+                if (!empty($ticket['requester_id'])) {
+                    $reqType = $ticket['requester_type'] ?? '';
+                    if (!$reqType) {
+                        $reqType = db()->query("SELECT user_type FROM users WHERE id = " . (int)$ticket['requester_id'])->fetchColumn() ?: 'student';
+                    }
+                    $targetRole = ($reqType === 'lecturer') ? 'lecturer' : 'student';
+                    $senderLabel = in_array($userRole, ['agent', 'admin']) ? "Kỹ thuật viên {$currentUser['name']}" : "Thầy/Cô {$currentUser['name']}";
+                    NotificationService::send(
+                        (int)$ticket['requester_id'],
+                        "💬 Phản hồi mới trên phiếu #{$ticket['ticket_code']}",
+                        "{$senderLabel} vừa nhắn: \"{$shortMsg}\"",
+                        "tickets/show.php?id={$id}",
+                        'ticket_reply',
+                        $targetRole
                     );
                 }
             }
@@ -610,18 +735,36 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
             ];
             $statusVi = $statusLabelsVi[$newStatus] ?? $newStatus;
 
-            // Gửi thông báo chuyển trạng thái đến sinh viên người gửi phiếu
+            // Gửi thông báo chuyển trạng thái đến người gửi phiếu (Sinh viên hoặc Giảng viên)
             if (!empty($ticket['requester_id'])) {
                 try {
                     require_once __DIR__ . '/../app/Services/NotificationService.php';
-                    NotificationService::send(
-                        (int)$ticket['requester_id'],
-                        "Cập nhật tiến độ phiếu #{$ticket['ticket_code']}",
-                        "Kỹ thuật viên vừa chuyển trạng thái phiếu hỗ trợ của bạn sang: '{$statusVi}'.",
-                        "tickets/show.php?id={$id}",
-                        'ticket_reply',
-                        'student'
-                    );
+                    $reqType = $ticket['requester_type'] ?? '';
+                    if (!$reqType) {
+                        $reqType = db()->query("SELECT user_type FROM users WHERE id = " . (int)$ticket['requester_id'])->fetchColumn() ?: 'student';
+                    }
+                    $targetRole = ($reqType === 'lecturer') ? 'lecturer' : 'student';
+                    $salutation = ($reqType === 'lecturer') ? "Kính mời Thầy/Cô" : "Mời bạn";
+
+                    if ($newStatus === 'resolved') {
+                        NotificationService::send(
+                            (int)$ticket['requester_id'],
+                            "🎯 Phiếu #{$ticket['ticket_code']} đã có giải pháp xử lý",
+                            "Kỹ thuật viên đã chuyển phiếu sang trạng thái ĐÃ GIẢI QUYẾT. {$salutation} vào kiểm tra kết quả và thực hiện đánh giá chất lượng CSAT!",
+                            "tickets/show.php?id={$id}",
+                            'ticket_reply',
+                            $targetRole
+                        );
+                    } else {
+                        NotificationService::send(
+                            (int)$ticket['requester_id'],
+                            "Cập nhật tiến độ phiếu #{$ticket['ticket_code']}",
+                            "Kỹ thuật viên vừa chuyển trạng thái phiếu hỗ trợ của bạn sang: '{$statusVi}'.",
+                            "tickets/show.php?id={$id}",
+                            'ticket_reply',
+                            $targetRole
+                        );
+                    }
                 } catch (\Throwable $e) {}
             }
 
@@ -653,6 +796,37 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                 db()->prepare("UPDATE tickets SET assigned_to = :aid WHERE id = :id")->execute(['aid' => $newAgentId, 'id' => $id]);
                 $transferTitle = ($userRole === 'agent') ? "KTV {$currentUser['name']} đã điều chuyển chuyên môn phiếu sự cố" : "Quản trị viên đã phân công phiếu sự cố";
                 TicketRepository::addReply($id, (int)$currentUser['id'], "{$transferTitle} cho KTV: {$newAgent['name']} ({$newAgent['user_code']}).", false);
+
+                // Bắn thông báo cho KTV mới nhận phiếu
+                try {
+                    require_once __DIR__ . '/../app/Services/NotificationService.php';
+                    NotificationService::send(
+                        $newAgentId,
+                        "🎫 Phiếu sự cố mới được điều phối: #{$ticket['ticket_code']}",
+                        "Bạn vừa được phân công xử lý phiếu sự cố: '{$ticket['title']}'. Vui lòng tiếp nhận và phản hồi theo SLA.",
+                        "tickets/show.php?id={$id}",
+                        'ticket_assigned',
+                        'agent'
+                    );
+
+                    // Bắn thông báo cho Người gửi phiếu (Sinh viên hoặc Giảng viên)
+                    if (!empty($ticket['requester_id'])) {
+                        $reqType = $ticket['requester_type'] ?? '';
+                        if (!$reqType) {
+                            $reqType = db()->query("SELECT user_type FROM users WHERE id = " . (int)$ticket['requester_id'])->fetchColumn() ?: 'student';
+                        }
+                        $targetRole = ($reqType === 'lecturer') ? 'lecturer' : 'student';
+                        NotificationService::send(
+                            (int)$ticket['requester_id'],
+                            "👨‍💻 KTV tiếp nhận phiếu #{$ticket['ticket_code']}",
+                            "Phiếu hỗ trợ của bạn đã được phân công cho Kỹ thuật viên {$newAgent['name']} ({$newAgent['user_code']}) phụ trách xử lý.",
+                            "tickets/show.php?id={$id}",
+                            'ticket_reply',
+                            $targetRole
+                        );
+                    }
+                } catch (\Throwable $e) {}
+
                 set_flash('success', "Đã phân công thành công cho KTV: <strong>{$newAgent['name']}</strong>!");
                 header("Location: show.php?id={$id}&view_as={$viewAs}");
                 exit;
@@ -760,6 +934,27 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
     if (in_array($userRole, ['agent', 'admin'])) {
         TicketRepository::updateStatus($id, 'resolved');
         TicketRepository::addReply($id, (int)$currentUser['id'], "✅ [BIÊN BẢN NGHIỆM THU KỸ THUẬT]: Kỹ thuật viên đã xử lý và nghiệm thu giải pháp hoàn tất. Kính mời người dùng kiểm tra lại và gửi đánh giá CSAT.", false, 'resolved');
+        
+        // Bắn thông báo mời người dùng (SV hoặc GV) vào đánh giá CSAT
+        if (!empty($ticket['requester_id'])) {
+            try {
+                $reqType = $ticket['requester_type'] ?? '';
+                if (!$reqType) {
+                    $reqType = db()->query("SELECT user_type FROM users WHERE id = " . (int)$ticket['requester_id'])->fetchColumn() ?: 'student';
+                }
+                $targetRole = ($reqType === 'lecturer') ? 'lecturer' : 'student';
+                $salutation = ($reqType === 'lecturer') ? "Kính mời Thầy/Cô" : "Mời bạn";
+                NotificationService::send(
+                    (int)$ticket['requester_id'],
+                    "✅ KTV đã nghiệm thu giải pháp phiếu #{$ticket['ticket_code']}",
+                    "Kỹ thuật viên đã hoàn thành giải pháp kỹ thuật. {$salutation} vào kiểm tra kết quả và thực hiện đánh giá chất lượng CSAT!",
+                    "tickets/show.php?id={$id}",
+                    'ticket_reply',
+                    $targetRole
+                );
+            } catch (\Throwable $e) {}
+        }
+
         set_flash('success', "Đã nghiệm thu xong giải pháp kỹ thuật! Phiếu đã chuyển sang trạng thái ĐÃ CÓ GIẢI PHÁP (resolved).");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;

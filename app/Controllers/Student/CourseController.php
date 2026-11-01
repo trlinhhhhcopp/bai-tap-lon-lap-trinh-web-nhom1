@@ -190,6 +190,22 @@ class CourseController
             return;
         }
 
+        // Bắn thông báo đến Giảng viên phụ trách môn học
+        try {
+            require_once __DIR__ . '/../../Services/NotificationService.php';
+            $lecturerId = (int)(db()->query("SELECT ca.lecturer_id FROM course_lessons cl JOIN course_assignments ca ON ca.course_id = cl.course_id WHERE cl.id = {$lessonId} LIMIT 1")->fetchColumn() ?: 0);
+            if ($lecturerId > 0) {
+                NotificationService::send(
+                    $lecturerId,
+                    "📥 Sinh viên nộp bài tập Buổi {$lesson['lesson_number']}",
+                    "Sinh viên {$currentUser['name']} ({$currentUser['user_code']}) vừa nộp bài tập Buổi {$lesson['lesson_number']}. Kính mời Thầy/Cô vào chấm điểm!",
+                    "lecturer/lessons.php?course_id={$courseId}&view_lesson_id={$lessonId}",
+                    'assignment_submission',
+                    'lecturer'
+                );
+            }
+        } catch (\Throwable $e) {}
+
         $msg = "Đính kèm bài tập thành công cho Buổi {$lesson['lesson_number']}! Buổi học đã được ghi nhận: ĐÃ HOÀN THÀNH ✅";
 
         // Nếu là request AJAX Fetch

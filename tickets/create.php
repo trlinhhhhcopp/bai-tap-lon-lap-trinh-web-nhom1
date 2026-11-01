@@ -223,6 +223,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             try {
                 require_once __DIR__ . '/../app/Services/NotificationService.php';
                 $assignedKtvId = (int)(db()->query("SELECT assigned_to FROM tickets WHERE id = " . (int)$ticketId)->fetchColumn() ?: 0);
+                $isCreatorLecturer = ($userType === 'lecturer');
+                $creatorLabel = $isCreatorLecturer ? "Thầy/Cô {$currentUser['name']}" : "Sinh viên {$currentUser['name']}";
+
                 if ($reqCourseId > 0 && $reqLessonId > 0) {
                     if ($assignedKtvId > 0) {
                         NotificationService::send($assignedKtvId, "🆘 TRẠM CỨU HỘ: Phiếu #{$newCode}", "Sinh viên báo sự cố nộp bài buổi học. KTV vui lòng kiểm tra log server LMS!", "tickets/show.php?id={$ticketId}", 'ticket_assigned', 'agent');
@@ -230,7 +233,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     NotificationService::sendToRole('agent', "🆘 TRẠM CỨU HỘ BUỔI HỌC: Phiếu #{$newCode}", "Có yêu cầu cứu hộ nộp bài mới từ sinh viên. KTV vui lòng kiểm tra!", "tickets/show.php?id={$ticketId}", 'ticket_assigned');
                 } else {
                     if ($assignedKtvId > 0) {
-                        NotificationService::send($assignedKtvId, "🎫 Phiếu sự cố mới: #{$newCode}", "Bạn vừa được phân công xử lý phiếu sự cố '{$title}'.", "tickets/show.php?id={$ticketId}", 'ticket_assigned', 'agent');
+                        $subj = $isCreatorLecturer ? "🎫 Phiếu sự cố từ Giảng viên: #{$newCode}" : "🎫 Phiếu sự cố mới: #{$newCode}";
+                        $msg = "{$creatorLabel} vừa gửi phiếu yêu cầu hỗ trợ '{$title}'. Vui lòng tiếp nhận theo cam kết SLA.";
+                        NotificationService::send($assignedKtvId, $subj, $msg, "tickets/show.php?id={$ticketId}", 'ticket_assigned', 'agent');
                     }
                 }
             } catch (\Throwable $e) {}

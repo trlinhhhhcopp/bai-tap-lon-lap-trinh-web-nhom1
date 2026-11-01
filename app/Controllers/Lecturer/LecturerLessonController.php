@@ -163,10 +163,10 @@ class LecturerLessonController
 
         if ($success) {
             set_flash('success', "Đã cập nhật đề bài" . ($attachmentPath ? " và tệp tài liệu đính kèm" : "") . " thành công!");
-            // Bắn thông báo đến sinh viên lớp
+            // Bắn thông báo đến sinh viên lớp (KHÔNG gửi cho Giảng viên)
             try {
                 require_once __DIR__ . '/../../Services/NotificationService.php';
-                NotificationService::sendToRole('requester', "📝 Cập nhật đề bài & hạn nộp bài tập", "Thầy/Cô vừa giao/cập nhật đề bài buổi học mới. Hạn nộp bài: {$formattedDeadline}.", "student/index.php?action=courses", 'new_assignment');
+                NotificationService::sendToRole('student', "📝 Cập nhật đề bài & hạn nộp bài tập", "Thầy/Cô vừa cập nhật đề bài buổi học mới. Hạn nộp bài: {$formattedDeadline}.", "student/index.php?action=courses", 'new_assignment', (int)$currentUser['id']);
             } catch (\Throwable $e) {}
         } else {
             set_flash('error', "Không thể cập nhật buổi học, vui lòng thử lại!");
@@ -214,6 +214,25 @@ class LecturerLessonController
 
         if ($success) {
             set_flash('success', "Đã chấm điểm " . number_format($score, 1) . "/10.0 và lưu lời nhận xét cho sinh viên thành công!");
+            // Bắn thông báo đến sinh viên được chấm điểm
+            try {
+                require_once __DIR__ . '/../../Services/NotificationService.php';
+                $subStmt = db()->prepare("SELECT student_id, lesson_id FROM student_assignment_submissions WHERE id = :sid LIMIT 1");
+                $subStmt->execute([':sid' => $submissionId]);
+                $subRow = $subStmt->fetch(PDO::FETCH_ASSOC);
+                if ($subRow && !empty($subRow['student_id'])) {
+                    $lessonNum = (int)(db()->query("SELECT lesson_number FROM course_lessons WHERE id = " . (int)$subRow['lesson_id'])->fetchColumn() ?: 0);
+                    $formattedScore = number_format($score, 1);
+                    NotificationService::send(
+                        (int)$subRow['student_id'],
+                        "🎉 Thầy/Cô đã chấm điểm bài tập Buổi {$lessonNum}",
+                        "Điểm của bạn: {$formattedScore}/10.0" . ($feedback ? " - Lời nhận xét: \"{$feedback}\"" : ""),
+                        "student/index.php?action=courses",
+                        'grade',
+                        'student'
+                    );
+                }
+            } catch (\Throwable $e) {}
         } else {
             set_flash('error', 'Không thể lưu điểm, vui lòng thử lại!');
         }
@@ -288,9 +307,10 @@ class LecturerLessonController
             $newId = $this->model->createLesson($courseId, $lessonNumber, $title, $description, $requirement, $formattedDeadline, $attachmentPath, $attachmentName);
             if ($newId > 0) {
                 set_flash('success', "Đã thêm mới Buổi {$lessonNumber}: {$title} và ban hành đề bài" . ($attachmentPath ? " kèm tệp tài liệu" : "") . " thành công!");
+                // Bắn thông báo đến sinh viên lớp (KHÔNG gửi cho Giảng viên)
                 try {
                     require_once __DIR__ . '/../../Services/NotificationService.php';
-                    NotificationService::sendToRole('requester', "📝 Thầy/Cô vừa giao bài tập Buổi {$lessonNumber}", "Buổi {$lessonNumber}: '{$title}' đã được đăng tải kèm đề bài. Hạn chót: {$formattedDeadline}.", "student/index.php?action=courses", 'new_assignment');
+                    NotificationService::sendToRole('student', "📝 Thầy/Cô vừa giao bài tập Buổi {$lessonNumber}", "Buổi {$lessonNumber}: '{$title}' đã được đăng tải kèm đề bài. Hạn chót: {$formattedDeadline}.", "student/index.php?action=courses", 'new_assignment', (int)$currentUser['id']);
                 } catch (\Throwable $e) {}
             } else {
                 set_flash('error', 'Không thể lưu bài tập mới, vui lòng thử lại!');

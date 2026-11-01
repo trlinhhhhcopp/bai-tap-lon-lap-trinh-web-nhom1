@@ -78,10 +78,25 @@ Hệ thống đã được tinh chỉnh, nâng cấp và hoàn thiện 100% theo
 ### 2.6. Hệ thống Thông báo Thời gian thực Đa vai trò (Notification Center & Banner Đầu Trang)
 * **Nút Quả Chuông 🔔 trên Navbar:** Tích hợp đồng bộ trên thanh điều hướng cho tất cả các role, có badge đếm số thông báo chưa đọc và Dropdown panel quản lý thông báo.
 * **Banner Thông Báo Nổi Bật Đặt Ở Đầu Trang (Sau Phần Tổng Quan):** Xuất hiện ngay sau phần thống kê tổng quan của từng vai trò (Sinh viên, Giảng viên, KTV, Admin) với đầy đủ thông tin sự cố, nút thao tác nhanh xem chi tiết và nút ẩn/đã đọc.
-* **Kịch bản thông báo tự động chuẩn nghiệp vụ:**
-  * **Sinh viên:** Nhận thông báo khi KTV/Admin chuyển trạng thái phiếu, khi có tin nhắn chat phản hồi mới, khi được hủy bỏ cảnh báo vi phạm/giải oan, hoặc khi Thầy/Cô giao bài tập mới kèm tệp tài liệu.
-  * **Giảng viên:** Nhận thông báo khi Phòng Đào tạo phân công lớp học phần mới, hoặc KTV xác nhận lỗi sự cố cần xem xét mở Deadline.
-  * **Kỹ thuật viên:** Nhận thông báo tức thời khi có đơn cứu hộ khẩn cấp mới (Guest ticket) hoặc sự cố Trạm cứu hộ buổi học gửi đến.
+* **Kịch bản thông báo tự động chuẩn nghiệp vụ & kịp lúc:**
+  * **Sinh viên:** 
+    * Nhận thông báo khi KTV nghiệm thu xong (`quick_resolve`) hoặc chuyển trạng thái phiếu sang `resolved` (Đã giải quyết) kèm lời mời vào nghiệm thu và đánh giá chất lượng CSAT.
+    * Nhận thông báo khi có tin nhắn chat phản hồi mới từ KTV, khi KTV tiếp nhận phiếu, hoặc khi phiếu được chuyển trạng thái.
+    * Nhận thông báo khi Thầy/Cô đã chấp thuận mở lại Deadline (hoặc từ chối) đối với yêu cầu cứu hộ buổi học.
+    * Nhận thông báo khi Thầy/Cô giao bài tập mới hoặc cập nhật đề bài kèm tệp đính kèm.
+    * Nhận thông báo khi Thầy/Cô chấm điểm bài tập (điểm số thang 10 và nhận xét).
+    * Nhận thông báo khi Admin phê duyệt mở khóa tài khoản cứu hộ (kèm mật khẩu tạm `123456`).
+  * **Giảng viên:** 
+    * Nhận thông báo sự cố học tập sinh viên gửi **sau khi KTV duyệt xác nhận có lỗi kỹ thuật khách quan**, mời Thầy/Cô vào thẩm định gia hạn Deadline.
+    * Nhận thông báo về phiếu yêu cầu hỗ trợ kỹ thuật do chính Thầy/Cô gửi (khi KTV tiếp nhận, chuyển tiến độ, hoặc chat phản hồi).
+    * Nhận thông báo khi sinh viên nộp bài tập mới để Thầy/Cô vào chấm điểm.
+    * Nhận thông báo khi Phòng Đào tạo phân công lớp học phần mới.
+    * **Tối ưu trải nghiệm:** Giảng viên **KHÔNG** nhận thông báo về việc chính mình vừa đổi deadline hay thêm bài tập (bỏ các thông báo tự gửi, chỉ gửi cho sinh viên lớp).
+  * **Kỹ thuật viên (Agent):** 
+    * Nhận thông báo tức thời khi Sinh viên gửi đánh giá CSAT (điểm sao & nhận xét) để nắm bắt mức độ hài lòng của người dùng.
+    * Nhận thông báo khi có phiếu sự cố mới được phân công hoặc được điều chuyển.
+    * Nhận thông báo khi Người dùng (SV hoặc GV) gửi tin nhắn phản hồi chat hoặc yêu cầu mở lại phiếu chưa hài lòng.
+    * Nhận thông báo khi có đơn cứu hộ tài khoản khẩn cấp (Guest ticket) hoặc sự cố trạm cứu hộ buổi học gửi đến.
   * **Quản trị viên (Admin):** Nhận thông báo Trung Tâm Việc Cần Làm cấp bách (xem mục 2.7).
 * **Tương tác AJAX / Fetch API:** Đánh dấu đã đọc từng thông báo hoặc toàn bộ thông báo tức thì không cần tải lại trang.
 

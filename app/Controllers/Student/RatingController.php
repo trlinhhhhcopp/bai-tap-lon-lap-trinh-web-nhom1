@@ -54,6 +54,28 @@ class RatingController
             if (empty($errors)) {
                 try {
                     Rating::create($old);
+
+                    // Bắn thông báo thời gian thực tới KTV phụ trách
+                    try {
+                        require_once __DIR__ . '/../../Services/NotificationService.php';
+                        $tStmt = db()->prepare("SELECT t.id, t.ticket_code, t.assigned_to, u.name as requester_name FROM tickets t LEFT JOIN users u ON u.id = t.requester_id WHERE t.id = :tid LIMIT 1");
+                        $tStmt->execute([':tid' => $old['ticket_id']]);
+                        $tData = $tStmt->fetch(PDO::FETCH_ASSOC);
+                        if ($tData && !empty($tData['assigned_to'])) {
+                            $ktvId = (int)$tData['assigned_to'];
+                            $reqName = $tData['requester_name'] ?: 'Sinh viên';
+                            $scoreStars = str_repeat('⭐', (int)$old['score']);
+                            NotificationService::send(
+                                $ktvId,
+                                "{$scoreStars} Đánh giá CSAT mới từ người dùng",
+                                "{$reqName} vừa đánh giá {$old['score']} sao cho phiếu #{$tData['ticket_code']}: \"{$old['comment']}\". Cảm ơn bạn đã tận tâm hỗ trợ!",
+                                "agent/ratings.php?agent_id={$ktvId}",
+                                'rating',
+                                'agent'
+                            );
+                        }
+                    } catch (\Throwable $e) {}
+
                     $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Thêm đánh giá CSAT thành công.'];
                     header('Location: ratings.php');
                     exit;
@@ -97,6 +119,28 @@ class RatingController
             if (empty($errors)) {
                 try {
                     Rating::update($id, $old);
+
+                    // Bắn thông báo cập nhật đánh giá tới KTV
+                    try {
+                        require_once __DIR__ . '/../../Services/NotificationService.php';
+                        $tStmt = db()->prepare("SELECT t.id, t.ticket_code, t.assigned_to, u.name as requester_name FROM tickets t LEFT JOIN users u ON u.id = t.requester_id WHERE t.id = :tid LIMIT 1");
+                        $tStmt->execute([':tid' => $old['ticket_id']]);
+                        $tData = $tStmt->fetch(PDO::FETCH_ASSOC);
+                        if ($tData && !empty($tData['assigned_to'])) {
+                            $ktvId = (int)$tData['assigned_to'];
+                            $reqName = $tData['requester_name'] ?: 'Sinh viên';
+                            $scoreStars = str_repeat('⭐', (int)$old['score']);
+                            NotificationService::send(
+                                $ktvId,
+                                "{$scoreStars} Cập nhật đánh giá CSAT",
+                                "{$reqName} vừa cập nhật đánh giá sang {$old['score']} sao cho phiếu #{$tData['ticket_code']}: \"{$old['comment']}\".",
+                                "agent/ratings.php?agent_id={$ktvId}",
+                                'rating',
+                                'agent'
+                            );
+                        }
+                    } catch (\Throwable $e) {}
+
                     $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Cập nhật đánh giá thành công.'];
                     header('Location: ratings.php');
                     exit;

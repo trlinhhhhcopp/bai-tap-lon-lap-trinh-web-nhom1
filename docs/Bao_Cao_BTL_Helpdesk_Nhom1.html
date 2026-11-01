@@ -427,12 +427,12 @@
     <ul>
         <li><strong>Nút Quả Chuông 🔔 Thông Minh trên Thanh Header:</strong> Xuất hiện đồng bộ trên giao diện của tất cả các vai trò (Sinh viên, Giảng viên, KTV, Quản trị viên), tích hợp badge đếm số lượng thông báo chưa đọc nhấp nháy nổi bật và Dropdown panel quản lý thông báo.</li>
         <li><strong>Banner Thông Báo Nổi Bật Đặt Ở Đầu Trang (Sau Phần Tổng Quan):</strong> Xuất hiện ngay sau phần thống kê tổng quan của từng vai trò, làm nổi bật ngay sự việc mới nhất để người dùng không bỏ lỡ thông tin quan trọng; trang bị nút thao tác nhanh (Xem chi tiết, Ẩn thông báo).</li>
-        <li><strong>Kịch bản thông báo tự động chuẩn nghiệp vụ:</strong>
+        <li><strong>Kịch bản thông báo tự động chuẩn nghiệp vụ &amp; kịp lúc:</strong>
             <ul>
-                <li><em>Sinh viên:</em> Nhận thông báo khi KTV phản hồi giải pháp, khi phiếu hoàn tất cần chấm CSAT, hoặc khi Giảng viên giao bài tập / mở lại Deadline.</li>
-                <li><em>Giảng viên:</em> Nhận thông báo khi Phòng Đào tạo phân công lớp học phần mới, hoặc KTV xác nhận lỗi nộp bài cần xem xét mở Deadline.</li>
-                <li><em>Kỹ thuật viên:</em> Nhận thông báo khi có phiếu sự cố mới được điều phối gán cho mình, khi người dùng gửi phản hồi mới, hoặc có đơn cứu hộ tài khoản mới.</li>
-                <li><em>Quản trị viên (Admin):</em> Nhận thông báo khi KTV đã xác thực đơn cứu hộ cần Admin phê duyệt mở khóa, hoặc KTV báo cáo sinh viên vi phạm quy chế.</li>
+                <li><em>Sinh viên:</em> Nhận thông báo khi KTV nghiệm thu xong (quick_resolve) hoặc chuyển trạng thái phiếu sang "Đã giải quyết" (resolved) kèm lời mời vào nghiệm thu và đánh giá chất lượng CSAT; nhận thông báo khi có phản hồi chat mới từ KTV; khi Giảng viên chấp thuận mở lại Deadline; khi Thầy/Cô giao bài tập mới hoặc chấm điểm bài nộp (thang 10); khi Admin duyệt mở khóa tài khoản cứu hộ.</li>
+                <li><em>Giảng viên:</em> Nhận thông báo sự cố học tập sinh viên gửi <strong>sau khi KTV duyệt xác nhận có lỗi kỹ thuật khách quan</strong> để vào thẩm định gia hạn Deadline; nhận thông báo về phiếu hỗ trợ do chính Thầy/Cô gửi (khi KTV tiếp nhận, chuyển tiến độ, hoặc chat phản hồi); nhận thông báo khi sinh viên nộp bài tập mới; nhận thông báo phân công lớp học phần mới. <em>Đặc biệt: Giảng viên không bị làm phiền bởi các thông báo tự gửi về việc chính mình vừa đổi deadline hay thêm bài tập.</em></li>
+                <li><em>Kỹ thuật viên:</em> Nhận thông báo tức thời khi Sinh viên gửi đánh giá CSAT (điểm sao &amp; nhận xét) để nắm bắt mức độ hài lòng; nhận thông báo khi có phiếu sự cố mới được phân công hoặc điều chuyển; khi người dùng phản hồi chat hoặc yêu cầu mở lại phiếu chưa hài lòng; khi có đơn cứu hộ khẩn cấp hoặc sự cố trạm cứu hộ gửi đến.</li>
+                <li><em>Quản trị viên (Admin):</em> Nhận thông báo Trung Tâm Việc Cần Làm cấp bách (xem mục 2.7).</li>
             </ul>
         </li>
         <li><strong>Tương tác mượt mà qua AJAX / Fetch API:</strong> Hỗ trợ đánh dấu đã đọc từng thông báo hoặc toàn bộ thông báo chỉ với 1 cú click chuột mà không cần tải lại trang.</li>
@@ -482,12 +482,12 @@
     <ul>
         <li><strong>Nút Quả Chuông 🔔 Thông Minh trên Thanh Header:</strong> Xuất hiện đồng bộ trên giao diện của tất cả các vai trò (Sinh viên, Giảng viên, KTV, Quản trị viên), tích hợp badge đếm số lượng thông báo chưa đọc nhấp nháy nổi bật và Dropdown panel quản lý thông báo.</li>
         <li><strong>Banner Thông Báo Nổi Bật Đặt Ở Đầu Trang (Sau Phần Tổng Quan):</strong> Xuất hiện ngay sau phần thống kê tổng quan của từng vai trò, làm nổi bật ngay sự việc mới nhất để người dùng không bỏ lỡ thông tin quan trọng; trang bị nút thao tác nhanh (Xem chi tiết, Ẩn thông báo).</li>
-        <li><strong>Kịch bản thông báo tự động chuẩn nghiệp vụ:</strong>
+        <li><strong>Kịch bản thông báo tự động chuẩn nghiệp vụ &amp; kịp lúc:</strong>
             <ul>
-                <li><em>Sinh viên:</em> Nhận thông báo khi KTV phản hồi giải pháp, khi phiếu hoàn tất cần chấm CSAT, hoặc khi Giảng viên giao bài tập / mở lại Deadline.</li>
-                <li><em>Giảng viên:</em> Nhận thông báo khi Phòng Đào tạo phân công lớp học phần mới, hoặc KTV xác nhận lỗi nộp bài cần xem xét mở Deadline.</li>
-                <li><em>Kỹ thuật viên:</em> Nhận thông báo khi có phiếu sự cố mới được điều phối gán cho mình, khi người dùng gửi phản hồi mới, hoặc có đơn cứu hộ tài khoản mới.</li>
-                <li><em>Quản trị viên (Admin):</em> Nhận thông báo khi KTV đã xác thực đơn cứu hộ cần Admin phê duyệt mở khóa, hoặc KTV báo cáo sinh viên vi phạm quy chế.</li>
+                <li><em>Sinh viên:</em> Nhận thông báo khi KTV nghiệm thu xong (quick_resolve) hoặc chuyển trạng thái phiếu sang "Đã giải quyết" (resolved) kèm lời mời vào nghiệm thu và đánh giá chất lượng CSAT; nhận thông báo khi có phản hồi chat mới từ KTV; khi Giảng viên chấp thuận mở lại Deadline; khi Thầy/Cô giao bài tập mới hoặc chấm điểm bài nộp (thang 10); khi Admin duyệt mở khóa tài khoản cứu hộ.</li>
+                <li><em>Giảng viên:</em> Nhận thông báo sự cố học tập sinh viên gửi <strong>sau khi KTV duyệt xác nhận có lỗi kỹ thuật khách quan</strong> để vào thẩm định gia hạn Deadline; nhận thông báo về phiếu hỗ trợ do chính Thầy/Cô gửi (khi KTV tiếp nhận, chuyển tiến độ, hoặc chat phản hồi); nhận thông báo khi sinh viên nộp bài tập mới; nhận thông báo phân công lớp học phần mới. <em>Đặc biệt: Giảng viên không bị làm phiền bởi các thông báo tự gửi về việc chính mình vừa đổi deadline hay thêm bài tập.</em></li>
+                <li><em>Kỹ thuật viên:</em> Nhận thông báo tức thời khi Sinh viên gửi đánh giá CSAT (điểm sao &amp; nhận xét) để nắm bắt mức độ hài lòng; nhận thông báo khi có phiếu sự cố mới được phân công hoặc điều chuyển; khi người dùng phản hồi chat hoặc yêu cầu mở lại phiếu chưa hài lòng; khi có đơn cứu hộ khẩn cấp hoặc sự cố trạm cứu hộ gửi đến.</li>
+                <li><em>Quản trị viên (Admin):</em> Nhận thông báo Trung Tâm Việc Cần Làm cấp bách (xem mục 2.7).</li>
             </ul>
         </li>
         <li><strong>Tương tác mượt mà qua AJAX / Fetch API:</strong> Hỗ trợ đánh dấu đã đọc từng thông báo hoặc toàn bộ thông báo chỉ với 1 cú click chuột mà không cần tải lại trang.</li>
