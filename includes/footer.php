@@ -71,29 +71,25 @@
                     <span class="w-1.5 h-3.5 bg-emerald-500 rounded-full"></span>
                     <span>THỜI GIAN LÀM VIỆC & HẠ TẦNG</span>
                 </h4>
-                <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-3.5 space-y-2 text-xs">
-                    <div class="flex items-center justify-between text-[11.5px]">
-                        <span class="text-slate-400">Ca sáng (T2 – T6):</span>
-                        <strong class="text-slate-200">08:00 – 12:00</strong>
+                <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-4 space-y-3 text-xs">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-400">Ca sáng:</span>
+                        <strong class="text-slate-100 font-semibold tracking-wide">07:30 – 11:30</strong>
                     </div>
-                    <div class="flex items-center justify-between text-[11.5px]">
-                        <span class="text-slate-400">Ca chiều (T2 – T6):</span>
-                        <strong class="text-slate-200">13:30 – 17:30</strong>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-400">Ca chiều:</span>
+                        <strong class="text-slate-100 font-semibold tracking-wide">13:00 – 17:00</strong>
                     </div>
-                    <div class="flex items-center justify-between text-[11px] text-slate-400">
-                        <span>Ngày nghỉ:</span>
-                        <span class="text-amber-400 font-medium">Thứ 7, CN & Lễ (SLA Đóng Băng)</span>
-                    </div>
-                    <div class="pt-1.5 border-t border-slate-700/60 flex items-center justify-between text-[11px]">
+                    <div class="pt-2 border-t border-slate-700/60 flex items-center justify-between text-xs">
                         <span class="text-slate-400">Hạ tầng mạng:</span>
-                        <span class="inline-flex items-center gap-1 text-emerald-400 font-bold">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span class="inline-flex items-center gap-1.5 text-emerald-400 font-bold">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                             Trực 24/7
                         </span>
                     </div>
                 </div>
-                <div class="text-[11px] text-slate-400 space-y-1">
-                    <div>Máy chủ dữ liệu: <span class="font-mono font-bold text-sky-400">helpdesk_thudo</span></div>
+                <div class="text-xs text-slate-400 space-y-1.5 pt-1">
+                    <div>Máy chủ dữ liệu: <strong class="font-bold text-sky-400">helpdesk_thudo</strong></div>
                     <div>Kiến trúc hệ thống: <span class="text-slate-300">Clean MVC · Chuẩn ITIL v4</span></div>
                 </div>
             </div>

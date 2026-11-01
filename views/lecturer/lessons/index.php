@@ -319,7 +319,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                                                 onclick='openGradeModal(<?php echo json_encode($sub, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>)' 
                                                                 class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl text-xs transition shadow-xs cursor-pointer"
                                                                 title="Chấm điểm bài nộp theo thang điểm 10">
-                                                            <span>🎯</span> Chấm Điểm
+                                                            <span>⭐</span> Chấm Điểm
                                                         </button>
                                                     </div>
                                                 <?php endif; ?>

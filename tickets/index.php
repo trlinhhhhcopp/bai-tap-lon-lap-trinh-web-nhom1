@@ -63,23 +63,29 @@ if ($isLecturer) {
 } else {
     $filterReqId = 0;
 }
-// Nếu đang xem Trạm Cứu Hộ, hiển thị toàn bộ phiếu cứu hộ cho cả Admin và mọi KTV cùng hỗ trợ
-$filterAgentId = ($userRole === 'agent' && $warningType !== 'guest') ? (int)$currentUser['id'] : 0;
+// Phân định rõ Agent ID khi lọc danh sách và khi đếm huy hiệu (badge counters):
+// 1. Khi lọc danh sách: Nếu đang xem Trạm Cứu Hộ, hiển thị toàn bộ phiếu cứu hộ cho cả Admin và mọi KTV cùng hỗ trợ
+$listAgentId = ($userRole === 'agent' && $warningType !== 'guest') ? (int)$currentUser['id'] : 0;
+
+// 2. Khi tính huy hiệu (Badge SLA Quá Hạn):
+//    - KTV: luôn chỉ đếm số phiếu quá hạn SLA thuộc trách nhiệm phân công của KTV đó (cố định, không bị nhảy khi chuyển tab Trạm Cứu Hộ)
+//    - Admin: đếm toàn bộ phiếu quá hạn hệ thống
+$badgeAgentId = ($userRole === 'agent') ? (int)$currentUser['id'] : 0;
 
 // 2. Phân trang an toàn (5 bản ghi / trang)
 $perPage    = 5;
 $page       = max(1, (int)($_GET['page'] ?? 1));
 
-$totalTickets   = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning, $lecturerId, $lecturerScope);
+$totalTickets   = TicketRepository::countAll($keyword, $status, $categoryId, $filterReqId, $listAgentId, $hasWarning, $lecturerId, $lecturerScope);
 $totalPages     = max(1, (int)ceil($totalTickets / $perPage));
 
 if ($page > $totalPages && $totalTickets > 0) {
     $page = $totalPages;
 }
 
-$tickets        = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $filterAgentId, $hasWarning, $lecturerId, $lecturerScope);
+$tickets        = TicketRepository::findAll($keyword, $page, $perPage, $status, $categoryId, $filterReqId, $listAgentId, $hasWarning, $lecturerId, $lecturerScope);
 $categories     = TicketRepository::getCategories();
-$slaCount       = TicketRepository::countSlaOverdue($filterReqId, $filterAgentId, $lecturerId, $lecturerScope);
+$slaCount       = TicketRepository::countSlaOverdue($filterReqId, $badgeAgentId, $lecturerId, $lecturerScope);
 $lecturerIncidentsCount = $isLecturer ? TicketRepository::countLecturerCourseIncidents((int)$currentUser['id']) : 0;
 $guestCount     = in_array($userRole, ['agent', 'admin']) ? TicketRepository::countPendingGuestTickets() : 0;
 $canSeeViolations = ($userRole === 'admin' || ($userRole === 'requester' && !$isLecturer));
