@@ -170,6 +170,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                         "👉 Yêu cầu báo lỗi bị bác bỏ. Phiếu tự động chuyển sang Hoàn tất và không chuyển cho Giảng viên.";
         TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'closed');
 
+        // Bắn thông báo cho Sinh viên
+        if (!empty($ticket['requester_id'])) {
+            try {
+                require_once __DIR__ . '/../app/Services/NotificationService.php';
+                NotificationService::send(
+                    (int)$ticket['requester_id'],
+                    "❌ Kết quả kiểm tra trạm cứu hộ #{$ticket['ticket_code']}",
+                    "Kỹ thuật viên đã kiểm tra nhật ký mạng & máy chủ: Không ghi nhận lỗi kỹ thuật khách quan. Yêu cầu cứu hộ buổi học đã được đóng.",
+                    "tickets/show.php?id={$id}",
+                    'ticket_reply',
+                    'student'
+                );
+            } catch (\Throwable $e) {}
+        }
+
         set_flash('info', "Đã bác bỏ báo lỗi kỹ thuật (Sinh viên báo sai). Phiếu tự động chuyển sang Hoàn tất & Đóng.");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
@@ -522,23 +537,23 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         // Gửi thông báo đến bên đối thoại
         if (!$isInternal) {
             $shortMsg = mb_strlen($message) > 100 ? mb_substr($message, 0, 100) . '...' : $message;
-            if ($userRole === 'agent') {
+            if (in_array($userRole, ['agent', 'admin', 'lecturer'])) {
                 if (!empty($ticket['requester_id'])) {
                     NotificationService::send(
                         (int)$ticket['requester_id'],
-                        "Kỹ thuật viên vừa phản hồi phiếu #{$ticket['ticket_code']}",
-                        $shortMsg,
+                        "💬 Phản hồi mới trên phiếu #{$ticket['ticket_code']}",
+                        "{$currentUser['name']} vừa nhắn: \"{$shortMsg}\"",
                         "tickets/show.php?id={$id}",
                         'ticket_reply',
-                        'user'
+                        'student'
                     );
                 }
             } else {
                 if (!empty($ticket['assigned_to'])) {
                     NotificationService::send(
                         (int)$ticket['assigned_to'],
-                        "Người dùng vừa gửi phản hồi trên phiếu #{$ticket['ticket_code']}",
-                        $shortMsg,
+                        "💬 Người dùng vừa phản hồi phiếu #{$ticket['ticket_code']}",
+                        "{$currentUser['name']} vừa nhắn: \"{$shortMsg}\"",
                         "tickets/show.php?id={$id}",
                         'ticket_reply',
                         'agent'
@@ -594,6 +609,22 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
                 'closed'            => 'đã hoàn tất & đóng',
             ];
             $statusVi = $statusLabelsVi[$newStatus] ?? $newStatus;
+
+            // Gửi thông báo chuyển trạng thái đến sinh viên người gửi phiếu
+            if (!empty($ticket['requester_id'])) {
+                try {
+                    require_once __DIR__ . '/../app/Services/NotificationService.php';
+                    NotificationService::send(
+                        (int)$ticket['requester_id'],
+                        "Cập nhật tiến độ phiếu #{$ticket['ticket_code']}",
+                        "Kỹ thuật viên vừa chuyển trạng thái phiếu hỗ trợ của bạn sang: '{$statusVi}'.",
+                        "tickets/show.php?id={$id}",
+                        'ticket_reply',
+                        'student'
+                    );
+                } catch (\Throwable $e) {}
+            }
+
             set_flash('success', "Đã cập nhật trạng thái phiếu sang {$statusVi}!");
             header("Location: show.php?id={$id}&view_as={$viewAs}");
             exit;
@@ -643,6 +674,28 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
         $pdo->prepare("UPDATE tickets SET is_spam = 1, spam_reason = :r, status = 'resolved', resolved_at = NOW() WHERE id = :id")->execute(['r' => $reason, 'id' => $id]);
         TicketRepository::addReply($id, (int)$currentUser['id'], "🚨 [KTV BÁO CÁO VI PHẠM / SPAM - CHUYỂN ADMIN XEM XÉT]: {$reason}", false, 'resolved');
 
+        // Bắn thông báo cho Quản trị viên (Admin) và Sinh viên
+        try {
+            require_once __DIR__ . '/../app/Services/NotificationService.php';
+            NotificationService::sendToRole(
+                'admin',
+                "🚨 VIỆC CẦN LÀM: KTV báo cáo sinh viên vi phạm",
+                "KTV {$currentUser['name']} vừa lập biên bản vi phạm trên phiếu #{$ticket['ticket_code']}. Lý do: {$reason}. Cần Admin thẩm định xử lý kỷ luật!",
+                "tickets/show.php?id={$id}",
+                'violation_report'
+            );
+            if (!empty($ticket['requester_id'])) {
+                NotificationService::send(
+                    (int)$ticket['requester_id'],
+                    "⚠️ Phiếu #{$ticket['ticket_code']} bị KTV báo cáo vi phạm",
+                    "KTV vừa lập biên bản vi phạm đối với phiếu hỗ trợ của bạn (Lý do: {$reason}). Vấn đề đang được chuyển sang Ban Quản Trị xem xét.",
+                    "tickets/show.php?id={$id}",
+                    'ticket_reply',
+                    'student'
+                );
+            }
+        } catch (\Throwable $e) {}
+
         if ($lockPermanent || $userRole === 'admin') {
             $pdo->prepare("UPDATE users SET is_active = 0, lock_reason = 'banned_rescue_abuse' WHERE id = :uid")
                 ->execute(['uid' => $ticket['requester_id']]);
@@ -678,6 +731,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
             false,
             'in_progress'
         );
+
+        // 4. Bắn thông báo giải oan cho Sinh viên
+        if (!empty($ticket['requester_id'])) {
+            try {
+                require_once __DIR__ . '/../app/Services/NotificationService.php';
+                NotificationService::send(
+                    (int)$ticket['requester_id'],
+                    "✅ Bạn đã được gỡ bỏ cảnh báo vi phạm",
+                    "{$cancellerName} đã xem xét lại nội dung phiếu #{$ticket['ticket_code']}, xác nhận không có vi phạm và hủy báo cáo. Tài khoản của bạn đã được khôi phục bình thường!",
+                    "tickets/show.php?id={$id}",
+                    'ticket_reply',
+                    'student'
+                );
+            } catch (\Throwable $e) {}
+        }
 
         set_flash('success', "Đã HỦY BỎ BÁO CÁO VI PHẠM thành công! Phiếu đã trở lại trạng thái Đang xử lý và tài khoản sinh viên đã được khôi phục.");
         header("Location: show.php?id={$id}&view_as={$viewAs}");

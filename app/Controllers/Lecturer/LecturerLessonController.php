@@ -138,10 +138,36 @@ class LecturerLessonController
             $formattedDeadline .= ':00';
         }
 
-        $success = $this->model->updateLessonAssignment($lessonId, $requirement, $formattedDeadline, $title ?: null);
+        // Xử lý tệp đính kèm đề bài nếu giáo viên upload
+        $attachmentPath = null;
+        $attachmentName = null;
+        if (!empty($_FILES['assignment_file']['name']) && $_FILES['assignment_file']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['assignment_file'];
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $allowedExts = ['pdf', 'doc', 'docx', 'zip', 'rar', 'ppt', 'pptx', 'txt', 'sql', 'png', 'jpg', 'jpeg'];
+            if (in_array($ext, $allowedExts)) {
+                $uploadDir = __DIR__ . '/../../../uploads/assignments/';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0777, true);
+                }
+                $safeName = 'DeBai_Buoi' . $lessonId . '_' . time() . '.' . $ext;
+                $targetFile = $uploadDir . $safeName;
+                if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                    $attachmentPath = 'uploads/assignments/' . $safeName;
+                    $attachmentName = $file['name'];
+                }
+            }
+        }
+
+        $success = $this->model->updateLessonAssignment($lessonId, $requirement, $formattedDeadline, $title ?: null, $attachmentPath, $attachmentName);
 
         if ($success) {
-            set_flash('success', "Đã cập nhật đề bài và gia hạn nộp bài thành công!");
+            set_flash('success', "Đã cập nhật đề bài" . ($attachmentPath ? " và tệp tài liệu đính kèm" : "") . " thành công!");
+            // Bắn thông báo đến sinh viên lớp
+            try {
+                require_once __DIR__ . '/../../Services/NotificationService.php';
+                NotificationService::sendToRole('requester', "📝 Cập nhật đề bài & hạn nộp bài tập", "Thầy/Cô vừa giao/cập nhật đề bài buổi học mới. Hạn nộp bài: {$formattedDeadline}.", "student/index.php?action=courses", 'new_assignment');
+            } catch (\Throwable $e) {}
         } else {
             set_flash('error', "Không thể cập nhật buổi học, vui lòng thử lại!");
         }
@@ -237,10 +263,35 @@ class LecturerLessonController
             $formattedDeadline .= ':00';
         }
 
+        // Xử lý tệp đính kèm đề bài nếu giáo viên upload
+        $attachmentPath = null;
+        $attachmentName = null;
+        if (!empty($_FILES['assignment_file']['name']) && $_FILES['assignment_file']['error'] === UPLOAD_ERR_OK) {
+            $file = $_FILES['assignment_file'];
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $allowedExts = ['pdf', 'doc', 'docx', 'zip', 'rar', 'ppt', 'pptx', 'txt', 'sql', 'png', 'jpg', 'jpeg'];
+            if (in_array($ext, $allowedExts)) {
+                $uploadDir = __DIR__ . '/../../../uploads/assignments/';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0777, true);
+                }
+                $safeName = 'DeBai_Moi_' . time() . '_' . rand(100, 999) . '.' . $ext;
+                $targetFile = $uploadDir . $safeName;
+                if (move_uploaded_file($file['tmp_name'], $targetFile)) {
+                    $attachmentPath = 'uploads/assignments/' . $safeName;
+                    $attachmentName = $file['name'];
+                }
+            }
+        }
+
         try {
-            $newId = $this->model->createLesson($courseId, $lessonNumber, $title, $description, $requirement, $formattedDeadline);
+            $newId = $this->model->createLesson($courseId, $lessonNumber, $title, $description, $requirement, $formattedDeadline, $attachmentPath, $attachmentName);
             if ($newId > 0) {
-                set_flash('success', "Đã thêm mới Buổi {$lessonNumber}: {$title} và ban hành đề bài thành công!");
+                set_flash('success', "Đã thêm mới Buổi {$lessonNumber}: {$title} và ban hành đề bài" . ($attachmentPath ? " kèm tệp tài liệu" : "") . " thành công!");
+                try {
+                    require_once __DIR__ . '/../../Services/NotificationService.php';
+                    NotificationService::sendToRole('requester', "📝 Thầy/Cô vừa giao bài tập Buổi {$lessonNumber}", "Buổi {$lessonNumber}: '{$title}' đã được đăng tải kèm đề bài. Hạn chót: {$formattedDeadline}.", "student/index.php?action=courses", 'new_assignment');
+                } catch (\Throwable $e) {}
             } else {
                 set_flash('error', 'Không thể lưu bài tập mới, vui lòng thử lại!');
             }

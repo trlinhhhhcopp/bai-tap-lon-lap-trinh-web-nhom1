@@ -495,17 +495,19 @@
 
     <div class="page-break"></div>
 
-    <h2 class="sub-title">2.6. Hệ thống Thông báo Thời gian thực Đa vai trò (Notification Center &amp; Banner Đầu Trang)</h2>
+    <h2 class="sub-title">2.7. Trung Tâm Việc Cần Làm Cấp Bách (Admin Pending Tasks) &amp; Đính Kèm File Đề Bài</h2>
     <ul>
-        <li><strong>Nút Quả Chuông 🔔 Thông Minh trên Thanh Header:</strong> Xuất hiện đồng bộ trên giao diện của tất cả các vai trò (Sinh viên, Giảng viên, KTV, Quản trị viên), tích hợp badge đếm số lượng thông báo chưa đọc nhấp nháy nổi bật và Dropdown panel quản lý thông báo.</li>
-        <li><strong>Banner Thông Báo Nổi Bật Đặt Ở Đầu Trang (Sau Phần Tổng Quan):</strong> Xuất hiện ngay sau phần thống kê tổng quan của từng vai trò, làm nổi bật ngay sự việc mới nhất để người dùng không bỏ lỡ thông tin quan trọng; trang bị nút thao tác nhanh (Xem chi tiết, Ẩn thông báo).</li>
-        <li><strong>Kịch bản thông báo tự động chuẩn nghiệp vụ:</strong>
+        <li><strong>Trung Tâm Việc Cần Làm Cấp Bách Của Quản Trị Viên (Admin):</strong> Tự động rà soát CSDL theo thời gian thực và kích hoạt thông báo/banner cảnh báo với 4 nhóm việc trọng tâm:
             <ul>
-                <li><em>Sinh viên:</em> Nhận thông báo khi KTV phản hồi giải pháp, khi phiếu hoàn tất cần chấm CSAT, hoặc khi Giảng viên giao bài tập / mở lại Deadline.</li>
-                <li><em>Giảng viên:</em> Nhận thông báo khi Phòng Đào tạo phân công lớp học phần mới, hoặc KTV xác nhận lỗi nộp bài cần xem xét mở Deadline.</li>
-                <li><em>Kỹ thuật viên:</em> Nhận thông báo khi có phiếu sự cố mới được điều phối gán cho mình, khi người dùng gửi phản hồi mới, hoặc có đơn cứu hộ tài khoản mới.</li>
-                <li><em>Quản trị viên (Admin):</em> Nhận thông báo khi KTV đã xác thực đơn cứu hộ cần Admin phê duyệt mở khóa, hoặc KTV báo cáo sinh viên vi phạm quy chế.</li>
+                <li>🔥 <em>Sự cố diện rộng (Major Incident):</em> Nhận diện các sự cố cấp độ khẩn cấp (Critical) hoặc ảnh hưởng toàn trường để Admin kích hoạt điều phối nhanh.</li>
+                <li>🚑 <em>KTV chuyển phiếu cứu hộ sang:</em> Cảnh báo đơn cứu hộ sinh viên mà KTV đã duyệt xác thực, cần Admin xem xét phê duyệt mở khóa tài khoản và đặt lại mật khẩu.</li>
+                <li>🚨 <em>KTV báo cáo sinh viên vi phạm:</em> Cảnh báo hồ sơ sinh viên bị KTV lập biên bản vi phạm quy chế hoặc spam trạm cứu hộ để Admin thẩm định xử lý kỷ luật.</li>
+                <li>⚠️ <em>KTV bị tràn tải (Agent Overflow):</em> Tự động phát hiện KTV đang gánh quá tải hoặc có phiếu quá hạn SLA để Admin phân công lại.</li>
             </ul>
+        </li>
+        <li><strong>Giáo viên giao bài tập đính kèm tệp đa định dạng:</strong> Giảng viên có thể tải lên tệp đề bài chi tiết hoặc slide hướng dẫn (PDF, Word, Zip, Slide) khi ban hành bài tập; Sinh viên tải về trực tiếp từ Cổng Học Phần.</li>
+        <li><strong>Đồng bộ thông tin thời gian làm việc &amp; hạ tầng tại Footer:</strong> Chuẩn hóa chính xác khung giờ hành chính Ca sáng (08:00 – 12:00), Ca chiều (13:30 – 17:30) từ Thứ 2 đến Thứ 6 (Thứ 7, CN và ngày nghỉ lễ đóng băng SLA) và Hạ tầng mạng trực 24/7.</li>
+    </ul>
         </li>
         <li><strong>Tương tác mượt mà qua AJAX / Fetch API:</strong> Hỗ trợ đánh dấu đã đọc từng thông báo hoặc toàn bộ thông báo chỉ với 1 cú click chuột mà không cần tải lại trang.</li>
     </ul>

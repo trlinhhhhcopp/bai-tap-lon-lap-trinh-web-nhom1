@@ -184,12 +184,23 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                             </p>
                         </div>
                         <div class="bg-indigo-50/50 p-3.5 rounded-2xl border border-indigo-100 space-y-1">
-                            <div class="font-bold text-indigo-900 flex items-center gap-1.5">
-                                <span>🎯</span> Yêu cầu đính kèm bài tập:
+                            <div class="font-bold text-indigo-900 flex items-center justify-between gap-1.5 flex-wrap">
+                                <span class="flex items-center gap-1.5"><span>🎯</span> Yêu cầu đính kèm bài tập:</span>
+                                <?php if (!empty($item['attachment_path'])): ?>
+                                    <a href="<?php echo $appBase . htmlspecialchars($item['attachment_path']); ?>" target="_blank" download class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[11px] font-bold transition shadow-2xs">
+                                        <span>📎 Tải Đề Bài / Tài Liệu</span>
+                                    </a>
+                                <?php endif; ?>
                             </div>
                             <p class="text-indigo-950 leading-relaxed font-medium">
                                 <?= htmlspecialchars($item['assignment_requirement'] ?: 'Sinh viên hoàn thành bài thực hành và đính kèm tệp nén mã nguồn.') ?>
                             </p>
+                            <?php if (!empty($item['attachment_path'])): ?>
+                                <div class="pt-1 text-[11px] text-indigo-700 font-mono flex items-center gap-1">
+                                    <span>📄 Tệp đính kèm từ Thầy/Cô:</span>
+                                    <strong><?= htmlspecialchars($item['attachment_name'] ?: 'De_bai.pdf') ?></strong>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </div>
 

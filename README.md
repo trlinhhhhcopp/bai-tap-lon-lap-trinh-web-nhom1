@@ -78,12 +78,21 @@ Hệ thống đã được tinh chỉnh, nâng cấp và hoàn thiện 100% theo
 ### 2.6. Hệ thống Thông báo Thời gian thực Đa vai trò (Notification Center & Banner Đầu Trang)
 * **Nút Quả Chuông 🔔 trên Navbar:** Tích hợp đồng bộ trên thanh điều hướng cho tất cả các role, có badge đếm số thông báo chưa đọc và Dropdown panel quản lý thông báo.
 * **Banner Thông Báo Nổi Bật Đặt Ở Đầu Trang (Sau Phần Tổng Quan):** Xuất hiện ngay sau phần thống kê tổng quan của từng vai trò (Sinh viên, Giảng viên, KTV, Admin) với đầy đủ thông tin sự cố, nút thao tác nhanh xem chi tiết và nút ẩn/đã đọc.
-* **Kịch bản thông báo tự động:**
-  * **Sinh viên:** Nhận thông báo khi KTV phản hồi phiếu, phiếu đã giải quyết cần chấm CSAT, hoặc Thầy/Cô giao bài tập / mở lại Deadline.
+* **Kịch bản thông báo tự động chuẩn nghiệp vụ:**
+  * **Sinh viên:** Nhận thông báo khi KTV/Admin chuyển trạng thái phiếu, khi có tin nhắn chat phản hồi mới, khi được hủy bỏ cảnh báo vi phạm/giải oan, hoặc khi Thầy/Cô giao bài tập mới kèm tệp tài liệu.
   * **Giảng viên:** Nhận thông báo khi Phòng Đào tạo phân công lớp học phần mới, hoặc KTV xác nhận lỗi sự cố cần xem xét mở Deadline.
-  * **Kỹ thuật viên:** Nhận thông báo khi có phiếu sự cố mới được gán cho mình, người dùng phản hồi chat, hoặc có đơn cứu hộ mới cần xác thực.
-  * **Quản trị viên (Admin):** Nhận thông báo khi KTV xác thực đơn cứu hộ cần phê duyệt mở khóa, hoặc KTV báo cáo sinh viên vi phạm quy chế.
+  * **Kỹ thuật viên:** Nhận thông báo tức thời khi có đơn cứu hộ khẩn cấp mới (Guest ticket) hoặc sự cố Trạm cứu hộ buổi học gửi đến.
+  * **Quản trị viên (Admin):** Nhận thông báo Trung Tâm Việc Cần Làm cấp bách (xem mục 2.7).
 * **Tương tác AJAX / Fetch API:** Đánh dấu đã đọc từng thông báo hoặc toàn bộ thông báo tức thì không cần tải lại trang.
+
+### 2.7. Trung Tâm Việc Cần Làm Cấp Bách (Admin Pending Tasks) & Đính Kèm File Đề Bài
+* **Trung Tâm Việc Cần Làm (Admin Pending Tasks Hub):** Tự động phát hiện 4 nhóm tác vụ trọng tâm của Quản trị viên:
+  1. 🔥 *Sự cố diện rộng (Major Incident):* Cảnh báo khẩn cấp các sự cố cấp cao ảnh hưởng toàn trường cần Admin kích hoạt điều phối.
+  2. 🚑 *KTV chuyển phiếu cứu hộ sang:* Thông báo các đơn cứu hộ sinh viên mà KTV đã duyệt xác thực, chờ Admin phê duyệt mở khóa tài khoản và đặt lại mật khẩu.
+  3. 🚨 *KTV báo cáo sinh viên vi phạm:* Cảnh báo hồ sơ sinh viên bị KTV lập biên bản vi phạm hoặc spam trạm cứu hộ để Admin xử lý kỷ luật.
+  4. ⚠️ *KTV bị tràn tải (Agent Overflow):* Nhận diện KTV đang nhận quá tải hoặc có phiếu quá hạn SLA để Admin phân công điều chuyển.
+* **Giao bài tập đính kèm tệp đa định dạng:** Giảng viên có thể tải lên tệp đề bài chi tiết hoặc slide bài giảng (PDF, Word, Zip, Slide...) khi ban hành bài tập; Sinh viên xem và tải về trực tiếp từ Cổng Học Phần.
+* **Đồng bộ Footer chuẩn SLA:** Ca sáng `08:00 – 12:00`, Ca chiều `13:30 – 17:30` từ Thứ 2 đến Thứ 6 (Thứ 7, CN & Lễ đóng băng SLA) và Hạ tầng mạng trực 24/7.
 
 ---
 

@@ -113,6 +113,8 @@ class CourseLesson
                     l.title,
                     l.description,
                     l.assignment_requirement,
+                    l.attachment_path,
+                    l.attachment_name,
                     l.deadline_at,
                     s.id AS submission_id,
                     s.file_path,
@@ -343,11 +345,12 @@ class CourseLesson
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function updateLessonAssignment(int $lessonId, string $requirement, string $deadlineAt, ?string $title = null): bool
+    public function updateLessonAssignment(int $lessonId, string $requirement, string $deadlineAt, ?string $title = null, ?string $attachmentPath = null, ?string $attachmentName = null): bool
     {
         $sql = "UPDATE course_lessons 
                 SET assignment_requirement = :req, deadline_at = :deadline" .
                 ($title !== null ? ", title = :title" : "") .
+                ($attachmentPath !== null ? ", attachment_path = :att_path, attachment_name = :att_name" : "") .
                 " WHERE id = :id";
         $params = [
             ':req' => $requirement,
@@ -356,6 +359,10 @@ class CourseLesson
         ];
         if ($title !== null) {
             $params[':title'] = $title;
+        }
+        if ($attachmentPath !== null) {
+            $params[':att_path'] = $attachmentPath;
+            $params[':att_name'] = $attachmentName ?: basename($attachmentPath);
         }
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute($params);
@@ -471,11 +478,11 @@ class CourseLesson
     /**
      * Giảng viên tạo thêm buổi học / bài tập mới cho môn học
      */
-    public function createLesson(int $courseId, int $lessonNumber, string $title, string $description, string $requirement, string $deadlineAt): int
+    public function createLesson(int $courseId, int $lessonNumber, string $title, string $description, string $requirement, string $deadlineAt, ?string $attachmentPath = null, ?string $attachmentName = null): int
     {
         $stmt = $this->pdo->prepare("
-            INSERT INTO course_lessons (course_id, lesson_number, title, description, assignment_requirement, deadline_at)
-            VALUES (:course_id, :lesson_number, :title, :description, :requirement, :deadline_at)
+            INSERT INTO course_lessons (course_id, lesson_number, title, description, assignment_requirement, attachment_path, attachment_name, deadline_at)
+            VALUES (:course_id, :lesson_number, :title, :description, :requirement, :att_path, :att_name, :deadline_at)
         ");
         $stmt->execute([
             ':course_id'       => $courseId,
@@ -483,6 +490,8 @@ class CourseLesson
             ':title'           => $title,
             ':description'     => $description,
             ':requirement'     => $requirement,
+            ':att_path'        => $attachmentPath,
+            ':att_name'        => $attachmentName ?: ($attachmentPath ? basename($attachmentPath) : null),
             ':deadline_at'     => $deadlineAt,
         ]);
         return (int)$this->pdo->lastInsertId();

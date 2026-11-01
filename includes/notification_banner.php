@@ -30,17 +30,21 @@ if (!empty($currentUser)) {
         'class_assigned'    => '🏫',
         'ticket_assigned'   => '🎫',
         'deadline_extended' => '⏳',
-        'guest_rescue'      => '🆘',
+        'guest_rescue'      => '🚑',
+        'major_incident'    => '🔥',
+        'violation_report'  => '🚨',
+        'agent_overflow'    => '⚠️',
         'system'            => '🔔',
     ];
     $icon = $typeIcons[$bannerNotif['type']] ?? '🔔';
     $isUnread = ((int)$bannerNotif['is_read'] === 0);
+    $isAdminTask = in_array($bannerNotif['type'], ['major_incident', 'guest_rescue', 'violation_report', 'agent_overflow']);
     $notifLink = !empty($bannerNotif['link']) ? $appBase . ltrim($bannerNotif['link'], '/') : null;
     ?>
-    <div id="app_notification_banner" class="relative overflow-hidden bg-gradient-to-r from-indigo-50 via-sky-50 to-indigo-50/80 border-2 <?php echo $isUnread ? 'border-indigo-300' : 'border-slate-200'; ?> rounded-3xl p-4 sm:p-5 shadow-xs transition-all duration-300">
+    <div id="app_notification_banner" class="relative overflow-hidden <?php echo $isAdminTask ? 'bg-gradient-to-r from-rose-50 via-amber-50 to-orange-50 border-2 border-rose-300' : 'bg-gradient-to-r from-indigo-50 via-sky-50 to-indigo-50/80 border-2 ' . ($isUnread ? 'border-indigo-300' : 'border-slate-200'); ?> rounded-3xl p-4 sm:p-5 shadow-xs transition-all duration-300">
         <div class="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
             <div class="flex items-start sm:items-center gap-3.5 min-w-0">
-                <div class="relative w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-xl shadow-xs shrink-0">
+                <div class="relative w-11 h-11 rounded-2xl <?php echo $isAdminTask ? 'bg-rose-600' : 'bg-indigo-600'; ?> text-white flex items-center justify-center text-xl shadow-xs shrink-0">
                     <span><?php echo $icon; ?></span>
                     <?php if ($isUnread): ?>
                         <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5">
@@ -51,9 +55,15 @@ if (!empty($currentUser)) {
                 </div>
                 <div class="min-w-0">
                     <div class="flex items-center gap-2 mb-0.5 flex-wrap">
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase <?php echo $isUnread ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-700'; ?>">
-                            <?php echo $isUnread ? '🔔 THÔNG BÁO MỚI' : 'ĐÃ ĐỌC'; ?>
-                        </span>
+                        <?php if ($isAdminTask): ?>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase bg-rose-600 text-white animate-pulse">
+                                ⚡ VIỆC CẦN LÀM (ADMIN)
+                            </span>
+                        <?php else: ?>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase <?php echo $isUnread ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-700'; ?>">
+                                <?php echo $isUnread ? '🔔 THÔNG BÁO MỚI' : 'ĐÃ ĐỌC'; ?>
+                            </span>
+                        <?php endif; ?>
                         <span class="text-[11px] text-slate-400 font-mono">
                             <?php echo date('H:i - d/m/Y', strtotime($bannerNotif['created_at'])); ?>
                         </span>

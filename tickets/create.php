@@ -218,6 +218,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
 
             $newCode = db()->query("SELECT ticket_code FROM tickets WHERE id = " . (int)$ticketId)->fetchColumn() ?: ("HD-" . $ticketId);
+
+            // Bắn thông báo thời gian thực tới KTV phụ trách
+            try {
+                require_once __DIR__ . '/../app/Services/NotificationService.php';
+                $assignedKtvId = (int)(db()->query("SELECT assigned_to FROM tickets WHERE id = " . (int)$ticketId)->fetchColumn() ?: 0);
+                if ($reqCourseId > 0 && $reqLessonId > 0) {
+                    if ($assignedKtvId > 0) {
+                        NotificationService::send($assignedKtvId, "🆘 TRẠM CỨU HỘ: Phiếu #{$newCode}", "Sinh viên báo sự cố nộp bài buổi học. KTV vui lòng kiểm tra log server LMS!", "tickets/show.php?id={$ticketId}", 'ticket_assigned', 'agent');
+                    }
+                    NotificationService::sendToRole('agent', "🆘 TRẠM CỨU HỘ BUỔI HỌC: Phiếu #{$newCode}", "Có yêu cầu cứu hộ nộp bài mới từ sinh viên. KTV vui lòng kiểm tra!", "tickets/show.php?id={$ticketId}", 'ticket_assigned');
+                } else {
+                    if ($assignedKtvId > 0) {
+                        NotificationService::send($assignedKtvId, "🎫 Phiếu sự cố mới: #{$newCode}", "Bạn vừa được phân công xử lý phiếu sự cố '{$title}'.", "tickets/show.php?id={$ticketId}", 'ticket_assigned', 'agent');
+                    }
+                }
+            } catch (\Throwable $e) {}
+
             set_flash('success', "Gửi phiếu hỗ trợ thành công! Mã phiếu bảo mật của bạn là: <strong>" . htmlspecialchars($newCode) . "</strong>. KTV sẽ tiếp nhận và xử lý sớm nhất.");
             header('Location: ../index.php');
             exit;

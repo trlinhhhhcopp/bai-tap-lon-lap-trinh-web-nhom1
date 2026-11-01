@@ -144,11 +144,17 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                             </div>
 
                             <div class="pt-3 border-t border-slate-200/70 flex flex-wrap items-center justify-between gap-3 text-xs">
-                                <div class="flex items-center gap-3 text-slate-600">
+                                <div class="flex items-center gap-3 text-slate-600 flex-wrap">
                                     <span class="flex items-center gap-1 font-semibold">
                                         <span>📝</span> Yêu cầu bài tập: 
                                         <strong class="text-slate-900"><?php echo htmlspecialchars($item['assignment_requirement'] ?: 'Chưa cập nhật đề bài'); ?></strong>
                                     </span>
+                                    <?php if (!empty($item['attachment_path'])): ?>
+                                        <a href="<?php echo $appBase . htmlspecialchars($item['attachment_path']); ?>" target="_blank" download class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-lg text-[11px] font-bold transition">
+                                            <span>📎 Đề bài:</span>
+                                            <span class="underline truncate max-w-[140px]"><?php echo htmlspecialchars($item['attachment_name'] ?: 'Tệp đính kèm'); ?></span>
+                                        </a>
+                                    <?php endif; ?>
                                 </div>
 
                                 <div class="flex items-center gap-3">
@@ -346,7 +352,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 <button type="button" onclick="closeEditLessonModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold text-sm">✕</button>
             </div>
 
-            <form method="POST" action="lessons.php" class="space-y-4 text-xs">
+            <form method="POST" action="lessons.php" enctype="multipart/form-data" class="space-y-4 text-xs">
                 <input type="hidden" name="action" value="update" />
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
                 <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
@@ -365,6 +371,16 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                     <textarea name="assignment_requirement" id="formLessonRequirement" rows="3" required 
                               placeholder="Nhập yêu cầu sinh viên phải đính kèm file nộp bài (ví dụ: Nộp file PDF báo cáo hoặc file nén mã nguồn)..." 
                               class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-medium text-slate-800 text-xs"></textarea>
+                </div>
+
+                <!-- ĐÍNH KÈM TỆP ĐỀ BÀI / TÀI LIỆU HỌC PHẦN DÀNH CHO GIÁO VIÊN -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        📎 Đính Kèm Tệp Đề Bài / Tài Liệu (PDF, Word, Zip, Slide...):
+                    </label>
+                    <input type="file" name="assignment_file" accept=".pdf,.doc,.docx,.zip,.rar,.ppt,.pptx,.txt,.sql,.png,.jpg" 
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-700 text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-100 file:text-indigo-800 hover:file:bg-indigo-200 cursor-pointer" />
+                    <span class="text-[11px] text-slate-400 mt-1 block">Tải lên tệp đề bài chi tiết hoặc slide hướng dẫn thực hành cho sinh viên tải về.</span>
                 </div>
 
                 <div>
@@ -510,7 +526,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 <button type="button" onclick="closeCreateLessonModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold text-sm">✕</button>
             </div>
 
-            <form method="POST" action="lessons.php" class="space-y-4 text-xs">
+            <form method="POST" action="lessons.php" enctype="multipart/form-data" class="space-y-4 text-xs">
                 <input type="hidden" name="action" value="create" />
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
                 <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
@@ -534,9 +550,19 @@ $csrfToken = $_SESSION['csrf'] ?? '';
 
                 <div>
                     <label class="block font-bold text-slate-700 mb-1">
-                        Yêu Cầu Bài Tập & Đính Kèm Tệp: <span class="text-rose-500">*</span>
+                        Yêu Cầu Bài Tập & Minh Chứng: <span class="text-rose-500">*</span>
                     </label>
                     <textarea name="assignment_requirement" rows="3" required placeholder="Nêu rõ yêu cầu sinh viên phải đính kèm tệp gì (mã nguồn .zip, báo cáo .pdf, minh chứng link github...)..." class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-medium text-slate-800 text-xs"></textarea>
+                </div>
+
+                <!-- ĐÍNH KÈM TỆP ĐỀ BÀI / TÀI LIỆU DÀNH CHO GIÁO VIÊN -->
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">
+                        📎 Đính Kèm Tệp Đề Bài / Tài Liệu Hướng Dẫn:
+                    </label>
+                    <input type="file" name="assignment_file" accept=".pdf,.doc,.docx,.zip,.rar,.ppt,.pptx,.txt,.sql,.png,.jpg" 
+                           class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-slate-700 text-xs file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer" />
+                    <span class="text-[11px] text-slate-400 mt-1 block">Tải lên file đề bài (PDF, Word, Zip, Slide) để sinh viên tải về tham khảo.</span>
                 </div>
 
                 <div>

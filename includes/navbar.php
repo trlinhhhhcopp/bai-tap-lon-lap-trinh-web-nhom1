@@ -334,7 +334,10 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                                             'class_assigned'    => '🏫',
                                             'ticket_assigned'   => '🎫',
                                             'deadline_extended' => '⏳',
-                                            'guest_rescue'      => '🆘',
+                                            'guest_rescue'      => '🚑',
+                                            'major_incident'    => '🔥',
+                                            'violation_report'  => '🚨',
+                                            'agent_overflow'    => '⚠️',
                                             'system'            => '🔔',
                                         ];
                                         $nIcon = $typeIcons[$notif['type']] ?? '🔔';

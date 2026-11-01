@@ -90,6 +90,26 @@ class GuestTicketController extends Controller {
             $ticket = Ticket::findById($ticketId);
             $ticketCode = $ticket['ticket_code'];
 
+            // Gửi thông báo đến KTV phụ trách và nhóm kỹ thuật viên
+            try {
+                require_once __DIR__ . '/../Services/NotificationService.php';
+                NotificationService::send(
+                    2,
+                    "🚑 CÓ ĐƠN CỨU HỘ MỚI #{$ticketCode}",
+                    "Sinh viên {$name} ({$userCode}) vừa gửi đơn cứu hộ tài khoản. Vui lòng kiểm tra và xác thực hồ sơ!",
+                    "tickets/show.php?id={$ticketId}",
+                    'guest_rescue',
+                    'agent'
+                );
+                NotificationService::sendToRole(
+                    'agent',
+                    "🚑 ĐƠN CỨU HỘ KHẨN CẤP #{$ticketCode}",
+                    "Trạm cứu hộ vừa tiếp nhận đơn của {$name} ({$userCode}). KTV vui lòng kiểm tra!",
+                    "tickets/index.php?warning=guest",
+                    'guest_rescue'
+                );
+            } catch (\Throwable $e) {}
+
             $this->flash('success', "Đã gửi phiếu cứu hộ thành công! <strong>Mã tra cứu duy nhất của bạn: <span style='font-size:16px; color:#0284c7; letter-spacing:0.5px;'>{$ticketCode}</span></strong>. Yêu cầu đã được tự động chuyển đến <strong>KTV Nguyễn Văn An (Chuyên trách SSO)</strong> tiếp nhận xử lý trong vòng <strong>2 giờ làm việc</strong>.");
             $this->redirect("/guest/lookup?code={$ticketCode}");
         } catch (\PDOException $e) {

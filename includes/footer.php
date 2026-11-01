@@ -73,12 +73,16 @@
                 </h4>
                 <div class="bg-slate-800/70 border border-slate-700/80 rounded-2xl p-3.5 space-y-2 text-xs">
                     <div class="flex items-center justify-between text-[11.5px]">
-                        <span class="text-slate-400">Ca sáng:</span>
-                        <strong class="text-slate-200">07:30 – 11:30</strong>
+                        <span class="text-slate-400">Ca sáng (T2 – T6):</span>
+                        <strong class="text-slate-200">08:00 – 12:00</strong>
                     </div>
                     <div class="flex items-center justify-between text-[11.5px]">
-                        <span class="text-slate-400">Ca chiều:</span>
-                        <strong class="text-slate-200">13:00 – 17:00</strong>
+                        <span class="text-slate-400">Ca chiều (T2 – T6):</span>
+                        <strong class="text-slate-200">13:30 – 17:30</strong>
+                    </div>
+                    <div class="flex items-center justify-between text-[11px] text-slate-400">
+                        <span>Ngày nghỉ:</span>
+                        <span class="text-amber-400 font-medium">Thứ 7, CN & Lễ (SLA Đóng Băng)</span>
                     </div>
                     <div class="pt-1.5 border-t border-slate-700/60 flex items-center justify-between text-[11px]">
                         <span class="text-slate-400">Hạ tầng mạng:</span>

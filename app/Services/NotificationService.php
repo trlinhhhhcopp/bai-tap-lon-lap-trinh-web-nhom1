@@ -207,11 +207,14 @@ class NotificationService
 
         if ($userId <= 0) return;
 
-        // Nếu người dùng đã có thông báo thì không cần khởi tạo lại
+        // Nếu người dùng đã có thông báo thì không cần khởi tạo lại (riêng Admin luôn rà soát việc cần làm mới)
         try {
             $stmt = db()->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = :user_id");
             $stmt->execute([':user_id' => $userId]);
             if ((int)$stmt->fetchColumn() > 0) {
+                if ($role === 'admin') {
+                    self::checkAndNotifyAdminTasks($userId);
+                }
                 return;
             }
         } catch (Throwable $e) {
@@ -326,27 +329,131 @@ class NotificationService
                 );
 
             } elseif ($role === 'admin') {
-                // Quản trị viên
-                self::send(
-                    $userId,
-                    "KTV đã xác thực đơn cứu hộ tài khoản mới",
-                    "Kỹ thuật viên đã duyệt xác nhận hồ sơ đơn cứu hộ sinh viên. Ban Quản Trị vui lòng phê duyệt mở khóa tài khoản và đặt lại mật khẩu.",
-                    "index.php",
-                    'guest_rescue',
-                    'admin'
-                );
-
-                self::send(
-                    $userId,
-                    "Giám sát hệ thống: Cập nhật điều phối phân công",
-                    "Hệ thống tự động ghi nhận các mốc SLA và tải KTV trực ca. Báo cáo thống kê trực tuyến đã sẵn sàng.",
-                    "index.php",
-                    'system',
-                    'admin'
-                );
+                // Tự động kiểm tra 4 việc cần làm cấp bách của Admin:
+                // Sự cố diện rộng, KTV chuyển đơn cứu hộ, KTV báo cáo SV vi phạm, KTV bị tràn tải
+                self::checkAndNotifyAdminTasks($userId);
             }
         } catch (Throwable $e) {
             error_log("[NotificationService::ensureUserHasInitialNotifications] Error: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Tự động quét và phát hiện các Việc Cần Làm cấp bách của Admin:
+     * 1. Sự cố diện rộng (Major Incident / Critical)
+     * 2. KTV chuyển phiếu cứu hộ sang (Pending Rescue Approvals)
+     * 3. KTV báo cáo sinh viên vi phạm (Pending Violations)
+     * 4. KTV bị tràn tải / có phiếu quá hạn SLA (Agent Overflow)
+     */
+    public static function checkAndNotifyAdminTasks(int $adminId): void
+    {
+        if ($adminId <= 0) return;
+        $pdo = db();
+
+        try {
+            // 1. SỰ CỐ DIỆN RỘNG (MAJOR INCIDENT / CRITICAL)
+            $stmtMajor = $pdo->query("
+                SELECT COUNT(*) FROM tickets 
+                WHERE (priority_id = 1 OR title LIKE '%toàn trường%' OR title LIKE '%sập mạng%' OR title LIKE '%diện rộng%') 
+                  AND status IN ('new', 'in_progress')
+            ");
+            $majorCount = (int)($stmtMajor ? $stmtMajor->fetchColumn() : 0);
+            if ($majorCount > 0) {
+                $stmtCheck = $pdo->prepare("
+                    SELECT COUNT(*) FROM notifications 
+                    WHERE user_id = :uid AND type = 'major_incident' AND created_at >= DATE_SUB(NOW(), INTERVAL 3 HOUR)
+                ");
+                $stmtCheck->execute([':uid' => $adminId]);
+                if ((int)$stmtCheck->fetchColumn() === 0) {
+                    self::send(
+                        $adminId,
+                        "🔥 VIỆC CẦN LÀM: Phát hiện {$majorCount} sự cố diện rộng / khẩn cấp",
+                        "Hệ thống ghi nhận sự cố cấp cao ảnh hưởng diện rộng. Cần Admin kích hoạt kênh điều phối khẩn cấp và đôn đốc KTV xử lý!",
+                        "tickets/index.php?kw=toàn+trường",
+                        'major_incident',
+                        'admin'
+                    );
+                }
+            }
+
+            // 2. KTV CHUYỂN PHIẾU CỨU HỘ SANG (PENDING RESCUE APPROVALS)
+            $stmtRescue = $pdo->query("
+                SELECT COUNT(*) FROM tickets 
+                WHERE rescue_verified = 1 AND status != 'closed'
+            ");
+            $rescuePendingCount = (int)($stmtRescue ? $stmtRescue->fetchColumn() : 0);
+            if ($rescuePendingCount > 0) {
+                $stmtCheck = $pdo->prepare("
+                    SELECT COUNT(*) FROM notifications 
+                    WHERE user_id = :uid AND type = 'guest_rescue' AND is_read = 0
+                ");
+                $stmtCheck->execute([':uid' => $adminId]);
+                if ((int)$stmtCheck->fetchColumn() === 0) {
+                    self::send(
+                        $adminId,
+                        "🚑 VIỆC CẦN LÀM: {$rescuePendingCount} đơn cứu hộ chờ Admin phê duyệt",
+                        "Kỹ thuật viên đã kiểm tra và xác thực hồ sơ hợp lệ. Cần Admin xem xét duyệt mở khóa tài khoản và đặt lại mật khẩu cho sinh viên!",
+                        "tickets/index.php?warning=guest",
+                        'guest_rescue',
+                        'admin'
+                    );
+                }
+            }
+
+            // 3. KTV BÁO CÁO SINH VIÊN VI PHẠM (PENDING VIOLATIONS)
+            $stmtViolations = $pdo->query("
+                SELECT COUNT(*) FROM tickets 
+                WHERE is_spam = 1 AND status IN ('new', 'in_progress', 'resolved')
+            ");
+            $violationCount = (int)($stmtViolations ? $stmtViolations->fetchColumn() : 0);
+            if ($violationCount > 0) {
+                $stmtCheck = $pdo->prepare("
+                    SELECT COUNT(*) FROM notifications 
+                    WHERE user_id = :uid AND type = 'violation_report' AND is_read = 0
+                ");
+                $stmtCheck->execute([':uid' => $adminId]);
+                if ((int)$stmtCheck->fetchColumn() === 0) {
+                    self::send(
+                        $adminId,
+                        "🚨 VIỆC CẦN LÀM: {$violationCount} trường hợp SV bị KTV báo cáo vi phạm",
+                        "Kỹ thuật viên đã lập biên bản vi phạm quy chế hoặc spam trạm cứu hộ. Cần Admin thẩm định xử lý kỷ luật / khóa tài khoản!",
+                        "tickets/index.php?warning=violation",
+                        'violation_report',
+                        'admin'
+                    );
+                }
+            }
+
+            // 4. KTV BỊ TRÀN TẢI / PHIẾU QUÁ HẠN SLA (AGENT OVERFLOW)
+            $stmtOverflow = $pdo->query("
+                SELECT u.name, COUNT(t.id) as active_tickets 
+                FROM tickets t 
+                JOIN users u ON t.assigned_to = u.id 
+                WHERE t.status IN ('new', 'in_progress') 
+                GROUP BY t.assigned_to, u.name 
+                HAVING active_tickets >= 3
+            ");
+            $overflowAgents = $stmtOverflow ? $stmtOverflow->fetchAll(PDO::FETCH_ASSOC) : [];
+            if (!empty($overflowAgents)) {
+                $agentNames = implode(', ', array_map(fn($a) => $a['name'] . " ({$a['active_tickets']} phiếu)", $overflowAgents));
+                $stmtCheck = $pdo->prepare("
+                    SELECT COUNT(*) FROM notifications 
+                    WHERE user_id = :uid AND type = 'agent_overflow' AND created_at >= DATE_SUB(NOW(), INTERVAL 3 HOUR)
+                ");
+                $stmtCheck->execute([':uid' => $adminId]);
+                if ((int)$stmtCheck->fetchColumn() === 0) {
+                    self::send(
+                        $adminId,
+                        "⚠️ VIỆC CẦN LÀM: Cảnh báo KTV bị tràn tải",
+                        "Hệ thống phát hiện KTV đang nhận quá tải: {$agentNames}. Cần Admin điều chuyển bớt phiếu sang KTV khác để đảm bảo SLA!",
+                        "tickets/index.php?warning=sla",
+                        'agent_overflow',
+                        'admin'
+                    );
+                }
+            }
+        } catch (Throwable $e) {
+            error_log("[NotificationService::checkAndNotifyAdminTasks] Error: " . $e->getMessage());
         }
     }
 }
