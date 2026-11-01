@@ -160,13 +160,6 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                                 <span>⚠️</span> Cần đính kèm tệp
                             </span>
                         <?php endif; ?>
-
-                        <!-- NÚT BÁO SỰ CỐ KỸ THUẬT BUỔI HỌC THEO KỊCH BẢN 1 (ITIL INCIDENT MANAGEMENT) -->
-                        <a href="<?php echo $appBase; ?>tickets/create.php?course_id=<?= (int)$course['id'] ?>&lesson_id=<?= $lessonId ?>" 
-                           title="Gặp sự cố lỗi mạng, lỗi nộp tệp hoặc sự cố hệ thống ở buổi học này? Bấm để gửi phiếu cứu hộ ngay tới KTV trực ca"
-                           class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition shadow-2xs">
-                            <span>🆘</span> Báo Lỗi Buổi Này
-                        </a>
                     </div>
                 </div>
 
@@ -242,12 +235,13 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                                         <span>⬇️</span> Tải Bài Nộp
                                     </a>
                                     
-                                    <!-- NÚT MỞ FORM NỘP LẠI -->
+                                    <?php if (!$isOverdue): ?>
+                                    <!-- NÚT MỞ FORM NỘP LẠI (CHỈ KHI CÒN HẠN) -->
                                     <button type="button" onclick="toggleSubmitForm(<?= $lessonId ?>)" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition">
                                         ✏️ Nộp Lại Tệp
                                     </button>
 
-                                    <!-- FORM XÓA BÀI NỘP -->
+                                    <!-- FORM XÓA BÀI NỘP (CHỈ KHI CÒN HẠN) -->
                                     <form method="POST" action="index.php?action=course_delete_submission" onsubmit="return confirm('Bạn có chắc chắn muốn hủy bài nộp buổi này? Buổi học sẽ chuyển về trạng thái Chưa hoàn thành.');" class="inline">
                                         <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrfToken) ?>">
                                         <input type="hidden" name="course_id" value="<?= (int)$course['id'] ?>">
@@ -256,6 +250,7 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                                             ✕ Hủy nộp
                                         </button>
                                     </form>
+                                    <?php endif; ?>
                                 </div>
                             </div>
 
@@ -316,7 +311,7 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                                             </div>
                                         </div>
                                     </div>
-                                    <a href="../tickets/create.php?course_id=<?= (int)$course['id'] ?>&lesson_id=<?= $lessonId ?>&category_id=4" 
+                                    <a href="<?php echo $appBase; ?>tickets/create.php?course_id=<?= (int)$course['id'] ?>&lesson_id=<?= $lessonId ?>&category_id=4" 
                                        class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5 shrink-0">
                                         <span>🚨</span> Báo Lỗi Để Thầy/Cô Xem Xét Gia Hạn
                                     </a>

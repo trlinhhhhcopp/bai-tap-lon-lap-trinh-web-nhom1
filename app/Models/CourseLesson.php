@@ -438,12 +438,25 @@ class CourseLesson
      */
     public function deleteSubmission(int $submissionId, int $studentId): bool
     {
-        $stmt = $this->pdo->prepare("SELECT id, file_path FROM student_assignment_submissions WHERE id = :id AND student_id = :sid");
+        $stmt = $this->pdo->prepare("
+            SELECT s.id, s.file_path, l.deadline_at 
+            FROM student_assignment_submissions s
+            JOIN course_lessons l ON s.lesson_id = l.id
+            WHERE s.id = :id AND s.student_id = :sid
+        ");
         $stmt->execute([':id' => $submissionId, ':sid' => $studentId]);
         $sub = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$sub) {
             return false;
+        }
+
+        // Không cho phép hủy nếu buổi học đã hết hạn nộp
+        if (!empty($sub['deadline_at'])) {
+            $now = (new \DateTime('now', new \DateTimeZone('Asia/Ho_Chi_Minh')))->format('Y-m-d H:i:s');
+            if ($now > $sub['deadline_at']) {
+                return false;
+            }
         }
 
         if (!empty($sub['file_path']) && file_exists(__DIR__ . '/../../' . $sub['file_path'])) {

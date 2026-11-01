@@ -276,7 +276,7 @@ class CourseController
         } else {
             $_SESSION['flash'] = [
                 'type' => 'danger',
-                'message' => 'Không thể xóa bài nộp hoặc bạn không có quyền thao tác!',
+                'message' => 'Không thể hủy bài nộp (do buổi học đã hết hạn nộp hoặc bạn không có quyền thao tác)!',
             ];
         }
 
