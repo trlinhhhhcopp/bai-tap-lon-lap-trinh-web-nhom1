@@ -9,12 +9,16 @@ config/mail.php
 # Thư mục lưu trữ tệp đính kèm do người dùng tải lên
 storage/uploads/*
 !storage/uploads/.gitkeep
+uploads/assignments/*
+!uploads/assignments/.gitkeep
+uploads/attachments/*
+!uploads/attachments/.gitkeep
+uploads/replies/*
+!uploads/replies/.gitkeep
 
 # Hệ điều hành & IDE rác
 .DS_Store
 Thumbs.db
-
-
 
 # Scratch testing scripts
 scratch/
