@@ -155,6 +155,24 @@ class Rating
         return $stmt->fetchAll();
     }
 
+    public static function getPendingEvaluationTickets(int $userId): array
+    {
+        $sql = "SELECT t.id, t.ticket_code, t.title, t.status, t.resolved_at, t.created_at,
+                       COALESCE(c.name, 'Hỗ trợ kỹ thuật') AS category_name,
+                       u_agent.name AS agent_name, u_agent.user_code AS agent_code
+                FROM tickets t
+                LEFT JOIN categories c ON t.category_id = c.id
+                LEFT JOIN users u_agent ON t.assigned_to = u_agent.id
+                LEFT JOIN ticket_ratings r ON t.id = r.ticket_id
+                WHERE t.requester_id = :uid
+                  AND t.status IN ('resolved', 'closed')
+                  AND r.id IS NULL
+                ORDER BY t.resolved_at DESC, t.id DESC";
+        $stmt = db()->prepare($sql);
+        $stmt->execute([':uid' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public static function getAllStudents(): array
     {
         return db()->query("SELECT id, name, email, user_code FROM users

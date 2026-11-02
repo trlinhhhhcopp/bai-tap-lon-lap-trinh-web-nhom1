@@ -46,6 +46,7 @@ if ($status === 'warning') {
     $warningType = 'sla';
     $status = '';
 }
+$isStudentOrLecturer = ($userRole === 'requester' || $isLecturer);
 $hasWarning = false;
 if ($warningType === 'sla') {
     $hasWarning = 'sla';
@@ -53,11 +54,18 @@ if ($warningType === 'sla') {
     $hasWarning = 'guest';
 } elseif ($warningType === 'violation' && ($userRole === 'admin' || ($userRole === 'requester' && !$isLecturer))) {
     $hasWarning = 'violation';
+} elseif ($warningType === 'unrated' && $isStudentOrLecturer) {
+    $hasWarning = 'unrated';
 }
 
 $lecturerId = $isLecturer ? (int)$currentUser['id'] : 0;
 if ($isLecturer) {
-    $filterReqId = 0; // Để cho phép TicketRepository lọc theo lecturerScope
+    if ($warningType === 'unrated') {
+        $filterReqId = (int)$currentUser['id'];
+        $lecturerId = 0;
+    } else {
+        $filterReqId = 0; // Để cho phép TicketRepository lọc theo lecturerScope
+    }
 } elseif ($userRole === 'requester') {
     $filterReqId = (int)$currentUser['id'];
 } else {
@@ -90,6 +98,7 @@ $lecturerIncidentsCount = $isLecturer ? TicketRepository::countLecturerCourseInc
 $guestCount     = in_array($userRole, ['agent', 'admin']) ? TicketRepository::countPendingGuestTickets() : 0;
 $canSeeViolations = ($userRole === 'admin' || ($userRole === 'requester' && !$isLecturer));
 $violationCount   = $canSeeViolations ? TicketRepository::countViolations($filterReqId, 0, $isLecturer) : 0;
+$unratedCount   = $isStudentOrLecturer ? TicketRepository::countUnratedTickets((int)$currentUser['id']) : 0;
 $flash        = get_flash();
 ?>
 <!DOCTYPE html>
@@ -178,6 +187,16 @@ $flash        = get_flash();
                     <span>📋 Tất Cả Phiếu</span>
                 </a>
 
+                <?php if ($isStudentOrLecturer): ?>
+                    <!-- TAB CHƯA ĐÁNH GIÁ (ĐÃ HOÀN TẤT, CẦN ĐÁNH GIÁ) CHO ROLE SV & GV -->
+                    <a href="index.php?warning=unrated<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                       title="Xem danh sách các phiếu đã hoàn tất đang chờ bạn nghiệm thu và đánh giá CSAT"
+                       class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'unrated') ? 'bg-amber-500 text-slate-950 shadow-sm ring-2 ring-amber-300' : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200' ?>">
+                        <span>⭐ Chưa Đánh Giá (Đã hoàn tất, cần đánh giá)</span>
+                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'unrated') ? 'bg-slate-950 text-amber-300' : 'bg-amber-600 text-white' ?>"><?= $unratedCount ?></span>
+                    </a>
+                <?php endif; ?>
+
                 <?php if ($isLecturer): ?>
                     <a href="index.php?scope=course_incidents<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                        title="Xem danh sách các phiếu sự cố học tập / nộp bài của sinh viên các lớp Thầy/Cô phụ trách"
@@ -219,6 +238,19 @@ $flash        = get_flash();
                     </a>
                 <?php endif; ?>
             </div>
+
+            <?php if ($isStudentOrLecturer && $unratedCount > 0 && $warningType !== 'unrated'): ?>
+                <!-- THÔNG BÁO NHANH CHO SV VÀ GV KHI CÓ PHIẾU ĐÃ HOÀN TẤT CẦN ĐÁNH GIÁ -->
+                <div class="bg-gradient-to-r from-amber-50 via-orange-50/70 to-amber-50 border border-amber-300 text-amber-900 rounded-2xl p-3 px-4 text-xs font-semibold flex items-center justify-between flex-wrap gap-2 shadow-2xs">
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-500 text-base">⭐</span>
+                        <span>Bạn có <strong class="text-amber-950 underline"><?= $unratedCount ?> phiếu</strong> hỗ trợ kỹ thuật đã xử lý xong đang chờ bạn đánh giá nghiệm thu (CSAT).</span>
+                    </div>
+                    <a href="index.php?warning=unrated" class="px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs transition shadow-2xs">
+                        Xem phiếu cần đánh giá →
+                    </a>
+                </div>
+            <?php endif; ?>
 
             <form method="GET" action="index.php" class="grid grid-cols-1 md:grid-cols-12 gap-3 text-xs">
                 <?php if ($warningType): ?>
@@ -426,6 +458,11 @@ $flash        = get_flash();
                                         <a href="show.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition inline-block">
                                             Chi Tiết →
                                         </a>
+                                        <?php if (in_array($t['status'], ['resolved', 'closed']) && empty($t['rating_id']) && ($isStudentOrLecturer || (int)$t['requester_id'] === (int)$currentUser['id'])): ?>
+                                            <a href="show.php?id=<?php echo $t['id']; ?>#csat-box" class="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-lg text-[11px] font-black transition inline-block shadow-2xs" title="Chấm điểm đánh giá CSAT cho phiếu này">
+                                                ⭐ Chấm Điểm
+                                            </a>
+                                        <?php endif; ?>
                                         <?php 
                                         $minsSinceCreated = (time() - strtotime($t['created_at'])) / 60;
                                         $canRequesterEditRow = in_array($userRole, ['requester', 'lecturer']) 

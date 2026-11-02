@@ -7,6 +7,16 @@ if (empty($_SESSION['user'])) {
     exit;
 }
 $appBase = get_app_base_url();
+
+$userRole = $_SESSION['user']['role'] ?? '';
+$userType = $_SESSION['user']['user_type'] ?? '';
+$isRequesterRole = ($userRole === 'requester' || $userType === 'student' || $userType === 'lecturer');
+$currentUserId = (int)($_SESSION['user']['id'] ?? 0);
+
+if (!isset($pendingRatings) && $isRequesterRole && $currentUserId > 0) {
+    require_once __DIR__ . '/../../../app/Models/Rating.php';
+    $pendingRatings = Rating::getPendingEvaluationTickets($currentUserId);
+}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -37,12 +47,90 @@ $appBase = get_app_base_url();
             </h1>
             <p class="text-xs text-indigo-200/80 mt-0.5">Khảo sát mức độ hài lòng từ 1 đến 5 sao và nhận xét phản hồi dịch vụ số trường học.</p>
         </div>
+        <?php if (!$isRequesterRole): ?>
         <div class="flex items-center gap-3">
             <a href="index.php?action=rating_create" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
                 <span>⭐</span> Chấm Điểm Đánh Giá Mới
             </a>
         </div>
+        <?php endif; ?>
     </div>
+
+    <!-- KHỐI TRÊN ĐẦU: CHƯA ĐÁNH GIÁ (ĐÃ HOÀN TẤT, CẦN ĐÁNH GIÁ) CHO ROLE SV & GV -->
+    <?php if ($isRequesterRole): ?>
+        <div class="bg-gradient-to-r from-amber-50/90 via-orange-50/60 to-amber-50/90 border-2 border-amber-300 rounded-3xl p-5 shadow-sm space-y-3.5">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-lg shadow-xs">
+                        ⭐
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wide">
+                                Chưa Đánh Giá (Đã hoàn tất, cần đánh giá)
+                            </h2>
+                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black <?= !empty($pendingRatings) ? 'bg-amber-500 text-slate-950 animate-pulse' : 'bg-slate-200 text-slate-600' ?>">
+                                <?= count($pendingRatings ?? []) ?> phiếu cần đánh giá
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-600 mt-0.5">Danh sách các phiếu sự cố kỹ thuật của bạn đã được Kỹ thuật viên hoàn tất xử lý, đang chờ bạn chấm điểm nghiệm thu CSAT.</p>
+                    </div>
+                </div>
+                <?php if (!empty($pendingRatings)): ?>
+                    <span class="text-[11px] font-bold text-amber-900 bg-amber-200/80 border border-amber-300 px-3 py-1 rounded-xl shadow-2xs">
+                        🔔 Cần bạn nghiệm thu & đánh giá chất lượng
+                    </span>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($pendingRatings)): ?>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+                    <?php foreach ($pendingRatings as $pTicket): ?>
+                        <div class="bg-white border border-amber-200 hover:border-amber-400 rounded-2xl p-4 shadow-2xs transition hover:shadow-md flex flex-col justify-between space-y-3">
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between gap-2">
+                                    <a href="../tickets/show.php?id=<?= $pTicket['id'] ?>" class="font-mono font-black text-indigo-700 text-xs bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg border border-indigo-200 transition">
+                                        <?= htmlspecialchars($pTicket['ticket_code']) ?>
+                                    </a>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        ✓ <?= $pTicket['status'] === 'resolved' ? 'Đã giải quyết' : 'Đã đóng' ?>
+                                    </span>
+                                </div>
+                                <h3 class="font-bold text-slate-900 text-xs leading-snug line-clamp-2" title="<?= htmlspecialchars($pTicket['title']) ?>">
+                                    <a href="../tickets/show.php?id=<?= $pTicket['id'] ?>" class="hover:text-indigo-600 transition">
+                                        <?= htmlspecialchars($pTicket['title']) ?>
+                                    </a>
+                                </h3>
+                                <div class="text-[11px] text-slate-500 space-y-1 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                    <div class="truncate">📁 Chuyên mục: <strong class="text-slate-700"><?= htmlspecialchars($pTicket['category_name']) ?></strong></div>
+                                    <?php if (!empty($pTicket['agent_name'])): ?>
+                                        <div class="truncate">👨‍💻 KTV xử lý: <strong class="text-slate-700"><?= htmlspecialchars($pTicket['agent_name']) ?></strong></div>
+                                    <?php endif; ?>
+                                    <?php if (!empty($pTicket['resolved_at'])): ?>
+                                        <div>⏱️ Hoàn tất: <span class="font-mono text-slate-600"><?= date('d/m/Y H:i', strtotime($pTicket['resolved_at'])) ?></span></div>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-slate-100">
+                                <a href="../tickets/show.php?id=<?= $pTicket['id'] ?>#csat-box" 
+                                   class="w-full text-center py-2 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs shadow-xs transition flex items-center justify-center gap-1.5">
+                                    <span>⭐</span> Chấm Điểm & Nghiệm Thu Ngay →
+                                </a>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <div class="p-3.5 bg-white/90 border border-emerald-200 rounded-2xl flex items-center gap-3 text-xs">
+                    <span class="text-emerald-600 text-lg">✅</span>
+                    <div>
+                        <span class="font-bold text-emerald-900">Không có phiếu nào cần đánh giá.</span>
+                        <span class="text-slate-500 block text-[11.5px]">Tất cả các phiếu yêu cầu hỗ trợ kỹ thuật đã hoàn tất của bạn đều đã được đánh giá CSAT đầy đủ!</span>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 
     <?php if (!empty($flash)): ?>
         <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold <?= $flash['type'] === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200' ?>">

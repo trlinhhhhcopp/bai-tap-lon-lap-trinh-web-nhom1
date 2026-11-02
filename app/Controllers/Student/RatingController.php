@@ -14,18 +14,28 @@ class RatingController
         $keyword   = trim($_GET['q'] ?? '');
         $score       = isset($_GET['score']) && $_GET['score'] !== '' ? (int)$_GET['score'] : null;
         $scoreFilter = $score;
+        $currentUserId = (int)($_SESSION['user']['id'] ?? 0);
         $userRole = $_SESSION['user']['role'] ?? '';
         $userType = $_SESSION['user']['user_type'] ?? '';
         $isStudent = ($userRole === 'requester' || $userType === 'student');
-        $studentId = $isStudent ? (int)$_SESSION['user']['id'] : (isset($_GET['student_id']) && $_GET['student_id'] !== '' ? (int)$_GET['student_id'] : null);
+        $isLecturer = ($userType === 'lecturer');
+        $isRequesterRole = ($isStudent || $isLecturer);
+
+        // Sinh viên và Giảng viên xem đánh giá của chính mình
+        $filterUserId = $isRequesterRole ? $currentUserId : (isset($_GET['student_id']) && $_GET['student_id'] !== '' ? (int)$_GET['student_id'] : null);
         $page      = max(1, (int)($_GET['page'] ?? 1));
 
-        $total      = Rating::count($keyword, $score, $studentId);
+        $total      = Rating::count($keyword, $score, $filterUserId);
         $totalPages = max(1, (int)ceil($total / self::PER_PAGE));
         $page       = min($page, $totalPages);
 
-        $ratings  = Rating::findAll($keyword, $page, self::PER_PAGE, $score, $studentId);
+        $ratings  = Rating::findAll($keyword, $page, self::PER_PAGE, $score, $filterUserId);
         $students = Rating::getAllStudents();
+
+        $pendingRatings = [];
+        if ($isRequesterRole && $currentUserId > 0) {
+            $pendingRatings = Rating::getPendingEvaluationTickets($currentUserId);
+        }
 
         $flash = $_SESSION['flash'] ?? null;
         unset($_SESSION['flash']);

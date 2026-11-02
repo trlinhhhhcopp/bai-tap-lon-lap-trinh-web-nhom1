@@ -75,13 +75,15 @@ class TicketRepository {
             $params['assigned_to'] = $assignedTo;
         }
 
-                if ($hasWarning) {
+        if ($hasWarning) {
             if ($hasWarning === 'sla') {
                 $conditions[] = "t.status NOT IN ('resolved', 'closed') AND ((t.due_at IS NOT NULL AND t.due_at < NOW()) OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL))";
             } elseif ($hasWarning === 'violation') {
                 $conditions[] = "t.is_spam = 1";
             } elseif ($hasWarning === 'guest') {
                 $conditions[] = "t.is_guest_ticket = 1";
+            } elseif ($hasWarning === 'unrated') {
+                $conditions[] = "t.status IN ('resolved', 'closed') AND r.id IS NULL";
             } else {
                 $conditions[] = "(
                     (t.status NOT IN ('resolved', 'closed')
@@ -107,12 +109,15 @@ class TicketRepository {
                        COALESCE(c.name, 'Cứu hộ tài khoản') AS category_name, 
                        COALESCE(c.code, 'CAT_SSO') AS category_code,
                        COALESCE(p.name, 'Cao') AS priority_name, 
-                       COALESCE(p.code, 'HIGH') AS priority_code
+                       COALESCE(p.code, 'HIGH') AS priority_code,
+                       r.id AS rating_id,
+                       r.score AS rating_score
                 FROM tickets t
                 LEFT JOIN users u_req ON t.requester_id = u_req.id
                 LEFT JOIN users u_agent ON t.assigned_to = u_agent.id
                 LEFT JOIN categories c ON t.category_id = c.id
                 LEFT JOIN priorities p ON t.priority_id = p.id
+                LEFT JOIN ticket_ratings r ON t.id = r.ticket_id
                 {$whereClause}
                 ORDER BY t.created_at DESC
                 LIMIT :limit OFFSET :offset";
@@ -194,6 +199,8 @@ class TicketRepository {
                 $conditions[] = "t.is_spam = 1";
             } elseif ($hasWarning === 'guest') {
                 $conditions[] = "t.is_guest_ticket = 1";
+            } elseif ($hasWarning === 'unrated') {
+                $conditions[] = "t.status IN ('resolved', 'closed') AND r.id IS NULL";
             } else {
                 $conditions[] = "(
                     (t.status NOT IN ('resolved', 'closed')
@@ -211,7 +218,7 @@ class TicketRepository {
         }
 
         $whereClause = !empty($conditions) ? 'WHERE ' . implode(' AND ', $conditions) : '';
-        $sql = "SELECT COUNT(*) FROM tickets t LEFT JOIN priorities p ON t.priority_id = p.id {$whereClause}";
+        $sql = "SELECT COUNT(*) FROM tickets t LEFT JOIN priorities p ON t.priority_id = p.id LEFT JOIN ticket_ratings r ON t.id = r.ticket_id {$whereClause}";
 
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
@@ -278,6 +285,24 @@ class TicketRepository {
         $where = 'WHERE ' . implode(' AND ', $conditions);
         $stmt = $db->prepare("SELECT COUNT(*) FROM tickets t {$where}");
         $stmt->execute($params);
+        return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Đếm số phiếu của người dùng đã hoàn tất nhưng chưa đánh giá CSAT (status IN ('resolved', 'closed') AND r.id IS NULL)
+     */
+    public static function countUnratedTickets(int $userId): int {
+        if ($userId <= 0) return 0;
+        $db = db();
+        $stmt = $db->prepare("
+            SELECT COUNT(*) 
+            FROM tickets t
+            LEFT JOIN ticket_ratings r ON t.id = r.ticket_id
+            WHERE t.requester_id = :uid
+              AND t.status IN ('resolved', 'closed')
+              AND r.id IS NULL
+        ");
+        $stmt->execute([':uid' => $userId]);
         return (int)$stmt->fetchColumn();
     }
 
