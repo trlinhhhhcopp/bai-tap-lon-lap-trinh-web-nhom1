@@ -207,6 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $ticketId = TicketRepository::create([
                 'requester_id'    => $requesterId,
+                'user_type'       => $userType,
                 'category_id'     => $categoryId,
                 'priority_id'     => $priorityId,
                 'course_id'       => $reqCourseId > 0 ? $reqCourseId : null,

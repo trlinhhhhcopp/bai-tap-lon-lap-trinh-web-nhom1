@@ -177,21 +177,37 @@ class SlaService {
 
     /**
      * Tính toán toàn bộ hạn chót SLA (Tiếp nhận/Triage 15 phút và Giải quyết Due At) theo giờ hành chính
+     * Tuân thủ quy chuẩn SLA 2 giờ và 4 giờ của Đại học Thủ Đô Hà Nội (TUD):
+     * - Nhóm 2 giờ (120 phút): Cổng Học tập Canvas LMS, Cổng QLĐT, Cổng xác thực SSO, hoặc Sự cố Giảng dạy của Giảng viên.
+     * - Nhóm 4 giờ (240 phút): Email trường Microsoft 365, Mạng Wi-Fi & VPN, Thiết bị khác.
+     * - Khi Thầy/Cô (Giảng viên) gửi phiếu sự cố Khẩn cấp/Cao (giờ giảng dạy / hạn chốt điểm thi), SLA cam kết xử lý trong 2 giờ.
      */
-    public static function calculateSlaDeadlines(int $categoryId, int $priorityId, ?DateTime $startTime = null): array {
+    public static function calculateSlaDeadlines(int $categoryId, int $priorityId, ?DateTime $startTime = null, ?string $userType = null): array {
         $pdo = db();
 
         $catStmt = $pdo->prepare("SELECT sla_hours FROM categories WHERE id = :id");
         $catStmt->execute([':id' => $categoryId]);
         $slaHours = (float)($catStmt->fetchColumn() ?: 4.0);
 
-        $prioStmt = $pdo->prepare("SELECT sla_factor FROM priorities WHERE id = :id");
-        $prioStmt->execute([':id' => $priorityId]);
-        $slaFactor = (float)($prioStmt->fetchColumn() ?: 1.0);
+        // 1. Phân luồng chuẩn 2 giờ (120 phút) và 4 giờ (240 phút):
+        if ($userType === 'lecturer' && in_array($priorityId, [1, 2])) {
+            // Giảng viên đang giảng dạy hoặc đến hạn chốt điểm thi: Ưu tiên cam kết xử lý trong 2 giờ
+            $effectiveMinutes = 120;
+        } elseif ($slaHours <= 2.5) {
+            // Nhóm dịch vụ cấp bách (SSO, Canvas LMS, QLĐT): Chuẩn cam kết 2.0 giờ = 120 phút
+            $effectiveMinutes = 120;
+        } else {
+            // Nhóm dịch vụ hạ tầng & hành chính (Mail, Wi-Fi, Khác): Chuẩn cam kết 4.0 giờ = 240 phút
+            $prioStmt = $pdo->prepare("SELECT sla_factor FROM priorities WHERE id = :id");
+            $prioStmt->execute([':id' => $priorityId]);
+            $slaFactor = (float)($prioStmt->fetchColumn() ?: 1.0);
 
-        $effectiveMinutes = (int)round($slaHours * $slaFactor * 60);
-        if ($effectiveMinutes <= 0) {
-            $effectiveMinutes = 120; // Tối thiểu 2 giờ
+            // Mức độ ưu tiên Khẩn cấp (factor 0.25) hoặc Cao (factor 0.50): Rút ngắn về 2 giờ (120 phút)
+            if ($slaFactor <= 0.50) {
+                $effectiveMinutes = 120;
+            } else {
+                $effectiveMinutes = 240;
+            }
         }
 
         $vnTz = new \DateTimeZone('Asia/Ho_Chi_Minh');
@@ -201,6 +217,7 @@ class SlaService {
 
         return [
             'effective_minutes' => $effectiveMinutes,
+            'sla_hours'         => round($effectiveMinutes / 60, 1),
             'sla_started_at'    => $now->format('Y-m-d H:i:s'),
             'triage_due_at'     => $triageDueDt->format('Y-m-d H:i:s'),
             'due_at'            => $dueDt->format('Y-m-d H:i:s'),

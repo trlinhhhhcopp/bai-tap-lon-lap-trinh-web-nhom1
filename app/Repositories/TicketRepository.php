@@ -566,7 +566,11 @@ class TicketRepository {
 
         // Tính toán SLA chuẩn theo giờ hành chính (T2-T6, trừ ngày nghỉ lễ & ngoài giờ)
         require_once __DIR__ . '/../Services/SlaService.php';
-        $sla = \App\Services\SlaService::calculateSlaDeadlines((int)$data['category_id'], (int)$data['priority_id']);
+        $userType = $data['user_type'] ?? ($_SESSION['user']['user_type'] ?? null);
+        if (!$userType && $requesterId > 0) {
+            $userType = $db->query("SELECT user_type FROM users WHERE id = {$requesterId} LIMIT 1")->fetchColumn() ?: null;
+        }
+        $sla = \App\Services\SlaService::calculateSlaDeadlines((int)$data['category_id'], (int)$data['priority_id'], null, $userType);
         $triageDueAt = $sla['triage_due_at'];
         $dueAt       = $sla['due_at'];
 
