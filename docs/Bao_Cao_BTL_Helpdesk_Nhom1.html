@@ -180,6 +180,19 @@
             page-break-inside: avoid;
         }
 
+        table.report-table.data-flow-table {
+            page-break-inside: auto;
+        }
+
+        table.report-table.data-flow-table thead {
+            display: table-header-group;
+        }
+
+        table.report-table.data-flow-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
         table.report-table th, table.report-table td {
             border: 1px solid #cbd5e1;
             padding: 5px 7px;
@@ -381,7 +394,7 @@
         <ul>
             <li><strong>Bản báo cáo HTML đầy đủ:</strong> <code>C:\New folder\htdocs\web01\bai-tap-lon-lap-trinh-web-nhom1\docs\Bao_Cao_BTL_Helpdesk_Nhom1.html</code></li>
             <li><strong>Xem trực tiếp trên trình duyệt Web:</strong> <a href="http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/Bao_Cao_BTL_Helpdesk_Nhom1.html" target="_blank"><code>http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/Bao_Cao_BTL_Helpdesk_Nhom1.html</code></a></li>
-            <li><strong>Bản xuất PDF chuẩn in ấn A4:</strong> <code>docs/Bao_Cao_BTL_Helpdesk_Nhom1.pdf</code> và <code>Bao_Cao_BTL_Helpdesk_Nhom1.pdf</code> tại thư mục gốc dự án.</li>
+            <li><strong>Bản xuất PDF chuẩn in ấn A4:</strong> <code>docs/Bao_Cao_BTL_Helpdesk_Nhom1.pdf</code> (được xuất từ chính báo cáo HTML này).</li>
             <li><strong>Trang Landing Page giới thiệu đồ án:</strong> <code>docs/index.html</code> hoặc <a href="http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/index.html" target="_blank"><code>http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/index.html</code></a></li>
         </ul>
     </div>
@@ -979,7 +992,7 @@
 
     <!-- MỤC 4.7: BẢNG ĐIỀU HƯỚNG TOÀN BỘ CÁC LUỒNG HỆ THỐNG -->
     <h2 class="sub-title">4.7. Bảng Điều Hướng Toàn Bộ Các Luồng Hệ Thống (System Route Navigation Map)</h2>
-    <p>Dưới đây là bảng đặc tả kiến trúc điều hướng chi tiết toàn bộ các tuyến đường (URL Routes), ánh xạ chính xác từ mã nguồn bộ định tuyến hệ thống (<code>index.php</code>, <code>app/Controllers/</code>, <code>tickets/</code>, <code>student/</code>, <code>lecturer/</code>, <code>agent/</code>, <code>admin/</code>):</p>
+    <p>Bảng dưới đây tổng hợp các tuyến đường nghiệp vụ chính được đối chiếu với bộ định tuyến và các front controller (<code>index.php</code>, <code>app/Controllers/</code>, <code>tickets/</code>, <code>student/</code>, <code>lecturer/</code>, <code>agent/</code>, <code>admin/</code>); đây không phải danh sách mọi URL phụ/trạng thái giao diện.</p>
 
     <table class="report-table" style="font-size: 8.5px;">
         <thead>
@@ -1095,7 +1108,7 @@
                 <td><code>showLookup()</code></td>
                 <td><code>views/guest/lookup_ticket.php</code></td>
                 <td style="text-align: center;">Public (Khách)</td>
-                <td>Tra cứu tiến độ đơn cứu hộ bằng duy nhất Mã đơn</td>
+                <td>Tra cứu tiến độ đơn cứu hộ bằng Mã đơn và thông tin xác minh theo luồng hiện hành</td>
             </tr>
 
             <!-- NHÓM 2: STUDENT PORTAL -->
@@ -1112,17 +1125,17 @@
             </tr>
             <tr>
                 <td style="text-align: center;">12</td>
-                <td><code>student/courses.php</code></td>
+                <td><code>student/index.php?action=courses</code></td>
                 <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
                 <td><code>CourseController</code></td>
                 <td><code>index()</code></td>
-                <td><code>student/courses.php</code></td>
+                <td><code>student/index.php?action=courses</code></td>
                 <td style="text-align: center;">Student</td>
-                <td>Danh sách 6 học phần sinh viên đang theo học</td>
+                <td>Danh sách học phần theo các lớp sinh viên đã đăng ký</td>
             </tr>
             <tr>
                 <td style="text-align: center;">13</td>
-                <td><code>student/courses.php?action=course_detail</code></td>
+                <td><code>student/index.php?action=course_detail&amp;course_id=...</code></td>
                 <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
                 <td><code>CourseController</code></td>
                 <td><code>detail()</code></td>
@@ -1132,13 +1145,33 @@
             </tr>
             <tr>
                 <td style="text-align: center;">14</td>
-                <td><code>student/courses.php?action=submit_assignment</code></td>
+                <td><code>student/index.php?action=course_submit</code></td>
                 <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
                 <td><code>CourseController</code></td>
                 <td><code>submitAssignment()</code></td>
                 <td>Redirect Chi tiết học phần</td>
                 <td style="text-align: center;">Student</td>
                 <td>Tải tệp bài làm lên hệ thống (PDF, Zip, Docx)</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">14a</td>
+                <td><code>student/index.php?action=course_delete_submission</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>CourseController</code></td>
+                <td><code>deleteSubmission()</code></td>
+                <td>Redirect Chi tiết học phần</td>
+                <td style="text-align: center;">Student (chủ bài nộp)</td>
+                <td>Hủy bài nộp thuộc đúng học phần; kiểm tra CSRF, quyền sở hữu và deadline</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">14b</td>
+                <td><code>student/index.php?action=api_lessons&amp;course_id=...</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>CourseController</code></td>
+                <td><code>apiLessons()</code></td>
+                <td>JSON Response</td>
+                <td style="text-align: center;">Student đã đăng ký học phần</td>
+                <td>Trả danh sách buổi học và trạng thái bài nộp của chính sinh viên</td>
             </tr>
             <tr>
                 <td style="text-align: center;">15</td>
@@ -1155,7 +1188,7 @@
                 <td><code>student/index.php?action=rating_create</code></td>
                 <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
                 <td><code>RatingController</code></td>
-                <td><code>create() / store()</code></td>
+                <td><code>create()</code> (GET/POST)</td>
                 <td><code>views/student/ratings/create.php</code></td>
                 <td style="text-align: center;">Student</td>
                 <td>Chấm sao CSAT (1-5 sao) nghiệm thu dịch vụ KTV</td>
@@ -1497,6 +1530,110 @@
             </tr>
         </tbody>
     </table>
+
+    <h2 class="sub-title">4.8. Ma trận luồng dữ liệu đầu-cuối và điểm kiểm soát</h2>
+    <p>Bảng dưới đây mô tả dữ liệu đi qua các luồng cốt lõi theo mã nguồn hiện tại, từ đầu vào đến nơi lưu, tác động phụ và nhánh lỗi. Các thao tác ghi CSDL và thao tác tệp/thông báo là các bước riêng; không mặc định chúng nằm trong cùng một giao dịch nguyên tử. Tên bảng được nêu là các bảng chính, không thay thế đặc tả schema ở Mục 5.</p>
+    <table class="report-table data-flow-table" style="font-size: 8.5px;">
+        <thead>
+            <tr>
+                <th style="width: 12%;">Luồng / tác nhân</th>
+                <th style="width: 17%;">Dữ liệu đầu vào</th>
+                <th style="width: 21%;">Kiểm tra / biến đổi</th>
+                <th style="width: 19%;">Dữ liệu đọc / ghi</th>
+                <th style="width: 15%;">Kết quả / tác động phụ</th>
+                <th style="width: 16%;">Nhánh lỗi / lưu ý</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Đăng nhập / SSPR</strong><br>Người dùng</td>
+                <td>Mã người dùng/email, mật khẩu; email trường hoặc mã OTP 6 chữ cái.</td>
+                <td>Kiểm tra thông tin đăng nhập; SSPR kiểm tra định dạng email, trạng thái tài khoản, hash token và hạn 15 phút. Mật khẩu mới được băm.</td>
+                <td><code>users</code>; <code>password_resets</code> lưu hash SHA-256, không lưu OTP dạng thô.</td>
+                <td>Cấp/hủy phiên; đổi mật khẩu; hủy token sau khi sử dụng; cờ đổi mật khẩu lần đầu được cập nhật theo luồng.</td>
+                <td>Email sai, token sai/hết hạn hoặc tài khoản không đủ điều kiện thì không đổi mật khẩu. Gửi email có thể thất bại riêng với việc cấp token; giao diện có nhánh thông báo/fallback.</td>
+            </tr>
+            <tr>
+                <td><strong>Tạo phiếu hỗ trợ</strong><br>Sinh viên / giảng viên</td>
+                <td>Danh mục, tiêu đề, mô tả, mức ưu tiên theo vai trò, lớp/môn/buổi (nếu liên quan), tệp minh chứng.</td>
+                <td>Kiểm tra trường bắt buộc và tệp (đuôi cho phép, tối đa 10 MB); tìm phiếu trùng; tính SLA theo ưu tiên/giờ làm việc/ngày lễ; điều phối KTV theo danh mục.</td>
+                <td>Đọc <code>categories</code>, <code>priorities</code>, ngày nghỉ; ghi <code>tickets</code> gồm mã phiếu, người gửi, trạng thái, liên kết học phần, KTV và các mốc SLA. Tệp được lưu riêng.</td>
+                <td>Trả mã phiếu; thông báo cho KTV được phân công; điều hướng người gửi tới kết quả.</td>
+                <td>Thiếu dữ liệu, tệp không hợp lệ/quá lớn hoặc phát hiện phiếu trùng thì dừng tạo. Lỗi lưu CSDL được báo; tệp đã lưu trước đó và bản ghi CSDL không được mô tả là một giao dịch nguyên tử.</td>
+            </tr>
+            <tr>
+                <td><strong>Xử lý vòng đời phiếu</strong><br>KTV / admin / người gửi</td>
+                <td>ID phiếu, hành động (phản hồi, nhận/xử lý, chờ người gửi, giải quyết, đóng, chuyển giao, báo vi phạm/sự cố diện rộng), nội dung và tệp đính kèm tùy hành động.</td>
+                <td>Kiểm tra đăng nhập, vai trò, người được phân công/chủ phiếu và trạng thái hiện tại; ghi chú nội bộ chỉ dành cho KTV/admin. Một số hành động có xác nhận hoặc lý do nghiệp vụ.</td>
+                <td>Đọc/ghi <code>tickets</code>; ghi trao đổi và biên bản trong <code>ticket_replies</code>; đọc/ghi người nhận và trạng thái ở <code>notifications</code>.</td>
+                <td>Cập nhật trạng thái, thời điểm và thông tin phân công; người liên quan nhận thông báo; lịch sử trao đổi giúp truy vết.</td>
+                <td>Sai chủ thể/vai trò hoặc hành động không hợp lệ thì bị từ chối. Trạng thái phiếu, reply và thông báo là nhiều thao tác; không giả định rollback đồng bộ nếu một bước phụ thất bại.</td>
+            </tr>
+            <tr>
+                <td><strong>Cứu hộ tài khoản</strong><br>Khách → KTV → admin</td>
+                <td>Mã người dùng, thông tin liên hệ, lý do và minh chứng; tra cứu bằng mã đơn.</td>
+                <td>Đối soát tài khoản/minh chứng; KTV xác minh trước, admin mới phê duyệt mở khóa/reset.</td>
+                <td>Thông tin đơn cứu hộ nằm trong dữ liệu phiếu hỗ trợ và các trường trạng thái xác minh; cập nhật tài khoản trong <code>users</code>; lưu trao đổi/thông báo liên quan.</td>
+                <td>Chuyển trạng thái theo từng bước; khi được duyệt, tài khoản được cập nhật và yêu cầu đổi mật khẩu lần đầu.</td>
+                <td>Không tìm thấy mã đơn, hồ sơ thiếu/sai hoặc chưa qua bước KTV thì không được phê duyệt. Mã đơn dùng tra cứu là bí mật cần được người dùng bảo quản.</td>
+            </tr>
+            <tr>
+                <td><strong>Gửi / nộp lại bài tập</strong><br>Sinh viên</td>
+                <td>ID môn/buổi, ghi chú, tệp bài làm.</td>
+                <td>Yêu cầu phiên/CSRF, đúng lớp đăng ký và môn/buổi khớp nhau; còn hạn; tệp không quá 25 MB và thuộc danh sách đuôi cho phép.</td>
+                <td>Đọc <code>users</code>, <code>class_students</code>, <code>course_assignments</code>, <code>course_lessons</code>; ghi <code>student_assignment_submissions</code>. File trong <code>uploads/assignments</code>.</td>
+                <td>Gửi thông báo cho giảng viên phụ trách. Nộp lại cập nhật file/thời điểm và xóa trạng thái điểm, sao, nhận xét, người chấm/ngày chấm cũ.</td>
+                <td>Sai quyền/ID, quá hạn, tệp không đạt hoặc lỗi ghi DB thì không xác nhận nộp; file mới được dọn nếu ghi DB thất bại. Nộp lại chỉ hợp lệ trước hạn hiện hành.</td>
+            </tr>
+            <tr>
+                <td><strong>Chấm / gia hạn bài</strong><br>Giảng viên</td>
+                <td>ID học phần/buổi/bài nộp; điểm 0–10, nhận xét hoặc hạn mới.</td>
+                <td>Kiểm tra phân công giảng dạy; kiểm tra bài thuộc môn; điểm phải nằm trong thang 0–10; hạn mới phải ở tương lai. Gia hạn học thuật được liên kết với quy trình ticket đã xác minh lỗi kỹ thuật.</td>
+                <td>Đọc <code>course_assignments</code>, <code>course_lessons</code>, <code>student_assignment_submissions</code>; ghi điểm/nhận xét/người chấm hoặc deadline; ghi trao đổi phiếu khi gia hạn.</td>
+                <td>Sinh viên nhận thông báo điểm hoặc quyết định gia hạn; hạn mới cho phép nộp bổ sung.</td>
+                <td>Giảng viên không được thao tác ngoài môn phụ trách; dữ liệu sai hoặc quá hạn bị từ chối. Cập nhật deadline và đóng phiếu là các bước riêng trong luồng hiện tại.</td>
+            </tr>
+            <tr>
+                <td><strong>Đánh giá CSAT</strong><br>Người gửi / admin</td>
+                <td>ID phiếu, số sao 1–5, bình luận; ID đánh giá khi sửa/xóa.</td>
+                <td>Phiếu phải resolved/closed; người chấm khớp requester; một đánh giá/phiếu; kiểm tra vai trò, chủ sở hữu và CSRF khi ghi.</td>
+                <td>Đọc <code>tickets</code>; ghi/sửa/xóa <code>ticket_ratings</code>; đọc phân công để gửi thông báo KTV.</td>
+                <td>Hiện trong lịch sử CSAT; KTV được thông báo khi có đánh giá/cập nhật.</td>
+                <td>Phiếu đang mở, trùng đánh giá, sai chủ sở hữu hoặc điểm ngoài 1–5 bị từ chối; ràng buộc UNIQUE trên ticket là lớp bảo vệ dữ liệu bổ sung.</td>
+            </tr>
+            <tr>
+                <td><strong>Import phân công</strong><br>Admin</td>
+                <td>Tệp XLSX/CSV/TXT, hàng tiêu đề và dữ liệu lớp/môn/giảng viên/học kỳ/năm học.</td>
+                <td>Tối đa 10 MB/50.000 dòng; chuẩn hóa delimiter/mã hóa; kiểm tra trường bắt buộc, mã tham chiếu, định dạng năm học và bản ghi trùng.</td>
+                <td>Đọc dữ liệu tệp và tra cứu <code>classes</code>, <code>courses</code>, <code>users</code>; ghi từng dòng hợp lệ vào <code>course_assignments</code>.</td>
+                <td>Flash tổng hợp số dòng thành công/lỗi và danh sách một phần các dòng đã nhập.</td>
+                <td><strong>Import có thể thành công một phần:</strong> dòng lỗi được ghi nhận và bỏ qua, dòng hợp lệ vẫn được lưu. Không có rollback toàn bộ lô; cần kiểm tra báo cáo dòng lỗi trước khi chạy lại.</td>
+            </tr>
+            <tr>
+                <td><strong>Thông báo</strong><br>Hệ thống → người dùng</td>
+                <td>ID người nhận/vai trò, tiêu đề, nội dung, liên kết, loại sự kiện.</td>
+                <td>Chọn người nhận đang hoạt động; lọc theo vai trò hoặc người dùng; gắn trạng thái chưa đọc ban đầu.</td>
+                <td>Ghi/đọc/cập nhật <code>notifications</code> theo <code>user_id</code>, <code>role</code>, <code>type</code>, <code>is_read</code>.</td>
+                <td>Hiển thị danh sách/badge; endpoint AJAX có thể đánh dấu đã đọc.</td>
+                <td>Lỗi gửi thông báo được ghi log hoặc trả trạng thái thất bại tùy nhánh gọi; thông báo là tác động phụ, không nên coi việc gửi thành công là điều kiện để bản ghi nghiệp vụ đã thành công.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2 class="sub-title">4.9. Checklist nhánh dữ liệu quan trọng khi kiểm thử</h2>
+    <table class="report-table data-flow-table" style="font-size: 9px;">
+        <thead><tr><th>Nhóm kiểm thử</th><th>Trường hợp tối thiểu cần chạy</th><th>Kết quả cần xác nhận</th></tr></thead>
+        <tbody>
+            <tr><td>Định danh / quyền</td><td>Chưa đăng nhập; sai vai trò; truy cập ID của người khác; giảng viên không được phân công; sinh viên chưa đăng ký môn.</td><td>Không lộ dữ liệu; không ghi thay đổi; trả lỗi/điều hướng phù hợp.</td></tr>
+            <tr><td>Trạng thái / thời gian</td><td>Phiếu mở vs resolved/closed; deadline vừa còn hạn vs hết hạn; token hợp lệ vs hết hạn; đánh giá trùng.</td><td>Nhánh nghiệp vụ đúng; timestamp và trạng thái liên quan không bị lệch.</td></tr>
+            <tr><td>Đầu vào / tệp</td><td>Thiếu trường; ID không tồn tại; điểm ngoài khoảng; đuôi/dung lượng file sai; upload lỗi; tệp CSV/XLSX lỗi hoặc dữ liệu tham chiếu không tồn tại.</td><td>Không tạo dữ liệu không hợp lệ; file tạm/file mới được xử lý rõ; thông báo lỗi chỉ đúng trường hợp.</td></tr>
+            <tr><td>Lỗi giữa nhiều bước</td><td>Thành công ghi bản chính nhưng lỗi thông báo; lỗi DB sau upload; import có dòng hợp lệ xen kẽ dòng sai; lỗi cập nhật deadline trước khi đóng phiếu.</td><td>Đối chiếu trạng thái DB, tệp và thông báo; ghi nhận rõ tính chất một phần/không nguyên tử; tránh báo thành công giả.</td></tr>
+            <tr><td>SLA / ngày nghỉ</td><td>Ngày thường, cuối tuần, ngày lễ một lần, kỳ lễ lặp qua năm; thời điểm trước giờ, giờ trưa, sau giờ.</td><td>Due time bỏ qua thời gian ngoài giờ và khớp lịch nghỉ đã cấu hình.</td></tr>
+        </tbody>
+    </table>
+    <div class="callout callout-warning">
+        <strong>Giới hạn của tài liệu:</strong> Đây là đặc tả luồng dựa trên những đường đi chính trong mã nguồn, không thay thế kiểm thử hồi quy và không khẳng định mọi endpoint legacy đều dùng chung một middleware/CSRF hoặc một transaction. Các bước ghi nhiều bảng, gửi email/thông báo và thao tác tệp cần kiểm thử lỗi riêng; khi yêu cầu tính nguyên tử, cần thiết kế transaction/outbox và cơ chế bù trừ tương ứng.
+    </div>
 
     <div class="page-break"></div>
 
