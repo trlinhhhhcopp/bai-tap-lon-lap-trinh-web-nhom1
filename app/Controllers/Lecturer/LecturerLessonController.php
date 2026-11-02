@@ -16,6 +16,11 @@ class LecturerLessonController
         $this->model = $model ?: new CourseLesson();
     }
 
+    private function isAdmin(array $user): bool
+    {
+        return ($user['role'] ?? '') === 'admin';
+    }
+
     private function requireLecturer(): array
     {
         if (session_status() === PHP_SESSION_NONE) {
@@ -98,7 +103,15 @@ class LecturerLessonController
         $activeLesson = null;
         if ($viewLessonId > 0) {
             $activeLesson = $this->model->getLessonById($viewLessonId);
-            $lessonSubmissions = $this->model->getSubmissionsForLesson($viewLessonId, $selectedClassId);
+            if (
+                !$activeLesson
+                || (int)$activeLesson['course_id'] !== $selectedCourseId
+                || !$this->model->lecturerCanAccessLesson($viewLessonId, $lecturerId, $isAdmin)
+            ) {
+                $activeLesson = null;
+            } else {
+                $lessonSubmissions = $this->model->getSubmissionsForLesson($viewLessonId, $selectedClassId);
+            }
         }
 
         // Quy tắc nghiệp vụ: Giảng viên không nhìn thấy sinh viên bị cảnh báo vi phạm
@@ -130,6 +143,15 @@ class LecturerLessonController
             set_flash('error', 'Vui lòng nhập đầy đủ thông tin buổi học và thời hạn nộp bài!');
             header("Location: {$redirectUrl}");
             exit;
+        }
+        $lesson = $this->model->getLessonById($lessonId);
+        if (
+            !$lesson
+            || (int)$lesson['course_id'] !== $courseId
+            || !$this->model->lecturerCanAccessLesson($lessonId, (int)$currentUser['id'], $this->isAdmin($currentUser))
+        ) {
+            http_response_code(403);
+            exit('Bạn không có quyền cập nhật buổi học này.');
         }
 
         // Định dạng lại datetime nếu từ input datetime-local (Y-m-d\TH:i) sang SQL (Y-m-d H:i:s)
@@ -217,6 +239,17 @@ class LecturerLessonController
         $starRaw = ($score >= 9.0) ? 5 : (($score >= 8.0) ? 4 : (($score >= 6.5) ? 3 : (($score >= 5.0) ? 2 : 1)));
 
         $lecturerId = (int)$currentUser['id'];
+        if (
+            !$this->model->lecturerCanAccessSubmission(
+                $submissionId,
+                $lecturerId,
+                $this->isAdmin($currentUser)
+            )
+            || ($courseId > 0 && !$this->model->submissionBelongsToCourse($submissionId, $courseId))
+        ) {
+            http_response_code(403);
+            exit('Bạn không có quyền chấm bài nộp này.');
+        }
         $success = $this->model->gradeSubmission($submissionId, $score, $starRaw, $feedback, $lecturerId);
 
         if ($success) {
@@ -270,6 +303,10 @@ class LecturerLessonController
             set_flash('error', 'Vui lòng nhập đầy đủ tiêu đề, yêu cầu bài tập và thời hạn nộp bài!');
             header("Location: {$redirectUrl}");
             exit;
+        }
+        if (!$this->model->lecturerCanAccessCourse($courseId, (int)$currentUser['id'], $this->isAdmin($currentUser))) {
+            http_response_code(403);
+            exit('Bạn không có quyền giao bài cho học phần này.');
         }
 
         if ($lessonNumber <= 0) {
@@ -340,7 +377,17 @@ class LecturerLessonController
 
         $submissionId = (int)($_GET['submission_id'] ?? 0);
         if ($submissionId <= 0) {
+            http_response_code(400);
             echo json_encode(['status' => 'error', 'message' => 'ID bài nộp không hợp lệ']);
+            exit;
+        }
+        if (!$this->model->lecturerCanAccessSubmission(
+            $submissionId,
+            (int)$currentUser['id'],
+            $this->isAdmin($currentUser)
+        )) {
+            http_response_code(403);
+            echo json_encode(['status' => 'error', 'message' => 'Bạn không có quyền xem bài nộp này.']);
             exit;
         }
 

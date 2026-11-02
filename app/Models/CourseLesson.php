@@ -21,24 +21,7 @@ class CourseLesson
      */
     public function getStudentCourses(int $studentId): array
     {
-        // 1. Xác định class_id của sinh viên
-        $stmtUser = $this->pdo->prepare("SELECT class_id FROM users WHERE id = :sid");
-        $stmtUser->execute([':sid' => $studentId]);
-        $classId = (int)$stmtUser->fetchColumn();
-
-        // Nếu users.class_id rỗng, tra cứu tiếp trong bảng class_students
-        if ($classId <= 0) {
-            $stmtCs = $this->pdo->prepare("SELECT class_id FROM class_students WHERE student_id = :sid ORDER BY id DESC LIMIT 1");
-            $stmtCs->execute([':sid' => $studentId]);
-            $classId = (int)$stmtCs->fetchColumn();
-        }
-
-        // Nếu vẫn không có lớp thì gán lớp mặc định 1 (D24-CNTT1) cho môi trường demo
-        if ($classId <= 0) {
-            $classId = 1;
-        }
-
-        // 2. Truy vấn danh sách học phần theo lớp của sinh viên
+        // Truy vấn học phần chỉ trong các lớp đã gắn với sinh viên.
         $sql = "SELECT 
                     ca.id AS assignment_id,
                     ca.class_id,
@@ -57,11 +40,18 @@ class CourseLesson
                 JOIN courses c ON c.id = ca.course_id
                 JOIN classes cl ON cl.id = ca.class_id
                 LEFT JOIN users u ON u.id = ca.lecturer_id
-                WHERE ca.class_id = :class_id
+                WHERE ca.class_id IN (
+                    SELECT class_id FROM users WHERE id = :user_class_sid AND class_id IS NOT NULL
+                    UNION
+                    SELECT class_id FROM class_students WHERE student_id = :enrollment_sid
+                )
                 ORDER BY c.id ASC";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([':class_id' => $classId]);
+        $stmt->execute([
+            ':user_class_sid' => $studentId,
+            ':enrollment_sid' => $studentId,
+        ]);
         $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // 3. Với mỗi học phần, tính tổng số buổi và số buổi đã hoàn thành (có đính kèm bài tập)
@@ -88,6 +78,109 @@ class CourseLesson
         unset($c);
 
         return $courses;
+    }
+
+    public function studentHasCourse(int $studentId, int $courseId): bool
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT COUNT(*)
+            FROM course_assignments ca
+            WHERE ca.course_id = :course_id
+              AND ca.class_id IN (
+                  SELECT class_id FROM users WHERE id = :user_class_sid AND class_id IS NOT NULL
+                  UNION
+                  SELECT class_id FROM class_students WHERE student_id = :enrollment_sid
+              )
+        ");
+        $stmt->execute([
+            ':course_id' => $courseId,
+            ':user_class_sid' => $studentId,
+            ':enrollment_sid' => $studentId,
+        ]);
+
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
+    public function lecturerCanAccessLesson(int $lessonId, int $lecturerId, bool $isAdmin = false): bool
+    {
+        $sql = "
+            SELECT COUNT(*)
+            FROM course_lessons l
+            WHERE l.id = :lesson_id
+        ";
+        $params = [':lesson_id' => $lessonId];
+        if (!$isAdmin) {
+            $sql .= " AND EXISTS (
+                SELECT 1
+                FROM course_assignments ca
+                WHERE ca.course_id = l.course_id
+                  AND ca.lecturer_id = :lecturer_id
+            )";
+            $params[':lecturer_id'] = $lecturerId;
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
+    public function lecturerCanAccessCourse(int $courseId, int $lecturerId, bool $isAdmin = false): bool
+    {
+        $sql = "SELECT COUNT(*) FROM courses c WHERE c.id = :course_id";
+        $params = [':course_id' => $courseId];
+        if (!$isAdmin) {
+            $sql .= " AND EXISTS (
+                SELECT 1 FROM course_assignments ca
+                WHERE ca.course_id = c.id AND ca.lecturer_id = :lecturer_id
+            )";
+            $params[':lecturer_id'] = $lecturerId;
+        }
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
+    public function lecturerCanAccessSubmission(int $submissionId, int $lecturerId, bool $isAdmin = false): bool
+    {
+        $sql = "
+            SELECT COUNT(*)
+            FROM student_assignment_submissions s
+            JOIN course_lessons l ON l.id = s.lesson_id
+            WHERE s.id = :submission_id
+        ";
+        $params = [':submission_id' => $submissionId];
+        if (!$isAdmin) {
+            $sql .= " AND EXISTS (
+                SELECT 1
+                FROM course_assignments ca
+                WHERE ca.course_id = l.course_id
+                  AND ca.lecturer_id = :lecturer_id
+            )";
+            $params[':lecturer_id'] = $lecturerId;
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
+    public function submissionBelongsToCourse(int $submissionId, int $courseId): bool
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT COUNT(*)
+            FROM student_assignment_submissions s
+            JOIN course_lessons l ON l.id = s.lesson_id
+            WHERE s.id = :submission_id AND l.course_id = :course_id
+        ");
+        $stmt->execute([
+            ':submission_id' => $submissionId,
+            ':course_id' => $courseId,
+        ]);
+
+        return (int)$stmt->fetchColumn() > 0;
     }
 
     /**
@@ -206,17 +299,14 @@ class CourseLesson
         $now = (new \DateTime('now', new \DateTimeZone('Asia/Ho_Chi_Minh')))->format('Y-m-d H:i:s');
 
         if ($existing) {
-            // Xóa file cũ nếu khác file mới
-            if (!empty($existing['file_path']) && $existing['file_path'] !== $filePath && file_exists(__DIR__ . '/../../' . $existing['file_path'])) {
-                @unlink(__DIR__ . '/../../' . $existing['file_path']);
-            }
-
             $stmtUpdate = $this->pdo->prepare(
                 "UPDATE student_assignment_submissions 
-                 SET file_path = :path, file_name = :name, file_size = :size, notes = :notes, submitted_at = :sub_at, is_completed = 1
+                 SET file_path = :path, file_name = :name, file_size = :size, notes = :notes,
+                     submitted_at = :sub_at, is_completed = 1, score = NULL, star_rating = NULL,
+                     feedback = NULL, graded_at = NULL, graded_by = NULL
                  WHERE id = :id"
             );
-            return $stmtUpdate->execute([
+            $updated = $stmtUpdate->execute([
                 ':path' => $filePath,
                 ':name' => $fileName,
                 ':size' => $fileSize,
@@ -224,6 +314,13 @@ class CourseLesson
                 ':sub_at' => $now,
                 ':id' => $existing['id'],
             ]);
+            if ($updated && !empty($existing['file_path']) && $existing['file_path'] !== $filePath) {
+                $oldFile = __DIR__ . '/../../' . $existing['file_path'];
+                if (is_file($oldFile)) {
+                    @unlink($oldFile);
+                }
+            }
+            return $updated;
         }
 
         $stmtInsert = $this->pdo->prepare(
@@ -459,12 +556,15 @@ class CourseLesson
             }
         }
 
-        if (!empty($sub['file_path']) && file_exists(__DIR__ . '/../../' . $sub['file_path'])) {
-            @unlink(__DIR__ . '/../../' . $sub['file_path']);
-        }
-
         $stmtDel = $this->pdo->prepare("DELETE FROM student_assignment_submissions WHERE id = :id AND student_id = :sid");
-        return $stmtDel->execute([':id' => $submissionId, ':sid' => $studentId]);
+        $deleted = $stmtDel->execute([':id' => $submissionId, ':sid' => $studentId]);
+        if ($deleted && $stmtDel->rowCount() > 0 && !empty($sub['file_path'])) {
+            $filePath = __DIR__ . '/../../' . $sub['file_path'];
+            if (is_file($filePath)) {
+                @unlink($filePath);
+            }
+        }
+        return $deleted && $stmtDel->rowCount() > 0;
     }
 
     /**

@@ -47,6 +47,7 @@ if (empty($_SESSION['user'])) {
         <?php endif; ?>
 
         <form method="post" action="index.php?action=rating_edit&id=<?= (int)$rating['id'] ?>" novalidate class="space-y-4 text-xs" onsubmit="return confirmRatingSubmit(this);">
+            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'] ?? '') ?>">
             <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
                 <div>
                     <span class="text-slate-500 font-semibold">Mã Phiếu Hỗ Trợ:</span>

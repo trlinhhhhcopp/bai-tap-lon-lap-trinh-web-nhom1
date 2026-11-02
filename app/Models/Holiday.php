@@ -138,6 +138,7 @@ class Holiday
             "DELETE FROM holidays WHERE id = :id"
         );
 
-        return $stmt->execute(['id' => $id]);
+        $deleted = $stmt->execute(['id' => $id]);
+        return $deleted && $stmt->rowCount() > 0;
     }
 }

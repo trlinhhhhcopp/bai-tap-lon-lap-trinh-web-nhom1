@@ -19,6 +19,7 @@ class AuthController extends Controller {
             } else {
                 $this->redirect('/student/dashboard');
             }
+
         }
 
         $this->view('auth/login', [
@@ -135,8 +136,8 @@ class AuthController extends Controller {
             $rawToken = AuthService::requestResetToken($email);
             $user = User::findByEmailOrCode($email);
             $userName = $user['name'] ?? 'Sinh viên';
-            $link = "/reset-password?token=" . $rawToken;
-            $fullLink = "http://localhost:8080/reset-password?token=" . $rawToken;
+            $link = $this->resetPasswordUrl($rawToken);
+            $fullLink = $this->resetPasswordUrl($rawToken, true);
             $nowTime = date('H:i:s');
             $expiresAtTimestamp = time() + 900; // 15 phút (900 giây)
             $expireTime = date('H:i:s', $expiresAtTimestamp);
@@ -283,7 +284,7 @@ class AuthController extends Controller {
 
         $user = User::findByEmailOrCode($email);
         $userName = $user['name'] ?? 'Sinh viên';
-        $fullLink = "http://localhost:8080/reset-password?token=" . $token;
+        $fullLink = $this->resetPasswordUrl($token, true);
         $nowTime = date('H:i:s');
         $expireTime = date('H:i:s', time() + 900);
 
@@ -307,6 +308,29 @@ class AuthController extends Controller {
             ]);
         }
         exit;
+    }
+
+    private function resetPasswordUrl(string $token, bool $absolute = false): string {
+        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+        $scriptDir = rtrim(dirname($scriptName), '/');
+        $basePath = ($scriptDir === '' || $scriptDir === '.') ? '' : $scriptDir;
+        $path = $basePath . '/reset-password?token=' . rawurlencode($token);
+        if (!$absolute) {
+            return $path;
+        }
+
+        $host = $_SERVER['SERVER_NAME'] ?? 'localhost';
+        $port = (int)($_SERVER['SERVER_PORT'] ?? 0);
+        $https = !empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off';
+        $scheme = $https ? 'https' : 'http';
+        if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            $host = '[' . $host . ']';
+        }
+        if ($port > 0 && $port !== ($https ? 443 : 80)) {
+            $host .= ':' . $port;
+        }
+
+        return $scheme . '://' . $host . $path;
     }
 
     public static function buildResetEmailTemplate(string $name, string $email, string $link, string $nowTime, string $expireTime): string {
@@ -359,4 +383,3 @@ class AuthController extends Controller {
         ";
     }
 }
-

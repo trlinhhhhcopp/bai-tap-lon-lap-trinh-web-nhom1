@@ -9,17 +9,53 @@ class RatingController
 {
     private const PER_PAGE = 8;
 
+    private function isRequesterUser(): bool
+    {
+        return !$this->isAdmin() && (
+            ($_SESSION['user']['role'] ?? '') === 'requester'
+            || in_array($_SESSION['user']['user_type'] ?? '', ['student', 'lecturer'], true)
+        );
+    }
+
+    private function isAdmin(): bool
+    {
+        return ($_SESSION['user']['role'] ?? '') === 'admin';
+    }
+
+    private function requireRatingRole(): void
+    {
+        if (!$this->isAdmin() && !$this->isRequesterUser()) {
+            http_response_code(403);
+            exit('Bạn không có quyền truy cập chức năng đánh giá.');
+        }
+    }
+
+    private function verifyCsrf(): void
+    {
+        $sessionToken = $_SESSION['csrf'] ?? '';
+        $postToken = $_POST['csrf'] ?? '';
+        if ($sessionToken === '' || $postToken === '' || !hash_equals($sessionToken, $postToken)) {
+            http_response_code(403);
+            exit('CSRF token không hợp lệ hoặc phiên làm việc đã hết hạn. Vui lòng tải lại trang.');
+        }
+    }
+
+    private function requireRatingAccess(array $rating): void
+    {
+        if (!$this->isAdmin() && (!$this->isRequesterUser() || (int)$rating['user_id'] !== (int)($_SESSION['user']['id'] ?? 0))) {
+            http_response_code(403);
+            exit('Bạn không có quyền thao tác đánh giá này.');
+        }
+    }
+
     public function index(): void
     {
+        $this->requireRatingRole();
         $keyword   = trim($_GET['q'] ?? '');
         $score       = isset($_GET['score']) && $_GET['score'] !== '' ? (int)$_GET['score'] : null;
         $scoreFilter = $score;
         $currentUserId = (int)($_SESSION['user']['id'] ?? 0);
-        $userRole = $_SESSION['user']['role'] ?? '';
-        $userType = $_SESSION['user']['user_type'] ?? '';
-        $isStudent = ($userRole === 'requester' || $userType === 'student');
-        $isLecturer = ($userType === 'lecturer');
-        $isRequesterRole = ($isStudent || $isLecturer);
+        $isRequesterRole = $this->isRequesterUser();
 
         // Sinh viên và Giảng viên xem đánh giá của chính mình
         $filterUserId = $isRequesterRole ? $currentUserId : (isset($_GET['student_id']) && $_GET['student_id'] !== '' ? (int)$_GET['student_id'] : null);
@@ -45,20 +81,26 @@ class RatingController
 
     public function create(): void
     {
+        $this->requireRatingRole();
         $errors = [];
         $old = ['ticket_id' => '', 'user_id' => '', 'score' => 5, 'comment' => ''];
-        $userRole = $_SESSION['user']['role'] ?? '';
-        $userType = $_SESSION['user']['user_type'] ?? '';
-        $isStudent = ($userRole === 'requester' || $userType === 'student');
-        $myId = $isStudent ? (int)$_SESSION['user']['id'] : null;
-        if ($isStudent) {
+        $isRequester = $this->isRequesterUser();
+        $myId = $isRequester ? (int)$_SESSION['user']['id'] : null;
+        if ($isRequester) {
             $old['user_id'] = $myId;
         }
         $tickets  = Rating::getAvailableTickets($myId);
-        $students = $isStudent ? [$_SESSION['user']] : Rating::getAllStudents();
+        $students = $isRequester ? [$_SESSION['user']] : Rating::getAllStudents();
+        if (empty($_SESSION['csrf'])) {
+            $_SESSION['csrf'] = bin2hex(random_bytes(32));
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->verifyCsrf();
             $old    = $this->sanitize($_POST);
+            if ($isRequester) {
+                $old['user_id'] = (int)$_SESSION['user']['id'];
+            }
             $errors = $this->validate($old);
 
             if (empty($errors)) {
@@ -101,6 +143,7 @@ class RatingController
 
     public function edit(): void
     {
+        $this->requireRatingRole();
         $id = (int)($_GET['id'] ?? 0);
         $rating = Rating::findById($id);
 
@@ -109,21 +152,23 @@ class RatingController
             header('Location: ratings.php');
             exit;
         }
+        $this->requireRatingAccess($rating);
 
         $errors = [];
         $old    = $rating;
-        $userRole = $_SESSION['user']['role'] ?? '';
-        $userType = $_SESSION['user']['user_type'] ?? '';
-        $isStudent = ($userRole === 'requester' || $userType === 'student');
-        $myId = $isStudent ? (int)$_SESSION['user']['id'] : null;
-        if ($isStudent) {
-            $old['user_id'] = $myId;
+        $isRequester = $this->isRequesterUser();
+        $myId = $isRequester ? (int)$_SESSION['user']['id'] : null;
+        if (empty($_SESSION['csrf'])) {
+            $_SESSION['csrf'] = bin2hex(random_bytes(32));
         }
         $tickets  = Rating::getAvailableTickets($myId);
-        $students = $isStudent ? [$_SESSION['user']] : Rating::getAllStudents();
+        $students = $isRequester ? [$_SESSION['user']] : Rating::getAllStudents();
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $this->verifyCsrf();
             $old    = $this->sanitize($_POST);
+            $old['ticket_id'] = (int)$rating['ticket_id'];
+            $old['user_id'] = (int)$rating['user_id'];
             $errors = $this->validate($old, $id);
 
             if (empty($errors)) {
@@ -164,17 +209,24 @@ class RatingController
 
     public function delete(): void
     {
+        $this->requireRatingRole();
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             exit('Method Not Allowed');
         }
 
         $id = (int)($_POST['id'] ?? 0);
-        if (!Rating::findById($id)) {
+        $this->verifyCsrf();
+        $rating = Rating::findById($id);
+        if (!$rating) {
             $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Không tìm thấy đánh giá.'];
         } else {
-            Rating::delete($id);
-            $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Đã xóa đánh giá CSAT.'];
+            $this->requireRatingAccess($rating);
+            if (Rating::delete($id)) {
+                $_SESSION['flash'] = ['type' => 'success', 'msg' => 'Đã xóa đánh giá CSAT.'];
+            } else {
+                $_SESSION['flash'] = ['type' => 'danger', 'msg' => 'Không thể xóa đánh giá CSAT.'];
+            }
         }
         header('Location: ratings.php');
         exit;
@@ -200,6 +252,10 @@ class RatingController
         }
         if ($data['ticket_id'] > 0 && Rating::existsForTicket($data['ticket_id'], $excludeId)) {
             $errors[] = 'Phiếu này đã được đánh giá rồi.';
+        }
+        if ($data['ticket_id'] > 0 && $data['user_id'] > 0
+            && !Rating::ticketCanBeRatedBy($data['ticket_id'], $data['user_id'])) {
+            $errors[] = 'Chỉ người tạo phiếu mới được đánh giá phiếu đã giải quyết hoặc đã đóng.';
         }
         return $errors;
     }

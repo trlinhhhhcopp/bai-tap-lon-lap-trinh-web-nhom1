@@ -30,16 +30,32 @@ class CourseController
             exit;
         }
 
-        // Sinh viên hoặc tài khoản requester
         $role = $_SESSION['user']['role'] ?? '';
         $userType = $_SESSION['user']['user_type'] ?? '';
 
-        if ($role === 'agent') {
-            header('Location: ../agent/index.php');
-            exit;
+        if (
+            ($role !== 'requester' && $userType !== 'student')
+            || in_array($role, ['admin', 'agent'], true)
+            || $userType === 'lecturer'
+        ) {
+            http_response_code(403);
+            exit('Bạn không có quyền truy cập chức năng học phần.');
         }
 
         return (int)$_SESSION['user']['id'];
+    }
+
+    private function requireEnrolledCourse(int $studentId, int $courseId, bool $json = false): void
+    {
+        if (!$this->model->studentHasCourse($studentId, $courseId)) {
+            http_response_code(404);
+            if ($json) {
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode(['ok' => false, 'message' => 'Không tìm thấy học phần được yêu cầu.'], JSON_UNESCAPED_UNICODE);
+                exit;
+            }
+            exit('Không tìm thấy học phần được yêu cầu.');
+        }
     }
 
     /**
@@ -67,7 +83,6 @@ class CourseController
         $flash = $_SESSION['flash'] ?? null;
         unset($_SESSION['flash']);
 
-        // Sinh CSRF token cho phiên nếu chưa có
         if (empty($_SESSION['csrf'])) {
             $_SESSION['csrf'] = bin2hex(random_bytes(32));
         }
@@ -82,6 +97,7 @@ class CourseController
     {
         $studentId = $this->requireStudent();
         $courseId = max(1, (int)($_GET['course_id'] ?? 1));
+        $this->requireEnrolledCourse($studentId, $courseId);
 
         $course = $this->model->getCourseById($courseId);
         if (!$course) {
@@ -134,7 +150,7 @@ class CourseController
         $notes = trim($_POST['notes'] ?? '');
 
         $lesson = $this->model->getLessonById($lessonId);
-        if (!$lesson) {
+        if (!$lesson || (int)$lesson['course_id'] !== $courseId || !$this->model->studentHasCourse($studentId, $courseId)) {
             $this->respondError('Không tìm thấy thông tin buổi học.', $courseId);
             return;
         }
@@ -181,7 +197,7 @@ class CourseController
         }
 
         $safeOriginalName = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', basename($file['name']));
-        $newFileName = 'sub_' . $studentId . '_lesson' . $lessonId . '_' . time() . '.' . $ext;
+        $newFileName = 'sub_' . $studentId . '_lesson' . $lessonId . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
         $destPath = $uploadDir . '/' . $newFileName;
         $dbPath = 'uploads/assignments/' . $newFileName;
 
@@ -201,6 +217,9 @@ class CourseController
         );
 
         if (!$success) {
+            if (is_file($destPath)) {
+                unlink($destPath);
+            }
             $this->respondError('Lỗi khi ghi nhận trạng thái nộp bài trong CSDL.', $courseId);
             return;
         }
@@ -275,6 +294,11 @@ class CourseController
 
         $submissionId = (int)($_POST['submission_id'] ?? 0);
         $courseId = max(1, (int)($_POST['course_id'] ?? 1));
+        $this->requireEnrolledCourse($studentId, $courseId);
+        if (!$this->model->submissionBelongsToCourse($submissionId, $courseId)) {
+            http_response_code(404);
+            exit('Không tìm thấy bài nộp trong học phần này.');
+        }
 
         $deleted = $this->model->deleteSubmission($submissionId, $studentId);
 
@@ -301,6 +325,7 @@ class CourseController
     {
         $studentId = $this->requireStudent();
         $courseId = max(1, (int)($_GET['course_id'] ?? 1));
+        $this->requireEnrolledCourse($studentId, $courseId, true);
 
         $lessons = $this->model->getCourseLessonsWithSubmission($courseId, $studentId);
 
@@ -337,4 +362,3 @@ class CourseController
         exit;
     }
 }
-

@@ -12,8 +12,19 @@ class CourseAssignmentController
 {
     private const PER_PAGE = 8;
 
+    private function requireAssignmentViewer(): void
+    {
+        $role = $_SESSION['user']['role'] ?? '';
+        $type = $_SESSION['user']['user_type'] ?? '';
+        if ($role !== 'admin' && $type !== 'lecturer') {
+            http_response_code(403);
+            exit('Bạn không có quyền xem phân công giảng dạy.');
+        }
+    }
+
     public function index(): void
     {
+        $this->requireAssignmentViewer();
         $keyword = trim($_GET['q'] ?? '');
         $page    = max(1, (int) ($_GET['page'] ?? 1));
 
@@ -542,6 +553,7 @@ class CourseAssignmentController
     }
     public function exportCsv(): void
     {
+        $this->requireAssignmentViewer();
         $userRole   = $_SESSION['user']['role'] ?? '';
         $userType   = $_SESSION['user']['user_type'] ?? '';
         $isLecturer = ($userType === 'lecturer' && $userRole !== 'admin');

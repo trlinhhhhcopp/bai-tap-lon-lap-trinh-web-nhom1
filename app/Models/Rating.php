@@ -106,6 +106,23 @@ class Rating
         return (int) $stmt->fetch()['c'] > 0;
     }
 
+    public static function ticketCanBeRatedBy(int $ticketId, int $userId): bool
+    {
+        $stmt = db()->prepare("
+            SELECT COUNT(*)
+            FROM tickets
+            WHERE id = :ticket_id
+              AND requester_id = :user_id
+              AND status IN ('resolved', 'closed')
+        ");
+        $stmt->execute([
+            ':ticket_id' => $ticketId,
+            ':user_id' => $userId,
+        ]);
+
+        return (int)$stmt->fetchColumn() > 0;
+    }
+
     public static function create(array $data): int
     {
         $sql = "INSERT INTO ticket_ratings (ticket_id, user_id, score, comment)

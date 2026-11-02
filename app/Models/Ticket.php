@@ -127,6 +127,14 @@ class Ticket {
         require_once __DIR__ . '/../Services/SlaService.php';
         $sla = \App\Services\SlaService::calculateSlaDeadlines($categoryId, $priorityId);
 
+        // 3. Tự động phân công KTV chuyên trách hoặc kích hoạt tràn tải (ITIL v4)
+        $assignedTo = $data['assigned_to'] ?? null;
+        if (empty($assignedTo) && !$isGuest) {
+            require_once __DIR__ . '/../Services/TicketService.php';
+            $dispatch = \App\Services\TicketService::dispatchAgent($categoryId);
+            $assignedTo = $dispatch['agent_id'] ?? 2;
+        }
+
         $sql = "INSERT INTO tickets (
                     ticket_code, requester_id, assigned_to, category_id, priority_id,
                     class_id, course_id, is_guest_ticket, contact_email, lookup_pin,
@@ -143,7 +151,7 @@ class Ticket {
         $stmt->execute([
             ':ticket_code'      => $ticketCode,
             ':requester_id'     => $requesterId,
-            ':assigned_to'      => $data['assigned_to'] ?? null,
+            ':assigned_to'      => $assignedTo,
             ':category_id'      => $categoryId,
             ':priority_id'      => $priorityId,
             ':class_id'         => $data['class_id'] ?? null,

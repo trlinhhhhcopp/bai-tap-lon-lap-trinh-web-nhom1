@@ -38,26 +38,45 @@ class SlaService {
      * Kiểm tra một ngày cụ thể có phải là ngày nghỉ lễ không (Theo múi giờ Việt Nam và cấu hình CSDL)
      */
     public static function isHoliday(string $dateYmd): bool {
-        try {
-            $pdo = db();
-            $sql = "SELECT COUNT(*) FROM holidays 
-                    WHERE 
-                      -- 1. Nghỉ lễ theo năm cụ thể (is_recurring = 0, giới hạn tối đa 30 ngày tránh lỗi nhập liệu)
-                      (is_recurring = 0 AND :dt BETWEEN start_date AND end_date AND DATEDIFF(end_date, start_date) <= 30)
-                      -- 2. Nghỉ lễ định kỳ hàng năm (is_recurring = 1, so khớp chính xác theo tháng-ngày)
-                      OR (is_recurring = 1 AND (
-                          (DATE_FORMAT(start_date, '%m-%d') <= DATE_FORMAT(end_date, '%m-%d') 
-                           AND DATE_FORMAT(:dt2, '%m-%d') BETWEEN DATE_FORMAT(start_date, '%m-%d') AND DATE_FORMAT(end_date, '%m-%d'))
-                          OR
-                          (DATE_FORMAT(start_date, '%m-%d') > DATE_FORMAT(end_date, '%m-%d')
-                           AND (DATE_FORMAT(:dt3, '%m-%d') >= DATE_FORMAT(start_date, '%m-%d') OR DATE_FORMAT(:dt4, '%m-%d') <= DATE_FORMAT(end_date, '%m-%d')))
-                      ))";
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([':dt' => $dateYmd, ':dt2' => $dateYmd, ':dt3' => $dateYmd, ':dt4' => $dateYmd]);
-            return ((int)$stmt->fetchColumn()) > 0;
-        } catch (\Throwable $e) {
-            return false;
+        $date = DateTime::createFromFormat('!Y-m-d', $dateYmd);
+        if (!$date || $date->format('Y-m-d') !== $dateYmd) {
+            throw new \InvalidArgumentException('Ngày kiểm tra SLA không hợp lệ.');
         }
+
+        static $holidays = null;
+        if ($holidays === null) {
+            $holidays = db()->query(
+                "SELECT start_date, end_date, is_recurring FROM holidays"
+            )->fetchAll(PDO::FETCH_ASSOC);
+        }
+        $monthDay = $date->format('m-d');
+
+        foreach ($holidays as $holiday) {
+            $start = DateTime::createFromFormat('!Y-m-d', (string)$holiday['start_date']);
+            $end = DateTime::createFromFormat('!Y-m-d', (string)$holiday['end_date']);
+            if (!$start || !$end) {
+                continue;
+            }
+
+            if ((int)$holiday['is_recurring'] === 0) {
+                if ($start->diff($end)->days <= 30 && $date >= $start && $date <= $end) {
+                    return true;
+                }
+                continue;
+            }
+
+            $startMonthDay = $start->format('m-d');
+            $endMonthDay = $end->format('m-d');
+            if ($startMonthDay <= $endMonthDay) {
+                if ($monthDay >= $startMonthDay && $monthDay <= $endMonthDay) {
+                    return true;
+                }
+            } elseif ($monthDay >= $startMonthDay || $monthDay <= $endMonthDay) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -224,4 +243,3 @@ class SlaService {
         ];
     }
 }
-

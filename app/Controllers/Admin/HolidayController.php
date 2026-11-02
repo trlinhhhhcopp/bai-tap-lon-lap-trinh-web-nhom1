@@ -93,9 +93,10 @@ class HolidayController
 
         $id = max(0, (int) ($_POST['id'] ?? 0));
 
-        if ($id > 0) {
-            Holiday::delete($id);
+        if ($id > 0 && Holiday::delete($id)) {
             set_flash('success', 'Đã xóa ngày nghỉ lễ thành công!');
+        } else {
+            set_flash('error', 'Không tìm thấy ngày nghỉ lễ cần xóa.');
         }
 
         header('Location: holidays.php');

@@ -64,6 +64,7 @@ if (empty($_SESSION['user'])) {
         <?php endif; ?>
 
         <form method="post" action="index.php?action=rating_create" novalidate class="space-y-4 text-xs" onsubmit="return confirmRatingSubmit(this);">
+            <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'] ?? '') ?>">
             <div>
                 <label for="ticket_id" class="block font-bold text-slate-700 mb-1">
                     Phiếu Hỗ Trợ Cần Nghiệm Thu: <span class="text-rose-500">*</span>
