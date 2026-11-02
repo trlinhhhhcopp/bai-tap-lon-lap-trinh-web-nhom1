@@ -6,10 +6,10 @@
     <style>
         @page {
             size: A4 portrait;
-            margin: 16mm 14mm 16mm 14mm;
+            margin: 15mm 12mm 15mm 12mm;
             @bottom-right {
                 content: "Trang " counter(page);
-                font-size: 9.5px;
+                font-size: 9px;
                 color: #64748b;
                 font-family: 'Segoe UI', Tahoma, sans-serif;
             }
@@ -23,8 +23,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 11px;
-            line-height: 1.55;
+            font-size: 10.5px;
+            line-height: 1.5;
             color: #1e293b;
             background-color: #ffffff;
             margin: 0;
@@ -38,7 +38,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 34px 28px;
+            padding: 30px 24px;
             border: 3px double #0284c7;
             border-radius: 8px;
             background: linear-gradient(145deg, #ffffff 0%, #f0f9ff 100%);
@@ -47,20 +47,20 @@
 
         .cover-header {
             border-bottom: 2px solid #0284c7;
-            padding-bottom: 16px;
+            padding-bottom: 14px;
         }
 
         .cover-org {
-            font-size: 14.5px;
+            font-size: 14px;
             font-weight: 800;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             color: #0369a1;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
         .cover-suborg {
-            font-size: 12.5px;
+            font-size: 12px;
             color: #475569;
             font-weight: 700;
             text-transform: uppercase;
@@ -69,36 +69,36 @@
 
         .cover-body {
             margin: auto 0;
-            padding: 16px 0;
+            padding: 14px 0;
         }
 
         .badge-subject {
             display: inline-block;
             background-color: #0284c7;
             color: #ffffff;
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 700;
-            padding: 6px 18px;
+            padding: 5px 16px;
             border-radius: 20px;
             text-transform: uppercase;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             letter-spacing: 1px;
         }
 
         .cover-title {
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 900;
             color: #0f172a;
             line-height: 1.35;
             text-transform: uppercase;
-            margin: 10px 0 14px 0;
+            margin: 10px 0 12px 0;
         }
 
         .cover-subtitle {
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             color: #0284c7;
-            margin-bottom: 22px;
+            margin-bottom: 20px;
             line-height: 1.45;
         }
 
@@ -109,23 +109,23 @@
             border: 1px solid #cbd5e1;
             border-left: 5px solid #0284c7;
             border-radius: 8px;
-            padding: 16px 24px;
+            padding: 14px 20px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-            font-size: 11.5px;
+            font-size: 11px;
             margin: 0 auto;
-            width: 88%;
+            width: 90%;
         }
 
         .cover-meta-row {
-            margin: 6px 0;
+            margin: 5px 0;
             display: flex;
             justify-content: space-between;
         }
 
         .cover-footer {
             border-top: 1px solid #cbd5e1;
-            padding-top: 14px;
-            font-size: 11px;
+            padding-top: 12px;
+            font-size: 10.5px;
             color: #64748b;
             font-weight: 600;
             text-transform: uppercase;
@@ -134,39 +134,39 @@
 
         /* Headings */
         h1.section-title {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 800;
             color: #0f172a;
             text-transform: uppercase;
             border-bottom: 2px solid #0284c7;
-            padding-bottom: 5px;
-            margin-top: 22px;
-            margin-bottom: 10px;
+            padding-bottom: 4px;
+            margin-top: 20px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
 
         h2.sub-title {
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 700;
             color: #0369a1;
-            margin-top: 14px;
-            margin-bottom: 6px;
-            border-left: 3.5px solid #0284c7;
-            padding-left: 8px;
+            margin-top: 12px;
+            margin-bottom: 5px;
+            border-left: 3px solid #0284c7;
+            padding-left: 7px;
         }
 
         h3.part-title {
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
             color: #334155;
-            margin-top: 10px;
+            margin-top: 8px;
             margin-bottom: 4px;
         }
 
         p {
-            margin: 0 0 7px 0;
+            margin: 0 0 6px 0;
             text-align: justify;
         }
 
@@ -174,15 +174,15 @@
         table.report-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 10.5px;
-            margin: 8px 0 12px 0;
+            font-size: 10px;
+            margin: 6px 0 10px 0;
             background: #ffffff;
             page-break-inside: avoid;
         }
 
         table.report-table th, table.report-table td {
             border: 1px solid #cbd5e1;
-            padding: 6px 8px;
+            padding: 5px 7px;
             text-align: left;
             vertical-align: top;
         }
@@ -192,8 +192,8 @@
             color: #0f172a;
             font-weight: 700;
             text-transform: uppercase;
-            font-size: 9.5px;
-            letter-spacing: 0.5px;
+            font-size: 9px;
+            letter-spacing: 0.4px;
         }
 
         table.report-table tr:nth-child(even) td {
@@ -208,10 +208,10 @@
 
         /* Callout Boxes */
         .callout {
-            border-radius: 6px;
-            padding: 9px 13px;
-            margin: 9px 0;
-            font-size: 10.5px;
+            border-radius: 5px;
+            padding: 8px 12px;
+            margin: 8px 0;
+            font-size: 10px;
             border-left: 4px solid;
             page-break-inside: avoid;
         }
@@ -243,9 +243,9 @@
         /* Badges */
         .badge {
             display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 9.5px;
+            padding: 1.5px 5px;
+            border-radius: 3px;
+            font-size: 9px;
             font-weight: 700;
             text-transform: uppercase;
         }
@@ -260,54 +260,64 @@
         }
 
         ul, ol {
-            margin: 3px 0 7px 18px;
+            margin: 2px 0 6px 16px;
             padding: 0;
         }
 
         li {
-            margin-bottom: 3.5px;
+            margin-bottom: 3px;
         }
 
         code {
             font-family: Consolas, Monaco, monospace;
             background-color: #f1f5f9;
             color: #b91c1c;
-            padding: 1.5px 4px;
+            padding: 1px 3.5px;
             border-radius: 3px;
-            font-size: 10px;
+            font-size: 9.5px;
         }
 
-        /* Flow Diagram Boxes */
-        .diagram-container {
-            background-color: #f8fafc;
+        /* Flow Diagrams */
+        .diagram-box {
+            background: #ffffff;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
-            padding: 12px;
-            margin: 10px 0;
-            font-family: Consolas, monospace;
-            font-size: 9.5px;
-            line-height: 1.4;
-            color: #334155;
+            padding: 10px;
+            margin: 8px 0;
             page-break-inside: avoid;
-            overflow-x: auto;
         }
 
-        .step-box {
-            display: inline-block;
-            background: #ffffff;
-            border: 1.5px solid #0284c7;
+        .workflow-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 6px 0;
+            gap: 6px;
+        }
+
+        .wf-node {
+            flex: 1;
+            padding: 6px 8px;
             border-radius: 5px;
-            padding: 5px 10px;
+            font-size: 9.5px;
             font-weight: 600;
-            color: #0369a1;
-            margin: 2px 4px;
+            text-align: center;
+            border: 1.5px solid;
+            line-height: 1.35;
         }
 
-        .arrow-right {
-            display: inline-block;
-            font-weight: bold;
+        .wf-node-blue { background-color: #f0f9ff; border-color: #0284c7; color: #0369a1; }
+        .wf-node-green { background-color: #f0fdf4; border-color: #16a34a; color: #15803d; }
+        .wf-node-amber { background-color: #fffbeb; border-color: #d97706; color: #b45309; }
+        .wf-node-purple { background-color: #f5f3ff; border-color: #7c3aed; color: #6d28d9; }
+        .wf-node-rose { background-color: #fff1f2; border-color: #e11d48; color: #be123c; }
+        .wf-node-slate { background-color: #f8fafc; border-color: #64748b; color: #334155; }
+
+        .wf-arrow {
+            font-weight: 900;
             color: #64748b;
-            margin: 0 4px;
+            font-size: 12px;
+            user-select: none;
         }
     </style>
 </head>
@@ -327,8 +337,8 @@
                 (HELPDESK ONLINE ITIL v4 SERVICE DESK)
             </div>
             <div class="cover-subtitle">
-                Kiến trúc Clean MVC Phân tầng · Cơ sở dữ liệu MySQL 8 InnoDB 3NF · Phân quyền RBAC 4 Roles<br>
-                Thuật toán Tính SLA Cam Kết Lịch Hành Chính &amp; Nghỉ Lễ · Trạm Cứu Hộ Tài Khoản Khách Hai Bước
+                Kiến trúc Clean MVC Phân tầng Thuần PHP 8 · Hệ Quản Trị MySQL 8 InnoDB 3NF (15 Bảng Chuẩn Hóa)<br>
+                Phân quyền RBAC 4 Roles · Tính SLA Giờ Hành Chính &amp; Lịch Nghỉ Lễ · Trạm Cứu Hộ Tài Khoản Khách 2 Bước
             </div>
 
             <div class="cover-meta-box">
@@ -349,12 +359,12 @@
                     <span>Phạm Thị Thanh Ngân (Mã SV: 224001736)</span>
                 </div>
                 <div class="cover-meta-row">
-                    <strong>Vị trí tệp báo cáo gốc:</strong>
-                    <span><code>docs/Bao_Cao_BTL_Helpdesk_Nhom1.html</code> (và bản PDF)</span>
+                    <strong>Vị trí tệp tài liệu:</strong>
+                    <span><code>docs/Bao_Cao_BTL_Helpdesk_Nhom1.html</code> (và bản PDF A4)</span>
                 </div>
                 <div class="cover-meta-row">
-                    <strong>Trạng thái nghiệm thu:</strong>
-                    <span>Đã hoàn thiện 100% · CSDL chuẩn hóa UTF-8 · Sẵn sàng bảo vệ</span>
+                    <strong>Trạng thái hệ thống:</strong>
+                    <span>Đã hoàn thiện 100% · CSDL chuẩn hóa UTF-8 · Sẵn sàng vận hành</span>
                 </div>
             </div>
         </div>
@@ -364,92 +374,90 @@
         </div>
     </div>
 
-    <!-- HƯỚNG DẪN TRUY CẬP VÀ VỊ TRÍ TÀI LIỆU BÁO CÁO -->
+    <!-- VỊ TRÍ TÀI LIỆU -->
     <div class="callout callout-info">
         <strong>📍 VỊ TRÍ TỆP BÁO CÁO &amp; ĐƯỜNG DẪN XEM TRÊN HỆ THỐNG:</strong>
         <ul>
-            <li><strong>Bản báo cáo HTML hoàn chỉnh:</strong> <code>C:\New folder\htdocs\web01\bai-tap-lon-lap-trinh-web-nhom1\docs\Bao_Cao_BTL_Helpdesk_Nhom1.html</code></li>
+            <li><strong>Bản báo cáo HTML đầy đủ:</strong> <code>C:\New folder\htdocs\web01\bai-tap-lon-lap-trinh-web-nhom1\docs\Bao_Cao_BTL_Helpdesk_Nhom1.html</code></li>
             <li><strong>Xem trực tiếp trên trình duyệt Web:</strong> <a href="http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/Bao_Cao_BTL_Helpdesk_Nhom1.html" target="_blank"><code>http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/Bao_Cao_BTL_Helpdesk_Nhom1.html</code></a></li>
-            <li><strong>Bản báo cáo xuất file PDF chuẩn in ấn A4:</strong> <code>docs/Bao_Cao_BTL_Helpdesk_Nhom1.pdf</code> và <code>Bao_Cao_BTL_Helpdesk_Nhom1.pdf</code> tại thư mục gốc dự án. <em>(Có thể mở bản HTML trên Google Chrome hoặc Microsoft Edge, nhấn <strong>Ctrl + P</strong>, chọn <strong>Save as PDF</strong> với khổ A4, tỷ lệ mặc định và tích chọn "Background graphics" để lưu file PDF sắc nét)</em>.</li>
-            <li><strong>Trang giới thiệu tổng quan đồ án (Landing Page):</strong> <code>docs/index.html</code> hoặc <a href="http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/index.html" target="_blank"><code>http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/index.html</code></a></li>
+            <li><strong>Bản xuất PDF chuẩn in ấn A4:</strong> <code>docs/Bao_Cao_BTL_Helpdesk_Nhom1.pdf</code> và <code>Bao_Cao_BTL_Helpdesk_Nhom1.pdf</code> tại thư mục gốc dự án.</li>
+            <li><strong>Trang Landing Page giới thiệu đồ án:</strong> <code>docs/index.html</code> hoặc <a href="http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/index.html" target="_blank"><code>http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/docs/index.html</code></a></li>
         </ul>
     </div>
 
-    <!-- MỤC 1: GIỚI THIỆU DỰ ÁN TỪ ĐẦU -->
-    <h1 class="section-title"><span>🏛️</span> 1. GIỚI THIỆU DỰ ÁN &amp; BỐI CẢNH BÀI TOÁN TỔNG QUAN</h1>
+    <!-- MỤC 1: TỔNG QUAN DỰ ÁN VÀ BỐI CẢNH NGHIỆP VỤ -->
+    <h1 class="section-title"><span>🏛️</span> 1. TỔNG QUAN DỰ ÁN &amp; BỐI CẢNH NGHIỆP VỤ BÀI TOÁN</h1>
     
-    <h2 class="sub-title">1.1. Bối cảnh thực tế và Lý do chọn đề tài</h2>
+    <h2 class="sub-title">1.1. Bối cảnh thực tế tại Trường Đại học Thủ Đô Hà Nội (TUD)</h2>
     <p>
-        Trong bối cảnh chuyển đổi số giáo dục đại học, toàn bộ hoạt động giảng dạy, học tập và kiểm tra đánh giá tại Trường Đại Học Thủ Đô Hà Nội đều gắn liền với các nền tảng CNTT: Cổng đăng ký môn học (QLĐT), Hệ thống quản trị học tập số (Canvas LMS), Cổng thông tin xác thực tập trung (Single Sign-On - SSO), Hòm thư học đường Microsoft 365 và Hạ tầng Mạng Wi-Fi khuôn viên trường.
+        Trong môi trường đại học hiện đại, hạ tầng công nghệ thông tin phục vụ hơn 15.000 sinh viên và cán bộ giảng viên thông qua 5 hệ thống trực tuyến cốt lõi: Cổng thông tin xác thực tập trung (Single Sign-On - SSO), Hệ thống quản trị học tập số (Canvas LMS), Cổng đăng ký môn học (QLĐT), Hòm thư học đường Microsoft 365, và Hạ tầng Mạng Wi-Fi khuôn viên trường.
     </p>
     <p>
-        Tuy nhiên, trong quá trình vận hành phát sinh những khó khăn đặc thù:
+        Trong quá trình đào tạo và học tập thực tế, các khó khăn nghiêm trọng thường xuyên nảy sinh:
     </p>
     <ul>
-        <li><strong>Quá tải và thất lạc yêu cầu hỗ trợ:</strong> Sinh viên thường liên hệ qua Zalo, Facebook cá nhân hoặc gửi email rời rạc tới giảng viên và phòng CNTT dẫn tới tình trạng bỏ sót, không có số hiệu vé theo dõi, không đo lường được thời gian phản hồi.</li>
-        <li><strong>Sự cố học phần sát giờ nộp bài (Deadline):</strong> Sinh viên gặp lỗi đường truyền hoặc lỗi hệ thống LMS vào phút chót không thể nộp bài; Giảng viên thiếu cơ sở pháp lý và biên bản xác nhận lỗi kỹ thuật khách quan để quyết định gia hạn deadline.</li>
-        <li><strong>Sự cố tài khoản khi bị khóa hoặc quên mật khẩu:</strong> Khi sinh viên mất quyền truy cập vào cổng trường, việc gửi phiếu hỗ trợ trở nên bất khả thi do không thể đăng nhập, đòi hỏi phải có một <em>Trạm Cứu Hộ Tài Khoản Khách (Guest Rescue Station)</em> độc lập.</li>
-        <li><strong>Sự cố diện rộng (Major Incident):</strong> Khi hệ thống lõi (ví dụ cổng thi trắc nghiệm hoặc mạng nội bộ) gặp sự cố đồng loạt, hàng trăm người gửi cùng một nội dung gây sập hàng đợi hỗ trợ, thiếu kênh cảnh báo khẩn cấp toàn trường và cơ chế thu hồi sau khi khắc phục.</li>
+        <li><strong>Sinh viên mất quyền truy cập tài khoản:</strong> Khi sinh viên bị khóa tài khoản hoặc quên mật khẩu, sinh viên không thể đăng nhập vào cổng trường để gửi yêu cầu hỗ trợ. Kênh tiếp nhận qua Zalo hay Fanpage dễ thất lạc và không có cơ chế xác minh thẻ sinh viên chính chủ.</li>
+        <li><strong>Sự cố học phần sát giờ nộp bài tập lớn (Deadline):</strong> Sinh viên gặp trục trặc đường truyền mạng KTX hoặc lỗi nộp bài trên LMS vào phút chót. Giảng viên bộ môn không thể tự mình kiểm tra log máy chủ để biết sinh viên gặp lỗi khách quan hay nộp muộn do chủ quan, dẫn đến tranh cãi trong việc gia hạn nộp bài.</li>
+        <li><strong>Sự cố diện rộng (Major Incident):</strong> Khi cổng nộp bài hoặc hệ thống thi trực tuyến gặp sự cố gián đoạn, hàng trăm sinh viên cùng tạo phiếu khiến hàng đợi kỹ thuật viên bị nghẽn nghẹt, thiếu kênh thông báo khẩn cấp toàn trường và cơ chế thu hồi sau khi sửa chữa xong.</li>
     </ul>
 
-    <h2 class="sub-title">1.2. Mục tiêu nghiên cứu và Phạm vi đề tài</h2>
+    <h2 class="sub-title">1.2. Mục tiêu nghiên cứu và Giải pháp ITIL v4 Service Desk</h2>
     <p>
-        Đề tài <strong>"Hệ thống tiếp nhận &amp; xử lý hỗ trợ CNTT trực tuyến"</strong> của <strong>Nhóm 1</strong> được phát triển nhằm mục tiêu:
+        Đề tài <strong>"Hệ thống tiếp nhận &amp; xử lý hỗ trợ CNTT trực tuyến"</strong> của <strong>Nhóm 1</strong> số hóa toàn diện quy trình hỗ trợ CNTT theo tiêu chuẩn quốc tế <strong>ITIL v4 Service Desk</strong>:
     </p>
     <ol>
-        <li>Xây dựng giải pháp <strong>ITIL v4 Service Desk</strong> hoàn chỉnh cho môi trường đại học, số hóa 100% quy trình từ khâu tiếp nhận, tự động phân luồng (Triage &amp; Smart Dispatch) đến đóng phiếu và nghiệm thu.</li>
-        <li>Thiết lập cơ chế phối hợp liên vai trò giữa <strong>Sinh viên - Kỹ thuật viên (KTV) - Giảng viên (Lecturer) - Ban Quản trị (Admin)</strong>: KTV chịu trách nhiệm giám định kỹ thuật, Giảng viên nắm thẩm quyền học thuật mở lại hạn nộp bài, Admin giữ quyền điều phối tối cao.</li>
-        <li>Ứng dụng thuật toán cam kết thời gian xử lý <strong>SLA thông minh</strong> theo đúng khung giờ làm việc hành chính, tự động trừ thời gian nghỉ trưa, ngày nghỉ cuối tuần và danh mục các ngày nghỉ lễ toàn trường.</li>
-        <li>Bảo đảm an toàn thông tin theo chuẩn <strong>OWASP Top 10</strong>: ngăn chặn triệt để SQL Injection (100% Prepared Statements qua PDO), chống tấn công CSRF bằng thẻ mã hóa, chống mã độc XSS, kiểm tra tệp tải lên an toàn ngoài Webroot.</li>
+        <li><strong>Tự động điều phối thông minh (Smart Dispatching):</strong> Hệ thống tự động phân tích danh mục sự cố để gán ngay cho Kỹ thuật viên chuyên trách mảng đó, tính toán hạn cam kết SLA chính xác đến từng phút theo lịch làm việc hành chính (trừ giờ nghỉ trưa, ngày nghỉ cuối tuần và ngày lễ).</li>
+        <li><strong>Liên kết đa vai trò chặt chẽ:</strong> Thiết lập cơ chế phối hợp giữa <strong>Sinh viên &ndash; Kỹ thuật viên &ndash; Giảng viên &ndash; Quản trị viên</strong>: KTV chịu trách nhiệm giám định log kỹ thuật, Giảng viên nắm thẩm quyền học thuật mở lại hạn nộp Deadline, Quản trị viên điều phối cấp cao.</li>
+        <li><strong>Trạm Cứu Hộ Tài Khoản Khách (Guest Rescue Station):</strong> Cung cấp cổng tiếp nhận độc lập cho người dùng mất quyền truy cập kèm cơ chế phê duyệt 2 bước bảo mật: KTV xác thực hồ sơ bước 1 &rarr; Admin phê duyệt mở khóa bước 2.</li>
+        <li><strong>An toàn thông tin OWASP Top 10:</strong> Ngăn chặn 100% SQL Injection qua PDO Prepared Statements, chống CSRF Token, chống XSS, kiểm tra tải lên tệp an toàn ngoài Webroot.</li>
     </ol>
 
     <h2 class="sub-title">1.3. Kiến trúc Phần mềm Clean MVC Phân Tầng</h2>
     <p>
-        Hệ thống được tổ chức theo kiến trúc Clean Model-View-Controller (MVC) phân tầng nghiêm ngặt, tách bạch rõ ràng giữa xử lý dữ liệu, nghiệp vụ và giao diện người dùng:
+        Hệ thống được phát triển theo mô hình Clean MVC, phân chia rõ ràng trách nhiệm giữa các tầng:
     </p>
     <ul>
-        <li><strong>Tầng Controller (<code>app/Controllers/</code>):</strong> Tiếp nhận yêu cầu HTTP từ Router, xác thực phân quyền qua Middleware, gọi các Service nghiệp vụ và chuẩn bị dữ liệu gửi tới View. Được phân chia rõ ràng theo thư mục vai trò: <code>Admin/</code>, <code>Lecturer/</code>, <code>Student/</code>, và Controller dùng chung (<code>TicketController</code>, <code>AuthController</code>, <code>GuestTicketController</code>).</li>
-        <li><strong>Tầng Service (<code>app/Services/</code>):</strong> Đóng gói các logic nghiệp vụ phức tạp: <code>SlaService.php</code> (thuật toán tính toán mốc giờ SLA cam kết), <code>TicketService.php</code> (điều phối vé, cảnh báo trùng lặp, logic chuyển trạng thái), <code>UploadService.php</code> (kiểm soát tải lên tài liệu an toàn), <code>NotificationService.php</code> (phát thông báo đa vai trò).</li>
-        <li><strong>Tầng Model (<code>app/Models/</code>):</strong> Ánh xạ trực tiếp tới 13 bảng CSDL, đóng gói truy vấn bằng PDO Prepared Statements, bảo đảm tính toàn vẹn dữ liệu. Tuyệt đối không để câu truy vấn thô lọt vào Controller hay View.</li>
-        <li><strong>Tầng View (<code>app/Views/</code> &amp; giao diện web):</strong> Sử dụng Bootstrap 5 kết hợp tùy biến phong cách hiện đại, responsive đa thiết bị, hỗ trợ bảng dữ liệu thu gọn/mở rộng, banner thông báo và chuông thông báo 🔔 nhấp nháy theo thời gian thực.</li>
+        <li><strong>Tầng Controller (<code>app/Controllers/</code>):</strong> Phân chia độc lập theo vai trò người dùng (<code>Admin/</code>, <code>Lecturer/</code>, <code>Student/</code>) và Controller dùng chung (<code>TicketController</code>, <code>AuthController</code>, <code>GuestTicketController</code>).</li>
+        <li><strong>Tầng Service (<code>app/Services/</code>):</strong> Chứa logic nghiệp vụ lõi: <code>SlaService.php</code> (thuật toán SLA), <code>TicketService.php</code> (điều phối vé, cảnh báo trùng lặp), <code>UploadService.php</code> (kiểm soát file tải lên an toàn), <code>NotificationService.php</code> (phát thông báo realtime).</li>
+        <li><strong>Tầng Model (<code>app/Models/</code>):</strong> Đại diện cho 15 bảng CSDL, đóng gói truy vấn bằng PDO Prepared Statements, ngăn ngừa rò rỉ câu truy vấn SQL ra ngoài View.</li>
     </ul>
 
     <div class="page-break"></div>
 
-    <!-- MỤC 2: PHÂN TÍCH CHI TIẾT TỪNG VAI TRÒ (4 ROLES) -->
-    <h1 class="section-title"><span>👥</span> 2. PHÂN TÍCH CHI TIẾT TỪNG VAI TRÒ HỆ THỐNG (4 ROLES)</h1>
-    <p>Hệ thống hỗ trợ cơ chế Kiểm soát truy cập dựa trên vai trò (Role-Based Access Control - RBAC) chặt chẽ, chia làm 4 vai trò chính với giao diện và thẩm quyền độc lập:</p>
+    <!-- MỤC 2: PHÂN TÍCH CHI TIẾT 4 VAI TRÒ HỆ THỐNG & PHÂN QUYỀN RBAC -->
+    <h1 class="section-title"><span>👥</span> 2. PHÂN TÍCH CHI TIẾT 4 VAI TRÒ HỆ THỐNG &amp; PHÂN QUYỀN RBAC</h1>
+    <p>Hệ thống hỗ trợ cơ chế Kiểm soát truy cập dựa trên vai trò (Role-Based Access Control &ndash; RBAC) nghiêm ngặt với 4 vai trò chính:</p>
 
-    <h2 class="sub-title">2.1. Vai trò Sinh viên (Role: Student)</h2>
-    <p><strong>Đối tượng:</strong> Sinh viên chính quy đang theo học tại trường Đại học Thủ Đô Hà Nội.</p>
+    <h2 class="sub-title">2.1. Vai trò Sinh viên (Student / Requester)</h2>
+    <p><strong>Mục tiêu &amp; Trách nhiệm:</strong> Sinh viên chính quy đang theo học tại trường; gửi yêu cầu hỗ trợ khi gặp sự cố, theo dõi tiến độ xử lý và nghiệm thu chất lượng dịch vụ.</p>
     <ul>
-        <li><strong>Giao diện làm việc chính:</strong>
+        <li><strong>Các màn hình làm việc:</strong>
             <ul>
-                <li><em>Cổng Học Phần (<code>student/courses.php</code>):</em> Danh sách các môn học đang theo học trong học kỳ, xem danh sách bài tập từng buổi học, hạn chót (Deadline), điểm số (thang điểm 10) và lời nhận xét của Giảng viên.</li>
-                <li><em>Nộp bài tập buổi học:</em> Đính kèm tệp tin bài làm (Zip, Rar, PDF, Word) lên hệ thống an toàn; có khả năng nộp lại bài nếu buổi học còn trong hạn nộp hoặc đã được Giảng viên mở lại deadline.</li>
-                <li><em>Tạo phiếu hỗ trợ CNTT (<code>tickets/create.php</code>):</em> Chọn 1 trong 5 danh mục dịch vụ (Tài khoản, Mạng Wi-Fi, QLĐT, Canvas LMS, Microsoft 365). Nếu gặp sự cố nộp bài, sinh viên chọn đích danh Buổi học &amp; Học phần liên quan để tự động thiết lập liên kết học thuật.</li>
-                <li><em>Danh sách &amp; Chi tiết phiếu hỗ trợ (<code>tickets/index.php</code> &amp; <code>tickets/show.php</code>):</em> Theo dõi tiến độ SLA, xem kỹ thuật viên nào đang xử lý, trao đổi hai chiều qua khung thảo luận.</li>
-                <li><em>Đánh giá &amp; Nghiệm thu CSAT (<code>student/ratings.php</code>):</em> Khi phiếu đã được KTV giải quyết (<code>resolved</code>), sinh viên có quyền chấm điểm sao (1 đến 5 sao) và để lại ý kiến nhận xét.</li>
+                <li><em>Cổng Học Phần (<code>student/courses.php</code>):</em> Xem danh sách 6 môn học trong học kỳ, xem các buổi học, bài tập được giao, hạn nộp bài (Deadline), điểm số (thang điểm 10) và lời nhận xét của Giảng viên.</li>
+                <li><em>Nộp bài tập buổi học:</em> Đính kèm tệp tin bài làm (Zip, PDF, Word) lên hệ thống an toàn; có khả năng nộp lại bài nếu bài học còn hạn hoặc đã được Giảng viên mở lại hạn.</li>
+                <li><em>Tạo phiếu hỗ trợ (<code>tickets/create.php</code>):</em> Chọn 1 trong 5 dịch vụ CNTT (Tài khoản, Wi-Fi, QLĐT, Canvas LMS, Microsoft 365). Nếu gặp sự cố nộp bài, sinh viên chọn đích danh Buổi học &amp; Lớp học phần liên quan để tự động thiết lập liên kết học thuật.</li>
+                <li><em>Chi tiết phiếu hỗ trợ (<code>tickets/show.php</code>):</em> Trao đổi hai chiều qua khung thảo luận với KTV, theo dõi tiến độ cam kết SLA.</li>
+                <li><em>Nghiệm thu &amp; Đánh giá CSAT (<code>student/ratings.php</code>):</em> Khi KTV giải quyết xong (<code>resolved</code>), sinh viên chấm điểm từ 1 đến 5 sao và gửi góp ý dịch vụ.</li>
             </ul>
         </li>
-        <li><strong>Quy tắc nghiệp vụ &amp; Ràng buộc an toàn:</strong>
+        <li><strong>Các quyền hạn &amp; Cơ chế bảo vệ đặc thù:</strong>
             <ul>
-                <li><strong>Đặc quyền Sửa &amp; Xóa trong 15 phút đầu:</strong> Sinh viên được phép sửa đổi tiêu đề/mô tả hoặc hủy (xóa) phiếu trong vòng 15 phút đầu tiên sau khi tạo (khi phiếu đang ở trạng thái <code>new</code> hoặc <code>waiting_requester</code>). Quá 15 phút, hệ thống tự động khóa nút để đảm bảo tính minh bạch.</li>
-                <li><strong>Đổi mật khẩu lần đầu bắt buộc:</strong> Khi tài khoản vừa tạo hoặc vừa được Admin mở khóa reset về mật khẩu mặc định <code>123456</code>, sinh viên bắt buộc phải đổi mật khẩu cá nhân trước khi được phép truy cập vào các phân hệ học tập.</li>
-                <li><strong>Bảo vệ quyền riêng tư:</strong> Sinh viên chỉ có quyền xem các phiếu và bài nộp do chính mình tạo; tuyệt đối không thể xem hay can thiệp vào dữ liệu của sinh viên khác.</li>
+                <li><strong>Đặc quyền Sửa &amp; Xóa trong 15 phút đầu:</strong> Sinh viên được phép sửa đổi tiêu đề/mô tả hoặc hủy (xóa) phiếu trong vòng 15 phút đầu tiên kể từ khi tạo (khi phiếu đang ở trạng thái <code>new</code> hoặc <code>waiting_requester</code>). Quá 15 phút, hệ thống tự động khóa nút để bảo vệ tính minh bạch.</li>
+                <li><strong>Bắt buộc đổi mật khẩu lần đầu (First Login Force Reset):</strong> Khi tài khoản vừa cấp hoặc vừa được Admin reset về mật khẩu mặc định <code>123456</code>, sinh viên bắt buộc phải đổi mật khẩu cá nhân trước khi được phép vào học phần.</li>
+                <li><strong>Bảo vệ dữ liệu cá nhân:</strong> Sinh viên chỉ có quyền xem phiếu và bài nộp do chính mình tạo; tuyệt đối không thể xem dữ liệu của sinh viên khác.</li>
             </ul>
         </li>
     </ul>
 
-    <h2 class="sub-title">2.2. Vai trò Giảng viên bộ môn (Role: Lecturer)</h2>
-    <p><strong>Đối tượng:</strong> Giảng viên phụ trách giảng dạy các lớp học phần tại các khoa/bộ môn.</p>
+    <h2 class="sub-title">2.2. Vai trò Giảng viên bộ môn (Lecturer)</h2>
+    <p><strong>Mục tiêu &amp; Trách nhiệm:</strong> Giảng viên phụ trách giảng dạy các lớp học phần; quản lý buổi học, giao bài tập, chấm điểm và nắm thẩm quyền học thuật mở lại deadline.</p>
     <ul>
-        <li><strong>Giao diện làm việc chính:</strong>
+        <li><strong>Các màn hình làm việc:</strong>
             <ul>
-                <li><em>Bàn Làm Việc Giảng Viên (<code>assignments/index.php</code>):</em> Quản lý tổng thể các lớp học phần được phân công trong học kỳ, xem thống kê số bài đã nộp trên tổng số sinh viên (ví dụ: 5/5 sinh viên đã nộp).</li>
-                <li><em>Quản lý Buổi học &amp; Bài tập (<code>lecturer/lessons.php</code>):</em> Ban hành bài tập cho từng buổi học, đặt hạn chót nộp bài (Deadline), đính kèm tệp đề bài chi tiết hoặc tài liệu slide hướng dẫn.</li>
-                <li><em>Chấm điểm &amp; Nhận xét:</em> Chấm điểm bài nộp của sinh viên trực tiếp theo thang điểm 10 chuẩn mực đại học (từ <code>0.0</code> đến <code>10.0</code>, cho phép số thập phân), ghi nhận xét đánh giá chi tiết gửi đến sinh viên.</li>
-                <li><em>Cổng Thẩm Quyền Học Thuật Mở Lại Deadline:</em> Xuất hiện trực tiếp trong trang chi tiết phiếu khi sinh viên gặp sự cố nộp bài và <strong>KTV đã cấp biên bản giám định lỗi kỹ thuật hợp lệ</strong>.</li>
+                <li><em>Bàn Làm Việc Giảng Viên (<code>assignments/index.php</code>):</em> Quản lý tổng thể các lớp học phần được phân công trong học kỳ, xem tiến độ nộp bài của sinh viên (ví dụ: 5/5 sinh viên đã nộp).</li>
+                <li><em>Quản lý Buổi học &amp; Bài tập (<code>lecturer/lessons.php</code>):</em> Ban hành bài tập cho từng buổi học, thiết lập hạn nộp (Deadline), đính kèm tệp đề bài chi tiết hoặc tài liệu slide hướng dẫn.</li>
+                <li><em>Chấm điểm &amp; Nhận xét:</em> Chấm điểm bài nộp của sinh viên trực tiếp theo thang điểm 10 chuẩn mực đại học (từ <code>0.0</code> đến <code>10.0</code>, cho phép số thập phân), ghi lời nhận xét đánh giá chi tiết gửi đến sinh viên.</li>
+                <li><em>Khung Thẩm Quyền Học Thuật Mở Lại Deadline:</em> Xuất hiện trực tiếp trong trang chi tiết phiếu khi sinh viên gặp sự cố nộp bài và <strong>KTV đã cấp biên bản giám định lỗi kỹ thuật hợp lệ</strong>.</li>
             </ul>
         </li>
         <li><strong>Quy tắc nghiệp vụ &amp; Ràng buộc an toàn:</strong>
@@ -457,8 +465,8 @@
                 <li><strong>Giảng viên chỉ xem xét gia hạn KHI KTV ĐÃ DUYỆT LỖI:</strong> Giảng viên không phải tự mình kiểm tra log mạng hay server. Chỉ khi KTV bấm <em>"KTV Xác Nhận Có Lỗi"</em>, form phê duyệt mới mở ra.</li>
                 <li><strong>Thẩm quyền quyết định 2 phương án:</strong>
                     <ul>
-                        <li><em>Phương án 1 (Chấp thuận):</em> Giảng viên chọn thời hạn nộp bài mới (Deadline gia hạn) và nhập lời nhắn dặn dò &rarr; Hệ thống tự động mở lại trạng thái nộp bài cho sinh viên, cập nhật hạn nộp của buổi học và chuyển phiếu sang hoàn tất.</li>
-                        <li><em>Phương án 2 (Từ chối):</em> Giảng viên từ chối gia hạn kèm lý do sư phạm (ví dụ: lý do không chính đáng hoặc đã quá thời gian cho phép) &rarr; Hệ thống đóng yêu cầu và gửi thông báo giải thích cho sinh viên.</li>
+                        <li><em>Phương án 1 (Chấp thuận):</em> Giảng viên chọn thời hạn nộp bài mới (Deadline gia hạn) và nhập lời dặn dò &rarr; Hệ thống tự động mở lại trạng thái nộp bài cho sinh viên, cập nhật hạn nộp của buổi học và chuyển phiếu sang hoàn tất.</li>
+                        <li><em>Phương án 2 (Từ chối):</em> Giảng viên từ chối gia hạn kèm lý do sư phạm &rarr; Hệ thống đóng yêu cầu và gửi thông báo giải thích cho sinh viên.</li>
                     </ul>
                 </li>
                 <li><strong>Giao diện một chiều chống bấm lặp:</strong> Sau khi Giảng viên đã đưa ra quyết định, form nhập tự động biến mất và thay thế bằng khung biên bản kết luận chính thức, ngăn ngừa việc giảng viên bấm nhầm nhiều lần.</li>
@@ -467,8 +475,8 @@
         </li>
     </ul>
 
-    <h2 class="sub-title">2.3. Vai trò Kỹ thuật viên CNTT (Role: Agent / KTV)</h2>
-    <p><strong>Đối tượng:</strong> 5 KTV chuyên trách thuộc Trung tâm CNTT &amp; Truyền thông, phụ trách 5 dịch vụ lõi.</p>
+    <h2 class="sub-title">2.3. Vai trò Kỹ thuật viên CNTT (Agent / KTV)</h2>
+    <p><strong>Mục tiêu &amp; Trách nhiệm:</strong> 5 KTV chuyên trách thuộc Trung tâm CNTT &amp; Truyền thông, phụ trách tiếp nhận, chẩn đoán kỹ thuật, giải quyết sự cố và nghiệm thu kỹ thuật.</p>
     <ul>
         <li><strong>Phân công chuyên môn hóa 5 KTV:</strong>
             <ol>
@@ -479,7 +487,7 @@
                 <li><code>KTV005</code> (KTV Hoàng Thị Giang): Chuyên trách Hòm thư sinh viên Microsoft 365 &amp; Outlook.</li>
             </ol>
         </li>
-        <li><strong>Thẩm quyền nghiệp vụ &amp; Các chức năng chuyên trách:</strong>
+        <li><strong>Các thẩm quyền nghiệp vụ &amp; Ràng buộc an toàn:</strong>
             <ul>
                 <li><strong>KTV TUYỆT ĐỐI KHÔNG CÓ NÚT SỬA PHIẾU:</strong> Nhằm bảo đảm tính khách quan pháp lý của ITIL v4, KTV không được phép thay đổi tiêu đề hay mô tả gốc do người gửi khai báo (chặn hoàn toàn trên giao diện và backend <code>tickets/edit.php</code>).</li>
                 <li><strong>Kiểm tra &amp; Giám định kỹ thuật:</strong>
@@ -497,311 +505,555 @@
         </li>
     </ul>
 
-    <h2 class="sub-title">2.4. Vai trò Quản trị viên (Role: Admin)</h2>
-    <p><strong>Đối tượng:</strong> Trưởng phòng CNTT hoặc Cán bộ quản trị hệ thống cấp cao nhất.</p>
+    <h2 class="sub-title">2.4. Vai trò Quản trị viên (Admin)</h2>
+    <p><strong>Mục tiêu &amp; Trách nhiệm:</strong> Cán bộ quản trị hệ thống cấp cao nhất; giám sát toàn diện, xử lý các tác vụ khẩn cấp, quản lý người dùng và danh mục ngày lễ.</p>
     <ul>
         <li><strong>Thẩm quyền tối cao &amp; Giám sát toàn trường:</strong>
             <ul>
                 <li><strong>Admin KHÔNG có nút sửa phiếu, CHỈ CÓ NÚT XÓA PHIẾU:</strong> Nhằm loại bỏ các phiếu thử nghiệm rác, vi phạm chính sách hoặc phiếu thử nghiệm sau bảo trì, Admin có nút <code>🗑️ Xóa</code> màu đỏ trên danh sách và chi tiết phiếu (thực thi an toàn qua POST kèm CSRF). Admin tuyệt đối không sửa nội dung gốc của người gửi.</li>
                 <li><strong>Trung Tâm Việc Cần Làm Cấp Bách (Pending Tasks):</strong> Tự động rà quét và gom nhóm 4 sự việc khẩn cấp: (1) Sự cố diện rộng cần chỉ đạo; (2) Phiếu cứu hộ KTV đã duyệt cần Admin mở khóa; (3) Sinh viên bị KTV báo cáo vi phạm cần kỷ luật; (4) Cảnh báo KTV bị tràn tải hoặc trễ hẹn SLA.</li>
-                <li><strong>Phát &amp; Thu hồi Cảnh báo Sự cố Diện rộng (Major Incident Center):</strong> Admin phát cảnh báo khẩn cấp toàn trường (Banner đỏ nổi bật ở đầu trang cho toàn thể người dùng) và trang bị <strong>Nút Thu Hồi Cảnh Báo Khẩn Cấp</strong> màu cam khi sự cố kỹ thuật diện rộng đã được khắc phục hoàn toàn.</li>
+                <li><strong>Phát &amp; Thu hồi Cảnh báo Sự cố Diện rộng (Major Incident Center):</strong> Admin phát cảnh báo khẩn cấp toàn trường (Banner đỏ nổi bật ở đầu trang cho toàn thể người dùng) và trang bị <strong>NÚT THU HỒI CẢNH BÁO KHẨN CẤP</strong> màu cam khi sự cố kỹ thuật diện rộng đã được khắc phục hoàn toàn.</li>
                 <li><strong>Phê duyệt Mở khóa Cứu hộ Tài khoản:</strong> Trực tiếp duyệt mở khóa hồ sơ cứu hộ tài khoản khách, tự động reset mật khẩu về <code>123456</code> và kích hoạt cờ bắt buộc đổi mật khẩu khi đăng nhập.</li>
                 <li><strong>Quản lý Người Dùng &amp; Lịch Nghỉ Lễ:</strong> Quản lý danh sách sinh viên, giảng viên, KTV; khóa mềm / khóa cứng tài khoản; cấu hình danh mục ngày nghỉ lễ toàn trường (bảng <code>holidays</code>) để phục vụ thuật toán tính giờ SLA tự động.</li>
             </ul>
         </li>
     </ul>
 
-    <div class="page-break"></div>
-
-    <!-- MỤC 3: CÁC KỊCH BẢN & TRƯỜNG HỢP NGHIỆP VỤ ĐIỂN HÌNH -->
-    <h1 class="section-title"><span>🎯</span> 3. CÁC TRƯỜNG HỢP &amp; KỊCH BẢN NGHIỆP VỤ ĐIỂN HÌNH (SCENARIOS)</h1>
-    <p>Hệ thống bao quát toàn diện các tình huống thực tế xảy ra trong môi trường trường đại học:</p>
-
-    <h2 class="sub-title">3.1. Kịch bản 1: Trạm cứu hộ tài khoản khách khi quên mật khẩu hoặc bị khóa (Guest Rescue)</h2>
-    <div class="callout callout-info">
-        <strong>Vấn đề thực tế:</strong> Sinh viên bị khóa tài khoản hoặc quên mật khẩu thì không thể đăng nhập vào hệ thống để tạo phiếu hỗ trợ như bình thường.
-    </div>
-    <ul>
-        <li><strong>Bước 1 - Gửi đơn cứu hộ (Khách vãng lai):</strong> Sinh viên truy cập vào Trạm Cứu Hộ Tài Khoản (<code>guest_rescue.php</code>), nhập Mã sinh viên, Họ tên, Email cá nhân, Ảnh thẻ sinh viên và mô tả lý do. Hệ thống kiểm tra xem sinh viên có tồn tại trong CSDL trường hay không; nếu là sinh viên thật, hệ thống phát sinh <strong>Mã phiếu cứu hộ (ví dụ: #RESCUE-0123)</strong> kèm <strong>Mã PIN bí mật 6 số</strong> để tra cứu tiến độ độc lập mà không cần đăng nhập.</li>
-        <li><strong>Bước 2 - KTV giám sát &amp; Xác thực bước 1:</strong> Đơn cứu hộ được gán tự động cho KTV chuyên trách SSO (<code>KTV001</code>). KTV kiểm tra đối soát thông tin cá nhân và ảnh thẻ. Nếu hợp lệ, KTV bấm <em>"Xác Thực Đơn Hợp Lệ &amp; Chuyển Admin Duyệt"</em>.</li>
-        <li><strong>Bước 3 - Admin thẩm định &amp; Mở khóa:</strong> Đơn cứu hộ lập tức kích hoạt chuông thông báo trong <em>"Trung Tâm Việc Cần Làm Cấp Bách"</em> của Admin. Admin bấm <em>"Phê Duyệt Mở Khóa Tài Khoản"</em> &rarr; Hệ thống tự động đặt lại mật khẩu về <code>123456</code>, gỡ cờ khóa tài khoản, kích hoạt cờ <code>force_password_reset = 1</code>, và cập nhật trạng thái đơn cứu hộ sang thành công.</li>
-        <li><strong>Bước 4 - Sinh viên tra cứu &amp; Đăng nhập:</strong> Sinh viên dùng mã đơn và mã PIN tra cứu kết quả trên trạm cứu hộ, nhận thông báo mật khẩu tạm và đăng nhập thực hiện đổi mật khẩu ngay lập tức.</li>
-    </ul>
-
-    <h2 class="sub-title">3.2. Kịch bản 2: Sự cố nộp bài học phần &amp; Quy trình phối hợp KTV - Giảng viên mở lại Deadline</h2>
-    <div class="callout callout-warning">
-        <strong>Vấn đề thực tế:</strong> Đến hạn nộp bài tập lớn lúc 23:59, hệ thống mạng KTX bị nghẽn khiến sinh viên không nộp kịp. Sinh viên xin gia hạn nhưng Giảng viên không có bằng chứng kỹ thuật để biết sinh viên nói thật hay nói dối.
-    </div>
-    <ul>
-        <li><strong>Bước 1 - Sinh viên tạo phiếu cứu hộ buổi học:</strong> Sinh viên vào tạo phiếu, chọn học phần (ví dụ: <code>WEB101 - Lập trình Web</code>) và buổi học (ví dụ: <code>Buổi 9 - Báo cáo BTL</code>). Phiếu lập tức được gắn mác sự cố học tập và tự động điều phối tới KTV chuyên trách hạ tầng mạng.</li>
-        <li><strong>Bước 2 - KTV giám định kỹ thuật:</strong> KTV kiểm tra nhật ký máy chủ và tình trạng đường truyền:
-            <ul>
-                <li><em>Nếu có lỗi kỹ thuật thật:</em> KTV bấm <strong>"KTV Xác Nhận Có Lỗi"</strong> &rarr; Hệ thống lập tức sinh biên bản kỹ thuật số và chuyển quyền xử lý sang Giảng viên phụ trách lớp học phần đó (TS. Nguyễn Văn Giảng).</li>
-                <li><em>Nếu không có lỗi (sinh viên nộp muộn do chủ quan):</em> KTV bấm <strong>"Hủy Báo Lỗi (SV Báo Sai)"</strong> &rarr; Phiếu tự động chuyển sang <code>closed</code> và giải thích rõ; Giảng viên không bị làm phiền.</li>
-            </ul>
-        </li>
-        <li><strong>Bước 3 - Giảng viên xem xét mở lại Deadline:</strong> Giảng viên đăng nhập, thấy thông báo quả chuông 🔔 và banner nổi bật dẫn tới phiếu đã có xác nhận của KTV. Trên giao diện của Thầy, form thẩm quyền học thuật hiển thị 2 lựa chọn:
-            <ul>
-                <li><em>Chấp thuận:</em> Thầy chọn thời hạn mới (ví dụ gia hạn thêm 24 giờ đến 23:59 ngày hôm sau) và ghi lời dặn &rarr; Cổng nộp bài tự động mở lại cho sinh viên nộp bổ sung.</li>
-                <li><em>Từ chối:</em> Thầy từ chối kèm lý do sư phạm &rarr; Phiếu chuyển sang hoàn tất.</li>
-            </ul>
-        </li>
-        <li><strong>Bước 4 - Sinh viên nộp lại bài &amp; Chấm CSAT:</strong> Sinh viên nhận thông báo thời hạn mới, vào Cổng Học Phần tải lại bài nộp và đánh giá 5 sao cho KTV vì đã hỗ trợ kịp thời.</li>
-    </ul>
-
-    <h2 class="sub-title">3.3. Kịch bản 3: Xử lý sự cố diện rộng (Major Incident) &amp; Nút thu hồi cảnh báo của Admin</h2>
-    <div class="callout callout-danger">
-        <strong>Vấn đề thực tế:</strong> Máy chủ Canvas LMS bị quá tải hoặc đường truyền cáp quang bị đứt làm 100 người cùng lúc thông báo lỗi cổng CNTT. Hàng đợi KTV bị nghẽn nghẹt nếu phải trả lời từng người.
-    </div>
-    <ul>
-        <li><strong>KTV kích hoạt báo động:</strong> Khi phát hiện hàng loạt phiếu cùng báo lỗi một hạ tầng trọng yếu, bất kỳ KTV nào cũng có thể bấm nút <strong>"🚨 Báo Sự Cố Diện Rộng Lên Admin"</strong> kèm mô tả phạm vi ảnh hưởng.</li>
-        <li><strong>Admin tiếp nhận &amp; Ban hành Cảnh báo Toàn trường (Broadcast):</strong> Admin thấy cảnh báo nhấp nháy trong Trung tâm việc cần làm, bấm duyệt kích hoạt <em>Sự Cố Diện Rộng</em> &rarr; Một <strong>Banner cảnh báo khẩn cấp màu đỏ rực</strong> xuất hiện đồng bộ ở đầu trang trên màn hình của toàn bộ Sinh viên, Giảng viên và KTV, thông báo rõ: <em>"Hệ thống đang bảo trì khẩn cấp đường truyền, khuyến nghị người dùng không gửi thêm phiếu hỗ trợ trùng lặp"</em>.</li>
-        <li><strong>Thu hồi cảnh báo khi đã khắc phục xong (Yêu cầu mới đã hoàn thiện):</strong> Sau khi đội ngũ hạ tầng xử lý xong sự cố máy chủ, Admin có <strong>NÚT THU HỒI CẢNH BÁO KHẨN CẤP</strong> trên thanh công cụ &rarr; Bấm 1 cú click, toàn bộ banner báo động đỏ trên mọi tài khoản lập tức biến mất, hệ thống trở về trạng thái vận hành bình thường.</li>
-    </ul>
-
-    <h2 class="sub-title">3.4. Kịch bản 4: Xử lý chuyển giao phiếu (Re-assignment) &amp; Cơ chế tính KPI cho KTV</h2>
-    <div class="callout callout-info">
-        <strong>Quy định về KPI và Tránh đùn đẩy trách nhiệm:</strong>
-    </div>
-    <ul>
-        <li><strong>Cơ chế tính số phiếu KPI:</strong> Một phiếu sự cố chỉ tính điểm hoàn thành (KPI) cho <strong>KTV xử lý cuối cùng (người đưa phiếu về trạng thái <code>resolved</code> và nhận đánh giá CSAT của sinh viên)</strong>. KTV nhận chuyển giao nhưng không giải quyết mà chuyển tiếp sẽ không được cộng điểm KPI hoàn tất.</li>
-        <li><strong>Nhật ký chuyển giao minh bạch (Activity Audit Log):</strong> Mọi thao tác chuyển giao từ ai sang ai, vào lúc mấy giờ, lý do chuyển là gì đều được ghi nhận vĩnh viễn trong bảng <code>ticket_replies</code> (loại ghi chú hệ thống <code>is_internal = 1</code>).</li>
-        <li><strong>Cơ chế chống đùn đẩy nhiều lần (Chuyển quá nhiều lần):</strong> Hệ thống ghi nhận số lần chuyển giao (<code>reassign_count</code>). Nếu một phiếu bị chuyển giao quá 3 lần mà chưa được giải quyết, hệ thống tự động kích hoạt cảnh báo đỏ gửi trực tiếp lên Admin trong mục <em>"KTV Tràn Tải / Bất Thường"</em> để Admin can thiệp trực tiếp chỉ định KTV chịu trách nhiệm cuối cùng.</li>
-    </ul>
-
-    <h2 class="sub-title">3.5. Kịch bản 5: Đổi mật khẩu lần đầu bắt buộc (First Login Force Reset)</h2>
-    <ul>
-        <li>Khi người dùng đăng nhập thành công nhưng trường <code>force_password_reset = 1</code> (xảy ra khi: tài khoản mới cấp phát hàng loạt, hoặc tài khoản vừa được Admin mở khóa qua trạm cứu hộ với mật khẩu mặc định <code>123456</code>).</li>
-        <li><code>AuthMiddleware</code> sẽ chặn mọi đường dẫn điều hướng và ép buộc chuyển hướng về trang <code>/auth/force_change_password.php</code>.</li>
-        <li>Người dùng bắt buộc phải nhập mật khẩu mới thỏa mãn độ dài tối thiểu và xác nhận mật khẩu khớp nhau. Sau khi cập nhật mật khẩu thành công và mã hóa Bcrypt vào CSDL, cờ <code>force_password_reset</code> được đưa về <code>0</code>, hệ thống mới cấp phép chuyển tiếp vào trang làm việc chính.</li>
-    </ul>
-
-    <h2 class="sub-title">3.6. Kịch bản 6: Chống gửi phiếu trùng lặp thông minh (Duplicate Incident Detection)</h2>
-    <ul>
-        <li><strong>Nguyên lý:</strong> Khi người dùng chuẩn bị gửi phiếu mới, hệ thống tự động quét CSDL kiểm tra xem trong vòng 24 giờ qua hoặc hiện tại, người dùng này đã có phiếu nào cùng Danh mục dịch vụ (Category) hoặc cùng Buổi học đang ở trạng thái chưa đóng (<code>new</code>, <code>in_progress</code>, <code>waiting_requester</code>) hay không.</li>
-        <li><strong>Phản hồi:</strong> Nếu phát hiện trùng lặp, hệ thống chặn gửi phiếu rác và hiển thị hộp cảnh báo màu vàng nổi bật, trích xuất rõ mã phiếu cũ (ví dụ <code>#HD-2026-3110-0G04V1</code>), tiêu đề, trạng thái và kèm nút bấm <em>"Mở Xem Chi Tiết Phiếu Đang Xử Lý"</em> để người dùng tiếp tục chat với KTV thay vì tạo vé mới gây nghẽn hàng đợi.</li>
-    </ul>
-
-    <h2 class="sub-title">3.7. Kịch bản 7: Tính toán hạn cam kết SLA thông minh theo Giờ hành chính &amp; Lịch nghỉ lễ</h2>
-    <ul>
-        <li><strong>Khung giờ làm việc KTV quy định:</strong> Từ Thứ 2 đến Thứ 6. Ca sáng: <code>08:00 - 12:00</code> (4 tiếng), Ca chiều: <code>13:30 - 17:30</code> (4 tiếng). Tổng cộng: 8 tiếng làm việc hành chính/ngày. Thứ Bảy và Chủ Nhật nghỉ hoàn toàn.</li>
-        <li><strong>Loại trừ ngày nghỉ lễ:</strong> Bảng <code>holidays</code> lưu danh mục các ngày nghỉ lễ chính thức (Tết Nguyên Đán, Giỗ Tổ Hùng Vương, 30/4 - 1/5, Quốc Khánh 2/9...). Nếu khoảng thời gian giải quyết rơi vào ngày lễ, bộ đếm SLA tự động đóng băng và cộng dời sang ngày làm việc kế tiếp.</li>
-        <li><strong>Công thức tính:</strong> Phiếu gửi ngoài giờ (sau 17h30 hoặc trong ngày nghỉ) sẽ tự động bắt đầu tính từ <code>08:00</code> sáng của ngày làm việc tiếp theo. Thời gian cam kết giải quyết (<code>due_at</code>) được tính toán chuẩn xác đến từng phút theo công thức:
-        <br><code>Due At = Start Work Time + (SLA Hours / Priority Factor) (chỉ tính trong khung 8h-12h và 13h30-17h30 các ngày làm việc)</code>.</li>
-    </ul>
-
-    <h2 class="sub-title">3.8. Kịch bản 8: Nghiệm thu chất lượng dịch vụ CSAT 5 sao &amp; Đóng phiếu hỗ trợ</h2>
-    <ul>
-        <li>Khi KTV hoàn tất công việc kỹ thuật, phiếu được đưa về trạng thái <code>resolved</code> (Đã giải quyết). KTV không được tự ý đóng phiếu.</li>
-        <li>Sinh viên nhận thông báo quả chuông 🔔 và banner mời vào nghiệm thu kết quả.</li>
-        <li>Sinh viên vào chi tiết phiếu, chọn số sao đánh giá (từ 1 đến 5 sao) và nhập nhận xét góp ý. Sau khi bấm gửi:
-            <ul>
-                <li>Phiếu tự động chuyển sang trạng thái <code>closed</code> (Hoàn tất &amp; Đóng).</li>
-                <li>Điểm trung bình CSAT của KTV xử lý phiếu đó được tự động tính toán lại và cập nhật theo thời gian thực.</li>
-                <li>Nếu sau 24 giờ kể từ khi giải quyết mà sinh viên không chấm sao, cron job hệ thống sẽ tự động đóng phiếu để giải phóng hàng đợi.</li>
-            </ul>
-        </li>
-    </ul>
-
-    <div class="page-break"></div>
-
-    <!-- MỤC 4: THIẾT KẾ CƠ SỞ DỮ LIỆU CHUẨN HÓA (13 BẢNG 3NF) -->
-    <h1 class="section-title"><span>💾</span> 4. THIẾT KẾ CƠ SỞ DỮ LIỆU CHUẨN HÓA (13 BẢNG INNODB 3NF)</h1>
-    <p>Cơ sở dữ liệu <code>helpdesk_thudo</code> được thiết kế theo chuẩn hóa dạng 3 (3NF), sử dụng bộ máy lưu trữ MySQL 8 InnoDB hỗ trợ toàn vẹn ràng buộc khóa ngoại (Foreign Keys), bảng mã <code>utf8mb4_unicode_ci</code> hỗ trợ 100% tiếng Việt chuẩn sắc nét không lỗi font:</p>
-
+    <h2 class="sub-title">2.5. Ma trận Phân quyền Thao tác Chi tiết (CRUD &amp; Action Permissions Matrix)</h2>
     <table class="report-table">
         <thead>
             <tr>
-                <th style="width: 4%;">STT</th>
-                <th style="width: 17%;">Tên Bảng (Table)</th>
-                <th style="width: 34%;">Cấu trúc Cột &amp; Kiểu dữ liệu chính</th>
-                <th style="width: 25%;">Khóa Chính, Ngoại &amp; Ràng buộc</th>
-                <th style="width: 20%;">Ý nghĩa nghiệp vụ thực tế</th>
+                <th style="width: 25%;">Hành động / Thao tác hệ thống</th>
+                <th style="width: 18%; text-align: center;">Sinh viên (Student)</th>
+                <th style="width: 18%; text-align: center;">Giảng viên (Lecturer)</th>
+                <th style="width: 20%; text-align: center;">Kỹ thuật viên (KTV)</th>
+                <th style="width: 19%; text-align: center;">Quản trị viên (Admin)</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td style="text-align: center;">1</td>
-                <td><code>categories</code></td>
-                <td><code>id</code> (INT), <code>code</code> (VARCHAR 50), <code>name</code> (VARCHAR 150), <code>sla_hours</code> (DECIMAL 4,2), <code>lead_agent_id</code> (INT), <code>is_active</code> (TINYINT)</td>
-                <td>PK: <code>id</code><br>UK: <code>code</code><br>FK: <code>lead_agent_id &rarr; users(id)</code></td>
-                <td>5 nhóm dịch vụ CNTT lõi; định nghĩa thời lượng SLA tiêu chuẩn và KTV chuyên trách.</td>
+                <td>Tạo phiếu hỗ trợ cá nhân</td>
+                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
+                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
             </tr>
             <tr>
-                <td style="text-align: center;">2</td>
-                <td><code>priorities</code></td>
-                <td><code>id</code> (INT), <code>code</code> (VARCHAR 20), <code>name</code> (VARCHAR 50), <code>sla_multiplier</code> (DECIMAL 3,2), <code>color_hex</code> (VARCHAR 10)</td>
-                <td>PK: <code>id</code><br>UK: <code>code</code></td>
-                <td>4 mức ưu tiên (Khẩn cấp, Cao, Vừa, Thấp) kèm hệ số nhân co giãn thời gian SLA.</td>
+                <td>Chỉnh sửa nội dung phiếu đã gửi</td>
+                <td style="text-align: center; color: #b45309; font-weight: 600;">Chỉ trong 15 phút đầu</td>
+                <td style="text-align: center; color: #b45309; font-weight: 600;">Chỉ trong 15 phút đầu</td>
+                <td style="text-align: center; color: #dc2626; font-weight: 700;">TUYỆT ĐỐI KHÔNG</td>
+                <td style="text-align: center; color: #dc2626; font-weight: 700;">TUYỆT ĐỐI KHÔNG</td>
             </tr>
             <tr>
-                <td style="text-align: center;">3</td>
-                <td><code>classes</code></td>
-                <td><code>id</code> (INT), <code>class_code</code> (VARCHAR 50), <code>class_name</code> (VARCHAR 150), <code>academic_year</code> (VARCHAR 20), <code>department</code> (VARCHAR 100)</td>
-                <td>PK: <code>id</code><br>UK: <code>class_code</code></td>
-                <td>Lớp sinh hoạt chính quy của sinh viên (D24-CNTT1, D24-CNTT2) thuộc Khoa CNTT.</td>
+                <td>Xóa / Hủy phiếu hỗ trợ</td>
+                <td style="text-align: center; color: #b45309; font-weight: 600;">Chỉ trong 15 phút đầu</td>
+                <td style="text-align: center; color: #b45309; font-weight: 600;">Chỉ trong 15 phút đầu</td>
+                <td style="text-align: center; color: #dc2626; font-weight: 700;">Không có quyền</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Toàn quyền (Nút Xóa)</td>
             </tr>
             <tr>
-                <td style="text-align: center;">4</td>
-                <td><code>courses</code></td>
-                <td><code>id</code> (INT), <code>course_code</code> (VARCHAR 50), <code>course_name</code> (VARCHAR 150), <code>credits</code> (INT), <code>description</code> (TEXT)</td>
-                <td>PK: <code>id</code><br>UK: <code>course_code</code></td>
-                <td>Danh mục 6 môn học đại cương &amp; chuyên ngành (Lập trình Web WEB101, CSDL, Mạng...).</td>
+                <td>Chat trao đổi hai chiều trên phiếu</td>
+                <td style="text-align: center;">Chính chủ phiếu</td>
+                <td style="text-align: center;">Chính chủ phiếu</td>
+                <td style="text-align: center;" class="highlight-cell">KTV được phân công</td>
+                <td style="text-align: center;">Ghi chú theo dõi</td>
             </tr>
             <tr>
-                <td style="text-align: center;">5</td>
-                <td><code>users</code></td>
-                <td><code>id</code> (INT), <code>user_code</code> (VARCHAR 50), <code>full_name</code> (VARCHAR 150), <code>email</code> (VARCHAR 150), <code>password_hash</code> (VARCHAR 255), <code>role</code> (ENUM), <code>is_active</code> (TINYINT), <code>force_password_reset</code> (TINYINT)</td>
-                <td>PK: <code>id</code><br>UK: <code>user_code</code>, <code>email</code><br>Index: <code>role</code>, <code>is_active</code></td>
-                <td>Quản lý toàn bộ tài khoản (Admin, KTV, GV, SV), cờ khóa tài khoản và cờ bắt buộc đổi mật khẩu.</td>
+                <td>Ghi chú nội bộ bảo mật (Internal Note)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
+                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
             </tr>
             <tr>
-                <td style="text-align: center;">6</td>
-                <td><code>class_students</code></td>
-                <td><code>id</code> (INT), <code>class_id</code> (INT), <code>student_id</code> (INT), <code>joined_at</code> (DATETIME)</td>
-                <td>PK: <code>id</code><br>UK: <code>(class_id, student_id)</code><br>FK: <code>class_id</code>, <code>student_id</code></td>
-                <td>Bảng liên kết N-N xác định mỗi sinh viên thuộc về lớp sinh hoạt chính quy nào.</td>
+                <td>Giám định kỹ thuật ("Xác nhận có lỗi" / "Hủy báo lỗi")</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Độc quyền KTV</td>
+                <td style="text-align: center;">Theo dõi biên bản</td>
             </tr>
             <tr>
-                <td style="text-align: center;">7</td>
-                <td><code>course_assignments</code></td>
-                <td><code>id</code> (INT), <code>class_id</code> (INT), <code>course_id</code> (INT), <code>lecturer_id</code> (INT), <code>semester</code> (VARCHAR 20), <code>academic_year</code> (VARCHAR 20)</td>
-                <td>PK: <code>id</code><br>UK: <code>(class_id, course_id, semester)</code><br>FK: <code>class_id</code>, <code>course_id</code>, <code>lecturer_id</code></td>
-                <td>Phân công giảng dạy: <strong>1 lớp học phần chỉ có 1 giảng viên phụ trách duy nhất</strong> trong 1 học kỳ.</td>
+                <td>Thẩm quyền học thuật: Mở lại Deadline bài tập</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #7c3aed; font-weight: 700;">Độc quyền Giảng viên</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
             </tr>
             <tr>
-                <td style="text-align: center;">8</td>
-                <td><code>holidays</code></td>
-                <td><code>id</code> (INT), <code>holiday_name</code> (VARCHAR 150), <code>holiday_date</code> (DATE), <code>duration_days</code> (INT), <code>description</code> (VARCHAR 255)</td>
-                <td>PK: <code>id</code><br>Index: <code>holiday_date</code></td>
-                <td>Danh mục ngày nghỉ lễ toàn trường phục vụ thuật toán loại trừ ngày không làm việc khi tính SLA.</td>
+                <td>Nghiệm thu kỹ thuật (Chuyển sang <code>resolved</code>)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
+                <td style="text-align: center;">Có quyền</td>
             </tr>
             <tr>
-                <td style="text-align: center;">9</td>
-                <td><code>password_resets</code></td>
-                <td><code>id</code> (INT), <code>email</code> (VARCHAR 150), <code>token_hash</code> (VARCHAR 64), <code>created_at</code> (DATETIME), <code>expires_at</code> (DATETIME), <code>is_used</code> (TINYINT)</td>
-                <td>PK: <code>id</code><br>Index: <code>token_hash</code>, <code>email</code></td>
-                <td>Lưu trữ mã token SHA-256 khôi phục mật khẩu tự phục vụ qua email (hiệu lực 15 phút).</td>
+                <td>Chấm sao CSAT (1-5 sao) &amp; Đóng phiếu (<code>closed</code>)</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Độc quyền Sinh viên</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Độc quyền Giảng viên</td>
+                <td style="text-align: center;">Không (chờ đánh giá)</td>
+                <td style="text-align: center;">Tự đóng sau 24h</td>
             </tr>
             <tr>
-                <td style="text-align: center;">10</td>
-                <td><code>tickets</code></td>
-                <td><code>id</code> (INT), <code>ticket_code</code> (VARCHAR 30), <code>title</code> (VARCHAR 255), <code>description</code> (TEXT), <code>status</code> (ENUM), <code>category_id</code> (INT), <code>priority_id</code> (INT), <code>creator_id</code> (INT), <code>assigned_agent_id</code> (INT), <code>course_id</code> (INT), <code>created_at</code> (DATETIME), <code>due_at</code> (DATETIME), <code>ktv_confirmed</code> (TINYINT), <code>lecturer_approved</code> (TINYINT), <code>reassign_count</code> (INT)</td>
-                <td>PK: <code>id</code><br>UK: <code>ticket_code</code><br>FK: <code>category_id</code>, <code>priority_id</code>, <code>creator_id</code>, <code>assigned_agent_id</code></td>
-                <td>Bảng trung tâm của toàn hệ thống lưu trữ phiếu sự cố, mốc thời gian cam kết SLA, cờ KTV xác nhận lỗi, cờ GV gia hạn.</td>
+                <td>Báo động Sự Cố Diện Rộng (Major Incident)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #dc2626; font-weight: 700;">Nút Báo Động lên Admin</td>
+                <td style="text-align: center; color: #dc2626; font-weight: 700;">Phát cảnh báo toàn trường</td>
             </tr>
             <tr>
-                <td style="text-align: center;">11</td>
-                <td><code>ticket_replies</code></td>
-                <td><code>id</code> (INT), <code>ticket_id</code> (INT), <code>user_id</code> (INT), <code>content</code> (TEXT), <code>is_internal</code> (TINYINT), <code>created_at</code> (DATETIME)</td>
-                <td>PK: <code>id</code><br>FK: <code>ticket_id &rarr; tickets(id)</code><br>FK: <code>user_id &rarr; users(id)</code></td>
-                <td>Lưu vết trao đổi hai chiều giữa người dùng và KTV; phân biệt tin nhắn nội bộ bảo mật (<code>is_internal = 1</code>).</td>
+                <td>Thu hồi Cảnh báo Sự cố diện rộng</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #b45309; font-weight: 700;">Độc quyền Admin (Nút Thu Hồi)</td>
             </tr>
             <tr>
-                <td style="text-align: center;">12</td>
-                <td><code>ticket_ratings</code></td>
-                <td><code>id</code> (INT), <code>ticket_id</code> (INT), <code>score</code> (TINYINT 1-5), <code>comment</code> (TEXT), <code>created_at</code> (DATETIME)</td>
-                <td>PK: <code>id</code><br>UK: <code>ticket_id</code> (Quan hệ 1-1)<br>FK: <code>ticket_id &rarr; tickets(id)</code></td>
-                <td>Chấm điểm mức độ hài lòng khách hàng CSAT (1-5 sao) và nhận xét của sinh viên sau khi hoàn tất.</td>
+                <td>Xác thực Đơn Cứu Hộ Tài Khoản Khách (Bước 1)</td>
+                <td style="text-align: center;">Người gửi đơn</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #0284c7; font-weight: 700;">KTV001 (SSO) xác thực</td>
+                <td style="text-align: center;">Theo dõi</td>
             </tr>
             <tr>
-                <td style="text-align: center;">13</td>
-                <td><code>notifications</code></td>
-                <td><code>id</code> (INT), <code>user_id</code> (INT), <code>ticket_id</code> (INT), <code>title</code> (VARCHAR 255), <code>message</code> (TEXT), <code>link_url</code> (VARCHAR 255), <code>is_read</code> (TINYINT), <code>created_at</code> (DATETIME)</td>
-                <td>PK: <code>id</code><br>FK: <code>user_id &rarr; users(id)</code><br>Index: <code>is_read</code>, <code>created_at</code></td>
-                <td>Hệ thống thông báo thời gian thực đa vai trò, hỗ trợ số badge chưa đọc trên thanh Header và Banner nổi bật đầu trang.</td>
+                <td>Phê duyệt Mở Khóa Tài Khoản Cứu Hộ (Bước 2)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Độc quyền Admin</td>
             </tr>
         </tbody>
     </table>
 
     <div class="page-break"></div>
 
-    <!-- MỤC 5: CÁC LUỒNG DỮ LIỆU & KIẾN TRÚC HỆ THỐNG -->
-    <h1 class="section-title"><span>🔄</span> 5. CÁC LUỒNG DỮ LIỆU &amp; QUY TRÌNH XỬ LÝ (DATA FLOWS)</h1>
-    <p>Các luồng dữ liệu chính trong hệ thống thể hiện mối quan hệ trao đổi giữa các tác nhân và cơ sở dữ liệu:</p>
+    <!-- MỤC 3: CÁC KỊCH BẢN & TRƯỜNG HỢP NGHIỆP VỤ ĐIỂN HÌNH -->
+    <h1 class="section-title"><span>🎯</span> 3. CÁC TRƯỜNG HỢP &amp; KỊCH BẢN NGHIỆP VỤ ĐIỂN HÌNH</h1>
 
-    <h2 class="sub-title">5.1. Luồng dữ liệu Xử lý Vòng đời Phiếu Hỗ Trợ (Ticket Lifecycle Flow)</h2>
-    <div class="diagram-container">
-[SINH VIÊN / GIẢNG VIÊN] (Gửi phiếu) 
-     │
-     ▼
-[KIỂM TRA TRÙNG LẶP] ──(Trùng sự cố cũ)──► [CẢNH BÁO MÃ PHIẾU CŨ &amp; CHẶN GỬI RÁC]
-     │ (Hợp lệ)
-     ▼
-[TRIAGE &amp; AUTO-DISPATCH] ──► Lưu CSDL `tickets` (Trạng thái: NEW)
-     │                     ──► Tính hạn cam kết SLA `due_at` (Trừ nghỉ trưa/lễ)
-     │                     ──► Phát chuông thông báo 🔔 tới KTV chuyên trách
-     ▼
-[KTV TIẾP NHẬN] ──► Chuyển trạng thái: IN_PROGRESS
-     │
-     ├──(Cần thêm thông tin)──► Chat phản hồi ──► Trạng thái: WAITING_REQUESTER
-     ├──(Lỗi học phần nộp bài)──► KTV bấm "Xác Nhận Có Lỗi" ──► Chuyển sang GIẢNG VIÊN
-     └──(Xử lý xong kỹ thuật)──► KTV bấm "Nghiệm Thu Xong" ──► Trạng thái: RESOLVED
-                                                                   │
-     ┌─────────────────────────────────────────────────────────────┘
-     ▼
-[SINH VIÊN NGHIỆM THU] ──► Chấm sao CSAT (1-5 sao) &amp; Góp ý
-     │
-     ▼
-[HOÀN TẤT &amp; ĐÓNG PHIẾU] ──► Lưu `ticket_ratings` ──► Trạng thái: CLOSED
+    <h2 class="sub-title">3.1. Kịch bản 1: Trạm cứu hộ tài khoản khách khi quên mật khẩu hoặc bị khóa (Guest Rescue)</h2>
+    <p><strong>Tình huống:</strong> Sinh viên bị mất quyền truy cập (khóa mềm do nhập sai mật khẩu quá 5 lần, hoặc bị khóa tài khoản tạm thời), không thể đăng nhập vào hệ thống để tạo phiếu.</p>
+    <ul>
+        <li><strong>Bước 1 &ndash; Người dùng gửi đơn cứu hộ:</strong> Truy cập <code>guest_rescue.php</code>, nhập Mã sinh viên (ví dụ <code>224001736</code>), Họ tên, Email cá nhân, tải ảnh chụp thẻ sinh viên và mô tả lý do. Hệ thống kiểm tra xem sinh viên có tồn tại trong CSDL trường hay không; nếu là sinh viên thật, hệ thống phát sinh <strong>Mã đơn cứu hộ (ví dụ #RESCUE-0123)</strong> kèm <strong>Mã PIN bí mật 6 số</strong> để tra cứu tiến độ độc lập.</li>
+        <li><strong>Bước 2 &ndash; KTV đối soát bước 1:</strong> Đơn cứu hộ được gán tự động cho KTV chuyên trách SSO (<code>KTV001</code>). KTV kiểm tra đối soát thông tin cá nhân và ảnh thẻ. Nếu hợp lệ, KTV bấm <em>"Xác Thực Đơn Hợp Lệ &amp; Chuyển Admin Duyệt"</em>.</li>
+        <li><strong>Bước 3 &ndash; Admin phê duyệt mở khóa bước 2:</strong> Đơn cứu hộ kích hoạt chuông thông báo trong <em>"Trung Tâm Việc Cần Làm Cấp Bách"</em> của Admin. Admin bấm <em>"Phê Duyệt Mở Khóa Tài Khoản"</em> &rarr; Hệ thống tự động đặt lại mật khẩu về <code>123456</code>, gỡ cờ khóa tài khoản (<code>is_active = 1</code>), kích hoạt cờ <code>is_first_login = 1</code> (bắt buộc đổi mật khẩu khi đăng nhập).</li>
+        <li><strong>Bước 4 &ndash; Sinh viên tra cứu &amp; Đăng nhập:</strong> Sinh viên nhập mã đơn và mã PIN tra cứu kết quả trên trạm cứu hộ, nhận thông báo mật khẩu tạm và đăng nhập thực hiện đổi mật khẩu ngay lập tức.</li>
+    </ul>
+
+    <h2 class="sub-title">3.2. Kịch bản 2: Sự cố nộp bài học phần &amp; Quy trình phối hợp KTV - Giảng viên mở lại Deadline</h2>
+    <p><strong>Tình huống:</strong> Đến hạn nộp bài tập lớn lúc 23:59, hệ thống mạng KTX bị nghẽn khiến sinh viên không nộp kịp. Sinh viên xin gia hạn nhưng Giảng viên không có bằng chứng kỹ thuật để biết sinh viên nói thật hay nói dối.</p>
+    <ul>
+        <li><strong>Bước 1 &ndash; Sinh viên tạo phiếu cứu hộ buổi học:</strong> Sinh viên vào tạo phiếu, chọn học phần (<code>WEB101 &ndash; Lập trình Web</code>) và buổi học (<code>Buổi 9 &ndash; Báo cáo BTL</code>). Phiếu lập tức được gắn mác sự cố học tập và tự động điều phối tới KTV chuyên trách hạ tầng mạng (<code>KTV002</code>).</li>
+        <li><strong>Bước 2 &ndash; KTV giám định kỹ thuật:</strong> KTV kiểm tra nhật ký máy chủ và tình trạng đường truyền:
+            <ul>
+                <li><em>Nếu có lỗi kỹ thuật thật:</em> KTV bấm <strong>"KTV Xác Nhận Có Lỗi"</strong> &rarr; Hệ thống lập tức sinh biên bản kỹ thuật số và chuyển quyền xử lý sang Giảng viên phụ trách lớp học phần đó (TS. Nguyễn Văn Giảng).</li>
+                <li><em>Nếu không có lỗi (sinh viên nộp muộn do chủ quan):</em> KTV bấm <strong>"Hủy Báo Lỗi (SV Báo Sai)"</strong> &rarr; Phiếu tự động chuyển sang <code>closed</code> và giải thích rõ; Giảng viên không bị làm phiền.</li>
+            </ul>
+        </li>
+        <li><strong>Bước 3 &ndash; Giảng viên xem xét mở lại Deadline:</strong> Giảng viên đăng nhập, thấy thông báo quả chuông 🔔 và banner nổi bật dẫn tới phiếu đã có xác nhận của KTV. Trên giao diện của Thầy, form thẩm quyền học thuật hiển thị 2 lựa chọn:
+            <ul>
+                <li><em>Chấp thuận:</em> Thầy chọn thời hạn mới (ví dụ gia hạn thêm 24 giờ đến 23:59 ngày hôm sau) và ghi lời dặn &rarr; Cổng nộp bài tự động mở lại cho sinh viên nộp bổ sung.</li>
+                <li><em>Từ chối:</em> Thầy từ chối kèm lý do sư phạm &rarr; Phiếu chuyển sang hoàn tất.</li>
+            </ul>
+        </li>
+        <li><strong>Bước 4 &ndash; Sinh viên nộp lại bài &amp; Chấm CSAT:</strong> Sinh viên nhận thông báo thời hạn mới, vào Cổng Học Phần tải lại bài nộp và đánh giá 5 sao cho KTV vì đã hỗ trợ kịp thời.</li>
+    </ul>
+
+    <h2 class="sub-title">3.3. Kịch bản 3: Xử lý sự cố diện rộng (Major Incident) &amp; Nút thu hồi cảnh báo khẩn cấp của Admin</h2>
+    <p><strong>Tình huống:</strong> Máy chủ Canvas LMS bị quá tải hoặc đường truyền cáp quang bị đứt làm 100 người cùng lúc thông báo lỗi cổng CNTT. Hàng đợi KTV bị nghẽn nghẹt nếu phải trả lời từng người.</p>
+    <ul>
+        <li><strong>KTV kích hoạt báo động:</strong> Khi phát hiện hàng loạt phiếu cùng báo lỗi một hạ tầng trọng yếu, bất kỳ KTV nào cũng có thể bấm nút <strong>"🚨 Báo Sự Cố Diện Rộng Lên Admin"</strong> kèm mô tả phạm vi ảnh hưởng.</li>
+        <li><strong>Admin tiếp nhận &amp; Ban hành Cảnh báo Toàn trường (Broadcast):</strong> Admin thấy cảnh báo nhấp nháy trong Trung tâm việc cần làm, bấm duyệt kích hoạt <em>Sự Cố Diện Rộng</em> &rarr; Một <strong>Banner cảnh báo khẩn cấp màu đỏ rực</strong> xuất hiện đồng bộ ở đầu trang trên màn hình của toàn bộ Sinh viên, Giảng viên và KTV, thông báo rõ: <em>"Hệ thống đang bảo trì khẩn cấp đường truyền, khuyến nghị người dùng không gửi thêm phiếu hỗ trợ trùng lặp"</em>.</li>
+        <li><strong>Thu hồi cảnh báo khi đã khắc phục xong:</strong> Sau khi đội ngũ hạ tầng xử lý xong sự cố máy chủ, Admin có <strong>NÚT THU HỒI CẢNH BÁO KHẨN CẤP</strong> màu cam trên thanh công cụ &rarr; Bấm 1 cú click, toàn bộ banner báo động đỏ trên mọi tài khoản lập tức biến mất, hệ thống trở về trạng thái vận hành bình thường.</li>
+    </ul>
+
+    <h2 class="sub-title">3.4. Kịch bản 4: Xử lý chuyển giao phiếu (Re-assignment) &amp; Cơ chế tính KPI cho KTV</h2>
+    <ul>
+        <li><strong>Cơ chế tính số phiếu KPI:</strong> Một phiếu sự cố chỉ tính điểm hoàn thành (KPI) cho <strong>KTV xử lý cuối cùng (người đưa phiếu về trạng thái <code>resolved</code> và nhận đánh giá CSAT của sinh viên)</strong>. KTV nhận chuyển giao nhưng không giải quyết mà chuyển tiếp sẽ không được cộng điểm KPI hoàn tất.</li>
+        <li><strong>Nhật ký chuyển giao minh bạch (Activity Audit Log):</strong> Mọi thao tác chuyển giao từ ai sang ai, vào lúc mấy giờ, lý do chuyển là gì đều được ghi nhận vĩnh viễn trong bảng <code>ticket_replies</code> (loại ghi chú hệ thống <code>is_internal = 1</code>).</li>
+        <li><strong>Cơ chế chống đùn đẩy nhiều lần (Chuyển quá nhiều lần):</strong> Hệ thống ghi nhận số lần chuyển giao. Nếu một phiếu bị chuyển giao quá 3 lần mà chưa được giải quyết, hệ thống tự động kích hoạt cảnh báo đỏ gửi trực tiếp lên Admin trong mục <em>"KTV Tràn Tải / Bất Thường"</em> để Admin can thiệp trực tiếp chỉ định KTV chịu trách nhiệm cuối cùng.</li>
+    </ul>
+
+    <h2 class="sub-title">3.5. Kịch bản 5: Đổi mật khẩu lần đầu bắt buộc (First Login Force Reset)</h2>
+    <p>Khi người dùng đăng nhập thành công nhưng trường <code>is_first_login = 1</code> (xảy ra khi tài khoản mới cấp hoặc vừa được Admin reset về `123456`). Middleware sẽ chặn mọi đường dẫn và chuyển hướng về trang đổi mật khẩu bắt buộc. Người dùng bắt buộc phải đổi mật khẩu mới thỏa mãn độ dài tối thiểu trước khi được vào trang làm việc chính.</p>
+
+    <h2 class="sub-title">3.6. Kịch bản 6: Chống gửi phiếu trùng lặp thông minh (Duplicate Incident Detection)</h2>
+    <p>Khi người dùng tạo phiếu, hệ thống tự động quét kiểm tra xem trong vòng 24 giờ qua người dùng này đã có phiếu nào cùng Danh mục hoặc cùng Buổi học đang ở trạng thái chưa đóng hay không. Nếu phát hiện trùng, hệ thống chặn gửi và hiển thị hộp cảnh báo màu vàng trích xuất rõ mã phiếu cũ kèm đường link mở trực tiếp phiếu cũ để tiếp tục trao đổi.</p>
+
+    <h2 class="sub-title">3.7. Kịch bản 7: Tính toán hạn cam kết SLA thông minh theo Giờ hành chính &amp; Lịch nghỉ lễ</h2>
+    <p>Khung giờ làm việc KTV quy định: Từ Thứ 2 đến Thứ 6. Ca sáng: <code>08:00 &ndash; 12:00</code>, Ca chiều: <code>13:30 &ndash; 17:30</code> (8 tiếng làm việc/ngày). Thứ Bảy và Chủ Nhật nghỉ hoàn toàn. Bảng <code>holidays</code> lưu danh mục các ngày nghỉ lễ chính thức. Phiếu gửi ngoài giờ sẽ tự động bắt đầu tính từ <code>08:00</code> sáng của ngày làm việc tiếp theo. Thời gian cam kết giải quyết (<code>due_at</code>) được tính toán chuẩn xác đến từng phút loại trừ giờ nghỉ trưa và ngày nghỉ.</p>
+
+    <h2 class="sub-title">3.8. Kịch bản 8: Nghiệm thu chất lượng dịch vụ CSAT 5 sao &amp; Đóng phiếu hỗ trợ</h2>
+    <p>Khi KTV hoàn tất công việc kỹ thuật, phiếu được đưa về <code>resolved</code>. Sinh viên nhận thông báo vào chi tiết phiếu chấm điểm từ 1 đến 5 sao và nhập nhận xét. Phiếu tự động chuyển sang <code>closed</code> và cập nhật điểm trung bình CSAT của KTV theo thời gian thực. Nếu sau 24h sinh viên không chấm sao, cron job hệ thống tự động đóng phiếu.</p>
+
+    <div class="page-break"></div>
+
+    <!-- MỤC 4: SƠ ĐỒ PHÂN LUỒNG QUY TRÌNH HỆ THỐNG -->
+    <h1 class="section-title"><span>🔄</span> 4. SƠ ĐỒ PHÂN LUỒNG QUY TRÌNH HỆ THỐNG (SYSTEM WORKFLOWS)</h1>
+
+    <h2 class="sub-title">4.1. Sơ đồ 1: Luồng Điều phối Triage &amp; Vòng đời Tiếp nhận Phiếu hỗ trợ</h2>
+    <div class="diagram-box">
+        <div class="workflow-row">
+            <div class="wf-node wf-node-blue"><strong>1. Người dùng gửi phiếu</strong><br>Sinh viên / Giảng viên nhập form</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-amber"><strong>2. Kiểm tra trùng lặp</strong><br>Quét vé cùng mảng trong 24h</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-purple"><strong>3. Triage &amp; Smart Dispatch</strong><br>Gán KTV chuyên trách 1-5</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-slate"><strong>4. Tính SLA Hành chính</strong><br>Cộng dời trừ trưa/lễ &rarr; Due At</div>
+        </div>
+        <div style="text-align: center; font-size: 14px; color: #64748b; margin: 3px 0;">&darr;</div>
+        <div class="workflow-row">
+            <div class="wf-node wf-node-green"><strong>8. Đóng phiếu (CLOSED)</strong><br>Cập nhật điểm CSAT KTV</div>
+            <div class="wf-arrow">&larr;</div>
+            <div class="wf-node wf-node-amber"><strong>7. Nghiệm thu CSAT</strong><br>Sinh viên chấm 1 - 5 sao</div>
+            <div class="wf-arrow">&larr;</div>
+            <div class="wf-node wf-node-blue"><strong>6. Giải quyết (RESOLVED)</strong><br>KTV nghiệm thu giải pháp</div>
+            <div class="wf-arrow">&larr;</div>
+            <div class="wf-node wf-node-purple"><strong>5. Xử lý &amp; Phản hồi</strong><br>Trạng thái: IN_PROGRESS</div>
+        </div>
     </div>
 
-    <h2 class="sub-title">5.2. Luồng dữ liệu Trạm Cứu Hộ Tài Khoản Khách (Guest Rescue Data Flow)</h2>
-    <div class="diagram-container">
-[NGƯỜI DÙNG KHÁCH] (Bị khóa tài khoản / Quên mật khẩu)
-     │
-     ▼
-[TRẠM CỨU HỘ: guest_rescue.php]
-     │ (Nhập MSSV, Họ tên, Email cá nhân, Tải ảnh thẻ SV)
-     ▼
-[KIỂM TRA ĐỐI SOÁT CSDL] ──(Mã SV không có thật)──► [TỪ CHỐI TIẾP NHẬN]
-     │ (Tài khoản có thật)
-     ▼
-[TẠO ĐƠN CỨU HỘ] ──► Sinh mã #RESCUE và Mã PIN bí mật 6 số cho người dùng
-     │           ──► Gửi thông báo tới KTV chuyên trách SSO (KTV001)
-     ▼
-[KTV001 XÁC THỰC BƯỚC 1] ──► Đối soát ảnh thẻ &amp; thông tin
-     │ (Xác nhận hợp lệ)
-     ▼
-[ADMIN DUYỆT BƯỚC 2] ──► Kích hoạt trong "Trung Tâm Việc Cần Làm Cấp Bách"
-     │ (Admin bấm "Phê Duyệt Mở Khóa")
-     ▼
-[CẬP NHẬT CSDL TỰ ĐỘNG] ──► Đặt lại mật khẩu = '123456'
-                        ──► Gỡ khóa tài khoản (is_active = 1)
-                        ──► Bật cờ bắt buộc đổi MK (force_password_reset = 1)
-                        ──► Hoàn tất đơn cứu hộ
+    <h2 class="sub-title">4.2. Sơ đồ 2: Luồng Trạm Cứu Hộ Tài Khoản Khách 2 Bước (Guest Rescue Workflow)</h2>
+    <div class="diagram-box">
+        <div class="workflow-row">
+            <div class="wf-node wf-node-blue"><strong>Người dùng khách</strong><br>Quên MK / Khóa tài khoản</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-amber"><strong>Form Cứu Hộ Ngoài</strong><br>Nhập MSSV, Email, Ảnh thẻ</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-slate"><strong>Kiểm tra CSDL TUD</strong><br>Xác thực sinh viên thật</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-purple"><strong>Sinh Mã #RESCUE</strong><br>Cấp mã PIN 6 số tra cứu</div>
+        </div>
+        <div style="text-align: center; font-size: 14px; color: #64748b; margin: 3px 0;">&darr;</div>
+        <div class="workflow-row">
+            <div class="wf-node wf-node-green"><strong>Người dùng đăng nhập</strong><br>Đổi mật khẩu mới bắt buộc</div>
+            <div class="wf-arrow">&larr;</div>
+            <div class="wf-node wf-node-blue"><strong>Tra cứu tiến độ</strong><br>Nhận mật khẩu tạm: 123456</div>
+            <div class="wf-arrow">&larr;</div>
+            <div class="wf-node wf-node-rose"><strong>Admin Duyệt Bước 2</strong><br>Phê duyệt mở khóa &amp; reset pass</div>
+            <div class="wf-arrow">&larr;</div>
+            <div class="wf-node wf-node-amber"><strong>KTV001 Duyệt Bước 1</strong><br>Xác thực thẻ SV hợp lệ</div>
+        </div>
     </div>
 
-    <h2 class="sub-title">5.3. Luồng dữ liệu Phối hợp KTV - Giảng viên Mở Lại Hạn Nộp Bài (Deadline Extension Flow)</h2>
-    <div class="diagram-container">
-[SINH VIÊN] ──► Gặp sự cố không nộp được bài ──► Tạo vé cứu hộ chọn Buổi học &amp; Lớp học phần
-     │
-     ▼
-[KTV KIỂM ĐỊNH KỸ THUẬT]
-     │
-     ├──[Lỗi chủ quan / Gian lận]──► Bấm "Hủy Báo Lỗi" ──► Phiếu ĐÓNG (Không làm phiền GV)
-     │
-     └──[Lỗi mạng / LMS khách quan]──► Bấm "KTV Xác Nhận Có Lỗi"
-                                           │
-                                           ▼
-[BIÊN BẢN CHUYỂN SANG GIẢNG VIÊN] ──► Gửi thông báo 🔔 tới Giảng viên phụ trách
-                                           │
-                                           ▼
-[GIẢNG VIÊN THẨM ĐỊNH HỌC THUẬT]
-     │
-     ├──[Từ chối gia hạn]──► Ghi lý do sư phạm ──► Thông báo kết quả cho SV ──► Đóng phiếu
-     │
-     └──[Chấp thuận gia hạn]──► Chọn Hạn Deadline mới + Lời dặn dò
-                                   │
-                                   ▼
-[CẬP NHẬT BUỔI HỌC] ──► Cổng nộp bài mở lại cho SV ──► SV tải bài lên thành công!
+    <h2 class="sub-title">4.3. Sơ đồ 3: Luồng Phối hợp KTV - Giảng viên Thẩm định &amp; Mở lại Deadline</h2>
+    <div class="diagram-box">
+        <div class="workflow-row">
+            <div class="wf-node wf-node-blue"><strong>Sinh viên báo lỗi nộp bài</strong><br>Chọn Buổi học &amp; Lớp học phần</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-purple"><strong>KTV Giám định Kỹ thuật</strong><br>Kiểm tra nhật ký mạng / LMS</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-slate"><strong>Phân nhánh kết luận</strong><br>Có lỗi thật hay báo sai?</div>
+        </div>
+        <div class="workflow-row" style="margin-top: 6px;">
+            <div class="wf-node wf-node-rose" style="flex: 1.2;">
+                <strong>Nhánh A: Sinh viên báo sai / Chủ quan</strong><br>
+                KTV bấm "Hủy báo lỗi" &rarr; Phiếu ĐÓNG (<code>closed</code>)<br>
+                <em>(Không làm phiền Giảng viên)</em>
+            </div>
+            <div class="wf-arrow">&harr;</div>
+            <div class="wf-node wf-node-green" style="flex: 2;">
+                <strong>Nhánh B: KTV bấm "Xác Nhận Có Lỗi" &rarr; Chuyển Giảng viên</strong><br>
+                Giảng viên nhận thông báo 🔔 và form thẩm quyền học thuật:<br>
+                &bull; <strong>Chấp thuận:</strong> Chọn Deadline mới &rarr; Cổng nộp bài mở lại cho SV nộp bù.<br>
+                &bull; <strong>Từ chối:</strong> Nêu lý do sư phạm &rarr; Phiếu đóng hoàn tất.
+            </div>
+        </div>
+    </div>
+
+    <h2 class="sub-title">4.4. Sơ đồ 4: Luồng Báo động Sự Cố Diện Rộng &amp; Thu Hồi Cảnh Báo của Admin</h2>
+    <div class="diagram-box">
+        <div class="workflow-row">
+            <div class="wf-node wf-node-rose"><strong>KTV phát hiện lỗi hàng loạt</strong><br>100 người cùng báo sập cổng</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-amber"><strong>KTV bấm nút Báo động</strong><br>Gửi cảnh báo lên Admin Center</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-rose"><strong>Admin duyệt Broadcast</strong><br>Phát banner đỏ rực toàn trường</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-slate"><strong>Đội hạ tầng sửa lỗi</strong><br>Khôi phục máy chủ/đường truyền</div>
+        </div>
+        <div style="text-align: center; font-size: 14px; color: #64748b; margin: 3px 0;">&darr;</div>
+        <div class="workflow-row">
+            <div class="wf-node wf-node-green" style="flex: 1;">
+                <strong>ADMIN BẤM NÚT THU HỒI CẢNH BÁO KHẨN CẤP</strong><br>
+                Toàn bộ banner báo động đỏ trên mọi tài khoản lập tức biến mất &rarr; Hệ thống trở về trạng thái vận hành bình thường!
+            </div>
+        </div>
     </div>
 
     <div class="page-break"></div>
 
-    <!-- MỤC 6: PHÂN CÔNG CÔNG VIỆC & MA TRẬN RACI -->
+    <!-- MỤC 5: THIẾT KẾ CƠ SỞ DỮ LIỆU CHI TIẾT (TỪ ĐIỂN DỮ LIỆU ĐẦY ĐỦ CÁC BẢNG) -->
+    <h1 class="section-title"><span>💾</span> 5. THIẾT KẾ CƠ SỞ DỮ LIỆU CHI TIẾT (TỪ ĐIỂN DỮ LIỆU 15 BẢNG INNODB 3NF)</h1>
+    <p>Cơ sở dữ liệu <code>helpdesk_thudo</code> được thiết kế theo chuẩn hóa dạng 3 (3NF), bộ máy lưu trữ MySQL 8 InnoDB hỗ trợ toàn vẹn ràng buộc khóa ngoại (Foreign Keys), bảng mã <code>utf8mb4_unicode_ci</code> hỗ trợ tiếng Việt nguyên vẹn không lỗi font. Dưới đây là từ điển dữ liệu chi tiết của toàn bộ các bảng:</p>
+
+    <!-- BẢNG 1 -->
+    <h2 class="sub-title">5.1. Bảng <code>categories</code> &ndash; Danh mục Dịch vụ CNTT</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh danh mục dịch vụ</td></tr>
+            <tr><td><code>code</code></td><td>VARCHAR(50)</td><td>NOT NULL, UNIQUE</td><td>NULL</td><td>Mã danh mục: CAT_SSO, CAT_MAIL, CAT_QLDT, CAT_CANVAS, CAT_WIFI</td></tr>
+            <tr><td><code>name</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>NULL</td><td>Tên dịch vụ: Tài khoản SSO, Mạng Wi-Fi, Quản lý đào tạo, LMS...</td></tr>
+            <tr><td><code>description</code></td><td>VARCHAR(255)</td><td>NULL</td><td>NULL</td><td>Mô tả chi tiết phạm vi hỗ trợ của dịch vụ</td></tr>
+            <tr><td><code>default_priority_code</code></td><td>VARCHAR(20)</td><td>NOT NULL</td><td>'MED'</td><td>Mức độ ưu tiên mặc định khi tạo vé</td></tr>
+            <tr><td><code>sla_hours</code></td><td>DECIMAL(4,1)</td><td>NOT NULL</td><td>4.0</td><td>Thời lượng SLA tiêu chuẩn (giờ làm việc hành chính)</td></tr>
+            <tr><td><code>is_active</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>1</td><td>Trạng thái hoạt động (1: Đang mở, 0: Tạm khóa)</td></tr>
+            <tr><td><code>created_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>CURRENT_TIMESTAMP</td><td>Thời điểm khởi tạo danh mục</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 2 -->
+    <h2 class="sub-title">5.2. Bảng <code>priorities</code> &ndash; Mức độ Ưu tiên</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh mức độ ưu tiên</td></tr>
+            <tr><td><code>code</code></td><td>VARCHAR(20)</td><td>NOT NULL, UNIQUE</td><td>NULL</td><td>Mã ưu tiên: URGENT (Khẩn cấp), HIGH (Cao), MED (Vừa), LOW (Thấp)</td></tr>
+            <tr><td><code>name</code></td><td>VARCHAR(50)</td><td>NOT NULL</td><td>NULL</td><td>Tên hiển thị mức độ ưu tiên</td></tr>
+            <tr><td><code>sla_factor</code></td><td>DECIMAL(3,2)</td><td>NOT NULL</td><td>1.00</td><td>Hệ số co giãn SLA (URGENT = 0.5 rút ngắn 1/2 thời gian; LOW = 2.0)</td></tr>
+            <tr><td><code>sort_order</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>1</td><td>Thứ tự sắp xếp hiển thị trên giao diện</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 3 -->
+    <h2 class="sub-title">5.3. Bảng <code>classes</code> &ndash; Lớp Sinh hoạt Chính quy</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh lớp sinh hoạt</td></tr>
+            <tr><td><code>class_code</code></td><td>VARCHAR(30)</td><td>NOT NULL, UNIQUE</td><td>NULL</td><td>Mã lớp: D24-CNTT1, D24-CNTT2 (Khóa D24 TUD)</td></tr>
+            <tr><td><code>name</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>NULL</td><td>Tên lớp: Lớp Công nghệ Thông tin D24-1</td></tr>
+            <tr><td><code>cohort</code></td><td>VARCHAR(20)</td><td>NOT NULL</td><td>'D24'</td><td>Khóa đào tạo tuyển sinh (D24, D20 phục vụ lọc hết khóa)</td></tr>
+            <tr><td><code>faculty</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>'Khoa CNTT'</td><td>Khoa chủ quản quản lý sinh viên</td></tr>
+            <tr><td><code>academic_year</code></td><td>VARCHAR(30)</td><td>NOT NULL</td><td>'2024-2028'</td><td>Niên khóa đào tạo chính quy</td></tr>
+            <tr><td><code>created_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>CURRENT_TIMESTAMP</td><td>Thời điểm tạo lớp học</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 4 -->
+    <h2 class="sub-title">5.4. Bảng <code>courses</code> &ndash; Danh mục Môn học</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh môn học</td></tr>
+            <tr><td><code>course_code</code></td><td>VARCHAR(30)</td><td>NOT NULL, UNIQUE</td><td>NULL</td><td>Mã môn học: WEB101, NET201, DB102, OS101, SE201, LMS301</td></tr>
+            <tr><td><code>name</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>NULL</td><td>Tên môn học: Lập trình Web &amp; Ứng dụng, Cơ sở dữ liệu...</td></tr>
+            <tr><td><code>credits</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>3</td><td>Số tín chỉ của môn học</td></tr>
+            <tr><td><code>department</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>'CN Phần mềm'</td><td>Bộ môn chịu trách nhiệm học thuật</td></tr>
+            <tr><td><code>created_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>CURRENT_TIMESTAMP</td><td>Thời điểm khởi tạo môn học</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 5 -->
+    <h2 class="sub-title">5.5. Bảng <code>users</code> &ndash; Người dùng Toàn trường</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh người dùng duy nhất</td></tr>
+            <tr><td><code>user_code</code></td><td>VARCHAR(30)</td><td>NOT NULL, UNIQUE</td><td>NULL</td><td>Mã sinh viên (224001736) hoặc Mã GV / KTV / Admin</td></tr>
+            <tr><td><code>name</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>NULL</td><td>Họ và tên đầy đủ của người dùng</td></tr>
+            <tr><td><code>email</code></td><td>VARCHAR(190)</td><td>NOT NULL, UNIQUE</td><td>NULL</td><td>Email trường học (@daihocthudo.edu.vn)</td></tr>
+            <tr><td><code>personal_email</code></td><td>VARCHAR(190)</td><td>NULL</td><td>NULL</td><td>Email cá nhân dùng nhận mật khẩu tạm cứu hộ</td></tr>
+            <tr><td><code>password_hash</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>NULL</td><td>Mật khẩu băm an toàn Bcrypt (mặc định: 123456)</td></tr>
+            <tr><td><code>role</code></td><td>ENUM('requester','agent','admin')</td><td>NOT NULL</td><td>'requester'</td><td>Vai trò chính trong hệ thống Helpdesk</td></tr>
+            <tr><td><code>user_type</code></td><td>ENUM('student','lecturer','staff')</td><td>NOT NULL</td><td>'student'</td><td>Loại đối tượng học đường (Sinh viên, Giảng viên, Cán bộ)</td></tr>
+            <tr><td><code>class_id</code></td><td>INT UNSIGNED</td><td>NULL, FK &rarr; classes(id)</td><td>NULL</td><td>Lớp sinh hoạt chính của sinh viên</td></tr>
+            <tr><td><code>cohort</code></td><td>VARCHAR(20)</td><td>NULL</td><td>'D24'</td><td>Khóa tuyển sinh sinh viên</td></tr>
+            <tr><td><code>academic_status</code></td><td>ENUM('studying','graduated','expelled','suspended')</td><td>NOT NULL</td><td>'studying'</td><td>Tình trạng học tập (Đang học, Tốt nghiệp, Đuổi học)</td></tr>
+            <tr><td><code>specialty_category_id</code></td><td>INT UNSIGNED</td><td>NULL, FK &rarr; categories(id)</td><td>NULL</td><td>Nhóm dịch vụ chuyên môn của KTV (1 đến 5)</td></tr>
+            <tr><td><code>max_capacity</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>5</td><td>Hạn mức tối đa số vé KTV có thể gánh cùng lúc</td></tr>
+            <tr><td><code>active_tickets_count</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>0</td><td>Bộ đếm số vé đang xử lý của KTV</td></tr>
+            <tr><td><code>is_on_duty</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>1</td><td>Trạng thái ca trực (1: Đang trực, 0: Nghỉ ca)</td></tr>
+            <tr><td><code>failed_attempts</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>0</td><td>Số lần đăng nhập sai liên tiếp (quá 5 lần &rarr; khóa)</td></tr>
+            <tr><td><code>locked_until</code></td><td>DATETIME</td><td>NULL</td><td>NULL</td><td>Thời điểm khóa tài khoản tạm thời</td></tr>
+            <tr><td><code>is_active</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>1</td><td>1: Hoạt động bình thường, 0: Bị khóa cứng</td></tr>
+            <tr><td><code>lock_reason</code></td><td>ENUM(...)</td><td>NOT NULL</td><td>'none'</td><td>Lý do khóa: none, brute_force, violation, expelled, graduated</td></tr>
+            <tr><td><code>is_first_login</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>1</td><td>1: Bắt buộc đổi mật khẩu lần đầu khi đăng nhập</td></tr>
+            <tr><td><code>avatar_path</code></td><td>VARCHAR(255)</td><td>NULL</td><td>NULL</td><td>Đường dẫn ảnh đại diện / ảnh thẻ sinh viên</td></tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- BẢNG 6 -->
+    <h2 class="sub-title">5.6. Bảng <code>class_students</code> &ndash; Quan hệ Lớp &ndash; Sinh viên</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh bản ghi liên kết</td></tr>
+            <tr><td><code>class_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; classes(id)</td><td>NULL</td><td>Lớp sinh hoạt</td></tr>
+            <tr><td><code>student_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; users(id)</td><td>NULL</td><td>Sinh viên thuộc lớp sinh hoạt</td></tr>
+            <tr><td><code>enrolled_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>CURRENT_TIMESTAMP</td><td>Thời điểm gia nhập lớp</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 7 -->
+    <h2 class="sub-title">5.7. Bảng <code>course_assignments</code> &ndash; Phân công Giảng dạy Lớp học phần</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh phân công lớp học phần</td></tr>
+            <tr><td><code>class_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; classes(id)</td><td>NULL</td><td>Lớp học sinh hoạt</td></tr>
+            <tr><td><code>course_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; courses(id)</td><td>NULL</td><td>Môn học trong kỳ</td></tr>
+            <tr><td><code>lecturer_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; users(id)</td><td>NULL</td><td><strong>1 Giáo viên duy nhất phụ trách lớp học phần này</strong></td></tr>
+            <tr><td><code>semester</code></td><td>VARCHAR(20)</td><td>NOT NULL</td><td>'2026_1'</td><td>Học kỳ áp dụng phân công</td></tr>
+            <tr><td><code>academic_year</code></td><td>VARCHAR(20)</td><td>NOT NULL</td><td>'2026-2027'</td><td>Năm học áp dụng</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 8 -->
+    <h2 class="sub-title">5.8. Bảng <code>course_lessons</code> &ndash; Buổi học &amp; Hạn nộp Bài tập</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh buổi học</td></tr>
+            <tr><td><code>course_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; courses(id)</td><td>NULL</td><td>Môn học có buổi học này</td></tr>
+            <tr><td><code>lesson_number</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>NULL</td><td>Số thứ tự buổi học (Buổi 1, Buổi 2, ... Buổi 9)</td></tr>
+            <tr><td><code>title</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>NULL</td><td>Tiêu đề bài học: Buổi 9 - Báo cáo BTL Demo...</td></tr>
+            <tr><td><code>description</code></td><td>TEXT</td><td>NULL</td><td>NULL</td><td>Nội dung bài giảng buổi học</td></tr>
+            <tr><td><code>assignment_requirement</code></td><td>TEXT</td><td>NULL</td><td>NULL</td><td>Yêu cầu chi tiết bài tập sinh viên phải nộp</td></tr>
+            <tr><td><code>attachment_path</code></td><td>VARCHAR(255)</td><td>NULL</td><td>NULL</td><td>Đường dẫn tệp đề bài đính kèm do Giảng viên tải lên</td></tr>
+            <tr><td><code>attachment_name</code></td><td>VARCHAR(255)</td><td>NULL</td><td>NULL</td><td>Tên gốc của tệp đề bài / slide bài giảng</td></tr>
+            <tr><td><code>deadline_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>NULL</td><td><strong>Hạn chót nộp bài tập (Deadline buổi học)</strong></td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 9 -->
+    <h2 class="sub-title">5.9. Bảng <code>student_assignment_submissions</code> &ndash; Bài nộp &amp; Chấm điểm Thang 10</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh bài nộp</td></tr>
+            <tr><td><code>lesson_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; course_lessons(id)</td><td>NULL</td><td>Buổi học tương ứng</td></tr>
+            <tr><td><code>student_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; users(id)</td><td>NULL</td><td>Sinh viên nộp bài</td></tr>
+            <tr><td><code>file_path</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>NULL</td><td>Đường dẫn lưu trữ tệp bài làm trên máy chủ</td></tr>
+            <tr><td><code>file_name</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>NULL</td><td>Tên tệp gốc sinh viên tải lên (Zip, PDF...)</td></tr>
+            <tr><td><code>file_size</code></td><td>INT UNSIGNED</td><td>NOT NULL</td><td>0</td><td>Dung lượng tệp tính bằng Bytes</td></tr>
+            <tr><td><code>score</code></td><td>DECIMAL(4,2)</td><td>NULL</td><td>NULL</td><td><strong>Điểm số chấm theo thang 10 chuẩn đại học (0.0 - 10.0)</strong></td></tr>
+            <tr><td><code>star_rating</code></td><td>TINYINT(1) UNSIGNED</td><td>NULL</td><td>5</td><td>Đánh giá sao xếp loại của Giảng viên</td></tr>
+            <tr><td><code>feedback</code></td><td>TEXT</td><td>NULL</td><td>NULL</td><td>Lời nhận xét, góp ý sư phạm của Giảng viên</td></tr>
+            <tr><td><code>graded_at</code></td><td>DATETIME</td><td>NULL</td><td>NULL</td><td>Thời điểm Giảng viên chấm điểm</td></tr>
+            <tr><td><code>graded_by</code></td><td>INT UNSIGNED</td><td>NULL, FK &rarr; users(id)</td><td>NULL</td><td>Giảng viên trực tiếp chấm bài</td></tr>
+            <tr><td><code>submitted_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>CURRENT_TIMESTAMP</td><td>Thời điểm sinh viên nộp bài</td></tr>
+            <tr><td><code>is_completed</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>1</td><td>1: Đã hoàn tất nộp bài</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 10 -->
+    <h2 class="sub-title">5.10. Bảng <code>holidays</code> &ndash; Danh mục Ngày Nghỉ Lễ Toàn Trường</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh ngày lễ</td></tr>
+            <tr><td><code>name</code></td><td>VARCHAR(100)</td><td>NOT NULL</td><td>NULL</td><td>Tên ngày lễ: Tết Nguyên Đán, Giỗ Tổ, 30/4 - 1/5, 2/9...</td></tr>
+            <tr><td><code>start_date</code></td><td>DATE</td><td>NOT NULL</td><td>NULL</td><td>Ngày bắt đầu kỳ nghỉ lễ</td></tr>
+            <tr><td><code>end_date</code></td><td>DATE</td><td>NOT NULL</td><td>NULL</td><td>Ngày kết thúc kỳ nghỉ lễ</td></tr>
+            <tr><td><code>is_recurring</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>0</td><td>1: Lặp lại hàng năm</td></tr>
+            <tr><td><code>created_by</code></td><td>INT UNSIGNED</td><td>NULL, FK &rarr; users(id)</td><td>NULL</td><td>Quản trị viên cấu hình ngày lễ</td></tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- BẢNG 11 -->
+    <h2 class="sub-title">5.11. Bảng <code>password_resets</code> &ndash; Khôi phục Mật khẩu Tự phục vụ SSPR</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh bản ghi reset mật khẩu</td></tr>
+            <tr><td><code>user_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; users(id)</td><td>NULL</td><td>Tài khoản yêu cầu khôi phục</td></tr>
+            <tr><td><code>email</code></td><td>VARCHAR(190)</td><td>NOT NULL</td><td>NULL</td><td>Email nhận mã token</td></tr>
+            <tr><td><code>token_hash</code></td><td>VARCHAR(64)</td><td>NOT NULL</td><td>NULL</td><td>Chuỗi băm SHA-256 của mã token bảo mật</td></tr>
+            <tr><td><code>expires_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>NULL</td><td>Thời điểm hết hạn token (mặc định 15 phút)</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 12 -->
+    <h2 class="sub-title">5.12. Bảng <code>tickets</code> &ndash; Quản lý Toàn diện Phiếu Hỗ Trợ CNTT</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Khóa chính phiếu</td></tr>
+            <tr><td><code>ticket_code</code></td><td>VARCHAR(30)</td><td>NOT NULL, UNIQUE</td><td>NULL</td><td>Mã phiếu hiển thị: HD-2026-3110-0G04V1</td></tr>
+            <tr><td><code>requester_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; users(id)</td><td>NULL</td><td>Người tạo phiếu (Sinh viên hoặc Giảng viên)</td></tr>
+            <tr><td><code>assigned_to</code></td><td>INT UNSIGNED</td><td>NULL, FK &rarr; users(id)</td><td>NULL</td><td>Kỹ thuật viên phụ trách xử lý phiếu</td></tr>
+            <tr><td><code>category_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; categories(id)</td><td>NULL</td><td>Nhóm dịch vụ (1 đến 5)</td></tr>
+            <tr><td><code>priority_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; priorities(id)</td><td>NULL</td><td>Mức độ ưu tiên của phiếu</td></tr>
+            <tr><td><code>parent_ticket_id</code></td><td>INT UNSIGNED</td><td>NULL, FK &rarr; tickets(id)</td><td>NULL</td><td>Mã phiếu cha gom nhóm khi có sự cố diện rộng</td></tr>
+            <tr><td><code>class_id</code></td><td>INT UNSIGNED</td><td>NULL, FK &rarr; classes(id)</td><td>NULL</td><td>Lớp học phần gặp sự cố nộp bài</td></tr>
+            <tr><td><code>course_id</code></td><td>INT UNSIGNED</td><td>NULL, FK &rarr; courses(id)</td><td>NULL</td><td>Môn học gặp sự cố</td></tr>
+            <tr><td><code>lesson_id</code></td><td>INT UNSIGNED</td><td>NULL</td><td>NULL</td><td>Buổi học cần xin cứu hộ nộp bài</td></tr>
+            <tr><td><code>is_guest_ticket</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>0</td><td>1: Đơn từ Trạm Cứu Hộ tài khoản khách</td></tr>
+            <tr><td><code>contact_email</code></td><td>VARCHAR(190)</td><td>NULL</td><td>NULL</td><td>Email cá nhân nhận kết quả cứu hộ</td></tr>
+            <tr><td><code>lookup_pin</code></td><td>VARCHAR(10)</td><td>NULL</td><td>NULL</td><td>Mã PIN bí mật 6 số tra cứu đơn cứu hộ</td></tr>
+            <tr><td><code>title</code></td><td>VARCHAR(150)</td><td>NOT NULL</td><td>NULL</td><td>Tiêu đề sự cố người dùng khai báo</td></tr>
+            <tr><td><code>description</code></td><td>TEXT</td><td>NOT NULL</td><td>NULL</td><td>Mô tả chi tiết sự cố kỹ thuật</td></tr>
+            <tr><td><code>system_affected</code></td><td>VARCHAR(50)</td><td>NOT NULL</td><td>NULL</td><td>Hệ thống bị ảnh hưởng (LMS, QLĐT, SSO, Wi-Fi...)</td></tr>
+            <tr><td><code>attachment_path</code></td><td>TEXT</td><td>NULL</td><td>NULL</td><td>Đường dẫn ảnh chụp màn hình lỗi</td></tr>
+            <tr><td><code>status</code></td><td>ENUM(...)</td><td>NOT NULL</td><td>'new'</td><td>Trạng thái: new, in_progress, waiting_requester, resolved, closed</td></tr>
+            <tr><td><code>due_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>NULL</td><td><strong>Hạn chót giải quyết SLA (giờ hành chính)</strong></td></tr>
+            <tr><td><code>it_verified</code></td><td>TINYINT(1)</td><td>NULL</td><td>0</td><td><strong>1: KTV xác nhận có lỗi kỹ thuật khách quan</strong></td></tr>
+            <tr><td><code>it_verified_at</code></td><td>DATETIME</td><td>NULL</td><td>NULL</td><td>Thời điểm KTV bấm xác nhận có lỗi</td></tr>
+            <tr><td><code>lecturer_decision</code></td><td>ENUM(...)</td><td>NULL</td><td>'pending'</td><td>Quyết định của GV: pending, approved, rejected</td></tr>
+            <tr><td><code>lecturer_decision_at</code></td><td>DATETIME</td><td>NULL</td><td>NULL</td><td>Thời điểm Giảng viên quyết định mở lại deadline</td></tr>
+            <tr><td><code>rescue_verified</code></td><td>TINYINT(1)</td><td>NULL</td><td>0</td><td>1: KTV đã xác thực đơn cứu hộ khách hợp lệ</td></tr>
+            <tr><td><code>is_major_incident</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>0</td><td>1: Đánh dấu sự cố diện rộng toàn trường</td></tr>
+            <tr><td><code>admin_broadcast_status</code></td><td>VARCHAR(20)</td><td>NULL</td><td>'none'</td><td>Trạng thái phát cảnh báo: broadcasted, revoked</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 13 -->
+    <h2 class="sub-title">5.13. Bảng <code>ticket_replies</code> &ndash; Lịch sử Trao đổi &amp; Ghi chú Nội bộ</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh phản hồi</td></tr>
+            <tr><td><code>ticket_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; tickets(id)</td><td>NULL</td><td>Phiếu trao đổi tương ứng</td></tr>
+            <tr><td><code>user_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; users(id)</td><td>NULL</td><td>Người gửi tin nhắn phản hồi</td></tr>
+            <tr><td><code>message</code></td><td>TEXT</td><td>NOT NULL</td><td>NULL</td><td>Nội dung phản hồi hoặc ghi chú kỹ thuật</td></tr>
+            <tr><td><code>attachment_path</code></td><td>TEXT</td><td>NULL</td><td>NULL</td><td>Tệp tin đính kèm trong tin nhắn</td></tr>
+            <tr><td><code>is_internal</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>0</td><td><strong>1: Ghi chú nội bộ KTV/Admin (người gửi không thấy)</strong></td></tr>
+            <tr><td><code>created_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>CURRENT_TIMESTAMP</td><td>Thời điểm gửi tin nhắn</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 14 -->
+    <h2 class="sub-title">5.14. Bảng <code>ticket_ratings</code> &ndash; Đánh giá Chất lượng CSAT</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh bản ghi đánh giá</td></tr>
+            <tr><td><code>ticket_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, UNIQUE, FK &rarr; tickets(id)</td><td>NULL</td><td><strong>Quan hệ 1 &ndash; 1: Mỗi phiếu chỉ đánh giá 1 lần duy nhất</strong></td></tr>
+            <tr><td><code>user_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; users(id)</td><td>NULL</td><td>Sinh viên / Giảng viên thực hiện đánh giá</td></tr>
+            <tr><td><code>score</code></td><td>TINYINT(3) UNSIGNED</td><td>NOT NULL</td><td>NULL</td><td>Điểm số đánh giá mức độ hài lòng (1 đến 5 sao)</td></tr>
+            <tr><td><code>comment</code></td><td>VARCHAR(500)</td><td>NULL</td><td>NULL</td><td>Ý kiến nhận xét, đóng góp nâng cao chất lượng</td></tr>
+            <tr><td><code>created_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>CURRENT_TIMESTAMP</td><td>Thời điểm gửi đánh giá CSAT</td></tr>
+        </tbody>
+    </table>
+
+    <!-- BẢNG 15 -->
+    <h2 class="sub-title">5.15. Bảng <code>notifications</code> &ndash; Thông báo Thời gian thực Đa vai trò</h2>
+    <table class="report-table">
+        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
+        <tbody>
+            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh thông báo</td></tr>
+            <tr><td><code>user_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; users(id)</td><td>NULL</td><td>Người nhận thông báo</td></tr>
+            <tr><td><code>role</code></td><td>VARCHAR(20)</td><td>NOT NULL</td><td>'all'</td><td>Vai trò nhận (student, lecturer, agent, admin, all)</td></tr>
+            <tr><td><code>title</code></td><td>VARCHAR(255)</td><td>NOT NULL</td><td>NULL</td><td>Tiêu đề thông báo ngắn gọn</td></tr>
+            <tr><td><code>content</code></td><td>TEXT</td><td>NOT NULL</td><td>NULL</td><td>Chi tiết nội dung thông báo</td></tr>
+            <tr><td><code>link</code></td><td>VARCHAR(255)</td><td>NULL</td><td>NULL</td><td>Đường dẫn điều hướng khi bấm vào thông báo</td></tr>
+            <tr><td><code>type</code></td><td>VARCHAR(50)</td><td>NOT NULL</td><td>'system'</td><td>Phân loại: ticket, deadline, rescue, broadcast</td></tr>
+            <tr><td><code>is_read</code></td><td>TINYINT(1)</td><td>NULL</td><td>0</td><td>0: Chưa đọc (hiện badge chuông 🔔), 1: Đã đọc</td></tr>
+            <tr><td><code>created_at</code></td><td>DATETIME</td><td>NULL</td><td>CURRENT_TIMESTAMP</td><td>Thời điểm phát thông báo</td></tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <!-- MỤC 6: PHÂN CÔNG CÔNG VIỆC THỰC HIỆN ĐỒ ÁN (RACI MATRIX) -->
     <h1 class="section-title"><span>📋</span> 6. PHÂN CÔNG CÔNG VIỆC &amp; MA TRẬN ĐÓNG GÓP (RACI MATRIX)</h1>
-    <p>5 thành viên Nhóm 1 chịu trách nhiệm sở hữu các phân hệ độc lập, đảm bảo khối lượng công việc được phân bổ đồng đều và phát huy tối đa năng lực của từng bạn:</p>
+    <p>5 thành viên Nhóm 1 chịu trách nhiệm sở hữu các phân hệ độc lập, đảm bảo khối lượng công việc được phân bổ đồng đều:</p>
 
     <table class="report-table">
         <thead>
@@ -819,7 +1071,7 @@
                 <td style="text-align: center;"><strong>1</strong></td>
                 <td><strong>Phạm Thị Thanh Ngân</strong><br><span class="badge badge-rose">Trưởng nhóm</span></td>
                 <td><strong>224001736</strong></td>
-                <td><strong>Core Architecture &amp; Ticket Engine</strong><br>• Model: <code>Ticket.php</code>, <code>Reply.php</code><br>• Bảng: <code>tickets</code>, <code>ticket_replies</code></td>
+                <td><strong>Core Architecture &amp; Ticket Engine</strong><br>&bull; Model: <code>Ticket.php</code>, <code>Reply.php</code><br>&bull; Bảng: <code>tickets</code>, <code>ticket_replies</code></td>
                 <td>Xây dựng kiến trúc Clean MVC, Router định tuyến, quy trình xử lý vé ITIL v4, phân quyền RBAC, kiểm tra trùng lặp vé, tích hợp chuông thông báo 🔔.</td>
                 <td style="text-align: center; font-weight: 700; color: #0284c7;">25%</td>
             </tr>
@@ -827,7 +1079,7 @@
                 <td style="text-align: center;"><strong>2</strong></td>
                 <td><strong>Trần Thục Linh</strong><br><span class="badge badge-blue">Thành viên</span></td>
                 <td><strong>224001729</strong></td>
-                <td><strong>User Management &amp; Auth Security</strong><br>• Model: <code>User.php</code>, <code>PasswordReset.php</code><br>• Bảng: <code>users</code>, <code>password_resets</code></td>
+                <td><strong>User Management &amp; Auth Security</strong><br>&bull; Model: <code>User.php</code>, <code>PasswordReset.php</code><br>&bull; Bảng: <code>users</code>, <code>password_resets</code></td>
                 <td>Phân hệ xác thực đăng nhập Bcrypt, cơ chế SSPR khôi phục mật khẩu qua email token, Trạm Cứu Hộ Tài Khoản Khách 2 bước bảo mật, ép đổi MK lần đầu.</td>
                 <td style="text-align: center; font-weight: 700; color: #0284c7;">20%</td>
             </tr>
@@ -835,7 +1087,7 @@
                 <td style="text-align: center;"><strong>3</strong></td>
                 <td><strong>Lê Hà My</strong><br><span class="badge badge-purple">Thành viên</span></td>
                 <td><strong>224001735</strong></td>
-                <td><strong>Academic &amp; Lecturer Portal</strong><br>• Model: <code>CourseAssignment.php</code>, <code>CourseLesson.php</code><br>• Bảng: <code>course_assignments</code>, <code>classes</code>, <code>courses</code></td>
+                <td><strong>Academic &amp; Lecturer Portal</strong><br>&bull; Model: <code>CourseAssignment.php</code>, <code>CourseLesson.php</code><br>&bull; Bảng: <code>course_assignments</code>, <code>classes</code>, <code>courses</code>, <code>course_lessons</code>, <code>student_assignment_submissions</code></td>
                 <td>Cổng Giảng viên, phân công giảng dạy độc quyền, chấm điểm bài tập thang điểm 10, quy trình Giảng viên mở lại hạn nộp Deadline khi KTV duyệt lỗi.</td>
                 <td style="text-align: center; font-weight: 700; color: #0284c7;">20%</td>
             </tr>
@@ -843,7 +1095,7 @@
                 <td style="text-align: center;"><strong>4</strong></td>
                 <td><strong>Nguyễn Ánh Nhi</strong><br><span class="badge badge-green">Thành viên</span></td>
                 <td><strong>224001742</strong></td>
-                <td><strong>Student Portal &amp; CSAT Rating</strong><br>• Model: <code>Rating.php</code>, <code>Category.php</code>, <code>Priority.php</code><br>• Bảng: <code>ticket_ratings</code>, <code>categories</code>, <code>priorities</code></td>
+                <td><strong>Student Portal &amp; CSAT Rating</strong><br>&bull; Model: <code>Rating.php</code>, <code>Category.php</code>, <code>Priority.php</code><br>&bull; Bảng: <code>ticket_ratings</code>, <code>categories</code>, <code>priorities</code></td>
                 <td>Cổng Sinh viên nộp bài tập, tải tệp an toàn ngoài webroot, phân hệ khảo sát đánh giá chất lượng dịch vụ CSAT 5 sao, tính điểm trung bình KTV.</td>
                 <td style="text-align: center; font-weight: 700; color: #0284c7;">18%</td>
             </tr>
@@ -851,7 +1103,7 @@
                 <td style="text-align: center;"><strong>5</strong></td>
                 <td><strong>Phan Công Thành</strong><br><span class="badge badge-amber">Thành viên</span></td>
                 <td><strong>224001746</strong></td>
-                <td><strong>Admin Center &amp; Holiday Engine</strong><br>• Model: <code>Holiday.php</code><br>• Bảng: <code>holidays</code>, <code>notifications</code></td>
+                <td><strong>Admin Center &amp; Holiday Engine</strong><br>&bull; Model: <code>Holiday.php</code><br>&bull; Bảng: <code>holidays</code>, <code>notifications</code></td>
                 <td>Trung tâm Admin, Trung tâm việc cần làm cấp bách, Quản lý ngày lễ loại trừ giờ SLA, Kịch bản báo động &amp; Nút thu hồi sự cố diện rộng, script đồng bộ CSDL.</td>
                 <td style="text-align: center; font-weight: 700; color: #0284c7;">17%</td>
             </tr>
@@ -859,7 +1111,7 @@
     </table>
 
     <h2 class="sub-title">6.2. Ma trận Trách nhiệm RACI theo từng phân hệ chức năng</h2>
-    <p><em>(Ghi chú: <strong>R</strong> - Responsible: Người trực tiếp thực hiện; <strong>A</strong> - Accountable: Người chịu trách nhiệm phê duyệt/trưởng nhóm; <strong>C</strong> - Consulted: Người được tham vấn; <strong>I</strong> - Informed: Người được thông báo)</em></p>
+    <p><em>(Ghi chú: <strong>R</strong> &ndash; Responsible: Trực tiếp thực hiện; <strong>A</strong> &ndash; Accountable: Trưởng nhóm duyệt; <strong>C</strong> &ndash; Consulted: Tham vấn; <strong>I</strong> &ndash; Informed: Được thông báo)</em></p>
     <table class="report-table">
         <thead>
             <tr>
@@ -913,7 +1165,7 @@
                 <td style="text-align: center; font-weight: 700; color: #0284c7;">R</td>
             </tr>
             <tr>
-                <td>Chuẩn hóa CSDL 13 bảng 3NF &amp; Script đồng bộ 1-click UTF-8 sạch</td>
+                <td>Chuẩn hóa CSDL 15 bảng 3NF &amp; Script đồng bộ 1-click UTF-8 sạch</td>
                 <td style="text-align: center; font-weight: 700;">R</td>
                 <td style="text-align: center;">C</td>
                 <td style="text-align: center;">C</td>
@@ -929,60 +1181,25 @@
     <h1 class="section-title"><span>⚖️</span> 7. ĐÁNH GIÁ KẾT QUẢ THỰC HIỆN DỰ ÁN</h1>
 
     <h2 class="sub-title">7.1. Các Điểm Đạt Được (Ưu điểm nổi bật của Hệ thống)</h2>
-    <div class="callout callout-success">
-        <strong>TỔNG KẾT THÀNH TỰU:</strong> Dự án đã hoàn thành 100% mục tiêu đề ra và vượt trội so với các phần mềm quản lý thông thường nhờ áp dụng sát thực tế chuẩn ITIL v4 và bối cảnh vận hành của Trường Đại Học Thủ Đô Hà Nội.
-    </div>
     <ul>
-        <li><strong>Chuẩn hóa quy trình nghiệp vụ ITIL v4 thực tế:</strong>
-            <ul>
-                <li>Phân tách rõ ràng giữa <em>Sự cố cá nhân (Incident)</em>, <em>Yêu cầu hỗ trợ (Service Request)</em> và <em>Sự cố diện rộng (Major Incident)</em>.</li>
-                <li>Quy trình liên kết chặt chẽ giữa KTV và Giảng viên trong việc cấp biên bản kỹ thuật số để gia hạn nộp bài tập lớn, giải quyết tận gốc bất cập giữa công nghệ và đào tạo.</li>
-            </ul>
-        </li>
-        <li><strong>Kiến trúc phần mềm sạch sẽ, bảo mật cao:</strong>
-            <ul>
-                <li>Áp dụng mô hình Clean MVC phân tầng, mã nguồn viết bằng PHP thuần không phụ thuộc thư viện nặng nề, tương thích hoàn hảo từ PHP 7.4 đến PHP 8.2+.</li>
-                <li>Bảo mật đa lớp: 100% câu truy vấn dùng PDO Prepared Statements ngăn ngừa tuyệt đối SQL Injection; toàn bộ dữ liệu đầu ra được escape qua hàm lọc chống XSS; form thao tác trang bị thẻ chống giả mạo CSRF Token; tệp đính kèm được hash tên và lưu ngoài thư mục truy cập công khai để ngăn ngừa thực thi shell mã độc.</li>
-            </ul>
-        </li>
-        <li><strong>Thuật toán SLA thông minh theo giờ hành chính thực tế:</strong>
-            <ul>
-                <li>Tự động nhận diện giờ làm việc (08:00 - 12:00 và 13:30 - 17:30 các ngày Thứ 2 đến Thứ 6), tự động đóng băng bộ đếm ngoài giờ, cuối tuần và các ngày nghỉ lễ trường học cấu hình trong bảng <code>holidays</code>.</li>
-            </ul>
-        </li>
-        <li><strong>Trạm Cứu Hộ Tài Khoản Khách (Guest Rescue Station) độc đáo:</strong>
-            <ul>
-                <li>Cho phép sinh viên bị mất quyền truy cập vẫn có thể gửi yêu cầu và tra cứu tiến độ bằng Mã đơn và PIN bí mật; cơ chế xét duyệt 2 bước (KTV xác thực hồ sơ &rarr; Admin phê duyệt mở khóa) bảo đảm tính an toàn tối đa cho hệ sinh thái học đường.</li>
-            </ul>
-        </li>
-        <li><strong>Hệ thống thông báo thời gian thực đa vai trò:</strong>
-            <ul>
-                <li>Tích hợp Quả chuông 🔔 thông minh và Banner thông báo nổi bật đầu trang, cập nhật tức thời các biến động quan trọng (có bài tập mới, KTV đã nhận phiếu, Giảng viên duyệt hạn mới, Admin phê duyệt mở khóa).</li>
-            </ul>
-        </li>
-        <li><strong>Cơ sở dữ liệu chuẩn hóa và Đồng bộ 1-click UTF-8 sạch:</strong>
-            <ul>
-                <li>13 bảng CSDL chuẩn 3NF, ràng buộc toàn vẹn khóa ngoại; script <code>dong_bo_database.bat</code> tự động nhận diện cổng MySQL (3306/3307), tạo mới và nạp dữ liệu UTF-8 chuẩn xác, không bị lỗi font tiếng Việt trên bất kỳ máy tính nào của các thành viên.</li>
-            </ul>
-        </li>
+        <li><strong>Chuẩn hóa quy trình nghiệp vụ ITIL v4 thực tế:</strong> Phân tách rõ ràng giữa Sự cố cá nhân (Incident), Yêu cầu hỗ trợ (Service Request) và Sự cố diện rộng (Major Incident). Quy trình liên kết chặt chẽ giữa KTV và Giảng viên trong việc cấp biên bản kỹ thuật số để gia hạn nộp bài tập lớn.</li>
+        <li><strong>Kiến trúc phần mềm sạch sẽ, bảo mật cao:</strong> Áp dụng mô hình Clean MVC phân tầng, mã nguồn viết bằng PHP thuần không phụ thuộc thư viện nặng nề. Bảo mật đa lớp: 100% câu truy vấn dùng PDO Prepared Statements ngăn ngừa tuyệt đối SQL Injection; toàn bộ dữ liệu đầu ra được escape qua hàm chống XSS; form thao tác trang bị thẻ chống giả mạo CSRF Token; tệp đính kèm được hash tên và lưu ngoài thư mục truy cập công khai.</li>
+        <li><strong>Thuật toán SLA thông minh theo giờ hành chính thực tế:</strong> Tự động nhận diện giờ làm việc (08:00 &ndash; 12:00 và 13:30 &ndash; 17:30 các ngày Thứ 2 đến Thứ 6), tự động đóng băng bộ đếm ngoài giờ, cuối tuần và các ngày nghỉ lễ trường học cấu hình trong bảng <code>holidays</code>.</li>
+        <li><strong>Trạm Cứu Hộ Tài Khoản Khách (Guest Rescue Station) độc đáo:</strong> Cho phép sinh viên bị mất quyền truy cập vẫn có thể gửi yêu cầu và tra cứu tiến độ bằng Mã đơn và PIN bí mật; cơ chế xét duyệt 2 bước bảo đảm an toàn.</li>
+        <li><strong>Cơ sở dữ liệu chuẩn hóa và Đồng bộ 1-click UTF-8 sạch:</strong> 15 bảng CSDL chuẩn 3NF, ràng buộc toàn vẹn khóa ngoại; script <code>dong_bo_database.bat</code> tự động nhận diện cổng MySQL (3306/3307), tạo mới và nạp dữ liệu UTF-8 chuẩn xác, không bị lỗi font tiếng Việt.</li>
     </ul>
 
     <h2 class="sub-title">7.2. Các Điểm Chưa Được (Hạn chế &amp; Hướng phát triển trong tương lai)</h2>
-    <div class="callout callout-warning">
-        <strong>HẠN CHẾ &amp; HƯỚNG MỞ RỘNG:</strong> Dù hệ thống đã hoạt động ổn định và đáp ứng trọn vẹn yêu cầu bài tập lớn, nhóm vẫn nghiêm túc nhìn nhận các điểm có thể tối ưu hóa hơn nữa trong các phiên bản kế tiếp:
-    </div>
     <ol>
-        <li><strong>Cơ chế trao đổi thời gian thực chưa áp dụng WebSocket:</strong> Hiện tại, chức năng thảo luận hai chiều giữa KTV và người dùng đang hoạt động dựa trên cơ chế gửi yêu cầu HTTP truyền thống kết hợp AJAX Polling. Trong tương lai khi nâng cấp lên quy mô hàng chục nghìn người dùng đồng thời, việc chuyển sang công nghệ <em>WebSocket (Ratchet PHP hoặc Node.js Socket.io)</em> sẽ giúp tin nhắn hiển thị tức thì theo mili-giây mà không cần tải lại trang hay gửi request định kỳ.</li>
-        <li><strong>Chưa phát triển ứng dụng di động Native (App iOS / Android):</strong> Hệ thống hiện tại đã đáp ứng rất tốt giao diện Web Responsive trên trình duyệt điện thoại di động (Bootstrap 5 co giãn thông minh). Tuy nhiên, việc đóng gói thành ứng dụng di động riêng biệt (bằng Flutter hoặc React Native) với tính năng <em>Push Notification</em> trực tiếp về màn hình khóa điện thoại sẽ nâng cao trải nghiệm của sinh viên hơn nữa.</li>
-        <li><strong>Kênh gửi Email thực tế phụ thuộc cấu hình SMTP trường học:</strong> Phân hệ khôi phục mật khẩu tự phục vụ (SSPR) hiện đã hoàn thiện thuật toán tạo token SHA-256 an toàn trong CSDL, nhưng việc gửi email thực tế đến hòm thư <code>@daihocthudo.edu.vn</code> phụ thuộc vào thông số máy chủ SMTP Relay nội bộ của nhà trường (hiện đang cấu hình fallback hiển thị mã token trực quan phục vụ chấm demo đồ án).</li>
-        <li><strong>Chưa tích hợp Trí tuệ nhân tạo (AI Virtual Agent / LLM Chatbot):</strong> Khi sinh viên gõ mô tả sự cố, hệ thống mới chỉ kiểm tra trùng lặp dựa trên từ khóa và danh mục. Hướng phát triển tiếp theo là tích hợp mô hình ngôn ngữ lớn (Gemini API) để tự động đọc hiểu câu hỏi và đề xuất ngay các bài viết hướng dẫn khắc phục nhanh (Knowledge Base Articles) trước khi sinh viên phải bấm gửi phiếu, giúp giảm tải đến 40% khối lượng công việc cho các KTV.</li>
+        <li><strong>Cơ chế trao đổi thời gian thực chưa áp dụng WebSocket:</strong> Hiện tại, chức năng thảo luận hai chiều đang hoạt động dựa trên HTTP Request kết hợp AJAX Polling. Trong tương lai khi nâng cấp lên quy mô hàng chục nghìn người dùng đồng thời, việc chuyển sang <em>WebSocket (Ratchet PHP hoặc Node.js Socket.io)</em> sẽ giúp tin nhắn hiển thị tức thì theo mili-giây.</li>
+        <li><strong>Chưa phát triển ứng dụng di động Native (App iOS / Android):</strong> Hệ thống hiện tại đã đáp ứng rất tốt giao diện Web Responsive trên trình duyệt điện thoại. Tuy nhiên, việc đóng gói thành ứng dụng di động riêng biệt có tính năng <em>Push Notification</em> trực tiếp về màn hình khóa điện thoại sẽ nâng cao trải nghiệm hơn nữa.</li>
+        <li><strong>Kênh gửi Email thực tế phụ thuộc cấu hình SMTP trường học:</strong> Phân hệ khôi phục mật khẩu tự phục vụ (SSPR) hiện đã hoàn thiện thuật toán tạo token SHA-256 an toàn trong CSDL, nhưng việc gửi email thực tế đến hòm thư <code>@daihocthudo.edu.vn</code> phụ thuộc vào máy chủ SMTP Relay nội bộ của nhà trường (hiện đang cấu hình fallback hiển thị mã token trực quan phục vụ chấm demo đồ án).</li>
+        <li><strong>Chưa tích hợp Trí tuệ nhân tạo (AI Virtual Agent / LLM Chatbot):</strong> Hướng phát triển tiếp theo là tích hợp mô hình ngôn ngữ lớn (Gemini API) để tự động đọc hiểu câu hỏi và đề xuất ngay các bài viết hướng dẫn khắc phục nhanh trước khi sinh viên phải bấm gửi phiếu.</li>
     </ol>
-
-    <div class="page-break"></div>
 
     <!-- MỤC 8: DANH SÁCH TÀI KHOẢN KIỂM THỬ DEMO -->
     <h1 class="section-title"><span>🔑</span> 8. DANH SÁCH TÀI KHOẢN KIỂM THỬ DEMO ĐẦY ĐỦ CÁC VAI TRÒ</h1>
-    <p>Hội đồng chấm thi và Giảng viên hướng dẫn có thể sử dụng trực tiếp các tài khoản kiểm thử mẫu sau đây để trải nghiệm trọn vẹn mọi phân hệ nghiệp vụ của hệ thống (Tất cả tài khoản đều có mật khẩu mặc định là <code>123456</code>):</p>
+    <p>Hội đồng chấm thi và Thầy/Cô có thể sử dụng các tài khoản kiểm thử sau (Tất cả đều có mật khẩu mặc định là <code>123456</code>):</p>
 
     <table class="report-table">
         <thead>
@@ -1014,7 +1231,7 @@
                 <td><code>KTV002</code></td>
                 <td><code>ktv.binh@daihocthudo.edu.vn</code></td>
                 <td><code>123456</code></td>
-                <td>Giám định lỗi mạng, bấm <em>"Xác nhận có lỗi"</em> hoặc <em>"Hủy báo lỗi (SV báo sai)"</em>, nghiệm thu CSAT.</td>
+                <td>Giám định lỗi mạng, bấm <em>"KTV Xác nhận có lỗi"</em> hoặc <em>"Hủy báo lỗi (SV báo sai)"</em>, nghiệm thu CSAT.</td>
             </tr>
             <tr>
                 <td><strong>Kỹ thuật viên 4 (LMS)</strong></td>
@@ -1028,7 +1245,7 @@
                 <td><code>GV001</code></td>
                 <td><code>nguyenvangiang@daihocthudo.edu.vn</code></td>
                 <td><code>123456</code></td>
-                <td>TS. Nguyễn Văn Giảng: Xem danh sách bài nộp, chấm điểm thang 10, xem xét chấp thuận / từ chối gia hạn Deadline.</td>
+                <td>TS. Nguyễn Văn Giảng: Xem danh sách bài nộp, chấm điểm thang 10, chấp thuận / từ chối mở lại Deadline.</td>
             </tr>
             <tr>
                 <td><strong>Sinh viên 1 (Trưởng nhóm)</strong></td>
@@ -1047,32 +1264,14 @@
         </tbody>
     </table>
 
-    <!-- LỜI KẾT & CAM KẾT HỌC THUẬT -->
-    <h1 class="section-title"><span>✍️</span> 9. KẾT LUẬN &amp; CAM KẾT HỌC THUẬT CỦA NHÓM 1</h1>
+    <!-- MỤC 9: KẾT LUẬN & ĐÁNH GIÁ CHUNG -->
+    <h1 class="section-title"><span>📌</span> 9. KẾT LUẬN &amp; ĐÁNH GIÁ CHUNG DỰ ÁN</h1>
     <p>
-        Hệ thống <strong>"Helpdesk Tiếp Nhận &amp; Xử Lý Hỗ Trợ CNTT Trực Tuyến - Đại Học Thủ Đô Hà Nội"</strong> là kết quả của quá trình làm việc nghiêm túc, đoàn kết và nỗ lực không ngừng của toàn thể 5 thành viên Nhóm 1 dưới sự chỉ bảo và định hướng tận tình của Thầy giáo hướng dẫn <strong>TS. Nguyễn Văn Giảng</strong>.
+        Hệ thống <strong>"Helpdesk Tiếp Nhận &amp; Xử Lý Hỗ Trợ CNTT Trực Tuyến &ndash; Đại Học Thủ Đô Hà Nội"</strong> của Nhóm 1 đã giải quyết trọn vẹn bài toán đặt ra của môn học Lập trình Web &amp; Ứng dụng (WEB101). Dự án số hóa 100% quy trình hỗ trợ kỹ thuật theo chuẩn ITIL v4, xây dựng thành công cơ chế phối hợp chặt chẽ giữa bộ phận Kỹ thuật và bộ môn Đào tạo, ứng dụng giải thuật tính SLA giờ hành chính tự động, và cung cấp giải pháp Trạm Cứu Hộ Tài Khoản Khách 2 bước độc đáo.
     </p>
     <p>
-        Dự án không chỉ là một bài tập lớn hoàn thành đầy đủ yêu cầu môn học Lập trình Web (WEB101), mà còn là một sản phẩm phần mềm có tính ứng dụng thực tiễn cao, phản ánh chính xác tư duy kiến trúc phân tầng chuyên nghiệp và đạo đức học thuật chuẩn mực.
+        Toàn bộ kiến trúc phần mềm, cơ sở dữ liệu và giao diện người dùng được thiết kế chuẩn mực, đáp ứng đầy đủ các tiêu chuẩn kỹ thuật về an toàn, hiệu năng và tính mở rộng cao cho môi trường giáo dục đại học thực tế.
     </p>
-
-    <div class="callout callout-success" style="margin-top: 14px;">
-        <strong>CAM KẾT CỦA NHÓM 1:</strong> Toàn bộ 5 thành viên trong nhóm cam kết mã nguồn được xây dựng trung thực, làm chủ 100% các dòng lệnh trong phân hệ phụ trách, hiểu sâu sắc cấu trúc CSDL và các luồng dữ liệu, sẵn sàng tự tin thuyết minh và trả lời chất vấn trước Hội đồng chấm thi!
-    </div>
-
-    <div style="margin-top: 26px; display: flex; justify-content: space-between; text-align: center;">
-        <div style="width: 45%;">
-            <strong>GIẢNG VIÊN HƯỚNG DẪN</strong><br>
-            <em>(Ký và ghi rõ họ tên)</em><br><br><br><br>
-            <strong>TS. Nguyễn Văn Giảng</strong>
-        </div>
-        <div style="width: 45%;">
-            <strong>Hà Nội, ngày 02 tháng 11 năm 2026</strong><br>
-            <strong>ĐẠI DIỆN NHÓM 1 - TRƯỞNG NHÓM</strong><br>
-            <em>(Ký và ghi rõ họ tên)</em><br><br><br><br>
-            <strong>Phạm Thị Thanh Ngân</strong>
-        </div>
-    </div>
 
 </body>
 </html>
