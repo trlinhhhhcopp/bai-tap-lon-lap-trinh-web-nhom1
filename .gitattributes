@@ -1,0 +1,12 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Enforce UTF-8 encoding for text and code files
+*.php text working-tree-encoding=UTF-8
+*.sql text working-tree-encoding=UTF-8
+*.md text working-tree-encoding=UTF-8
+*.json text working-tree-encoding=UTF-8
+*.js text working-tree-encoding=UTF-8
+*.css text working-tree-encoding=UTF-8
+*.bat text eol=crlf
+*.ps1 text eol=crlf
