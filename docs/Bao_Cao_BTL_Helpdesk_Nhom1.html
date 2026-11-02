@@ -529,18 +529,18 @@
     <table class="report-table">
         <thead>
             <tr>
-                <th style="width: 25%;">Hành động / Thao tác hệ thống</th>
-                <th style="width: 18%; text-align: center;">Sinh viên (Student)</th>
-                <th style="width: 18%; text-align: center;">Giảng viên (Lecturer)</th>
+                <th style="width: 26%;">Hành động / Thao tác hệ thống</th>
+                <th style="width: 17%; text-align: center;">Sinh viên (Student)</th>
+                <th style="width: 17%; text-align: center;">Giảng viên (Lecturer)</th>
                 <th style="width: 20%; text-align: center;">Kỹ thuật viên (KTV)</th>
-                <th style="width: 19%; text-align: center;">Quản trị viên (Admin)</th>
+                <th style="width: 20%; text-align: center;">Quản trị viên (Admin)</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>Tạo phiếu hỗ trợ cá nhân</td>
-                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
-                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
+                <td>Tạo phiếu hỗ trợ sự cố cá nhân</td>
+                <td style="text-align: center;" class="highlight-cell">Có quyền (Chặn gửi trùng)</td>
+                <td style="text-align: center;" class="highlight-cell">Có quyền (Chặn gửi trùng)</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;">Không</td>
             </tr>
@@ -552,35 +552,84 @@
                 <td style="text-align: center; color: #dc2626; font-weight: 700;">TUYỆT ĐỐI KHÔNG</td>
             </tr>
             <tr>
-                <td>Xóa / Hủy phiếu hỗ trợ</td>
+                <td>Xóa / Thu hồi phiếu hỗ trợ</td>
                 <td style="text-align: center; color: #b45309; font-weight: 600;">Chỉ trong 15 phút đầu</td>
                 <td style="text-align: center; color: #b45309; font-weight: 600;">Chỉ trong 15 phút đầu</td>
                 <td style="text-align: center; color: #dc2626; font-weight: 700;">Không có quyền</td>
-                <td style="text-align: center; color: #15803d; font-weight: 700;">Toàn quyền (Nút Xóa)</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Toàn quyền (Nút Xóa đỏ)</td>
             </tr>
             <tr>
-                <td>Khôi phục mật khẩu qua Email (SSPR)</td>
+                <td>Đóng phiếu do Trùng lặp sự cố (Close Duplicate)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #0284c7; font-weight: 700;">Nút Đóng Trùng Lặp</td>
+                <td style="text-align: center; color: #0284c7; font-weight: 700;">Có quyền đóng trùng</td>
+            </tr>
+            <tr>
+                <td>Báo cáo Sinh viên vi phạm quy chế (Spam/Phá hoại)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #dc2626; font-weight: 700;">Nút Báo Cáo SV Spam</td>
+                <td style="text-align: center; color: #dc2626; font-weight: 700;">Thẩm định &amp; Khóa tài khoản</td>
+            </tr>
+            <tr>
+                <td>Hủy báo cáo vi phạm / Giải oan cho Sinh viên</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Nút Hủy Báo Cáo Vi Phạm</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Có quyền giải oan</td>
+            </tr>
+            <tr>
+                <td>Khôi phục mật khẩu qua Email (SSPR - Gửi 1 token)</td>
                 <td style="text-align: center;" class="highlight-cell">Tự phục vụ</td>
                 <td style="text-align: center;" class="highlight-cell">Tự phục vụ</td>
                 <td style="text-align: center;">Tự phục vụ</td>
                 <td style="text-align: center;">Tự phục vụ</td>
             </tr>
             <tr>
-                <td>Nhập dữ liệu tài khoản Excel/CSV</td>
+                <td>Gửi đơn Cứu hộ tài khoản khách (Chỉ cần Mã đơn)</td>
+                <td style="text-align: center;" class="highlight-cell">Người gửi đơn ngoài cổng</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;">Không</td>
-                <td style="text-align: center; color: #0284c7; font-weight: 700;">Độc quyền Admin</td>
             </tr>
             <tr>
-                <td>Ghi chú nội bộ bảo mật (Internal Note)</td>
+                <td>Xác thực Đơn Cứu Hộ Tài Khoản Khách (Bước 1)</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;">Không</td>
-                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
-                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
+                <td style="text-align: center; color: #0284c7; font-weight: 700;">KTV001 (SSO) xác thực</td>
+                <td style="text-align: center;">Theo dõi</td>
             </tr>
             <tr>
-                <td>Giám định kỹ thuật ("Xác nhận có lỗi" / "Hủy báo lỗi")</td>
+                <td>Phê duyệt Mở Khóa Tài Khoản Cứu Hộ (Bước 2)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Độc quyền Admin duyệt</td>
+            </tr>
+            <tr>
+                <td>Báo động Sự Cố Diện Rộng (Major Incident)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #dc2626; font-weight: 700;">Nút Báo Sự Cố Cho Admin</td>
+                <td style="text-align: center;">Tiếp nhận chỉ đạo</td>
+            </tr>
+            <tr>
+                <td>Phát Cảnh báo Sự cố Diện rộng Toàn trường</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #dc2626; font-weight: 700;">Nút Phát Cảnh Báo Toàn Trường</td>
+            </tr>
+            <tr>
+                <td>Thu hồi Cảnh báo Khẩn cấp (Đã khắc phục xong)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #15803d; font-weight: 700;">Nút Thu Hồi Cảnh Báo</td>
+            </tr>
+            <tr>
+                <td>Giám định học phần ("Xác nhận có lỗi" / "Hủy báo lỗi")</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center; color: #15803d; font-weight: 700;">Độc quyền KTV</td>
@@ -594,46 +643,46 @@
                 <td style="text-align: center;">Không</td>
             </tr>
             <tr>
-                <td>Nghiệm thu kỹ thuật (Chuyển sang <code>resolved</code>)</td>
+                <td>Chấm điểm bài nộp học phần (0.0 &ndash; 10.0) &amp; Nhận xét</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #7c3aed; font-weight: 700;">Độc quyền Giảng viên</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+            </tr>
+            <tr>
+                <td>Ghi chú nội bộ bảo mật (Internal Note)</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;" class="highlight-cell">Có quyền</td>
+                <td style="text-align: center;" class="highlight-cell">Có quyền</td>
+            </tr>
+            <tr>
+                <td>Nghiệm thu giải pháp kỹ thuật (Chuyển sang <code>resolved</code>)</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center;" class="highlight-cell">Nút Nghiệm Thu Xong</td>
                 <td style="text-align: center;">Có quyền</td>
             </tr>
             <tr>
                 <td>Chấm sao CSAT (1-5 sao) &amp; Đóng phiếu (<code>closed</code>)</td>
                 <td style="text-align: center; color: #15803d; font-weight: 700;">Độc quyền Sinh viên</td>
                 <td style="text-align: center; color: #15803d; font-weight: 700;">Độc quyền Giảng viên</td>
-                <td style="text-align: center;">Không (chờ đánh giá)</td>
-                <td style="text-align: center;">Tự đóng sau 24h</td>
+                <td style="text-align: center;">Không (Chờ đánh giá)</td>
+                <td style="text-align: center;">Tự động đóng sau 24h</td>
             </tr>
             <tr>
-                <td>Báo động Sự Cố Diện Rộng (Major Incident)</td>
+                <td>Nhập dữ liệu tài khoản hàng loạt (Excel / CSV)</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;">Không</td>
-                <td style="text-align: center; color: #dc2626; font-weight: 700;">Nút Báo Động lên Admin</td>
-                <td style="text-align: center; color: #dc2626; font-weight: 700;">Phát cảnh báo toàn trường</td>
+                <td style="text-align: center;">Không</td>
+                <td style="text-align: center; color: #0284c7; font-weight: 700;">Độc quyền Admin (Import)</td>
             </tr>
             <tr>
-                <td>Thu hồi Cảnh báo Sự cố diện rộng</td>
+                <td>Quản lý Cấu hình Ngày Nghỉ Lễ SLA (<code>holidays</code>)</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;">Không</td>
                 <td style="text-align: center;">Không</td>
-                <td style="text-align: center; color: #b45309; font-weight: 700;">Độc quyền Admin (Nút Thu Hồi)</td>
-            </tr>
-            <tr>
-                <td>Xác thực Đơn Cứu Hộ Tài Khoản Khách (Bước 1)</td>
-                <td style="text-align: center;">Người gửi đơn</td>
-                <td style="text-align: center;">Không</td>
-                <td style="text-align: center; color: #0284c7; font-weight: 700;">KTV001 (SSO) xác thực</td>
-                <td style="text-align: center;">Theo dõi</td>
-            </tr>
-            <tr>
-                <td>Phê duyệt Mở Khóa Tài Khoản Cứu Hộ (Bước 2)</td>
-                <td style="text-align: center;">Không</td>
-                <td style="text-align: center;">Không</td>
-                <td style="text-align: center;">Không</td>
-                <td style="text-align: center; color: #15803d; font-weight: 700;">Độc quyền Admin</td>
+                <td style="text-align: center; color: #0284c7; font-weight: 700;">Độc quyền Admin</td>
             </tr>
         </tbody>
     </table>
@@ -643,96 +692,161 @@
     <!-- MỤC 3: CÁC KỊCH BẢN & TRƯỜNG HỢP NGHIỆP VỤ ĐIỂN HÌNH -->
     <h1 class="section-title"><span>🎯</span> 3. CÁC TRƯỜNG HỢP &amp; KỊCH BẢN NGHIỆP VỤ ĐIỂN HÌNH</h1>
 
-    <h2 class="sub-title">3.1. Kịch bản 1: Trạm cứu hộ tài khoản khách khi quên mật khẩu hoặc bị khóa (Chỉ Cần Mã Đơn Cứu Hộ, Không Cần Mã PIN)</h2>
-    <p><strong>Tình huống:</strong> Sinh viên bị mất quyền truy cập (khóa mềm do nhập sai mật khẩu quá 5 lần, hoặc bị khóa tài khoản tạm thời), không thể đăng nhập vào hệ thống để tạo phiếu.</p>
+    <h2 class="sub-title">3.1. Kịch bản 1: Trạm Cứu Hộ Tài Khoản Khách (Chỉ Cần Duy Nhất Mã Đơn Cứu Hộ, Tuyệt Đối Không Cần Mã PIN)</h2>
+    <p><strong>Tình huống:</strong> Sinh viên hoặc cán bộ bị mất quyền truy cập (khóa mềm do nhập sai mật khẩu quá 5 lần, hoặc bị khóa tài khoản tạm thời), không thể đăng nhập vào hệ thống để tạo phiếu hỗ trợ nội bộ thông thường.</p>
     <ul>
-        <li><strong>Bước 1 &ndash; Người dùng gửi đơn cứu hộ:</strong> Truy cập <code>guest_rescue.php</code>, nhập Mã sinh viên (ví dụ <code>224001736</code>), Họ tên, Email cá nhân, tải ảnh chụp thẻ sinh viên và mô tả lý do. Hệ thống kiểm tra xem sinh viên có tồn tại trong CSDL trường hay không; nếu là sinh viên thật, hệ thống phát sinh <strong>Mã đơn cứu hộ duy nhất (ví dụ: <code>#HD-2026-3110-0G04V1</code>)</strong>. <em>Hệ thống đã tối ưu hóa lược bỏ hoàn toàn mã PIN &ndash; người dùng chỉ cần ghi nhớ đúng Mã đơn cứu hộ này để tra cứu tiến độ mọi lúc</em>.</li>
-        <li><strong>Bước 2 &ndash; KTV đối soát bước 1:</strong> Đơn cứu hộ được gán tự động cho KTV chuyên trách SSO (<code>KTV001</code>). KTV kiểm tra đối soát thông tin cá nhân và ảnh thẻ. Nếu hợp lệ, KTV bấm <em>"Xác Thực Đơn Hợp Lệ &amp; Chuyển Admin Duyệt"</em>.</li>
-        <li><strong>Bước 3 &ndash; Admin phê duyệt mở khóa bước 2:</strong> Đơn cứu hộ kích hoạt chuông thông báo trong <em>"Trung Tâm Việc Cần Làm Cấp Bách"</em> của Admin. Admin bấm <em>"Phê Duyệt Mở Khóa Tài Khoản"</em> &rarr; Hệ thống tự động đặt lại mật khẩu về <code>123456</code>, gỡ cờ khóa tài khoản (<code>is_active = 1</code>), kích hoạt cờ <code>is_first_login = 1</code> (bắt buộc đổi mật khẩu khi đăng nhập).</li>
-        <li><strong>Bước 4 &ndash; Sinh viên tra cứu &amp; Đăng nhập:</strong> Sinh viên chỉ cần nhập Mã đơn cứu hộ vào trang <code>guest/lookup</code> để xem kết quả. Khi thấy Admin đã duyệt, sinh viên nhận thông báo mật khẩu tạm và đăng nhập thực hiện đổi mật khẩu ngay lập tức.</li>
+        <li><strong>Bước 1 &ndash; Người dùng gửi đơn cứu hộ ngoài cổng:</strong> Truy cập màn hình <code>index.php?action=guest_ticket</code> (hoặc <code>guest_rescue.php</code>), nhập Mã sinh viên/Mã cán bộ (ví dụ: <code>224001736</code>), Họ tên, Email liên hệ cá nhân, tải tệp ảnh chụp thẻ sinh viên/CCCD minh chứng và mô tả lý do. Hệ thống đối soát trực tiếp trong CSDL trường học; nếu hợp lệ, hệ thống tự động phát sinh <strong>Mã đơn cứu hộ chuẩn hóa duy nhất (ví dụ: <code>#HD-2026-3110-0G04V1</code>)</strong>. <em>Hệ thống đã tinh gọn tối ưu hóa quy trình: Người dùng chỉ cần lưu giữ duy nhất Mã đơn cứu hộ này để tra cứu kết quả mọi lúc, hoàn toàn không bắt buộc phải nhớ thêm mã PIN phức tạp</em>.</li>
+        <li><strong>Bước 2 &ndash; KTV đối soát hồ sơ bước 1:</strong> Đơn cứu hộ tự động điều phối tới KTV chuyên trách SSO (<code>KTV001</code>). KTV kiểm tra đối soát ảnh thẻ và thông tin cá nhân. Nếu hợp lệ, KTV bấm <em>"Xác Thực Đơn Hợp Lệ &amp; Chuyển Admin Duyệt"</em> (ghi nhận cờ <code>rescue_verified = 1</code>).</li>
+        <li><strong>Bước 3 &ndash; Admin phê duyệt mở khóa bước 2:</strong> Đơn cứu hộ xuất hiện trong <em>"Trung Tâm Việc Cần Làm Cấp Bách"</em> của Admin. Admin bấm <em>"Phê Duyệt Mở Khóa Tài Khoản"</em> &rarr; Hệ thống tự động đặt lại mật khẩu về <code>123456</code>, gỡ cờ khóa tài khoản (<code>is_active = 1</code>), kích hoạt cờ <code>is_first_login = 1</code> (bắt buộc đổi mật khẩu khi đăng nhập).</li>
+        <li><strong>Bước 4 &ndash; Sinh viên tra cứu &amp; Đăng nhập:</strong> Sinh viên nhập Mã đơn cứu hộ vào trang <code>guest_lookup</code> để theo dõi tiến độ. Khi Admin đã duyệt, sinh viên nhận thông báo mật khẩu tạm và đăng nhập thực hiện đổi mật khẩu ngay lập tức.</li>
     </ul>
 
-    <h2 class="sub-title">3.2. Kịch bản 2: Khôi phục Mật khẩu Tự phục vụ qua Email Trường Cấp (Self-Service Password Reset - SSPR)</h2>
-    <p><strong>Tình huống:</strong> Người dùng quên mật khẩu nhưng tài khoản vẫn ở trạng thái hoạt động bình thường và vẫn truy cập được hòm thư trường cấp.</p>
+    <h2 class="sub-title">3.2. Kịch bản 2: Khôi phục Mật Khẩu Tự Phục Vụ Qua Email Trường Cấp (SSPR - Chỉ Gửi 1 Mã Token / 1 Đường Link Token Hiệu Lực 15 Phút)</h2>
+    <p><strong>Tình huống:</strong> Người dùng quên mật khẩu nhưng tài khoản vẫn ở trạng thái hoạt động bình thường và vẫn truy cập được hòm thư Outlook trường cấp (<code>@daihocthudo.edu.vn</code>).</p>
     <ul>
-        <li><strong>Bước 1 &ndash; Yêu cầu cấp lại mật khẩu:</strong> Người dùng vào màn hình <code>/forgot-password</code>, nhập địa chỉ email trường cấp <code>@daihocthudo.edu.vn</code> (nếu người dùng chỉ gõ mã sinh viên như <code>224001729</code>, hệ thống tự động nhận diện và ghép đuôi email trường học).</li>
-        <li><strong>Bước 2 &ndash; Tạo Token bảo mật &amp; Gửi Email:</strong> Hệ thống sinh chuỗi token ngẫu nhiên bảo mật 64 ký tự hex (`rawToken`), băm SHA-256 lưu vào bảng <code>password_resets</code> kèm thời hạn hiệu lực chính xác **15 phút** (`expires_at = time() + 900`). Email tự động gửi kèm liên kết đặt lại mật khẩu một lần. Màn hình web hiển thị ngay hộp thông báo trực quan tích hợp **đồng hồ đếm ngược 15:00**, nút <em>"📬 Mở tab Gmail của bạn ➔"</em> và hòm thư mô phỏng.</li>
-        <li><strong>Bước 3 &ndash; Thiết lập mật khẩu mới:</strong> Người dùng bấm nút trong email mở tab đổi mật khẩu. Sau khi nhập mật khẩu mới và xác nhận thành công, hệ thống mã hóa Bcrypt vào bảng <code>users</code>, vô hiệu hóa token cũ và đưa `is_first_login = 0`.</li>
-    </ul>
-
-    <h2 class="sub-title">3.3. Kịch bản 3: Nhập dữ liệu tài khoản hàng loạt cho Quản trị viên (Excel / CSV Bulk User Provisioning)</h2>
-    <p><strong>Tình huống:</strong> Đầu năm học mới, phòng Quản lý Đào tạo bàn giao danh sách hàng nghìn tân sinh viên cần tạo tài khoản đồng loạt vào hệ thống.</p>
-    <ul>
-        <li><strong>Bước 1 &ndash; Admin tải file dữ liệu:</strong> Quản trị viên truy cập <code>admin/import_excel.php</code>, chọn tệp danh sách sinh viên định dạng <code>.xlsx</code>, <code>.csv</code> hoặc <code>.txt</code>.</li>
-        <li><strong>Bước 2 &ndash; Tự động nhận diện tiêu đề thông minh:</strong> Dịch vụ <code>SpreadsheetImportService</code> tự động chuẩn hóa tiếng Việt không dấu và nhận diện linh hoạt các cột dữ liệu: Mã tài khoản/Mã SV (`user_code`), Họ và tên (`name`), Email (`email`), Lớp sinh hoạt (`class_code`), Số điện thoại (`phone`)...</li>
-        <li><strong>Bước 3 &ndash; Khởi tạo và liên kết dữ liệu chuẩn 3NF:</strong> Hệ thống tự động:
-            <ol>
-                <li>Tạo bản ghi trong bảng <code>users</code> với mật khẩu mặc định băm Bcrypt là <code>123456</code>.</li>
-                <li>Tự động tra cứu mã lớp trong bảng <code>classes</code> để gán `class_id`.</li>
-                <li>Tự động chèn bản ghi vào bảng liên kết <code>class_students</code>.</li>
-                <li>Gán trạng thái học tập `academic_status = 'studying'`, khóa tuyển sinh `cohort = 'D24'` và kích hoạt cờ `is_first_login = 1` ép đổi mật khẩu khi đăng nhập lần đầu.</li>
-            </ol>
-        </li>
-        <li><strong>Bước 4 &ndash; Báo cáo thống kê import:</strong> Hiển thị bảng tổng kết số tài khoản nạp thành công, danh sách các dòng bị bỏ qua do trùng lặp mã SV/email, và thông báo lỗi chi tiết nếu có.</li>
-    </ul>
-
-    <h2 class="sub-title">3.4. Kịch bản 4: Sự cố nộp bài học phần &amp; Quy trình phối hợp KTV - Giảng viên mở lại Deadline</h2>
-    <p><strong>Tình huống:</strong> Đến hạn nộp bài tập lớn lúc 23:59, hệ thống mạng KTX bị nghẽn khiến sinh viên không nộp kịp. Sinh viên xin gia hạn nhưng Giảng viên cần cơ sở kỹ thuật khách quan.</p>
-    <ul>
-        <li><strong>Bước 1 &ndash; Sinh viên tạo phiếu cứu hộ buổi học:</strong> Sinh viên vào tạo phiếu, chọn học phần (<code>WEB101 &ndash; Lập trình Web</code>) và buổi học (<code>Buổi 9 &ndash; Báo cáo BTL</code>). Phiếu lập tức điều phối tới KTV chuyên trách hạ tầng mạng (<code>KTV002</code>).</li>
-        <li><strong>Bước 2 &ndash; KTV giám định kỹ thuật:</strong>
+        <li><strong>Bước 1 &ndash; Yêu cầu khôi phục mật khẩu:</strong> Người dùng vào màn hình <code>index.php?action=forgot_password</code>, nhập địa chỉ email trường cấp (nếu người dùng chỉ gõ mã sinh viên như <code>224001729</code>, hệ thống tự động nhận diện và ghép đuôi email trường học).</li>
+        <li><strong>Bước 2 &ndash; Tạo Token bảo mật &amp; Gửi Email xác thực:</strong>
             <ul>
-                <li><em>Nếu có lỗi kỹ thuật thật:</em> KTV bấm <strong>"KTV Xác Nhận Có Lỗi"</strong> &rarr; Hệ thống lập tức sinh biên bản kỹ thuật số và chuyển quyền xử lý sang Giảng viên phụ trách lớp học phần đó (TS. Nguyễn Văn Giảng).</li>
-                <li><em>Nếu không có lỗi (sinh viên nộp muộn do chủ quan):</em> KTV bấm <strong>"Hủy Báo Lỗi (SV Báo Sai)"</strong> &rarr; Phiếu tự động chuyển sang <code>closed</code>; Giảng viên không bị làm phiền.</li>
+                <li>Hệ thống sinh <strong>DUY NHẤT 1 mã token</strong> ngẫu nhiên 6 chữ cái in hoa an toàn (<code>PasswordReset::generateAlphabeticOtp(6)</code>, loại bỏ các ký tự <code>I, O</code> để tránh nhầm lẫn với <code>1, 0</code>).</li>
+                <li>Mã token được băm SHA-256 (<code>token_hash</code>) và lưu trữ vào bảng <code>password_resets</code> cùng thời hạn hiệu lực chính xác <strong>15 phút</strong> (<code>expires_at = NOW() + 15 phút</code>). Hệ thống đồng thời xóa toàn bộ token cũ của người dùng này để chống tấn công phát lại (Replay Attack).</li>
+                <li>Hệ thống gửi <strong>DUY NHẤT 1 đường link URL chứa mã token</strong> (dạng <code>index.php?action=reset_password&amp;token=ABCDEF</code>) qua hòm thư điện tử của sinh viên.</li>
+                <li><em>Trải nghiệm trên giao diện Web:</em> Màn hình web hiển thị thông báo đã gửi email thành công kèm <strong>đồng hồ đếm ngược 15:00</strong> và nút bấm <em>"📬 Mở tab Gmail của bạn ➔"</em>. Đồng hồ đếm ngược và nút mở Gmail này là tiện ích UX hỗ trợ trên trình duyệt web, không phải là nội dung gửi thêm qua email.</li>
             </ul>
         </li>
-        <li><strong>Bước 3 &ndash; Giảng viên xem xét mở lại Deadline:</strong> Giảng viên đăng nhập, thấy thông báo quả chuông 🔔 và banner nổi bật dẫn tới phiếu đã có xác nhận của KTV. Giảng viên có 2 lựa chọn:
+        <li><strong>Bước 3 &ndash; Thiết lập mật khẩu mới:</strong> Sinh viên bấm trực tiếp vào đường link trong email (hoặc nhập mã token 6 chữ cái vào form) để mở màn hình <code>reset_password</code>. Sau khi nhập mật khẩu mới thỏa mãn tối thiểu 6 ký tự, hệ thống mã hóa Bcrypt vào bảng <code>users</code>, hủy token và đặt lại cờ <code>is_first_login = 0</code>.</li>
+    </ul>
+
+    <h2 class="sub-title">3.3. Kịch bản 3: Cơ Chế Chống Gửi Trùng: Sinh Viên Chỉ Được Gửi Duy Nhất 1 Phiếu Cho 1 Vấn Đề Nếu Chưa Hoàn Tất</h2>
+    <p><strong>Tình huống &amp; Quy định ITIL v4:</strong> Để ngăn chặn tình trạng người dùng sốt ruột bấm gửi liên tục nhiều phiếu cho cùng một vấn đề gây loãng hàng đợi SLA và làm nghẽn hệ thống:</p>
+    <ul>
+        <li><strong>Nguyên tắc kiểm soát 3 lớp (<code>TicketRepository::findDuplicate()</code>):</strong> Khi sinh viên gửi form tạo phiếu mới tại <code>tickets/create.php</code>, hệ thống tự động quét kiểm tra 3 điều kiện:
+            <ol>
+                <li><strong>Cùng nhóm dịch vụ đang xử lý:</strong> Cùng một tài khoản người gửi (<code>requester_id</code>), cùng danh mục sự cố (<code>category_id</code>) và phiếu trước đó đang ở trạng thái chưa hoàn tất (<code>status IN ('new', 'in_progress', 'waiting_requester')</code>).</li>
+                <li><strong>Cùng nhóm dịch vụ đã gửi trong ngày:</strong> Cùng người gửi, cùng danh mục sự cố và đã có phiếu gửi trong ngày hôm nay (<code>DATE(created_at) = CURDATE()</code>).</li>
+                <li><strong>Cùng bài tập buổi học chưa đóng:</strong> Đối với sự cố học phần gắn với bài tập cụ thể (<code>lesson_id &gt; 0</code>), nếu bài tập đó đang có phiếu chưa đóng hoàn tất (<code>status != 'closed'</code>).</li>
+            </ol>
+        </li>
+        <li><strong>Cơ chế chặn ở tầng Backend:</strong> Nếu thỏa mãn bất kỳ điều kiện nào ở trên, hệ thống lập tức chặn tạo bản ghi mới và tung ngoại lệ: <em>"Phát hiện phiếu sự cố trùng lặp: Đã có phiếu #HD-YYYY-DDMM-xxx cùng nhóm dịch vụ gửi trong ngày hoặc đang trong quá trình xử lý!"</em>. Giao diện hiển thị cảnh báo trích xuất rõ mã phiếu cũ để người dùng bấm vào mở trực tiếp phiếu đang xử lý trao đổi tiếp.</li>
+        <li><strong>Cơ chế chặn trùng đơn cứu hộ khách (<code>TicketRepository::findDuplicateGuest()</code>):</strong> Áp dụng tương tự đối với cổng cứu hộ khách ngoài trang chủ: Nếu cùng một người dùng đã có đơn cứu hộ chưa đóng (<code>status != 'closed'</code>) hoặc đã gửi đơn trong ngày hôm nay, hệ thống chặn gửi đơn thứ hai nhằm chống spam phá hoại trạm cứu hộ.</li>
+    </ul>
+
+    <h2 class="sub-title">3.4. Kịch bản 4: Xử Lý Đóng Phiếu Trùng Lặp (Close Duplicate) &amp; Phân Định Quyền Xóa Phiếu Tuyệt Đối</h2>
+    <p>Trong trường hợp thực tế khi nhiều người dùng khác nhau cùng báo cáo một sự cố, hoặc người dùng cố tình gửi qua nhiều kênh khác nhau:</p>
+    <ul>
+        <li><strong>KTV đóng phiếu trùng lặp (<code>action = 'close_duplicate'</code>):</strong>
             <ul>
-                <li><em>Chấp thuận:</em> Thầy chọn thời hạn mới (ví dụ gia hạn thêm 24 giờ) và ghi lời dặn &rarr; Cổng nộp bài tự động mở lại cho sinh viên nộp bổ sung.</li>
+                <li>Trên trang chi tiết phiếu (<code>tickets/show.php</code>), KTV được trang bị nút <strong>"📑 Đóng Trùng Lặp"</strong> (chỉ xuất hiện khi phiếu chưa ở trạng thái <code>closed</code>).</li>
+                <li>KTV bấm nút mở Modal nhập <em>Mã phiếu sự cố gốc (Parent Ticket Code)</em> và <em>Lý do đóng trùng lặp</em>.</li>
+                <li>Hệ thống tự động cập nhật trạng thái phiếu thành <code>closed</code>, thời điểm <code>closed_at = NOW()</code>, ghi nhận lịch sử vào bảng <code>ticket_replies</code> và gửi thông báo giải thích đến người gửi.</li>
+            </ul>
+        </li>
+        <li><strong>Phân định quyền Xóa phiếu rõ ràng, chặt chẽ:</strong>
+            <ul>
+                <li><strong>Kỹ thuật viên (KTV):</strong> <strong style="color: #dc2626;">TUYỆT ĐỐI KHÔNG CÓ NÚT XÓA</strong> và không có quyền xóa bất kỳ phiếu nào nhằm bảo đảm tính khách quan và minh bạch lịch sử ITIL.</li>
+                <li><strong>Người gửi (Sinh viên / Giảng viên):</strong> Chỉ được quyền Xóa (thu hồi) phiếu trong vòng <strong>15 phút đầu tiên</strong> kể từ khi tạo (khi phiếu đang ở trạng thái <code>new</code> hoặc <code>waiting_requester</code>). Quá 15 phút, quyền xóa tự động khóa.</li>
+                <li><strong>Quản trị viên (Admin):</strong> Nắm <strong style="color: #15803d;">toàn quyền Xóa vĩnh viễn (Nút Xóa màu đỏ)</strong> trên danh sách và chi tiết phiếu để dọn dẹp các phiếu rác, phiếu spam nghiêm trọng hoặc phiếu thử nghiệm sau bảo trì.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 class="sub-title">3.5. Kịch bản 5: KTV Báo Cáo Sinh Viên Vi Phạm Quy Chế (Spam / Phá Hoại) &amp; Cơ Chế Giải Oan</h2>
+    <p><strong>Tình huống:</strong> Sinh viên gửi phiếu chứa ngôn từ khiếm nhã, gửi spam liên tục, hoặc khai man thông tin tại trạm cứu hộ tài khoản.</p>
+    <ul>
+        <li><strong>KTV lập biên bản báo cáo vi phạm (<code>action = 'report_spam'</code>):</strong>
+            <ul>
+                <li>KTV bấm nút <strong>"🚨 Báo Cáo SV Spam"</strong> trong trang chi tiết phiếu, nhập lý do vi phạm chi tiết (<code>spam_reason</code>).</li>
+                <li>Hệ thống cập nhật phiếu: <code>is_spam = 1</code>, lưu <code>spam_reason</code>, đưa phiếu về trạng thái <code>resolved</code> (nghiệm thu kỹ thuật để đóng lại luồng KTV) và ghi nhật ký biên bản vi phạm vào bảng <code>ticket_replies</code>.</li>
+                <li>Hệ thống tự động kích hoạt thông báo khẩn tới Quản trị viên (Admin): <em>"🚨 VIỆC CẦN LÀM: KTV báo cáo sinh viên vi phạm trên phiếu #HD-XXXX... Cần Admin thẩm định xử lý kỷ luật!"</em>. Sinh viên cũng nhận được thông báo cảnh báo.</li>
+                <li>Thẩm quyền kỷ luật thuộc về Admin: Admin có quyền bấm <strong>"Khóa Vĩnh Viễn Tài Khoản"</strong> đối với sinh viên vi phạm quy chế nghiêm trọng.</li>
+            </ul>
+        </li>
+        <li><strong>Cơ chế Hủy báo cáo vi phạm / Giải oan cho Sinh viên (<code>action = 'unmark_spam'</code>):</strong>
+            <ul>
+                <li>Nếu KTV hoặc Admin xác minh lại và phát hiện sự cố là do hiểu lầm hoặc lỗi kỹ thuật mạng khách quan, hệ thống trang bị nút <strong>"↺ Hủy Báo Cáo Vi Phạm"</strong> (màu xanh lá).</li>
+                <li>Hệ thống tự động xóa cờ cảnh báo (<code>is_spam = 0, spam_reason = NULL</code>), đưa phiếu trở lại trạng thái đang xử lý (<code>status = 'in_progress'</code>), tự động mở khóa tài khoản cho sinh viên (nếu đã bị khóa do spam), ghi nhật ký giải oan và gửi thông báo khôi phục tài khoản cho sinh viên.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 class="sub-title">3.6. Kịch bản 6: KTV Báo Động Sự Cố Diện Rộng (Major Incident) Lên Admin &amp; Nút Thu Hồi Cảnh Báo Của Admin</h2>
+    <p><strong>Tình huống:</strong> Máy chủ thi trực tuyến, cổng Quản lý Đào tạo hoặc hạ tầng mạng Wi-Fi toàn trường gặp sự cố nghiêm trọng ảnh hưởng đồng loạt đến hàng nghìn sinh viên và giảng viên.</p>
+    <ul>
+        <li><strong>KTV kích hoạt báo động khẩn cấp (<code>action = 'ktv_report_major_incident'</code>):</strong> KTV bấm nút <strong>"🔥 Báo Sự Cố Cho Admin"</strong>, nhập tên hệ thống bị ảnh hưởng và ghi chú đề xuất. Hệ thống tự động nâng mức ưu tiên lên Khẩn cấp (<code>priority_id = 1</code>), gán cờ <code>is_major_incident = 1</code>, thêm tiền tố <code>[SỰ CỐ DIỆN RỘNG]</code> vào tiêu đề và gửi chuông báo động đỏ cho Admin.</li>
+        <li><strong>Admin ban hành Cảnh báo Toàn trường (Broadcast - <code>action = 'admin_broadcast_major_incident'</code>):</strong> Admin tiếp nhận thông tin và bấm <em>"📢 Phát Cảnh Báo Toàn Trường"</em> &rarr; Hệ thống cập nhật <code>admin_broadcast_status = 'broadcasted'</code>, phát thông báo tới toàn thể người dùng và hiển thị <strong>Banner cảnh báo khẩn cấp màu đỏ rực</strong> ở đầu trang của mọi tài khoản.</li>
+        <li><strong>NÚT THU HỒI CẢNH BÁO KHẨN CẤP CỦA ADMIN (<code>action = 'admin_revoke_major_incident'</code>):</strong>
+            <ul>
+                <li>Sau khi đội ngũ hạ tầng đã khắc phục xong sự cố, Admin có nút <strong>"✅ Thu Hồi Cảnh Báo (Đã Khắc Phục Xong)"</strong> (màu xanh ngọc/teal) trên chi tiết phiếu.</li>
+                <li>Admin mở Modal nhập ghi chú khắc phục, có thể chọn hoàn tất luôn phiếu.</li>
+                <li>Hệ thống cập nhật <code>is_major_incident = 0</code>, <code>admin_broadcast_status = 'resolved'</code>, đưa mức ưu tiên về Bình thường (<code>priority_id = 3</code>), đổi tiêu đề thành <code>[ĐÃ KHẮC PHỤC] ...</code>.</li>
+                <li><strong>Toàn bộ banner báo động đỏ trên màn hình của mọi sinh viên, giảng viên và KTV lập tức biến mất</strong>, hệ thống chuyển sang banner xanh thông báo bình thường.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 class="sub-title">3.7. Kịch bản 7: Sự Cố Nộp Bài Học Phần &amp; Quy Trình Phối Hợp KTV - Giảng Viên Mở Lại Deadline</h2>
+    <p><strong>Tình huống:</strong> Sinh viên gặp trục trặc đường truyền khi nộp bài tập lớn sát giờ Deadline. Sinh viên xin gia hạn nhưng Giảng viên cần căn cứ kỹ thuật khách quan để ra quyết định.</p>
+    <ul>
+        <li><strong>Bước 1 &ndash; Sinh viên tạo phiếu cứu hộ buổi học:</strong> Sinh viên chọn đúng Học phần và Buổi học bị ảnh hưởng. Phiếu tự động điều phối tới KTV chuyên trách hạ tầng mạng (<code>KTV002</code>).</li>
+        <li><strong>Bước 2 &ndash; KTV giám định kỹ thuật:</strong>
+            <ul>
+                <li><em>Trường hợp có lỗi kỹ thuật thật:</em> KTV bấm <strong>"KTV Xác Nhận Có Lỗi"</strong> (<code>it_verified = 1</code>) &rarr; Hệ thống tự động sinh biên bản kỹ thuật số và chuyển quyền xử lý sang Giảng viên phụ trách lớp học phần đó.</li>
+                <li><em>Trường hợp không có lỗi (sinh viên nộp muộn do chủ quan):</em> KTV bấm <strong>"Hủy Báo Lỗi (SV Báo Sai)"</strong> &rarr; Phiếu tự động chuyển sang <code>closed</code>, bảo vệ Giảng viên không bị làm phiền.</li>
+            </ul>
+        </li>
+        <li><strong>Bước 3 &ndash; Giảng viên xem xét mở lại Deadline:</strong> Giảng viên nhận thông báo quả chuông 🔔 và form thẩm quyền học thuật trên phiếu. Giảng viên có 2 phương án:
+            <ul>
+                <li><em>Chấp thuận:</em> Thầy chọn thời hạn Deadline mới (ví dụ gia hạn thêm 24 giờ) và nhập lời dặn &rarr; Cổng nộp bài tự động mở lại cho sinh viên nộp bù, hạn nộp buổi học được cập nhật.</li>
                 <li><em>Từ chối:</em> Thầy từ chối kèm lý do sư phạm &rarr; Phiếu chuyển sang hoàn tất.</li>
             </ul>
         </li>
-        <li><strong>Bước 4 &ndash; Sinh viên nộp lại bài &amp; Chấm CSAT:</strong> Sinh viên nhận thông báo thời hạn mới, vào Cổng Học Phần nộp lại bài và đánh giá 5 sao cho KTV.</li>
+        <li><strong>Bước 4 &ndash; Sinh viên nộp lại bài &amp; Chấm CSAT:</strong> Sinh viên nộp bài bổ sung và chấm sao CSAT nghiệm thu dịch vụ cho KTV.</li>
     </ul>
 
-    <h2 class="sub-title">3.5. Kịch bản 5: Xử lý sự cố diện rộng (Major Incident) &amp; Nút thu hồi cảnh báo khẩn cấp của Admin</h2>
-    <p><strong>Tình huống:</strong> Máy chủ Canvas LMS bị quá tải hoặc cáp quang bị đứt làm 100 người cùng lúc thông báo lỗi cổng CNTT.</p>
+    <h2 class="sub-title">3.8. Kịch bản 8: Nhập Dữ Liệu Tài Khoản Hàng Loạt Cho Quản Trị Viên (Excel / CSV Bulk User Provisioning)</h2>
+    <p>Đầu năm học mới, phòng Quản lý Đào tạo cung cấp danh sách sinh viên các khóa mới:</p>
     <ul>
-        <li><strong>KTV kích hoạt báo động:</strong> KTV phát hiện hàng loạt phiếu cùng báo lỗi &rarr; Bấm nút <strong>"🚨 Báo Sự Cố Diện Rộng Lên Admin"</strong>.</li>
-        <li><strong>Admin ban hành Cảnh báo Toàn trường (Broadcast):</strong> Admin thấy cảnh báo nhấp nháy trong Trung tâm việc cần làm, bấm duyệt &rarr; Một <strong>Banner cảnh báo khẩn cấp màu đỏ rực</strong> xuất hiện đồng bộ ở đầu trang trên màn hình của toàn bộ Sinh viên, Giảng viên và KTV.</li>
-        <li><strong>Thu hồi cảnh báo khi đã khắc phục xong:</strong> Sau khi đội ngũ hạ tầng xử lý xong sự cố, Admin có <strong>NÚT THU HỒI CẢNH BÁO KHẨN CẤP</strong> màu cam trên thanh công cụ &rarr; Bấm 1 cú click, toàn bộ banner báo động đỏ trên mọi tài khoản lập tức biến mất, hệ thống trở về trạng thái vận hành bình thường.</li>
+        <li>Admin truy cập <code>admin/import_excel.php</code>, tải lên tệp danh sách sinh viên định dạng <code>.xlsx</code> hoặc <code>.csv</code>.</li>
+        <li>Dịch vụ <code>SpreadsheetImportService</code> tự động chuẩn hóa tiếng Việt không dấu, nhận diện các cột dữ liệu: Mã sinh viên (<code>user_code</code>), Họ tên (<code>name</code>), Email (<code>email</code>), Mã lớp (<code>class_code</code>)...</li>
+        <li>Hệ thống tự động khởi tạo tài khoản Bcrypt (mật khẩu mặc định <code>123456</code>), tự liên kết bảng <code>classes</code> và <code>class_students</code>, gán trạng thái <code>studying</code>, khóa <code>D24</code> và bật cờ <code>is_first_login = 1</code> ép đổi mật khẩu khi đăng nhập lần đầu.</li>
+        <li>Hiển thị bảng thống kê chi tiết: số bản ghi tạo mới thành công, số bản ghi bỏ qua do trùng lặp mã SV/email.</li>
     </ul>
 
-    <h2 class="sub-title">3.6. Kịch bản 6: Các tính năng nền tảng và tiện ích người dùng (Một số tính năng đơn giản)</h2>
-    <p>Bên cạnh các nghiệp vụ phức tạp, hệ thống trang bị đầy đủ các tính năng nền tảng phục vụ trải nghiệm người dùng tiện lợi:</p>
+    <h2 class="sub-title">3.9. Kịch bản 9: Thuật Toán Tính Hạn Cam Kết SLA Thông Minh Theo Giờ Hành Chính &amp; Lịch Nghỉ Lễ</h2>
+    <p>Hệ thống tích hợp công cụ <code>SlaService.php</code> tính toán chính xác hạn cam kết giải quyết (<code>due_at</code>) dựa trên 4 yếu tố:</p>
     <ul>
-        <li><strong>Xác thực phiên làm việc &amp; Đăng xuất an toàn:</strong> Cơ chế Session bảo mật, kiểm tra cờ tài khoản hoạt động (`is_active = 1`), đăng xuất hủy toàn bộ cookie và session ngăn ngừa chiếm quyền điều khiển phiên.</li>
-        <li><strong>Quản lý Hồ sơ cá nhân (User Profile):</strong> Xem thông tin tài khoản, cập nhật số điện thoại liên hệ, tải lên và đổi ảnh đại diện cá nhân, đổi mật khẩu chủ động.</li>
-        <li><strong>Tìm kiếm và Bộ lọc nâng cao (Search &amp; Advanced Filter):</strong> Tìm kiếm từ khóa theo mã phiếu, tiêu đề hoặc họ tên bằng Prepared Statements `LIKE :kw`; lọc đa tiêu chí theo trạng thái phiếu (`new`, `in_progress`, `resolved`...), lọc theo danh mục, nút lọc nhanh phiếu quá hạn SLA, lọc theo đơn cứu hộ, lọc theo sinh viên vi phạm.</li>
-        <li><strong>Tính năng Ẩn / Hiện bảng dữ liệu (Collapsible Data Tables):</strong> Nút bấm <em>"Ẩn bảng / Hiện bảng"</em> thông minh trên mọi màn hình làm việc (Sinh viên, Giảng viên, KTV, Admin) giúp người dùng tùy biến không gian làm việc gọn gàng.</li>
-        <li><strong>Phân trang dữ liệu thông minh (Pagination):</strong> Phân chia danh sách dài thành nhiều trang (6 &ndash; 10 bản ghi/trang) với nút bấm Trước / Sau và số trang, giúp tối ưu tốc độ tải trang.</li>
-        <li><strong>Xuất dữ liệu báo cáo ra file Excel / CSV (Export CSV):</strong> Cho phép xuất danh sách phiếu sự cố, danh sách bài nộp và điểm số sinh viên ra tệp CSV UTF-8, tự động lọc ký tự đầu dòng (`=`, `+`, `-`, `@`) ngăn ngừa tấn công Formula Injection.</li>
-        <li><strong>Thông báo Toast &amp; Flash Messages đa sắc thái:</strong> Hệ thống thông báo trạng thái thao tác (`success`, `danger`, `warning`, `info`) tự động hiển thị nổi bật và tự động ẩn sau thời gian quy định.</li>
+        <li><strong>Thời gian cam kết theo danh mục (<code>categories.sla_hours</code>):</strong> Ví dụ CAT_SSO cam kết 2 giờ, CAT_CANVAS cam kết 4 giờ, CAT_WIFI cam kết 4 giờ.</li>
+        <li><strong>Hệ số mức độ ưu tiên (<code>priorities.sla_factor</code>):</strong> Khẩn cấp (hệ số 0.5x), Cao (0.8x), Bình thường (1.0x), Thấp (1.5x).</li>
+        <li><strong>Khung giờ làm việc hành chính:</strong> Thứ Hai đến Thứ Sáu; Ca sáng: <code>08:00 &ndash; 12:00</code>, Ca chiều: <code>13:30 &ndash; 17:30</code> (8 tiếng làm việc/ngày). Thứ Bảy, Chủ Nhật nghỉ hoàn toàn. Phiếu gửi ngoài giờ làm việc sẽ tự động bắt đầu tính SLA từ <code>08:00</code> sáng của ngày làm việc kế tiếp.</li>
+        <li><strong>Tích hợp Lịch nghỉ lễ toàn trường (bảng <code>holidays</code>):</strong> Bỏ qua hoàn toàn các ngày lễ chính thức do Admin cấu hình (Tết Nguyên Đán, Giỗ Tổ, Quốc Khánh...).</li>
     </ul>
 
-    <h2 class="sub-title">3.7. Kịch bản 7: Xử lý chuyển giao phiếu (Re-assignment) &amp; Cơ chế tính KPI cho KTV</h2>
+    <h2 class="sub-title">3.10. Kịch bản 10: Nghiệm Thu Chất Lượng Dịch Vụ CSAT 5 Sao Kiểu Be/Grab &amp; Đóng Phiếu</h2>
+    <p>Khi KTV hoàn thành giải pháp kỹ thuật, KTV bấm <em>"Nghiệm Thu Xong"</em> đưa phiếu về trạng thái <code>resolved</code>. Sinh viên nhận thông báo vào chi tiết phiếu đánh giá CSAT:</p>
     <ul>
-        <li><strong>Cơ chế tính số phiếu KPI:</strong> Một phiếu sự cố chỉ tính điểm hoàn thành (KPI) cho <strong>KTV xử lý cuối cùng (người đưa phiếu về trạng thái <code>resolved</code> và nhận đánh giá CSAT của sinh viên)</strong>. KTV nhận chuyển giao nhưng không giải quyết mà chuyển tiếp sẽ không được cộng điểm KPI hoàn tất.</li>
-        <li><strong>Nhật ký chuyển giao minh bạch:</strong> Mọi thao tác chuyển giao từ ai sang ai, vào lúc mấy giờ, lý do chuyển là gì đều được ghi nhận vĩnh viễn trong bảng <code>ticket_replies</code> (loại ghi chú hệ thống <code>is_internal = 1</code>).</li>
-        <li><strong>Cơ chế chống đùn đẩy:</strong> Nếu một phiếu bị chuyển giao quá 3 lần mà chưa được giải quyết, hệ thống tự động kích hoạt cảnh báo đỏ gửi trực tiếp lên Admin trong mục <em>"KTV Tràn Tải / Bất Thường"</em> để Admin can thiệp trực tiếp chỉ định KTV chịu trách nhiệm cuối cùng.</li>
+        <li>Chấm điểm từ 1 đến 5 sao và nhập nhận xét góp ý.</li>
+        <li>Hệ thống lưu bản ghi vào bảng <code>ticket_ratings</code>, tự động chuyển phiếu sang trạng thái <code>closed</code>, và cập nhật điểm trung bình CSAT của KTV theo thời gian thực (hiển thị công khai cạnh tên KTV kiểu Be/Grab: ví dụ ⭐ 4.8 / 5.0).</li>
+        <li>Nếu sau 24 giờ người dùng không chấm sao, cron job hệ thống tự động đóng phiếu hoàn tất.</li>
     </ul>
 
-    <h2 class="sub-title">3.8. Kịch bản 8: Đổi mật khẩu lần đầu bắt buộc (First Login Force Reset)</h2>
-    <p>Khi người dùng đăng nhập thành công nhưng trường <code>is_first_login = 1</code> (xảy ra khi tài khoản mới cấp hoặc vừa được Admin reset về `123456`). Middleware sẽ chặn mọi đường dẫn và chuyển hướng về trang đổi mật khẩu bắt buộc. Người dùng bắt buộc phải đổi mật khẩu mới thỏa mãn độ dài tối thiểu trước khi được vào trang làm việc chính.</p>
+    <h2 class="sub-title">3.11. Kịch bản 11: Xử Lý Chuyển Giao Phiếu (Re-assignment) &amp; Cơ Chế Tính KPI Cho KTV</h2>
+    <ul>
+        <li><strong>Chuyển giao chuyên môn:</strong> Nếu sự cố thuộc chuyên môn của KTV khác (ví dụ từ Mạng sang LMS), KTV có thể chuyển phiếu kèm lý do bàn giao. Hệ thống ghi nhật ký chuyển giao đầy đủ vào bảng <code>ticket_replies</code>.</li>
+        <li><strong>Quy tắc tính KPI hoàn tất:</strong> Điểm KPI hoàn tất phiếu chỉ tính cho <strong>KTV xử lý cuối cùng (người đưa phiếu về <code>resolved</code> và nhận đánh giá CSAT)</strong>. KTV nhận chuyển giao nhưng chuyển tiếp sẽ không được tính KPI hoàn thành.</li>
+        <li><strong>Cảnh báo đùn đẩy:</strong> Phiếu bị chuyển giao quá 3 lần sẽ tự động kích hoạt cảnh báo đỏ trong mục <em>"KTV Tràn Tải / Bất Thường"</em> để Admin can thiệp chỉ định KTV chịu trách nhiệm cuối cùng.</li>
+    </ul>
 
-    <h2 class="sub-title">3.9. Kịch bản 9: Chống gửi phiếu trùng lặp thông minh (Duplicate Incident Detection)</h2>
-    <p>Khi người dùng tạo phiếu, hệ thống tự động quét kiểm tra xem trong vòng 24 giờ qua người dùng này đã có phiếu nào cùng Danh mục hoặc cùng Buổi học đang ở trạng thái chưa đóng hay không. Nếu phát hiện trùng, hệ thống chặn gửi và hiển thị hộp cảnh báo màu vàng trích xuất rõ mã phiếu cũ kèm đường link mở trực tiếp phiếu cũ để tiếp tục trao đổi.</p>
+    <h2 class="sub-title">3.12. Kịch bản 12: Đổi Mật Khẩu Lần Đầu Bắt Buộc (First Login Force Reset)</h2>
+    <p>Khi người dùng đăng nhập thành công nhưng tài khoản mang cờ <code>is_first_login = 1</code> (xảy ra khi tài khoản mới cấp hoặc vừa được Admin reset về <code>123456</code>). Middleware hệ thống lập tức chặn mọi đường dẫn điều hướng và chuyển hướng bắt buộc về <code>index.php?action=first_login</code>. Người dùng bắt buộc phải thiết lập mật khẩu cá nhân mới thỏa mãn độ dài tối thiểu trước khi được phép truy cập vào các phân hệ học phần hoặc bảng điều khiển.</p>
 
-    <h2 class="sub-title">3.10. Kịch bản 10: Tính toán hạn cam kết SLA thông minh theo Giờ hành chính &amp; Lịch nghỉ lễ</h2>
-    <p>Khung giờ làm việc KTV quy định: Từ Thứ 2 đến Thứ 6. Ca sáng: <code>08:00 &ndash; 12:00</code>, Ca chiều: <code>13:30 &ndash; 17:30</code> (8 tiếng làm việc/ngày). Thứ Bảy và Chủ Nhật nghỉ hoàn toàn. Bảng <code>holidays</code> lưu danh mục các ngày nghỉ lễ chính thức. Phiếu gửi ngoài giờ sẽ tự động bắt đầu tính từ <code>08:00</code> sáng của ngày làm việc tiếp theo. Thời gian cam kết giải quyết (<code>due_at</code>) được tính toán chuẩn xác đến từng phút loại trừ giờ nghỉ trưa và ngày nghỉ.</p>
-
-    <h2 class="sub-title">3.11. Kịch bản 11: Nghiệm thu chất lượng dịch vụ CSAT 5 sao &amp; Đóng phiếu hỗ trợ</h2>
-    <p>Khi KTV hoàn tất công việc kỹ thuật, phiếu được đưa về <code>resolved</code>. Sinh viên nhận thông báo vào chi tiết phiếu chấm điểm từ 1 đến 5 sao và nhập nhận xét. Phiếu tự động chuyển sang <code>closed</code> và cập nhật điểm trung bình CSAT của KTV theo thời gian thực. Nếu sau 24h sinh viên không chấm sao, cron job hệ thống tự động đóng phiếu.</p>
+    <h2 class="sub-title">3.13. Kịch bản 13: Các Tính Năng Nền Tảng Và Tiện Ích Người Dùng (Một Số Tính Năng Đơn Giản)</h2>
+    <p>Hệ thống hoàn thiện đầy đủ các tính năng nền tảng nâng cao trải nghiệm người dùng:</p>
+    <ul>
+        <li><strong>Xác thực phiên làm việc &amp; Đăng xuất an toàn:</strong> Kiểm tra trạng thái tài khoản hoạt động (<code>is_active = 1</code>), hủy toàn bộ session và cookie khi đăng xuất nhằm bảo đảm an toàn.</li>
+        <li><strong>Bộ lọc &amp; Tìm kiếm nâng cao:</strong> Tìm kiếm từ khóa theo mã phiếu, tiêu đề, họ tên qua PDO Prepared Statements <code>LIKE :kw</code>; lọc đa tiêu chí theo trạng thái phiếu, danh mục dịch vụ, lọc nhanh phiếu quá hạn SLA, lọc đơn cứu hộ, lọc phiếu vi phạm.</li>
+        <li><strong>Tính năng Ẩn / Hiện bảng dữ liệu (Collapsible Data Tables):</strong> Nút bấm <em>"Ẩn bảng / Hiện bảng"</em> thông minh trên mọi giao diện làm việc giúp người dùng tùy biến không gian làm việc gọn gàng.</li>
+        <li><strong>Phân trang dữ liệu thông minh (Pagination):</strong> Phân chia danh sách phiếu thành nhiều trang (6 &ndash; 10 bản ghi/trang) với nút bấm Trước / Sau và liên kết số trang, tối ưu hóa tốc độ truy vấn CSDL.</li>
+        <li><strong>Xuất dữ liệu báo cáo CSV (Export CSV):</strong> Cho phép xuất danh sách phiếu sự cố, danh sách bài nộp và điểm số ra tệp CSV chuẩn UTF-8, tự động lọc ký tự đầu dòng (<code>=, +, -, @</code>) ngăn ngừa tấn công CSV Injection.</li>
+    </ul>
 
     <div class="page-break"></div>
 
@@ -790,11 +904,11 @@
         <div class="workflow-row">
             <div class="wf-node wf-node-blue"><strong>1. Nhập Email trường</strong><br>@daihocthudo.edu.vn</div>
             <div class="wf-arrow">&rarr;</div>
-            <div class="wf-node wf-node-amber"><strong>2. Sinh Token SHA-256</strong><br>Lưu bảng password_resets</div>
+            <div class="wf-node wf-node-amber"><strong>2. Sinh 1 Token SHA-256</strong><br>Lưu bảng password_resets (15p)</div>
             <div class="wf-arrow">&rarr;</div>
-            <div class="wf-node wf-node-purple"><strong>3. Gửi Link qua Email</strong><br>Đồng hồ đếm ngược 15:00</div>
+            <div class="wf-node wf-node-purple"><strong>3. Gửi 1 Link Token qua Email</strong><br>Bấm link trong mail mở tab đổi pass</div>
             <div class="wf-arrow">&rarr;</div>
-            <div class="wf-node wf-node-green"><strong>4. Đổi Mật Khẩu Mới</strong><br>Bcrypt + Kích hoạt tài khoản</div>
+            <div class="wf-node wf-node-green"><strong>4. Đổi Mật Khẩu Mới</strong><br>Bcrypt + is_first_login = 0</div>
         </div>
     </div>
 
@@ -842,6 +956,547 @@
             </div>
         </div>
     </div>
+
+    <h2 class="sub-title">4.6. Sơ đồ 6: Luồng KTV Báo Cáo Sinh Viên Vi Phạm (Spam) &amp; Cơ Chế Giải Oan</h2>
+    <div class="diagram-box">
+        <div class="workflow-row">
+            <div class="wf-node wf-node-rose"><strong>1. KTV phát hiện vi phạm</strong><br>Bấm "🚨 Báo Cáo SV Spam", nhập lý do</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-amber"><strong>2. Chuyển RESOLVED</strong><br>is_spam = 1, chuyển việc khẩn cho Admin</div>
+            <div class="wf-arrow">&rarr;</div>
+            <div class="wf-node wf-node-purple"><strong>3. Admin Thẩm định Kỷ luật</strong><br>Có thể khóa tài khoản vĩnh viễn</div>
+        </div>
+        <div style="text-align: center; font-size: 14px; color: #64748b; margin: 3px 0;">&darr;</div>
+        <div class="workflow-row">
+            <div class="wf-node wf-node-green" style="flex: 1;">
+                <strong>↺ CƠ CHẾ GIẢI OAN (NÚT "HỦY BÁO CÁO VI PHẠM"):</strong><br>
+                Nếu kiểm tra lại phát hiện lỗi mạng khách quan hoặc hiểu lầm &rarr; KTV hoặc Admin bấm nút "Hủy Báo Cáo Vi Phạm" &rarr; Phiếu tự động quay lại trạng thái <code>in_progress</code>, mở khóa tài khoản cho sinh viên và gửi thông báo khôi phục bình thường!
+            </div>
+        </div>
+    </div>
+
+    <div class="page-break"></div>
+
+    <!-- MỤC 4.7: BẢNG ĐIỀU HƯỚNG TOÀN BỘ CÁC LUỒNG HỆ THỐNG -->
+    <h2 class="sub-title">4.7. Bảng Điều Hướng Toàn Bộ Các Luồng Hệ Thống (System Route Navigation Map)</h2>
+    <p>Dưới đây là bảng đặc tả kiến trúc điều hướng chi tiết toàn bộ các tuyến đường (URL Routes), ánh xạ chính xác từ mã nguồn bộ định tuyến hệ thống (<code>index.php</code>, <code>app/Controllers/</code>, <code>tickets/</code>, <code>student/</code>, <code>lecturer/</code>, <code>agent/</code>, <code>admin/</code>):</p>
+
+    <table class="report-table" style="font-size: 8.5px;">
+        <thead>
+            <tr style="background-color: #0369a1; color: #ffffff;">
+                <th style="width: 4%; text-align: center;">STT</th>
+                <th style="width: 22%;">Đường Dẫn URL / Route Endpoint</th>
+                <th style="width: 6%; text-align: center;">Method</th>
+                <th style="width: 17%;">Bộ Điều Khiển (Controller / File)</th>
+                <th style="width: 15%;">Hành Động (Action / Method)</th>
+                <th style="width: 14%;">Giao Diện (View)</th>
+                <th style="width: 10%; text-align: center;">Phân Quyền (RBAC)</th>
+                <th style="width: 12%;">Chức Năng &amp; Luồng Nghiệp Vụ</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- NHÓM 1: AUTH & SSPR -->
+            <tr style="background-color: #f1f5f9; font-weight: 700; color: #0f172a;"><td colspan="8">NHÓM 1: XÁC THỰC, ĐĂNG NHẬP, ĐĂNG XUẤT &amp; CỨU HỘ TÀI KHOẢN (AUTH &amp; ACCOUNT RECOVERY)</td></tr>
+            <tr>
+                <td style="text-align: center;">1</td>
+                <td><code>/</code> hoặc <code>index.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>AuthController</code> / <code>index.php</code></td>
+                <td><code>showLogin()</code></td>
+                <td><code>views/auth/login.php</code></td>
+                <td style="text-align: center;">Public (Khách)</td>
+                <td>Trang đăng nhập trung tâm hệ thống</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">2</td>
+                <td><code>index.php?action=login</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>AuthController</code></td>
+                <td><code>login()</code></td>
+                <td>Redirect Dashboard theo Role</td>
+                <td style="text-align: center;">Public (Khách)</td>
+                <td>Xác thực thông tin Bcrypt, cấp phiên Session</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">3</td>
+                <td><code>index.php?action=quick_login&amp;code=...</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>AuthController</code></td>
+                <td><code>quickLogin()</code></td>
+                <td>Redirect Dashboard theo Role</td>
+                <td style="text-align: center;">Public (Demo)</td>
+                <td>Đăng nhập nhanh 4 vai trò mẫu phục vụ chấm điểm đồ án</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">4</td>
+                <td><code>index.php?action=logout</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>AuthController</code></td>
+                <td><code>logout()</code></td>
+                <td>Redirect <code>index.php</code></td>
+                <td style="text-align: center;">Đã đăng nhập</td>
+                <td>Hủy phiên session an toàn, xóa cookie</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">5</td>
+                <td><code>index.php?action=first_login</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
+                <td><code>AuthController</code></td>
+                <td><code>showFirstLogin() / changeFirstLogin()</code></td>
+                <td><code>views/auth/first_login.php</code></td>
+                <td style="text-align: center;"><code>is_first_login = 1</code></td>
+                <td>Ép đổi mật khẩu lần đầu bắt buộc</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">6</td>
+                <td><code>index.php?action=forgot_password</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>AuthController</code></td>
+                <td><code>showForgotPassword()</code></td>
+                <td><code>views/auth/forgot_password.php</code></td>
+                <td style="text-align: center;">Public (Khách)</td>
+                <td>Màn hình yêu cầu quên mật khẩu qua Email</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">7</td>
+                <td><code>index.php?action=forgot_password</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>AuthController</code> / <code>AuthService</code></td>
+                <td><code>sendResetLink()</code></td>
+                <td>Flash + Đếm ngược 15:00</td>
+                <td style="text-align: center;">Public (Khách)</td>
+                <td>Sinh 1 token SHA-256 15p, gửi 1 link URL qua email</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">8</td>
+                <td><code>index.php?action=reset_password</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
+                <td><code>AuthController</code></td>
+                <td><code>showResetPassword() / resetPassword()</code></td>
+                <td><code>views/auth/reset_password.php</code></td>
+                <td style="text-align: center;">Public (Có token)</td>
+                <td>Xác thực token 6 chữ cái, lưu mật khẩu mới Bcrypt</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">9</td>
+                <td><code>index.php?action=guest_ticket</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
+                <td><code>GuestTicketController</code></td>
+                <td><code>showCreate() / create()</code></td>
+                <td><code>views/guest/create_ticket.php</code></td>
+                <td style="text-align: center;">Public (Khách)</td>
+                <td>Trạm cứu hộ tài khoản khách (chỉ cấp Mã đơn)</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">10</td>
+                <td><code>index.php?action=guest_lookup</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
+                <td><code>GuestTicketController</code></td>
+                <td><code>showLookup()</code></td>
+                <td><code>views/guest/lookup_ticket.php</code></td>
+                <td style="text-align: center;">Public (Khách)</td>
+                <td>Tra cứu tiến độ đơn cứu hộ bằng duy nhất Mã đơn</td>
+            </tr>
+
+            <!-- NHÓM 2: STUDENT PORTAL -->
+            <tr style="background-color: #f1f5f9; font-weight: 700; color: #0f172a;"><td colspan="8">NHÓM 2: PHÂN HỆ SINH VIÊN &amp; CỔNG HỌC PHẦN (STUDENT PORTAL)</td></tr>
+            <tr>
+                <td style="text-align: center;">11</td>
+                <td><code>student/index.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>StudentDashboardController</code></td>
+                <td><code>index()</code></td>
+                <td><code>views/student/dashboard.php</code></td>
+                <td style="text-align: center;">Student</td>
+                <td>Bảng điều khiển tổng quan sinh viên</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">12</td>
+                <td><code>student/courses.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>CourseController</code></td>
+                <td><code>index()</code></td>
+                <td><code>student/courses.php</code></td>
+                <td style="text-align: center;">Student</td>
+                <td>Danh sách 6 học phần sinh viên đang theo học</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">13</td>
+                <td><code>student/courses.php?action=course_detail</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>CourseController</code></td>
+                <td><code>detail()</code></td>
+                <td><code>views/student/courses/detail.php</code></td>
+                <td style="text-align: center;">Student</td>
+                <td>Chi tiết buổi học, hạn nộp bài, điểm số bài tập</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">14</td>
+                <td><code>student/courses.php?action=submit_assignment</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>CourseController</code></td>
+                <td><code>submitAssignment()</code></td>
+                <td>Redirect Chi tiết học phần</td>
+                <td style="text-align: center;">Student</td>
+                <td>Tải tệp bài làm lên hệ thống (PDF, Zip, Docx)</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">15</td>
+                <td><code>student/ratings.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>RatingController</code></td>
+                <td><code>index()</code></td>
+                <td><code>student/ratings.php</code></td>
+                <td style="text-align: center;">Student</td>
+                <td>Lịch sử và danh sách phiếu chờ đánh giá CSAT</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">16</td>
+                <td><code>student/index.php?action=rating_create</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
+                <td><code>RatingController</code></td>
+                <td><code>create() / store()</code></td>
+                <td><code>views/student/ratings/create.php</code></td>
+                <td style="text-align: center;">Student</td>
+                <td>Chấm sao CSAT (1-5 sao) nghiệm thu dịch vụ KTV</td>
+            </tr>
+
+            <!-- NHÓM 3: LECTURER PORTAL -->
+            <tr style="background-color: #f1f5f9; font-weight: 700; color: #0f172a;"><td colspan="8">NHÓM 3: PHÂN HỆ GIẢNG VIÊN &amp; QUẢN LÝ BÀI TẬP (LECTURER PORTAL)</td></tr>
+            <tr>
+                <td style="text-align: center;">17</td>
+                <td><code>assignments/index.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>CourseAssignmentController</code></td>
+                <td><code>index()</code></td>
+                <td><code>assignments/index.php</code></td>
+                <td style="text-align: center;">Lecturer</td>
+                <td>Bàn làm việc giảng viên, danh sách lớp học phần</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">18</td>
+                <td><code>lecturer/lessons.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>LecturerLessonController</code></td>
+                <td><code>index()</code></td>
+                <td><code>lecturer/lessons.php</code></td>
+                <td style="text-align: center;">Lecturer</td>
+                <td>Quản lý buổi học, giao đề bài tập, hạn nộp</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">19</td>
+                <td><code>lecturer/lessons.php?action=grade</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>LecturerLessonController</code></td>
+                <td><code>grade()</code></td>
+                <td>Redirect <code>lecturer/lessons.php</code></td>
+                <td style="text-align: center;">Lecturer</td>
+                <td>Chấm điểm bài nộp sinh viên (thang điểm 10.0)</td>
+            </tr>
+
+            <!-- NHÓM 4: AGENT WORKSPACE -->
+            <tr style="background-color: #f1f5f9; font-weight: 700; color: #0f172a;"><td colspan="8">NHÓM 4: BÀN LÀM VIỆC KỸ THUẬT VIÊN (AGENT / KTV WORKSPACE)</td></tr>
+            <tr>
+                <td style="text-align: center;">20</td>
+                <td><code>agent/index.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
+                <td><code>agent/index.php</code></td>
+                <td>Inline Workspace Action</td>
+                <td><code>agent/index.php</code></td>
+                <td style="text-align: center;">Agent, Admin</td>
+                <td>Bàn làm việc KTV, thống kê KPI, điểm CSAT, hàng đợi SLA</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">21</td>
+                <td><code>agent/ratings.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>agent/ratings.php</code></td>
+                <td>Inline CSAT Viewer</td>
+                <td><code>agent/ratings.php</code></td>
+                <td style="text-align: center;">Agent, Admin</td>
+                <td>Chi tiết lịch sử nhận xét và bộ lọc số sao CSAT</td>
+            </tr>
+
+            <!-- NHÓM 5: TICKET ENGINE & ACTIONS -->
+            <tr style="background-color: #f1f5f9; font-weight: 700; color: #0f172a;"><td colspan="8">NHÓM 5: TRUNG TÂM PHIẾU SỰ CỐ &amp; CÁC HÀNH ĐỘNG NGHIỆP VỤ (TICKET ENGINE &amp; ACTIONS)</td></tr>
+            <tr>
+                <td style="text-align: center;">22</td>
+                <td><code>tickets/index.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>TicketRepository</code></td>
+                <td><code>getAll()</code></td>
+                <td><code>tickets/index.php</code></td>
+                <td style="text-align: center;">Tất cả Roles</td>
+                <td>Danh sách phiếu sự cố: tìm kiếm, lọc SLA, phân trang</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">23</td>
+                <td><code>tickets/create.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>tickets/create.php</code></td>
+                <td>Render Form</td>
+                <td><code>tickets/create.php</code></td>
+                <td style="text-align: center;">Student, Lecturer</td>
+                <td>Giao diện tạo phiếu hỗ trợ CNTT mới</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">24</td>
+                <td><code>tickets/create.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>TicketRepository</code> / <code>SlaService</code></td>
+                <td><code>create()</code></td>
+                <td>Redirect <code>tickets/show.php</code></td>
+                <td style="text-align: center;">Student, Lecturer</td>
+                <td>Kiểm tra chống trùng lặp, tính SLA, gán KTV chuyên trách</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">25</td>
+                <td><code>tickets/show.php?id=...</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>TicketRepository</code></td>
+                <td><code>find()</code></td>
+                <td><code>tickets/show.php</code></td>
+                <td style="text-align: center;">Tất cả Roles</td>
+                <td>Chi tiết phiếu: thảo luận 2 chiều, timeline SLA, biên bản</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">26</td>
+                <td><code>tickets/edit.php?id=...</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
+                <td><code>tickets/edit.php</code></td>
+                <td><code>update()</code></td>
+                <td><code>tickets/edit.php</code></td>
+                <td style="text-align: center;">Người gửi &le; 15p</td>
+                <td>Chỉnh sửa nội dung phiếu trong vòng 15 phút đầu</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">27</td>
+                <td><code>POST tickets/show.php (action=requester_delete_ticket)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Requester Delete</td>
+                <td>Redirect <code>tickets/index.php</code></td>
+                <td style="text-align: center;">Người gửi &le; 15p</td>
+                <td>Xóa / thu hồi phiếu hỗ trợ gửi nhầm trong 15 phút đầu</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">28</td>
+                <td><code>POST tickets/show.php (action=admin_delete_ticket)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Admin Delete</td>
+                <td>Redirect <code>tickets/index.php</code></td>
+                <td style="text-align: center;">Admin (Độc quyền)</td>
+                <td>Xóa vĩnh viễn phiếu rác / vi phạm khỏi CSDL</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">29</td>
+                <td><code>POST tickets/show.php (action=quick_resolve)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>TicketRepository</code></td>
+                <td><code>updateStatus('resolved')</code></td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Agent, Admin</td>
+                <td>Nghiệm thu giải pháp kỹ thuật hoàn tất (status: resolved)</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">30</td>
+                <td><code>POST tickets/show.php (action=close_duplicate)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>TicketRepository</code></td>
+                <td>Close Duplicate</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Agent, Admin</td>
+                <td>Đóng phiếu trùng lặp sự cố, liên kết mã phiếu gốc</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">31</td>
+                <td><code>POST tickets/show.php (action=report_spam)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Report Spam / Violation</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Agent, Admin</td>
+                <td>Lập biên bản báo cáo SV vi phạm, chuyển việc khẩn cho Admin</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">32</td>
+                <td><code>POST tickets/show.php (action=unmark_spam)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Unmark Spam</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Agent, Admin</td>
+                <td>Hủy báo cáo vi phạm, giải oan cho SV, mở lại tài khoản</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">33</td>
+                <td><code>POST tickets/show.php (action=it_confirm_issue)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Confirm Technical Issue</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Agent (Độc quyền)</td>
+                <td>KTV xác nhận có lỗi kỹ thuật thật, chuyển Giảng viên</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">34</td>
+                <td><code>POST tickets/show.php (action=it_reject_issue)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Reject Issue (Closed)</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Agent (Độc quyền)</td>
+                <td>KTV hủy báo lỗi (SV báo sai) &rarr; Đóng phiếu hoàn tất</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">35</td>
+                <td><code>POST tickets/show.php (action=lecturer_decide)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Academic Decision</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Lecturer (Độc quyền)</td>
+                <td>Giảng viên quyết định: Mở lại Deadline mới hoặc Từ chối</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">36</td>
+                <td><code>POST tickets/show.php (action=ktv_report_major_incident)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Report Major Incident</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Agent</td>
+                <td>KTV kích hoạt báo động sự cố diện rộng gửi lên Admin</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">37</td>
+                <td><code>POST tickets/show.php (action=admin_broadcast_major_incident)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Broadcast Warning</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Admin (Độc quyền)</td>
+                <td>Admin phát cảnh báo diện rộng toàn trường (Banner đỏ)</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">38</td>
+                <td><code>POST tickets/show.php (action=admin_revoke_major_incident)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Revoke Warning</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Admin (Độc quyền)</td>
+                <td>Nút Thu Hồi Cảnh Báo Khẩn Cấp (Đã khắc phục xong)</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">39</td>
+                <td><code>POST tickets/show.php (action=verify_rescue)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Verify Rescue</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Agent (KTV001)</td>
+                <td>KTV xác thực hồ sơ đơn cứu hộ tài khoản khách Bước 1</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">40</td>
+                <td><code>POST tickets/show.php (action=approve_rescue)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Approve Rescue</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Admin (Độc quyền)</td>
+                <td>Admin phê duyệt mở khóa tài khoản cứu hộ Bước 2</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">41</td>
+                <td><code>POST tickets/show.php (action=reassign)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>tickets/show.php</code></td>
+                <td>Reassign Agent</td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Agent, Admin</td>
+                <td>Điều chuyển phân công KTV chuyên trách khác kèm lý do</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">42</td>
+                <td><code>POST tickets/show.php (action=add_reply)</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>TicketRepository</code></td>
+                <td><code>addReply()</code></td>
+                <td>Reload Chi tiết phiếu</td>
+                <td style="text-align: center;">Tất cả Roles</td>
+                <td>Gửi phản hồi trao đổi hoặc Ghi chú nội bộ (is_internal)</td>
+            </tr>
+
+            <!-- NHÓM 6: ADMIN CENTER -->
+            <tr style="background-color: #f1f5f9; font-weight: 700; color: #0f172a;"><td colspan="8">NHÓM 6: TRUNG TÂM QUẢN TRỊ ADMIN TOÀN DIỆN (ADMIN CENTER)</td></tr>
+            <tr>
+                <td style="text-align: center;">43</td>
+                <td><code>admin/users.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>AdminUserController</code></td>
+                <td><code>index()</code></td>
+                <td><code>admin/users.php</code></td>
+                <td style="text-align: center;">Admin</td>
+                <td>Quản lý danh sách người dùng toàn trường, lọc vai trò</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">44</td>
+                <td><code>admin/user_detail.php?id=...</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET</span></td>
+                <td><code>AdminUserController</code></td>
+                <td><code>detail()</code></td>
+                <td><code>views/admin/users/detail.php</code></td>
+                <td style="text-align: center;">Admin</td>
+                <td>Chi tiết hồ sơ người dùng, lịch sử phiếu, lớp học phần</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">45</td>
+                <td><code>POST admin/user_action.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>AdminUserController</code></td>
+                <td><code>action()</code></td>
+                <td>Redirect <code>admin/users.php</code></td>
+                <td style="text-align: center;">Admin</td>
+                <td>Khóa mềm/khóa cứng tài khoản, đặt lại mật khẩu về 123456</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">46</td>
+                <td><code>admin/import_excel.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
+                <td><code>SpreadsheetImportService</code></td>
+                <td><code>import()</code></td>
+                <td><code>admin/import_excel.php</code></td>
+                <td style="text-align: center;">Admin</td>
+                <td>Nhập dữ liệu tài khoản sinh viên hàng loạt từ Excel / CSV</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">47</td>
+                <td><code>admin/holidays.php</code></td>
+                <td style="text-align: center;"><span class="badge badge-blue">GET/POST</span></td>
+                <td><code>HolidayController</code></td>
+                <td><code>index() / store() / delete()</code></td>
+                <td><code>admin/holidays.php</code></td>
+                <td style="text-align: center;">Admin</td>
+                <td>Quản lý danh mục ngày nghỉ lễ toàn trường cho tính SLA</td>
+            </tr>
+
+            <!-- NHÓM 7: API & TIỆN ÍCH -->
+            <tr style="background-color: #f1f5f9; font-weight: 700; color: #0f172a;"><td colspan="8">NHÓM 7: GIAO DIỆN LẬP TRÌNH API &amp; THÔNG BÁO (NOTIFICATION &amp; UTILITY API)</td></tr>
+            <tr>
+                <td style="text-align: center;">48</td>
+                <td><code>POST index.php?action=api_mark_notification_read</code></td>
+                <td style="text-align: center;"><span class="badge badge-rose">POST</span></td>
+                <td><code>NotificationService</code></td>
+                <td><code>markAsRead()</code></td>
+                <td>JSON Response</td>
+                <td style="text-align: center;">Đã đăng nhập</td>
+                <td>Đánh dấu thông báo đã đọc qua AJAX thời gian thực</td>
+            </tr>
+        </tbody>
+    </table>
 
     <div class="page-break"></div>
 
@@ -1056,11 +1711,15 @@
             <tr><td><code>due_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>NULL</td><td><strong>Hạn chót giải quyết SLA (giờ hành chính)</strong></td></tr>
             <tr><td><code>it_verified</code></td><td>TINYINT(1)</td><td>NULL</td><td>0</td><td><strong>1: KTV xác nhận có lỗi kỹ thuật khách quan</strong></td></tr>
             <tr><td><code>it_verified_at</code></td><td>DATETIME</td><td>NULL</td><td>NULL</td><td>Thời điểm KTV bấm xác nhận có lỗi</td></tr>
+            <tr><td><code>it_verified_note</code></td><td>TEXT</td><td>NULL</td><td>NULL</td><td>Ghi chú chuyên môn của KTV khi giám định lỗi kỹ thuật</td></tr>
             <tr><td><code>lecturer_decision</code></td><td>ENUM(...)</td><td>NULL</td><td>'pending'</td><td>Quyết định của GV: pending, approved, rejected</td></tr>
             <tr><td><code>lecturer_decision_at</code></td><td>DATETIME</td><td>NULL</td><td>NULL</td><td>Thời điểm Giảng viên quyết định mở lại deadline</td></tr>
-            <tr><td><code>rescue_verified</code></td><td>TINYINT(1)</td><td>NULL</td><td>0</td><td>1: KTV đã xác thực đơn cứu hộ khách hợp lệ</td></tr>
-            <tr><td><code>is_major_incident</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>0</td><td>1: Đánh dấu sự cố diện rộng toàn trường</td></tr>
-            <tr><td><code>admin_broadcast_status</code></td><td>VARCHAR(20)</td><td>NULL</td><td>'none'</td><td>Trạng thái phát cảnh báo: broadcasted, revoked</td></tr>
+            <tr><td><code>rescue_verified</code></td><td>TINYINT(1)</td><td>NULL</td><td>0</td><td>1: KTV đã xác thực đơn cứu hộ khách hợp lệ (Bước 1)</td></tr>
+            <tr><td><code>is_spam</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>0</td><td><strong>1: KTV báo cáo sinh viên vi phạm / spam chuyển Admin xử lý</strong></td></tr>
+            <tr><td><code>spam_reason</code></td><td>VARCHAR(255)</td><td>NULL</td><td>NULL</td><td>Lý do KTV lập biên bản báo cáo sinh viên vi phạm quy chế</td></tr>
+            <tr><td><code>is_major_incident</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>0</td><td><strong>1: Đánh dấu sự cố kỹ thuật diện rộng toàn trường</strong></td></tr>
+            <tr><td><code>major_incident_note</code></td><td>TEXT</td><td>NULL</td><td>NULL</td><td>Đề xuất giải pháp và mức độ ảnh hưởng diện rộng của KTV gửi Admin</td></tr>
+            <tr><td><code>admin_broadcast_status</code></td><td>VARCHAR(20)</td><td>NULL</td><td>'none'</td><td>Trạng thái cảnh báo Admin: broadcasted (phát), resolved (thu hồi)</td></tr>
         </tbody>
     </table>
 
