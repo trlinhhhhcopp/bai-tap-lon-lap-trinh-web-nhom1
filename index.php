@@ -2281,10 +2281,17 @@ $majorIncidentCount = count($majorIncidents);
                                         <?php endif; ?>
                                     </td>
                                     <td class="py-3 px-4 text-center">
-                                        <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $mi['id']; ?>&view_as=agent" 
-                                           class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-2xs inline-flex items-center gap-1">
-                                            Xem & Chỉ Đạo →
-                                        </a>
+                                        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $mi['id']; ?>&view_as=admin" 
+                                               class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-2xs inline-flex items-center gap-1">
+                                                <span>⚡</span> Xem & Chỉ Đạo →
+                                            </a>
+                                            <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $mi['id']; ?>&view_as=admin&open_revoke=1" 
+                                               class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-2xs inline-flex items-center gap-1"
+                                               title="Thu hồi cảnh báo khẩn cấp khi sự cố đã khắc phục xong">
+                                                <span>✅</span> Thu Hồi / Đã Xong
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

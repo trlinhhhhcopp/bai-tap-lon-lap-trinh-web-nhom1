@@ -432,8 +432,8 @@ class NotificationService
             // 1. SỰ CỐ DIỆN RỘNG (MAJOR INCIDENT / CRITICAL)
             $stmtMajor = $pdo->query("
                 SELECT COUNT(*) FROM tickets 
-                WHERE (priority_id = 1 OR title LIKE '%toàn trường%' OR title LIKE '%sập mạng%' OR title LIKE '%diện rộng%') 
-                  AND status IN ('new', 'in_progress')
+                WHERE (is_major_incident = 1 OR priority_id = 1) 
+                  AND status NOT IN ('resolved', 'closed')
             ");
             $majorCount = (int)($stmtMajor ? $stmtMajor->fetchColumn() : 0);
             if ($majorCount > 0) {
