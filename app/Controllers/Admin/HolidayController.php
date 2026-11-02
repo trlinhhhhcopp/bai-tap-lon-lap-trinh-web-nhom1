@@ -123,6 +123,19 @@ class HolidayController
             return ['error' => 'Ngày bắt đầu hoặc ngày kết thúc không hợp lệ (Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc).', 'data' => []];
         }
 
+        $diffDays = (strtotime($endDate) - strtotime($startDate)) / 86400;
+        if ($diffDays > 30) {
+            return ['error' => 'Thời gian nghỉ lễ không được vượt quá 30 ngày (tránh làm sai lệch SLA vận hành trường học).', 'data' => []];
+        }
+
+        if ($isRecurring === 1) {
+            $startYear = (int)substr($startDate, 0, 4);
+            $endYear = (int)substr($endDate, 0, 4);
+            if ($endYear - $startYear > 1) {
+                return ['error' => 'Ngày nghỉ lễ lặp lại hàng năm chỉ được thiết lập trong phạm vi 1 năm dương lịch.', 'data' => []];
+            }
+        }
+
         if (!in_array($isRecurring, [0, 1], true)) {
             return ['error' => 'Giá trị lặp lại không hợp lệ.', 'data' => []];
         }

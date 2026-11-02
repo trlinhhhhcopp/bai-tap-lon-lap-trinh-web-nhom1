@@ -210,8 +210,18 @@ class CourseController
             require_once __DIR__ . '/../../Services/NotificationService.php';
             $lecturerId = (int)(db()->query("SELECT ca.lecturer_id FROM course_lessons cl JOIN course_assignments ca ON ca.course_id = cl.course_id WHERE cl.id = {$lessonId} LIMIT 1")->fetchColumn() ?: 0);
             if ($lecturerId > 0) {
-                $studentName = $currentUser['name'];
-                $studentCode = $currentUser['user_code'];
+                $sessionUser = $_SESSION['user'] ?? [];
+                $studentName = trim($sessionUser['name'] ?? '');
+                $studentCode = trim($sessionUser['user_code'] ?? '');
+                if ($studentName === '' || $studentCode === '') {
+                    $uStmt = db()->prepare("SELECT name, user_code FROM users WHERE id = :id LIMIT 1");
+                    $uStmt->execute([':id' => $studentId]);
+                    $uRow = $uStmt->fetch(PDO::FETCH_ASSOC);
+                    if ($uRow) {
+                        $studentName = $uRow['name'] ?? 'Sinh viên';
+                        $studentCode = $uRow['user_code'] ?? (string)$studentId;
+                    }
+                }
                 $lessonNum   = $lesson['lesson_number'];
                 $lessonTitle = $lesson['title'];
 
