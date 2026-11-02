@@ -241,14 +241,19 @@ $flash        = get_flash();
 
             <?php if ($isStudentOrLecturer && $unratedCount > 0 && $warningType !== 'unrated'): ?>
                 <!-- THÔNG BÁO NHANH CHO SV VÀ GV KHI CÓ PHIẾU ĐÃ HOÀN TẤT CẦN ĐÁNH GIÁ -->
-                <div class="bg-gradient-to-r from-amber-50 via-orange-50/70 to-amber-50 border border-amber-300 text-amber-900 rounded-2xl p-3 px-4 text-xs font-semibold flex items-center justify-between flex-wrap gap-2 shadow-2xs">
+                <div id="unrated_tickets_banner" class="bg-gradient-to-r from-amber-50 via-orange-50/70 to-amber-50 border border-amber-300 text-amber-900 rounded-2xl p-3 px-4 text-xs font-semibold flex items-center justify-between flex-wrap gap-2 shadow-2xs">
                     <div class="flex items-center gap-2">
                         <span class="text-amber-500 text-base">⭐</span>
                         <span>Bạn có <strong class="text-amber-950 underline"><?= $unratedCount ?> phiếu</strong> hỗ trợ kỹ thuật đã xử lý xong đang chờ bạn đánh giá nghiệm thu (CSAT).</span>
                     </div>
-                    <a href="index.php?warning=unrated" class="px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs transition shadow-2xs">
-                        Xem phiếu cần đánh giá →
-                    </a>
+                    <div class="flex items-center gap-2">
+                        <a href="index.php?warning=unrated" class="px-3 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-xl text-xs transition shadow-2xs">
+                            Xem phiếu cần đánh giá →
+                        </a>
+                        <button type="button" onclick="document.getElementById('unrated_tickets_banner').style.display='none'" class="px-2 py-0.5 rounded-lg text-amber-700 hover:bg-amber-200/80 hover:text-amber-950 font-bold text-xs transition cursor-pointer" title="Ẩn thông báo này">
+                            ✕
+                        </button>
+                    </div>
                 </div>
             <?php endif; ?>
 

@@ -58,7 +58,7 @@ if (!isset($pendingRatings) && $isRequesterRole && $currentUserId > 0) {
 
     <!-- KHỐI TRÊN ĐẦU: CHƯA ĐÁNH GIÁ (ĐÃ HOÀN TẤT, CẦN ĐÁNH GIÁ) CHO ROLE SV & GV -->
     <?php if ($isRequesterRole): ?>
-        <div class="bg-gradient-to-r from-amber-50/90 via-orange-50/60 to-amber-50/90 border-2 border-amber-300 rounded-3xl p-5 shadow-sm space-y-3.5">
+        <div id="unrated_tickets_section" class="bg-gradient-to-r from-amber-50/90 via-orange-50/60 to-amber-50/90 border-2 border-amber-300 rounded-3xl p-5 shadow-sm space-y-3.5 transition">
             <div class="flex items-center justify-between flex-wrap gap-2">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-lg shadow-xs">
@@ -76,15 +76,26 @@ if (!isset($pendingRatings) && $isRequesterRole && $currentUserId > 0) {
                         <p class="text-xs text-slate-600 mt-0.5">Danh sách các phiếu sự cố kỹ thuật của bạn đã được Kỹ thuật viên hoàn tất xử lý, đang chờ bạn chấm điểm nghiệm thu CSAT.</p>
                     </div>
                 </div>
-                <?php if (!empty($pendingRatings)): ?>
-                    <span class="text-[11px] font-bold text-amber-900 bg-amber-200/80 border border-amber-300 px-3 py-1 rounded-xl shadow-2xs">
-                        🔔 Cần bạn nghiệm thu & đánh giá chất lượng
-                    </span>
-                <?php endif; ?>
+                <div class="flex items-center gap-2">
+                    <?php if (!empty($pendingRatings)): ?>
+                        <span class="text-[11px] font-bold text-amber-900 bg-amber-200/80 border border-amber-300 px-3 py-1 rounded-xl shadow-2xs">
+                            🔔 Cần bạn nghiệm thu & đánh giá chất lượng
+                        </span>
+                        <!-- NÚT ẨN / THU GỌN KHỐI PHIẾU CHƯA ĐÁNH GIÁ -->
+                        <button type="button" 
+                                id="btnToggleUnratedSection" 
+                                onclick="toggleUnratedSection()" 
+                                title="Ẩn hoặc hiện danh sách phiếu chưa đánh giá" 
+                                class="px-3.5 py-1.5 bg-amber-200/90 hover:bg-amber-300 text-amber-950 font-bold rounded-xl text-xs transition flex items-center gap-1.5 border border-amber-300 cursor-pointer shadow-2xs">
+                            <span id="iconToggleUnrated">✕</span>
+                            <span id="textToggleUnrated">Ẩn danh sách</span>
+                        </button>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <?php if (!empty($pendingRatings)): ?>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+                <div id="unrated_tickets_grid" data-count="<?= count($pendingRatings) ?> phiếu" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1 transition-all duration-200">
                     <?php foreach ($pendingRatings as $pTicket): ?>
                         <div class="bg-white border border-amber-200 hover:border-amber-400 rounded-2xl p-4 shadow-2xs transition hover:shadow-md flex flex-col justify-between space-y-3">
                             <div class="space-y-2">
@@ -252,6 +263,53 @@ if (!isset($pendingRatings) && $isRequesterRole && $currentUserId > 0) {
 </main>
 
 <script>
+function toggleUnratedSection() {
+    const grid = document.getElementById('unrated_tickets_grid');
+    const btn = document.getElementById('btnToggleUnratedSection');
+    const text = document.getElementById('textToggleUnrated');
+    const icon = document.getElementById('iconToggleUnrated');
+    if (!grid) return;
+    
+    const isHidden = grid.classList.toggle('hidden');
+    const count = grid.dataset.count || '';
+    if (text) text.textContent = isHidden ? `Hiện danh sách (${count})` : 'Ẩn danh sách';
+    if (icon) icon.textContent = isHidden ? '👁️' : '✕';
+    
+    if (btn) {
+        if (isHidden) {
+            btn.classList.add('bg-amber-400', 'text-slate-950', 'ring-2', 'ring-amber-300');
+            btn.classList.remove('bg-amber-200/90', 'text-amber-950');
+        } else {
+            btn.classList.remove('bg-amber-400', 'text-slate-950', 'ring-2', 'ring-amber-300');
+            btn.classList.add('bg-amber-200/90', 'text-amber-950');
+        }
+    }
+    try {
+        localStorage.setItem('collapse_unrated_section', isHidden ? '1' : '0');
+    } catch (e) {}
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        if (localStorage.getItem('collapse_unrated_section') === '1') {
+            const grid = document.getElementById('unrated_tickets_grid');
+            const btn = document.getElementById('btnToggleUnratedSection');
+            const text = document.getElementById('textToggleUnrated');
+            const icon = document.getElementById('iconToggleUnrated');
+            if (grid) {
+                grid.classList.add('hidden');
+                const count = grid.dataset.count || '';
+                if (text) text.textContent = `Hiện danh sách (${count})`;
+                if (icon) icon.textContent = '👁️';
+                if (btn) {
+                    btn.classList.add('bg-amber-400', 'text-slate-950', 'ring-2', 'ring-amber-300');
+                    btn.classList.remove('bg-amber-200/90', 'text-amber-950');
+                }
+            }
+        }
+    } catch (e) {}
+});
+
 function filterStudentRatingsTab(event, link) {
     event.preventDefault();
     const url = link.href;
