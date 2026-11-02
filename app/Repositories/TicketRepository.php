@@ -78,6 +78,8 @@ class TicketRepository {
         if ($hasWarning) {
             if ($hasWarning === 'sla') {
                 $conditions[] = "t.status NOT IN ('resolved', 'closed') AND ((t.due_at IS NOT NULL AND t.due_at < NOW()) OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL))";
+            } elseif ($hasWarning === 'major') {
+                $conditions[] = "(t.is_major_incident = 1 OR t.priority_id = 1) AND t.status NOT IN ('resolved', 'closed')";
             } elseif ($hasWarning === 'violation') {
                 $conditions[] = "t.is_spam = 1";
             } elseif ($hasWarning === 'guest') {
@@ -195,6 +197,8 @@ class TicketRepository {
         if ($hasWarning) {
             if ($hasWarning === 'sla') {
                 $conditions[] = "t.status NOT IN ('resolved', 'closed') AND ((t.due_at IS NOT NULL AND t.due_at < NOW()) OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL))";
+            } elseif ($hasWarning === 'major') {
+                $conditions[] = "(t.is_major_incident = 1 OR t.priority_id = 1) AND t.status NOT IN ('resolved', 'closed')";
             } elseif ($hasWarning === 'violation') {
                 $conditions[] = "t.is_spam = 1";
             } elseif ($hasWarning === 'guest') {
@@ -248,6 +252,14 @@ class TicketRepository {
         $stmt = $db->prepare("SELECT COUNT(*) FROM tickets t {$where}");
         $stmt->execute($params);
         return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * Đếm số phiếu sự cố diện rộng / khẩn cấp đang mở
+     */
+    public static function countMajorIncidents(): int {
+        $db = db();
+        return (int)$db->query("SELECT COUNT(*) FROM tickets WHERE (is_major_incident = 1 OR priority_id = 1) AND status NOT IN ('resolved', 'closed')")->fetchColumn();
     }
 
     /**

@@ -2062,7 +2062,7 @@ if ($userRole === 'agent') {
 // Thống kê toàn hệ thống dành cho Admin
 $totalTickets    = (int)$pdo->query("SELECT COUNT(*) FROM tickets")->fetchColumn();
 $activeTickets   = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE status IN ('new', 'in_progress', 'waiting_requester')")->fetchColumn();
-$urgentTickets   = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE priority_id IN (1, 2)")->fetchColumn();
+$urgentTickets   = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE priority_id IN (1, 2) AND status IN ('new', 'in_progress', 'waiting_requester')")->fetchColumn();
 $resolvedTickets = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE status IN ('resolved', 'closed')")->fetchColumn();
 $totalUsers      = (int)$pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $totalCourses    = (int)$pdo->query("SELECT COUNT(*) FROM course_assignments")->fetchColumn();

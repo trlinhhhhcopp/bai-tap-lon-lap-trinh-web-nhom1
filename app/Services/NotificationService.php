@@ -447,7 +447,7 @@ class NotificationService
                         $adminId,
                         "🔥 VIỆC CẦN LÀM: Phát hiện {$majorCount} sự cố diện rộng / khẩn cấp",
                         "Hệ thống ghi nhận sự cố cấp cao ảnh hưởng diện rộng. Cần Admin kích hoạt kênh điều phối khẩn cấp và đôn đốc KTV xử lý!",
-                        "tickets/index.php?kw=toàn+trường",
+                        "tickets/index.php?warning=major",
                         'major_incident',
                         'admin'
                     );

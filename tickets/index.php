@@ -50,6 +50,8 @@ $isStudentOrLecturer = ($userRole === 'requester' || $isLecturer);
 $hasWarning = false;
 if ($warningType === 'sla') {
     $hasWarning = 'sla';
+} elseif ($warningType === 'major' && in_array($userRole, ['agent', 'admin'])) {
+    $hasWarning = 'major';
 } elseif ($warningType === 'guest') {
     $hasWarning = 'guest';
 } elseif ($warningType === 'violation' && ($userRole === 'admin' || ($userRole === 'requester' && !$isLecturer))) {
@@ -96,6 +98,7 @@ $categories     = TicketRepository::getCategories();
 $slaCount       = TicketRepository::countSlaOverdue($filterReqId, $badgeAgentId, $lecturerId, $lecturerScope);
 $lecturerIncidentsCount = $isLecturer ? TicketRepository::countLecturerCourseIncidents((int)$currentUser['id']) : 0;
 $guestCount     = in_array($userRole, ['agent', 'admin']) ? TicketRepository::countPendingGuestTickets() : 0;
+$majorCount     = in_array($userRole, ['agent', 'admin']) ? TicketRepository::countMajorIncidents() : 0;
 $canSeeViolations = ($userRole === 'admin' || ($userRole === 'requester' && !$isLecturer));
 $violationCount   = $canSeeViolations ? TicketRepository::countViolations($filterReqId, 0, $isLecturer) : 0;
 $unratedCount   = $isStudentOrLecturer ? TicketRepository::countUnratedTickets((int)$currentUser['id']) : 0;
@@ -182,14 +185,14 @@ $flash        = get_flash();
 
             <!-- CÁC TAB LỌC NHANH TRẠNG THÁI & BỘ LỌC CẢNH BÁO SLA CHO ADMIN & KTV -->
             <div class="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
-                <a href="index.php<?= !empty($keyword) ? '?kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? (empty($keyword) ? '?' : '&') . 'category_id=' . $categoryId : '' ?>" 
+                <a href="index.php<?= $categoryId > 0 ? '?category_id=' . $categoryId : '' ?>" 
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= (empty($warningType) && empty($status)) ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' ?>">
                     <span>📋 Tất Cả Phiếu</span>
                 </a>
 
                 <?php if ($isStudentOrLecturer): ?>
                     <!-- TAB CHƯA ĐÁNH GIÁ (ĐÃ HOÀN TẤT, CẦN ĐÁNH GIÁ) CHO ROLE SV & GV -->
-                    <a href="index.php?warning=unrated<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                    <a href="index.php?warning=unrated<?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                        title="Xem danh sách các phiếu đã hoàn tất đang chờ bạn nghiệm thu và đánh giá CSAT"
                        class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'unrated') ? 'bg-amber-500 text-slate-950 shadow-sm ring-2 ring-amber-300' : 'bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200' ?>">
                         <span>⭐ Chưa Đánh Giá (Đã hoàn tất, cần đánh giá)</span>
@@ -198,7 +201,7 @@ $flash        = get_flash();
                 <?php endif; ?>
 
                 <?php if ($isLecturer): ?>
-                    <a href="index.php?scope=course_incidents<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                    <a href="index.php?scope=course_incidents<?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                        title="Xem danh sách các phiếu sự cố học tập / nộp bài của sinh viên các lớp Thầy/Cô phụ trách"
                        class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($lecturerScope === 'course_incidents') ? 'bg-purple-700 text-white shadow-sm ring-2 ring-purple-400' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' ?>">
                         <span>🎓 Sự Cố Học Tập (Sinh Viên Gửi)</span>
@@ -206,8 +209,18 @@ $flash        = get_flash();
                     </a>
                 <?php endif; ?>
 
+                <?php if (in_array($userRole, ['agent', 'admin'])): ?>
+                    <!-- TAB SỰ CỐ DIỆN RỘNG / KHẨN CẤP CHO KTV & ADMIN -->
+                    <a href="index.php?warning=major<?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                       title="Xem danh sách các sự cố khẩn cấp hoặc sự cố diện rộng do KTV báo cáo"
+                       class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'major') ? 'bg-rose-700 text-white shadow-sm ring-2 ring-rose-400' : 'bg-rose-50 text-rose-800 hover:bg-rose-100 border border-rose-200' ?>">
+                        <span>🔥 Sự Cố Diện Rộng</span>
+                        <span class="px-1.5 py-0.5 rounded-full text-[10px] font-black <?= ($warningType === 'major') ? 'bg-white text-rose-800' : 'bg-rose-700 text-white' ?>"><?= $majorCount ?></span>
+                    </a>
+                <?php endif; ?>
+
                 <!-- CẢNH BÁO SLA QUÁ GIỜ -->
-                <a href="index.php?warning=sla<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                <a href="index.php?warning=sla<?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                    title="Xem danh sách các phiếu sự cố đã quá hạn giải quyết theo cam kết SLA"
                    class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'sla') ? 'bg-rose-600 text-white shadow-sm ring-2 ring-rose-400' : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200' ?>">
                     <span class="flex h-2 w-2 relative">
@@ -220,7 +233,7 @@ $flash        = get_flash();
 
                 <?php if ($canSeeViolations): ?>
                     <!-- TAB SV BỊ BÁO CÁO VI PHẠM (CHỈ HIỂN THỊ CHO ADMIN & CHÍNH SV ĐÓ) -->
-                    <a href="index.php?warning=violation<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                    <a href="index.php?warning=violation<?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                        title="Xem danh sách sinh viên bị KTV báo cáo vi phạm (Chỉ Admin và Sinh viên xem)"
                        class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'violation') ? 'bg-purple-700 text-white shadow-sm ring-2 ring-purple-400' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' ?>">
                         <span>🚨 SV Vi Phạm (KTV Báo Cáo)</span>
@@ -230,7 +243,7 @@ $flash        = get_flash();
 
                 <?php if (in_array($userRole, ['agent', 'admin'])): ?>
                     <!-- TAB TRẠM CỨU HỘ NGOÀI CHO KTV & ADMIN -->
-                    <a href="index.php?warning=guest<?= !empty($keyword) ? '&kw=' . urlencode($keyword) : '' ?><?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
+                    <a href="index.php?warning=guest<?= $categoryId > 0 ? '&category_id=' . $categoryId : '' ?>" 
                        title="Xem danh sách các đơn cứu hộ khẩn cấp từ bên ngoài cổng"
                        class="px-3.5 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1.5 <?= ($warningType === 'guest') ? 'bg-orange-600 text-white shadow-sm ring-2 ring-orange-400' : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200' ?>">
                         <span>🚑 Trạm Cứu Hộ</span>
@@ -265,7 +278,7 @@ $flash        = get_flash();
                     <input type="hidden" name="scope" value="<?php echo htmlspecialchars($lecturerScope); ?>" />
                 <?php endif; ?>
                 <!-- Từ khóa -->
-                <div class="md:col-span-6">
+                <div class="md:col-span-5">
                     <label class="block font-bold text-slate-600 mb-1">Mã phiếu hoặc tiêu đề sự cố:</label>
                     <input type="text" name="kw" value="<?php echo htmlspecialchars($keyword); ?>" placeholder="Ví dụ: HD-2026-2910, Canvas, Wi-Fi..." 
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
@@ -285,7 +298,7 @@ $flash        = get_flash();
                 </div>
 
                 <!-- Lọc chuyên mục -->
-                <div class="md:col-span-3">
+                <div class="md:col-span-2">
                     <label class="block font-bold text-slate-600 mb-1">Danh mục dịch vụ:</label>
                     <select name="category_id" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold text-slate-700">
                         <option value="0">-- Tất cả danh mục --</option>
@@ -298,10 +311,17 @@ $flash        = get_flash();
                 </div>
 
                 <!-- Nút bấm -->
-                <div class="md:col-span-1 flex items-end">
-                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1">
+                <div class="md:col-span-2 flex items-end gap-1.5">
+                    <button type="submit" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-1 cursor-pointer">
                         <span>⚡</span> Lọc
                     </button>
+                    <?php if (!empty($keyword) || !empty($status) || $categoryId > 0): ?>
+                        <a href="index.php<?= !empty($warningType) ? '?warning=' . urlencode($warningType) : (!empty($lecturerScope) ? '?scope=' . urlencode($lecturerScope) : '') ?>" 
+                           title="Xóa bộ lọc tìm kiếm" 
+                           class="px-3 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-2xl transition flex items-center justify-center cursor-pointer">
+                            ✕
+                        </a>
+                    <?php endif; ?>
                 </div>
             </form>
         </div>
