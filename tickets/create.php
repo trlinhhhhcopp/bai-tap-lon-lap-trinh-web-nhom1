@@ -231,7 +231,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($assignedKtvId > 0) {
                         NotificationService::send($assignedKtvId, "🆘 TRẠM CỨU HỘ: Phiếu #{$newCode}", "Sinh viên báo sự cố nộp bài buổi học. KTV vui lòng kiểm tra log server LMS!", "tickets/show.php?id={$ticketId}", 'ticket_assigned', 'agent');
                     }
-                    NotificationService::sendToRole('agent', "🆘 TRẠM CỨU HỘ BUỔI HỌC: Phiếu #{$newCode}", "Có yêu cầu cứu hộ nộp bài mới từ sinh viên. KTV vui lòng kiểm tra!", "tickets/show.php?id={$ticketId}", 'ticket_assigned');
                 } else {
                     if ($assignedKtvId > 0) {
                         $subj = $isCreatorLecturer ? "🎫 Phiếu sự cố từ Giảng viên: #{$newCode}" : "🎫 Phiếu sự cố mới: #{$newCode}";

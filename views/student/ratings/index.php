@@ -47,13 +47,6 @@ if (!isset($pendingRatings) && $isRequesterRole && $currentUserId > 0) {
             </h1>
             <p class="text-xs text-indigo-200/80 mt-0.5">Khảo sát mức độ hài lòng từ 1 đến 5 sao và nhận xét phản hồi dịch vụ số trường học.</p>
         </div>
-        <?php if (!$isRequesterRole): ?>
-        <div class="flex items-center gap-3">
-            <a href="index.php?action=rating_create" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
-                <span>⭐</span> Chấm Điểm Đánh Giá Mới
-            </a>
-        </div>
-        <?php endif; ?>
     </div>
 
     <!-- KHỐI TRÊN ĐẦU: CHƯA ĐÁNH GIÁ (ĐÃ HOÀN TẤT, CẦN ĐÁNH GIÁ) CHO ROLE SV & GV -->

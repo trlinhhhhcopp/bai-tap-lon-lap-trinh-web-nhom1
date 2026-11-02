@@ -101,13 +101,6 @@ class GuestTicketController extends Controller {
                     'guest_rescue',
                     'agent'
                 );
-                NotificationService::sendToRole(
-                    'agent',
-                    "🚑 ĐƠN CỨU HỘ KHẨN CẤP #{$ticketCode}",
-                    "Trạm cứu hộ vừa tiếp nhận đơn của {$name} ({$userCode}). KTV vui lòng kiểm tra!",
-                    "tickets/index.php?warning=guest",
-                    'guest_rescue'
-                );
             } catch (\Throwable $e) {}
 
             $this->flash('success', "Đã gửi phiếu cứu hộ thành công! <strong>Mã tra cứu duy nhất của bạn: <span style='font-size:16px; color:#0284c7; letter-spacing:0.5px;'>{$ticketCode}</span></strong>. Yêu cầu đã được tự động chuyển đến <strong>KTV Nguyễn Văn An (Chuyên trách SSO)</strong> tiếp nhận xử lý trong vòng <strong>2 giờ làm việc</strong>.");

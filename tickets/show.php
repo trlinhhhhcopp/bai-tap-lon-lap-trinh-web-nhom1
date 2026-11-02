@@ -51,10 +51,19 @@ if ($isLecturer) {
     }
 }
 
-// Cách ly dữ liệu: Sinh viên chỉ xem phiếu của mình; Giảng viên xem phiếu của mình HOẶC môn mình phụ trách; Agent / Admin xem toàn bộ
+// Cách ly dữ liệu: Sinh viên chỉ xem phiếu của mình; Giảng viên xem phiếu của mình HOẶC môn mình phụ trách
 if ($userRole === 'requester' && (int)$ticket['requester_id'] !== (int)$currentUser['id'] && !$isCourseLecturer) {
     set_flash('error', "Bạn không có quyền truy cập vào phiếu của tài khoản khác!");
     header('Location: ../index.php');
+    exit;
+}
+
+// Cách ly nghiệp vụ KTV: KTV chỉ xem và xử lý phiếu được phân công cho mình (hoặc phiếu mới chưa phân công).
+// Tránh trường hợp KTV chuyên môn khác (như Mail/M365) xem hoặc can thiệp vào phiếu của KTV phụ trách (như Canvas LMS).
+if ($userRole === 'agent' && !empty($ticket['assigned_to']) && (int)$ticket['assigned_to'] !== (int)$currentUser['id']) {
+    $assignedAgentName = db()->query("SELECT name FROM users WHERE id = " . (int)$ticket['assigned_to'])->fetchColumn() ?: "KTV khác";
+    set_flash('error', "Phiếu #{$ticket['ticket_code']} đang được phân công chuyên môn cho {$assignedAgentName}. KTV khác không có quyền can thiệp!");
+    header('Location: ../agent/index.php');
     exit;
 }
 
