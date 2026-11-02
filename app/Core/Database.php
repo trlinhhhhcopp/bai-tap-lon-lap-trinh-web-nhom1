@@ -58,6 +58,9 @@ class Database {
                     try { self::$instance->exec("ALTER TABLE users ADD COLUMN lock_reason VARCHAR(255) NULL;"); } catch (\PDOException $ex) {}
                     try { self::$instance->exec("ALTER TABLE tickets ADD COLUMN attachment_path VARCHAR(255) NULL;"); } catch (\PDOException $ex) {}
                     try { self::$instance->exec("ALTER TABLE tickets ADD COLUMN is_assigned_transfer TINYINT(1) NOT NULL DEFAULT 0;"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE tickets ADD COLUMN is_major_incident TINYINT(1) NOT NULL DEFAULT 0;"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE tickets ADD COLUMN major_incident_note TEXT NULL;"); } catch (\PDOException $ex) {}
+                    try { self::$instance->exec("ALTER TABLE tickets ADD COLUMN admin_broadcast_status VARCHAR(20) DEFAULT 'none';"); } catch (\PDOException $ex) {}
 
                     return self::$instance;
                 } catch (PDOException $ex) {

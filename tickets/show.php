@@ -474,6 +474,73 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 }
 
 // -----------------------------------------------------------------------------
+// KTV BÁO CÁO SỰ CỐ DIỆN RỘNG (MAJOR INCIDENT) GỬI BAN QUẢN TRỊ (ADMIN)
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ktv_report_major_incident') {
+    if ($userRole === 'agent') {
+        $sysAffected = trim($_POST['system_affected'] ?? $ticket['system_affected']);
+        $majorNote = trim($_POST['major_note'] ?? 'KTV xác định sự cố ảnh hưởng diện rộng đến nhiều người dùng, đề nghị Ban Quản Trị xem xét công bố cảnh báo.');
+
+        $newTitle = $ticket['title'];
+        if (!str_contains($newTitle, '[SỰ CỐ DIỆN RỘNG]')) {
+            $newTitle = '[SỰ CỐ DIỆN RỘNG] ' . $newTitle;
+        }
+
+        // Cập nhật mức độ ưu tiên Khẩn cấp (priority_id = 1) và cờ sự cố diện rộng
+        db()->prepare("UPDATE tickets SET priority_id = 1, is_major_incident = 1, major_incident_note = :note, title = :title, system_affected = :sys WHERE id = :id")
+            ->execute([':note' => $majorNote, ':title' => $newTitle, ':sys' => $sysAffected, ':id' => $id]);
+
+        $replyMsg = "🔥 [KTV BÁO CÁO SỰ CỐ DIỆN RỘNG LÊN BAN QUẢN TRỊ (ADMIN)]\n" .
+                    "KTV {$currentUser['name']} ({$currentUser['user_code']}) đã kích hoạt báo động sự cố diện rộng cấp cao.\n" .
+                    "• Hệ thống bị ảnh hưởng: {$sysAffected}\n" .
+                    "• Nội dung & Đề xuất KTV: \"{$majorNote}\"\n" .
+                    "👉 Đã gửi thông báo khẩn cấp tới Quản Trị Viên (Admin) để tiếp nhận thông tin và chỉ đạo phương án ứng phó toàn trường!";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyMsg, false, 'in_progress');
+
+        // Bắn thông báo khẩn cấp trực tiếp vào chuông thông báo của Admin
+        try {
+            require_once __DIR__ . '/../app/Services/NotificationService.php';
+            NotificationService::sendToRole(
+                'admin',
+                "🚨 SỰ CỐ DIỆN RỘNG: Phiếu #{$ticket['ticket_code']}",
+                "KTV {$currentUser['name']} vừa báo cáo sự cố diện rộng ảnh hưởng '{$sysAffected}'. Đề xuất: {$majorNote}. Kính mời Admin tiếp nhận chỉ đạo!",
+                "tickets/show.php?id={$id}",
+                'major_incident'
+            );
+        } catch (\Throwable $e) {}
+
+        set_flash('success', "Đã gửi báo động sự cố diện rộng lên Ban Quản Trị (Admin) thành công! Quản trị viên đã nhận được thông báo để chỉ đạo.");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// ADMIN TIẾP NHẬN BÁO CÁO & PHÁT THÔNG BÁO CẢNH BÁO DIỆN RỘNG TOÀN TRƯỜNG
+// -----------------------------------------------------------------------------
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'admin_broadcast_major_incident') {
+    if ($userRole === 'admin') {
+        db()->prepare("UPDATE tickets SET admin_broadcast_status = 'broadcasted' WHERE id = :id")->execute([':id' => $id]);
+
+        $replyContent = "📢 [ADMIN ĐÃ TIẾP NHẬN & PHÁT THÔNG BÁO CẢNH BÁO TOÀN TRƯỜNG]\n" .
+                        "Ban Quản Trị đã tiếp nhận thông báo sự cố từ KTV và đã phát cảnh báo diện rộng tới toàn thể Sinh viên & Giảng viên.\n" .
+                        "👉 Đội ngũ hạ tầng đang phối hợp xử lý, người dùng được khuyến nghị không gửi thêm phiếu trùng lặp.";
+        TicketRepository::addReply($id, (int)$currentUser['id'], $replyContent, false, 'in_progress');
+
+        // Phát thông báo cho Sinh viên và Giảng viên
+        try {
+            require_once __DIR__ . '/../app/Services/NotificationService.php';
+            NotificationService::sendToRole('student', "⚠️ THÔNG BÁO SỰ CỐ DIỆN RỘNG: {$ticket['system_affected']}", "Hệ thống {$ticket['system_affected']} đang gặp sự cố diện rộng. Kỹ thuật viên đang khẩn trương khắc phục. Sinh viên không cần tạo thêm phiếu yêu cầu!", "tickets/show.php?id={$id}", 'system');
+            NotificationService::sendToRole('lecturer', "⚠️ THÔNG BÁO SỰ CỐ DIỆN RỘNG: {$ticket['system_affected']}", "Hệ thống {$ticket['system_affected']} đang gặp sự cố diện rộng. Ban Quản Trị đang phối hợp xử lý.", "tickets/show.php?id={$id}", 'system');
+        } catch (\Throwable $e) {}
+
+        set_flash('success', "Quản trị viên đã phát thông báo cảnh báo sự cố diện rộng thành công tới toàn trường!");
+        header("Location: show.php?id={$id}&view_as={$viewAs}");
+        exit;
+    }
+}
+
+// -----------------------------------------------------------------------------
 // QUẢN TRỊ VIÊN (ADMIN) XÓA PHIẾU HỖ TRỢ
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'admin_delete_ticket') {
@@ -1078,6 +1145,13 @@ $flash   = get_flash();
                     </button>
                 <?php endif; ?>
 
+                <?php if ($userRole === 'agent' && empty($ticket['is_major_incident']) && !in_array($ticket['status'], ['closed', 'resolved'])): ?>
+                    <button type="button" onclick="document.getElementById('reportMajorIncidentModal').classList.remove('hidden')" 
+                            class="px-3.5 py-1.5 bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white text-xs font-black rounded-full shadow-sm transition flex items-center gap-1 cursor-pointer">
+                        <span>🔥</span> Báo Sự Cố Cho Admin
+                    </button>
+                <?php endif; ?>
+
                 <?php if ($userRole === 'admin' && !empty($ticket['requester_id'])): ?>
                     <?php $reqIsLocked = ((int)($ticket['requester_is_active'] ?? 1) === 0 || in_array($ticket['requester_lock_reason'] ?? '', ['admin_locked', 'expelled', 'spam_lock'])); ?>
                     <?php if ($reqIsLocked): ?>
@@ -1151,6 +1225,46 @@ $flash   = get_flash();
                     </button>
                 </form>
             </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- BANNER SỰ CỐ DIỆN RỘNG (MAJOR INCIDENT) -->
+    <?php if (!empty($ticket['is_major_incident'])): ?>
+        <div class="p-4 bg-gradient-to-r from-amber-50 via-rose-50 to-orange-50 border-2 border-rose-400 rounded-3xl flex items-center justify-between flex-wrap gap-3 text-xs text-rose-950 shadow-sm">
+            <div class="flex items-center gap-3">
+                <span class="text-3xl">🔥</span>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <strong class="text-rose-950 text-sm uppercase font-black">Sự Cố Kỹ Thuật Diện Rộng (Major Incident)</strong>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-600 text-white animate-pulse">CẤP ĐỘ KHẨN CẤP</span>
+                        <?php if (($ticket['admin_broadcast_status'] ?? '') === 'broadcasted'): ?>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-600 text-white">✓ ĐÃ PHÁT CẢNH BÁO TOÀN TRƯỜNG</span>
+                        <?php endif; ?>
+                    </div>
+                    <p class="text-rose-800 text-[11.5px] mt-0.5">
+                        KTV đã báo động sự cố ảnh hưởng quy mô lớn: <strong><?php echo htmlspecialchars($ticket['system_affected']); ?></strong>.
+                        <?php if (!empty($ticket['major_incident_note'])): ?>
+                            — Đề xuất KTV: "<em><?php echo htmlspecialchars($ticket['major_incident_note']); ?></em>"
+                        <?php endif; ?>
+                    </p>
+                </div>
+            </div>
+            <?php if ($userRole === 'admin'): ?>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <?php if (($ticket['admin_broadcast_status'] ?? '') !== 'broadcasted'): ?>
+                        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="inline" onsubmit="return confirm('Kích hoạt thông báo diện rộng tới toàn thể Sinh viên & Giảng viên trên toàn trường?');">
+                            <input type="hidden" name="action" value="admin_broadcast_major_incident" />
+                            <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-xl text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer">
+                                <span>📢</span> Phát Cảnh Báo Toàn Trường
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <span class="px-3.5 py-2 bg-emerald-100 text-emerald-800 font-bold rounded-xl text-xs border border-emerald-300">
+                            📢 Cảnh báo đang hiển thị toàn trường
+                        </span>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 
@@ -2240,6 +2354,48 @@ $flash   = get_flash();
     </div>
 </div>
 
+<!-- MODAL KTV BÁO CÁO SỰ CỐ DIỆN RỘNG (MAJOR INCIDENT) GỬI ADMIN -->
+<div id="reportMajorIncidentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-rose-200">
+        <div class="flex items-center justify-between pb-3 border-b border-rose-100">
+            <h3 class="text-sm font-black text-rose-950 flex items-center gap-2">
+                <span class="text-xl">🔥</span> Báo Cáo Sự Cố Diện Rộng Lên Ban Quản Trị (Admin)
+            </h3>
+            <button type="button" onclick="document.getElementById('reportMajorIncidentModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-xl leading-none">&times;</button>
+        </div>
+
+        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-4 text-xs">
+            <input type="hidden" name="action" value="ktv_report_major_incident" />
+
+            <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-950 leading-relaxed text-[11.5px] space-y-1">
+                <strong class="block font-black text-rose-900">⚠️ Lưu ý nghiệp vụ ITIL v4:</strong>
+                Chức năng này dùng khi KTV phát hiện sự cố cấp cao ảnh hưởng diện rộng đến toàn trường hoặc toàn bộ sinh viên/giảng viên (ví dụ: sập máy chủ Canvas, lỗi xác thực SSO hàng loạt, nghẽn cổng QLĐT...). Hệ thống sẽ gửi thông báo khẩn cấp trực tiếp tới Quản Trị Viên (Admin) để kích hoạt kênh điều phối!
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Hệ thống / Ứng dụng bị ảnh hưởng: <span class="text-rose-500">*</span></label>
+                <input type="text" name="system_affected" value="<?php echo htmlspecialchars($ticket['system_affected']); ?>" required 
+                       class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500 font-semibold" />
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Mô tả mức độ nghiêm trọng & Khuyến nghị KTV gửi Admin: <span class="text-rose-500">*</span></label>
+                <textarea name="major_note" rows="3" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500 font-medium" 
+                          placeholder="Ví dụ: Đã kiểm tra server log, số lượng người dùng báo lỗi cùng lúc tăng đột biến. Đề nghị Admin phát cảnh báo diện rộng và liên hệ nhà mạng kiểm tra đường truyền..."></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('reportMajorIncidentModal').classList.add('hidden')" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white font-black rounded-xl transition shadow-md flex items-center gap-1.5 cursor-pointer">
+                    <span>🚨</span> Gửi Báo Động Cho Admin Ngay
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- MODAL XÁC NHẬN ĐÁNH GIÁ CSAT (HỎI CHẮC CHẮN TRÁNH BẤM NHẦM SAO) -->
 <div id="confirmRatingModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-amber-200">
@@ -2339,6 +2495,48 @@ $flash   = get_flash();
     </div>
 </div>
 
+<!-- MODAL KTV BÁO CÁO SỰ CỐ DIỆN RỘNG (MAJOR INCIDENT) GỬI ADMIN -->
+<div id="reportMajorIncidentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-rose-200">
+        <div class="flex items-center justify-between pb-3 border-b border-rose-100">
+            <h3 class="text-sm font-black text-rose-950 flex items-center gap-2">
+                <span class="text-xl">🔥</span> Báo Cáo Sự Cố Diện Rộng Lên Ban Quản Trị (Admin)
+            </h3>
+            <button type="button" onclick="document.getElementById('reportMajorIncidentModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-xl leading-none">&times;</button>
+        </div>
+
+        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-4 text-xs">
+            <input type="hidden" name="action" value="ktv_report_major_incident" />
+
+            <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-950 leading-relaxed text-[11.5px] space-y-1">
+                <strong class="block font-black text-rose-900">⚠️ Lưu ý nghiệp vụ ITIL v4:</strong>
+                Chức năng này dùng khi KTV phát hiện sự cố cấp cao ảnh hưởng diện rộng đến toàn trường hoặc toàn bộ sinh viên/giảng viên (ví dụ: sập máy chủ Canvas, lỗi xác thực SSO hàng loạt, nghẽn cổng QLĐT...). Hệ thống sẽ gửi thông báo khẩn cấp trực tiếp tới Quản Trị Viên (Admin) để kích hoạt kênh điều phối!
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Hệ thống / Ứng dụng bị ảnh hưởng: <span class="text-rose-500">*</span></label>
+                <input type="text" name="system_affected" value="<?php echo htmlspecialchars($ticket['system_affected']); ?>" required 
+                       class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500 font-semibold" />
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Mô tả mức độ nghiêm trọng & Khuyến nghị KTV gửi Admin: <span class="text-rose-500">*</span></label>
+                <textarea name="major_note" rows="3" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500 font-medium" 
+                          placeholder="Ví dụ: Đã kiểm tra server log, số lượng người dùng báo lỗi cùng lúc tăng đột biến. Đề nghị Admin phát cảnh báo diện rộng và liên hệ nhà mạng kiểm tra đường truyền..."></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('reportMajorIncidentModal').classList.add('hidden')" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white font-black rounded-xl transition shadow-md flex items-center gap-1.5 cursor-pointer">
+                    <span>🚨</span> Gửi Báo Động Cho Admin Ngay
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- MODAL ĐÓNG PHIẾU DO TRÙNG LẶP -->
 <div id="closeDuplicateModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
     <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200">
@@ -2367,6 +2565,48 @@ $flash   = get_flash();
                 </button>
                 <button type="submit" class="px-5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl transition shadow-sm flex items-center gap-1.5 cursor-pointer">
                     <span>📑</span> Xác Nhận Đóng Trùng Lặp
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL KTV BÁO CÁO SỰ CỐ DIỆN RỘNG (MAJOR INCIDENT) GỬI ADMIN -->
+<div id="reportMajorIncidentModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-4 border border-rose-200">
+        <div class="flex items-center justify-between pb-3 border-b border-rose-100">
+            <h3 class="text-sm font-black text-rose-950 flex items-center gap-2">
+                <span class="text-xl">🔥</span> Báo Cáo Sự Cố Diện Rộng Lên Ban Quản Trị (Admin)
+            </h3>
+            <button type="button" onclick="document.getElementById('reportMajorIncidentModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-xl leading-none">&times;</button>
+        </div>
+
+        <form method="POST" action="show.php?id=<?php echo $ticket['id']; ?>&view_as=<?php echo $viewAs; ?>" class="space-y-4 text-xs">
+            <input type="hidden" name="action" value="ktv_report_major_incident" />
+
+            <div class="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-950 leading-relaxed text-[11.5px] space-y-1">
+                <strong class="block font-black text-rose-900">⚠️ Lưu ý nghiệp vụ ITIL v4:</strong>
+                Chức năng này dùng khi KTV phát hiện sự cố cấp cao ảnh hưởng diện rộng đến toàn trường hoặc toàn bộ sinh viên/giảng viên (ví dụ: sập máy chủ Canvas, lỗi xác thực SSO hàng loạt, nghẽn cổng QLĐT...). Hệ thống sẽ gửi thông báo khẩn cấp trực tiếp tới Quản Trị Viên (Admin) để kích hoạt kênh điều phối!
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Hệ thống / Ứng dụng bị ảnh hưởng: <span class="text-rose-500">*</span></label>
+                <input type="text" name="system_affected" value="<?php echo htmlspecialchars($ticket['system_affected']); ?>" required 
+                       class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500 font-semibold" />
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Mô tả mức độ nghiêm trọng & Khuyến nghị KTV gửi Admin: <span class="text-rose-500">*</span></label>
+                <textarea name="major_note" rows="3" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-rose-500 font-medium" 
+                          placeholder="Ví dụ: Đã kiểm tra server log, số lượng người dùng báo lỗi cùng lúc tăng đột biến. Đề nghị Admin phát cảnh báo diện rộng và liên hệ nhà mạng kiểm tra đường truyền..."></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button type="button" onclick="document.getElementById('reportMajorIncidentModal').classList.add('hidden')" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-5 py-2.5 bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-600 hover:to-rose-700 text-white font-black rounded-xl transition shadow-md flex items-center gap-1.5 cursor-pointer">
+                    <span>🚨</span> Gửi Báo Động Cho Admin Ngay
                 </button>
             </div>
         </form>

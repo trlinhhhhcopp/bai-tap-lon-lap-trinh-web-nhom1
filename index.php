@@ -2095,6 +2095,20 @@ $recentTickets = $pdo->query("
 require_once __DIR__ . '/app/Repositories/TicketRepository.php';
 $pendingGuestTickets = TicketRepository::getPendingGuestTickets();
 $pendingGuestCount   = count($pendingGuestTickets);
+
+// Danh sách các sự cố diện rộng do KTV báo cáo cần Admin xử lý
+$majorIncidents = $pdo->query("
+    SELECT t.*, c.name AS category_name, p.name AS priority_name,
+           req.name AS requester_name, ag.name AS agent_name, ag.user_code AS agent_code
+    FROM tickets t
+    JOIN categories c ON t.category_id = c.id
+    JOIN priorities p ON t.priority_id = p.id
+    JOIN users req ON t.requester_id = req.id
+    LEFT JOIN users ag ON t.assigned_to = ag.id
+    WHERE t.is_major_incident = 1 AND t.status IN ('new', 'in_progress', 'waiting_requester')
+    ORDER BY t.id DESC
+")->fetchAll();
+$majorIncidentCount = count($majorIncidents);
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -2210,6 +2224,75 @@ $pendingGuestCount   = count($pendingGuestTickets);
 
         <!-- BANNER THÔNG BÁO HỆ THỐNG MỚI NHẤT (ĐẶT SAU PHẦN TỔNG QUAN) -->
         <?php require __DIR__ . '/includes/notification_banner.php'; ?>
+
+        <!-- BẢNG SỰ CỐ DIỆN RỘNG (MAJOR INCIDENTS) DO KTV BÁO CÁO CẦN ADMIN XỬ LÝ -->
+        <?php if (!empty($majorIncidents)): ?>
+            <div class="bg-gradient-to-r from-rose-50 via-red-50 to-amber-50 border-2 border-rose-400 rounded-3xl p-5 shadow-sm space-y-3">
+                <div class="flex items-center justify-between flex-wrap gap-2 border-b border-rose-200 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">🔥</span>
+                        <div>
+                            <h2 class="text-sm font-black text-rose-950 flex items-center gap-2">
+                                <span>SỰ CỐ DIỆN RỘNG (MAJOR INCIDENTS) DO KTV BÁO CÁO CẦN ADMIN XỬ LÝ</span>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-600 text-white animate-pulse">
+                                    <?php echo $majorIncidentCount; ?> sự cố khẩn cấp
+                                </span>
+                            </h2>
+                            <p class="text-[11.5px] text-rose-800/90 mt-0.5">
+                                Kỹ thuật viên phát hiện sự cố hệ thống cấp cao ảnh hưởng diện rộng toàn trường. Quản trị viên (Admin) xem xét chỉ đạo và kích hoạt phát cảnh báo toàn trường.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto bg-white rounded-2xl border border-rose-200 shadow-2xs">
+                    <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                            <tr class="bg-rose-50/80 text-rose-950 font-bold border-b border-rose-200 text-[11px]">
+                                <th class="py-3 px-4">Mã Vé Sự Cố</th>
+                                <th class="py-3 px-4">Tiêu Đề & Hệ Thống</th>
+                                <th class="py-3 px-4">KTV Báo Cáo</th>
+                                <th class="py-3 px-4">Thời Điểm Báo</th>
+                                <th class="py-3 px-4">Cảnh Báo Toàn Trường</th>
+                                <th class="py-3 px-4 text-center">Thao Tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <?php foreach ($majorIncidents as $mi): ?>
+                                <tr class="hover:bg-rose-50/40 transition">
+                                    <td class="py-3 px-4 font-mono font-bold text-rose-700">
+                                        <?php echo htmlspecialchars($mi['ticket_code']); ?>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <div class="font-bold text-slate-900"><?php echo htmlspecialchars($mi['title']); ?></div>
+                                        <div class="text-[11px] text-slate-500">Ứng dụng: <strong class="text-rose-600"><?php echo htmlspecialchars($mi['system_affected']); ?></strong></div>
+                                    </td>
+                                    <td class="py-3 px-4 font-medium text-slate-700">
+                                        <?php echo htmlspecialchars($mi['agent_name'] ?? 'Chưa phân công'); ?>
+                                    </td>
+                                    <td class="py-3 px-4 font-mono text-slate-500">
+                                        <?php echo htmlspecialchars($mi['created_at']); ?>
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <?php if (($mi['admin_broadcast_status'] ?? '') === 'broadcasted'): ?>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">✓ Đã phát cảnh báo</span>
+                                        <?php else: ?>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">⏳ Chờ Admin phát cảnh báo</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $mi['id']; ?>&view_as=agent" 
+                                           class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-2xs inline-flex items-center gap-1">
+                                            Xem & Chỉ Đạo →
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        <?php endif; ?>
 
         <!-- BẢNG PHIẾU CỨU HỘ KHẨN CẤP KTV ĐÃ DUYỆT CẦN ADMIN PHÊ DUYỆT MỞ KHÓA -->
         <?php if (!empty($pendingGuestTickets)): ?>
