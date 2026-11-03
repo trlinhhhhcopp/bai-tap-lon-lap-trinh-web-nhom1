@@ -304,7 +304,7 @@ CREATE TABLE `priorities` (
 
 LOCK TABLES `priorities` WRITE;
 /*!40000 ALTER TABLE `priorities` DISABLE KEYS */;
-INSERT INTO `priorities` VALUES (1,'URGENT','Khẩn cấp',0.25,1),(2,'HIGH','Cao',0.50,2),(3,'MED','Trung bình',1.00,3),(4,'LOW','Thấp',1.50,4);
+INSERT INTO `priorities` VALUES (1,'URGENT','Khẩn cấp',0.50,1),(2,'HIGH','Cao',0.80,2),(3,'MED','Trung bình',1.00,3),(4,'LOW','Thấp',1.50,4);
 /*!40000 ALTER TABLE `priorities` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -561,3 +561,4 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2026-11-02 21:26:04
+

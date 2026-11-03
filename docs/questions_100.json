@@ -493,15 +493,15 @@
         "id": 36,
         "section_id": 3,
         "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
-        "question": "Nếu một Kỹ thuật viên xin nghỉ ốm đột xuất, thao tác nào giúp họ không bị thuật toán tự động điều phối thêm vé mới vào ca của mình?",
+        "question": "Nếu một Kỹ thuật viên xin nghỉ ốm đột xuất, ai là người có thẩm quyền chuyển trạng thái ca trực (`is_on_duty = 0`) để họ không bị thuật toán tự động gán vé mới?",
         "options": {
-            "A": "Đổi mật khẩu tài khoản.",
-            "B": "Tắt trạng thái trực ca (`is_on_duty = 0`) ngay trên thanh tác vụ Dashboard.",
-            "C": "Xóa tài khoản của mình khỏi CSDL.",
-            "D": "Nhờ sinh viên không gửi ticket nữa."
+            "A": "Bản thân KTV tự ý bấm tắt ca trực bất cứ lúc nào.",
+            "B": "Độc quyền Quản trị viên (Admin) phê duyệt và chuyển trạng thái ca trực (`is_on_duty = 0`) trong phân hệ Quản lý Người dùng.",
+            "C": "Sinh viên gửi phiếu tự chuyển trạng thái cho KTV.",
+            "D": "Hệ thống tự động xóa KTV khỏi trường học."
         },
         "answer": "B",
-        "explanation": "KTV có thể chủ động chuyển trạng thái trực ca is_on_duty = 0 trên giao diện để tạm dừng nhận vé mới khi có lý do cá nhân hoặc nghỉ phép."
+        "explanation": "Theo ma trận phân quyền RBAC và kỷ luật vận hành, KTV không có quyền tự bật/tắt ca trực; độc quyền Admin mới có thẩm quyền phân công và điều chuyển trạng thái ca trực (is_on_duty) của KTV."
     },
     {
         "id": 37,
@@ -864,7 +864,7 @@
             "C": "1.5x (cho phép thời gian cam kết dài hơn các phiếu thông thường).",
             "D": "5.0x."
         },
-        "answer": "B",
+        "answer": "C",
         "explanation": "Mức độ Thấp (LOW) có sla_factor = 1.5x, cho phép thời gian cam kết kéo dài hơn đối với các yêu cầu không gấp."
     },
     {

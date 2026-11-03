@@ -394,9 +394,10 @@ $flash        = get_flash();
                                 };
                                 ?>
                                 <?php
-                                $isOverdueSLA    = ($t['due_at'] && strtotime($t['due_at']) < time() && !in_array($t['status'], ['resolved', 'closed']));
-                                $isOverdueTriage = ($t['triage_due_at'] && strtotime($t['triage_due_at']) < time() && empty($t['assigned_to']) && !in_array($t['status'], ['resolved', 'closed']));
-                                $isSoonOverdue   = ($t['due_at'] && (strtotime($t['due_at']) - time() <= 3600) && (strtotime($t['due_at']) - time() > 0) && !in_array($t['status'], ['resolved', 'closed']));
+                                $isOverdueSLA    = ($t['due_at'] && strtotime($t['due_at']) < time() && !in_array($t['status'], ['resolved', 'closed', 'waiting_requester']));
+                                $isOverdueTriage = ($t['triage_due_at'] && strtotime($t['triage_due_at']) < time() && empty($t['assigned_to']) && !in_array($t['status'], ['resolved', 'closed', 'waiting_requester']));
+                                $isSoonOverdue   = ($t['due_at'] && (strtotime($t['due_at']) - time() <= 3600) && (strtotime($t['due_at']) - time() > 0) && !in_array($t['status'], ['resolved', 'closed', 'waiting_requester']));
+                                $isPausedSLA     = ($t['status'] === 'waiting_requester');
                                 $isEmergency     = (in_array(strtoupper($t['priority_code']), ['URGENT', 'HIGH']) && !in_array($t['status'], ['resolved', 'closed']));
                                 $isSos           = (str_contains($t['title'], '[CỨU HỘ KHẨN CẤP]') && !in_array($t['status'], ['resolved', 'closed']));
                                 $isReopened      = (!empty($t['reopen_count']) && (int)$t['reopen_count'] > 0 && !in_array($t['status'], ['resolved', 'closed']));
@@ -425,6 +426,11 @@ $flash        = get_flash();
                                             <?php elseif ($isSoonOverdue): ?>
                                                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-500 text-slate-900">
                                                     ⚠️ SẮP TRỄ HẠN (&lt; 1h)
+                                                </span>
+                                            <?php endif; ?>
+                                            <?php if ($isPausedSLA): ?>
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-300">
+                                                    ⏸️ TẠM DỪNG SLA (Chờ phản hồi)
                                                 </span>
                                             <?php endif; ?>
                                             <?php if ($isSos): ?>

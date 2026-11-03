@@ -60,6 +60,9 @@
                 if ($isDone) {
                     $timeNotice = '✓ ĐÃ HOÀN TẤT';
                     $timeBadge = 'bg-emerald-100 text-emerald-800 font-bold border border-emerald-200';
+                } elseif ($t['status'] === 'waiting_requester') {
+                    $timeNotice = '⏸️ SLA TẠM DỪNG (Chờ phản hồi)';
+                    $timeBadge = 'bg-purple-100 text-purple-900 font-bold border border-purple-300';
                 } elseif ($isExpired) {
                     $timeNotice = '⚠️ QUÁ HẠN ' . abs($mins) . ' PHÚT!';
                     $timeBadge = 'bg-rose-500 text-white font-black animate-pulse';

@@ -208,25 +208,24 @@ class SlaService {
         $catStmt->execute([':id' => $categoryId]);
         $slaHours = (float)($catStmt->fetchColumn() ?: 4.0);
 
-        // 1. Phân luồng chuẩn 2 giờ (120 phút) và 4 giờ (240 phút):
+        $prioStmt = $pdo->prepare("SELECT sla_factor FROM priorities WHERE id = :id");
+        $prioStmt->execute([':id' => $priorityId]);
+        $slaFactor = (float)($prioStmt->fetchColumn() ?: 1.0);
+
+        // THUẬT TOÁN TÍNH TOÁN SLA THEO CHUẨN ITIL:
+        // 1. Đặc quyền Giảng viên: Khi Thầy/Cô báo sự cố Khẩn cấp/Cao trong giờ giảng dạy: cam kết 2 giờ (120 phút)
         if ($userType === 'lecturer' && in_array($priorityId, [1, 2])) {
-            // Giảng viên đang giảng dạy hoặc đến hạn chốt điểm thi: Ưu tiên cam kết xử lý trong 2 giờ
-            $effectiveMinutes = 120;
-        } elseif ($slaHours <= 2.5) {
-            // Nhóm dịch vụ cấp bách (SSO, Canvas LMS, QLĐT): Chuẩn cam kết 2.0 giờ = 120 phút
             $effectiveMinutes = 120;
         } else {
-            // Nhóm dịch vụ hạ tầng & hành chính (Mail, Wi-Fi, Khác): Chuẩn cam kết 4.0 giờ = 240 phút
-            $prioStmt = $pdo->prepare("SELECT sla_factor FROM priorities WHERE id = :id");
-            $prioStmt->execute([':id' => $priorityId]);
-            $slaFactor = (float)($prioStmt->fetchColumn() ?: 1.0);
-
-            // Mức độ ưu tiên Khẩn cấp (factor 0.25) hoặc Cao (factor 0.50): Rút ngắn về 2 giờ (120 phút)
-            if ($slaFactor <= 0.50) {
-                $effectiveMinutes = 120;
-            } else {
-                $effectiveMinutes = 240;
-            }
+            // 2. Công thức chuẩn ITIL v4: Thời gian danh mục (giờ) * Hệ số ưu tiên (sla_factor)
+            // - Khẩn cấp (URGENT - 0.5x): Rút ngắn một nửa thời gian cam kết để ưu tiên xử lý nhanh
+            // - Cao (HIGH - 0.8x): Rút ngắn 20% thời gian cam kết
+            // - Trung bình (MED - 1.0x): Giữ nguyên chuẩn thời gian danh mục
+            // - Thấp (LOW - 1.5x): Kéo dài 1.5 lần thời gian cam kết cho yêu cầu không cấp bách
+            $baseMinutes = (int)round($slaHours * 60);
+            $effectiveMinutes = (int)round($baseMinutes * $slaFactor);
+            // Giới hạn tối thiểu 30 phút
+            $effectiveMinutes = max(30, $effectiveMinutes);
         }
 
         $vnTz = new \DateTimeZone('Asia/Ho_Chi_Minh');

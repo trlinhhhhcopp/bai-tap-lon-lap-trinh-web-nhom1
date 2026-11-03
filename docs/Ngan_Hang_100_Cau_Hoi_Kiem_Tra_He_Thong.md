@@ -225,9 +225,9 @@
 - C. Để hiển thị màu áo của KTV trên hệ thống.
 - D. Không có tác dụng trong mã nguồn.
 
-#### Câu 36. Nếu một Kỹ thuật viên xin nghỉ ốm đột xuất, thao tác nào giúp họ không bị thuật toán tự động điều phối thêm vé mới vào ca của mình?
-- A. Đổi mật khẩu tài khoản.
-- B. Tắt trạng thái trực ca (`is_on_duty = 0`) ngay trên thanh tác vụ Dashboard.
+#### Câu 36. Nếu một Kỹ thuật viên xin nghỉ ốm đột xuất, ai là người có thẩm quyền chuyển trạng thái ca trực (`is_on_duty = 0`) để họ không bị thuật toán tự động điều phối thêm vé mới vào ca của mình?
+- A. Bản thân KTV tự ý bấm tắt ca trực bất cứ lúc nào.
+- B. Độc quyền Quản trị viên (Admin) phê duyệt và chuyển trạng thái ca trực (`is_on_duty = 0`) trong phân hệ Quản lý Người dùng.
 - C. Xóa tài khoản của mình khỏi CSDL.
 - D. Nhờ sinh viên không gửi ticket nữa.
 
@@ -716,4 +716,5 @@
    - CSAT Rating: 1 phiếu chỉ được đánh giá 1 lần duy nhất (`UNIQUE KEY ticket_id`).
    - Bulk Import Excel/CSV tự động bỏ qua các bản ghi trùng lặp và mã hóa Bcrypt tài khoản mới.
    - Hòm thư ảo `storage/mailbox.json` phục vụ kiểm thử gửi email trực quan trên môi trường Localhost.
+
 

@@ -868,14 +868,14 @@
         <li><strong>Xuất dữ liệu báo cáo CSV (Export CSV):</strong> Cho phép xuất danh sách phiếu sự cố, danh sách bài nộp và điểm số ra tệp CSV chuẩn UTF-8, tự động lọc ký tự đầu dòng (<code>=, +, -, @</code>) ngăn ngừa tấn công CSV Injection.</li>
     </ul>
 
-    <h2 class="sub-title">3.14. Kịch bản 14: Quản Lý Ca Trực KTV (is_on_duty), Báo Nghỉ / Báo Ốm &amp; Thuật Toán Điều Phối Triage Thông Minh</h2>
+    <h2 class="sub-title">3.14. Kịch bản 14: Quản Lý Ca Trực KTV (is_on_duty) &amp; Thuật Toán Điều Phối Triage Thông Minh</h2>
     <p>Hệ thống hỗ trợ cơ chế quản trị đội ngũ kỹ thuật viên linh hoạt (Fleet Management) thông qua trường dữ liệu <code>users.is_on_duty</code> (1: Đang trực, 0: Nghỉ ca):</p>
     <ul>
-        <li><strong>KTV chủ động báo nghỉ / báo ốm trên Dashboard:</strong> KTV có thể chuyển đổi nhanh trạng thái trực ca thông qua nút bấm chuyển đổi (Toggle) và Modal ghi nhận lý do chi tiết (Báo ốm đột xuất, Nghỉ phép cá nhân, Đi họp công tác, Tạm rời vị trí). Khi KTV nghỉ ca, hệ thống không phân công vé mới cho KTV này.</li>
-        <li><strong>Admin can thiệp quản trị tập trung:</strong> Admin có quyền kiểm tra và chuyển đổi trạng thái ca trực cho từng KTV trực tiếp từ trang Quản lý Người dùng (<code>admin/users.php</code>) và <code>admin/user_action.php</code> khi KTV quên báo hoặc có việc đột xuất.</li>
+        <li><strong>Độc quyền Admin quản lý ca trực:</strong> Để bảo đảm tính kỷ luật công tác và phân công nguồn lực công bằng, KTV chỉ có quyền theo dõi trạng thái ca trực trên thanh tiêu đề bàn làm việc. <strong>Chỉ duy nhất Quản trị viên (Admin) mới có thẩm quyền bật hoặc tắt ca trực cho từng KTV</strong> (thực hiện tại trang Quản lý Người dùng <code>admin/users.php</code> hoặc trên Bàn làm việc KTV qua Modal phân công ca trực).</li>
+        <li><strong>Cơ chế Tạm Dừng SLA (Pause SLA Clock):</strong> Khi phiếu ở trạng thái <code>waiting_requester</code> (chờ người dùng phản hồi xác nhận thông tin), hệ thống tự động tạm dừng đồng hồ tính hạn SLA của KTV, gắn huy hiệu <code>⏸️ TẠM DỪNG SLA</code>, bảo đảm KTV không bị tính phạt quá hạn trong thời gian chờ đợi.</li>
         <li><strong>Tích hợp Toàn diện với Thuật toán Triage (<code>TicketService::dispatchAgent</code>):</strong> Khi có phiếu sự cố mới hoặc đơn cứu hộ khẩn cấp:
             <ol>
-                <li>Hệ thống ưu tiên tìm KTV có chuyên môn trùng khớp (<code>specialty_category_id = category_id</code>) <strong>VÀ</strong> đang bật trực ca (<code>is_on_duty = 1</code>) <strong>VÀ</strong> chưa đầy tải (&lt; 15 phiếu).</li>
+                <li>Hệ thống ưu tiên tìm KTV có chuyên môn trùng khớp (<code>specialty_category_id = category_id</code>) <strong>VÀ</strong> đang trong ca trực do Admin phân công (<code>is_on_duty = 1</code>) <strong>VÀ</strong> chưa đầy tải (&lt; 15 phiếu).</li>
                 <li>Nếu KTV chuyên trách đang nghỉ ca (<code>is_on_duty = 0</code>) hoặc đã đạt ngưỡng kịch tải (15 phiếu), hệ thống lập tức kích hoạt cơ chế <strong>Tràn Tải / Điều Phối Dự Phòng (Overflow Dispatch)</strong>, tự động chuyển phiếu sang KTV khác đang trực (<code>is_on_duty = 1</code>) có số lượng phiếu đang xử lý ít nhất.</li>
                 <li>Nếu toàn bộ KTV đều đang nghỉ ca, phiếu được lưu vào hàng đợi chờ giao ban trực của ca tiếp theo.</li>
             </ol>

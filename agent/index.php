@@ -82,26 +82,28 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
     }
 }
 
-// 4.5. Xử lý Bật / Tắt trạng thái ca trực KTV (is_on_duty) & Báo ốm / Báo nghỉ
+// 4.5. Xử lý Bật / Tắt trạng thái ca trực KTV (is_on_duty) - ĐỘC QUYỀN ADMIN
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'toggle_duty') {
-    $targetAgentId = ($currentUser['role'] === 'admin') ? (int)($_POST['agent_id'] ?? $agentId) : (int)$currentUser['id'];
+    // KTV không có quyền tự bật/tắt ca trực, chỉ Quản trị viên (Admin) mới có quyền này
+    if (!$isAdmin) {
+        set_flash('error', "⛔ Bạn không có quyền thay đổi trạng thái ca trực! Thẩm quyền phân công và điều chuyển ca trực KTV thuộc độc quyền của Quản trị viên (Admin).");
+        header("Location: index.php?agent_id={$agentId}");
+        exit;
+    }
+
+    $targetAgentId = (int)($_POST['agent_id'] ?? $agentId);
     $newDuty       = (int)($_POST['is_on_duty'] ?? 1);
     $dutyReason    = trim($_POST['duty_reason'] ?? '');
 
     $db->prepare("UPDATE users SET is_on_duty = :duty WHERE id = :id AND role = 'agent'")
         ->execute([':duty' => $newDuty, ':id' => $targetAgentId]);
 
-    // Nếu KTV hiện tại tự đổi, cập nhật luôn vào session
-    if ((int)$currentUser['id'] === $targetAgentId) {
-        $_SESSION['user']['is_on_duty'] = $newDuty;
-    }
-
     $targetName = $db->query("SELECT name FROM users WHERE id = {$targetAgentId}")->fetchColumn() ?: "KTV";
     if ($newDuty === 1) {
-        set_flash('success', "✅ Kỹ thuật viên [{$targetName}] đã BẬT trạng thái trực ca! Hệ thống Triage sẵn sàng tự động điều phối phiếu mới.");
+        set_flash('success', "✅ Admin đã BẬT trạng thái trực ca cho KTV [{$targetName}]. Hệ thống Triage sẵn sàng tự động điều phối phiếu mới.");
     } else {
         $reasonText = $dutyReason ? " (Lý do: {$dutyReason})" : "";
-        set_flash('warning', "⏸️ Kỹ thuật viên [{$targetName}] đã TẮT ca trực / Báo vắng mặt{$reasonText}. Thuật toán điều phối sẽ tự động chuyển hướng vé mới sang KTV trực dự phòng.");
+        set_flash('warning', "⏸️ Admin đã chuyển KTV [{$targetName}] sang trạng thái NGHỈ CA{$reasonText}. Vé mới sẽ được điều phối dự phòng.");
     }
 
     header("Location: index.php?agent_id={$targetAgentId}");
@@ -192,33 +194,41 @@ $flash = get_flash();
                 <p class="text-xs text-indigo-200/80 mt-0.5">Tiếp nhận, xử lý sự cố từ xa, ghi chú nội bộ và lập biên bản giải pháp kỹ thuật.</p>
             </div>
 
-            <!-- KHỐI QUẢN LÝ CA TRỰC (ON-DUTY / OFF-DUTY & BÁO NGHỈ / BÁO ỐM) -->
+            <!-- KHỐI QUẢN LÝ CA TRỰC (ON-DUTY / OFF-DUTY - ĐỘC QUYỀN ADMIN ĐIỀU CHUYỂN) -->
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2.5">
                 <?php if ((int)($currentAgent['is_on_duty'] ?? 1) === 1): ?>
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold shadow-xs">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
-                            <span>ĐANG TRỰC CA (Nhận vé tự động)</span>
+                            <span>🟢 ĐANG TRỰC CA (Nhận vé tự động)</span>
                         </span>
-                        <button type="button" onclick="document.getElementById('dutyToggleModal').classList.remove('hidden')" 
-                                class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer">
-                            <span>⏸️</span> Báo Nghỉ Ca / Báo Ốm
-                        </button>
+                        <?php if ($isAdmin): ?>
+                            <button type="button" onclick="document.getElementById('dutyToggleModal').classList.remove('hidden')" 
+                                    class="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 rounded-xl text-xs font-bold transition flex items-center gap-1 cursor-pointer" title="Chỉ Admin có thẩm quyền chuyển ca trực">
+                                <span>⏸️</span> Admin: Chuyển Nghỉ Ca
+                            </button>
+                        <?php else: ?>
+                            <span class="text-[11px] text-indigo-200/70 font-medium">🛡️ Do Admin phân công</span>
+                        <?php endif; ?>
                     </div>
                 <?php else: ?>
                     <div class="flex items-center gap-2 flex-wrap">
                         <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs font-bold shadow-xs">
                             <span class="w-2.5 h-2.5 rounded-full bg-rose-400 inline-block"></span>
-                            <span>ĐANG NGHỈ CA / TẠM DỪNG (Không nhận vé)</span>
+                            <span>⏸️ ĐANG NGHỈ CA (Không nhận vé)</span>
                         </span>
-                        <form method="POST" action="index.php?agent_id=<?php echo $agentId; ?>" class="inline">
-                            <input type="hidden" name="action" value="toggle_duty" />
-                            <input type="hidden" name="agent_id" value="<?php echo $agentId; ?>" />
-                            <input type="hidden" name="is_on_duty" value="1" />
-                            <button type="submit" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1 cursor-pointer">
-                                <span>▶️</span> Bật Lại Ca Trực
-                            </button>
-                        </form>
+                        <?php if ($isAdmin): ?>
+                            <form method="POST" action="index.php?agent_id=<?php echo $agentId; ?>" class="inline">
+                                <input type="hidden" name="action" value="toggle_duty" />
+                                <input type="hidden" name="agent_id" value="<?php echo $agentId; ?>" />
+                                <input type="hidden" name="is_on_duty" value="1" />
+                                <button type="submit" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition shadow-xs flex items-center gap-1 cursor-pointer" title="Chỉ Admin có thẩm quyền bật ca trực">
+                                    <span>▶️</span> Admin: Bật Trực Ca
+                                </button>
+                            </form>
+                        <?php else: ?>
+                            <span class="text-[11px] text-rose-200/70 font-medium">🛡️ Do Admin phê duyệt nghỉ</span>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </div>
@@ -251,12 +261,13 @@ $flash = get_flash();
     <!-- KHỐI 3: MODAL LẬP BIÊN BẢN NGHIỆM THU GIẢI PHÁP -->
     <?php require __DIR__ . '/partials/resolve_modal.php'; ?>
 
-    <!-- KHỐI 4: MODAL BÁO NGHỈ CA / BÁO ỐM ĐỘT XUẤT CHO KTV -->
+    <?php if ($isAdmin): ?>
+    <!-- KHỐI 4: MODAL ADMIN BÁO NGHỈ CA / BÁO ỐM CHO KTV (CHỈ ADMIN MỚI THẤY) -->
     <div id="dutyToggleModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
         <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100">
                 <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <span class="text-lg">⏸️</span> Báo Nghỉ Ca Trực / Báo Ốm Đột Xuất
+                    <span class="text-lg">⏸️</span> Admin: Chuyển Nghỉ Ca Cho KTV
                 </h3>
                 <button type="button" onclick="document.getElementById('dutyToggleModal').classList.add('hidden')" class="text-slate-400 hover:text-slate-600 font-bold text-xl leading-none cursor-pointer">&times;</button>
             </div>
@@ -267,7 +278,7 @@ $flash = get_flash();
                 <input type="hidden" name="is_on_duty" value="0" />
 
                 <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 leading-relaxed text-[11.5px]">
-                    Khi tắt ca trực, <strong>thuật toán điều phối Triage tự động</strong> sẽ chuyển hướng toàn bộ các phiếu sự cố mới sang KTV chuyên trách dự phòng đang trực ca khác.
+                    Khi Admin tắt ca trực của KTV này, <strong>thuật toán điều phối Triage tự động</strong> sẽ chuyển hướng toàn bộ các phiếu sự cố mới sang KTV chuyên trách dự phòng đang trực ca khác.
                 </div>
 
                 <div>
@@ -284,13 +295,14 @@ $flash = get_flash();
                     <button type="button" onclick="document.getElementById('dutyToggleModal').classList.add('hidden')" class="px-4 py-2 border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-100 cursor-pointer">
                         Hủy bỏ
                     </button>
-                    <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition shadow-sm flex items-center gap-1.5 cursor-pointer">
+                    <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl transition shadow-sm flex items-center gap-1.5 cursor-pointer">
                         <span>⏸️</span> Xác Nhận Tắt Ca Trực
                     </button>
                 </div>
             </form>
         </div>
     </div>
+    <?php endif; ?>
 
     <!-- FOOTER TOÀN TRƯỜNG -->
     <?php require_once __DIR__ . '/../includes/footer.php'; ?>

@@ -2480,6 +2480,16 @@ $flash   = get_flash();
                 <div class="p-2.5 bg-indigo-50/70 rounded-xl space-y-1 border border-indigo-200">
                     <span class="text-indigo-700 text-[10px] block font-bold">Hạn Giải Quyết Xong (Due at):</span>
                     <strong class="font-mono text-indigo-950"><?php echo htmlspecialchars($ticket['due_at']); ?></strong>
+                    <?php if ($ticket['status'] === 'waiting_requester'): ?>
+                        <div class="mt-2 p-2 bg-purple-100 border border-purple-300 rounded-lg text-purple-900 space-y-0.5">
+                            <span class="font-black text-[10.5px] flex items-center gap-1 text-purple-950">
+                                <span>⏸️</span> ĐỒNG HỒ SLA TẠM DỪNG (PAUSED)
+                            </span>
+                            <span class="text-[10px] text-purple-800 block leading-tight">
+                                Phiếu đang ở trạng thái <em>Chờ người dùng phản hồi</em>. Theo chuẩn ITIL v4, đồng hồ cam kết SLA của KTV được <strong>tạm dừng đóng băng</strong>, không tính vi phạm quá hạn.
+                            </span>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <?php if ($ticket['first_response_at']): ?>

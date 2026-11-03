@@ -41,8 +41,8 @@ INSERT INTO `categories` (`id`, `code`, `name`, `description`, `default_priority
 -- 2. SEED MỨC ĐỘ ƯU TIÊN (PRIORITIES)
 -- ==============================================================================
 INSERT INTO `priorities` (`id`, `code`, `name`, `sla_factor`, `sort_order`) VALUES
-(1, 'URGENT', 'Khẩn cấp', 0.25, 1),
-(2, 'HIGH', 'Cao', 0.50, 2),
+(1, 'URGENT', 'Khẩn cấp', 0.50, 1),
+(2, 'HIGH', 'Cao', 0.80, 2),
 (3, 'MED', 'Trung bình', 1.00, 3),
 (4, 'LOW', 'Thấp', 1.50, 4);
 
@@ -249,3 +249,4 @@ INSERT INTO `ticket_ratings` (`id`, `ticket_id`, `user_id`, `score`, `comment`, 
 
 -- Bật lại kiểm tra khóa ngoại
 SET FOREIGN_KEY_CHECKS = 1;
+
