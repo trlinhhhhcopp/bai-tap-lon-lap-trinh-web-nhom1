@@ -469,18 +469,22 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 
         $sql = "UPDATE tickets SET status = 'closed', closed_at = NOW(), closed_reason = 'duplicate'";
         $params = [':id' => $id];
+        $parentMsg = "";
+
         if ($parentTicketId && $parentTicketId !== $id) {
-            $sql .= ", parent_ticket_id = :parent_id";
-            $params[':parent_id'] = $parentTicketId;
+            // Kiểm tra bảo mật: Chỉ cho phép gom nhóm vào Phiếu Cha đang trong trạng thái ĐANG XỬ LÝ
+            $chkParent = db()->prepare("SELECT id, ticket_code, title FROM tickets WHERE id = :pid AND status IN ('new', 'in_progress', 'waiting_requester')");
+            $chkParent->execute([':pid' => $parentTicketId]);
+            $validParent = $chkParent->fetch();
+
+            if ($validParent) {
+                $sql .= ", parent_ticket_id = :parent_id";
+                $params[':parent_id'] = $parentTicketId;
+                $parentMsg = "\n🔗 Phiếu này đã được gom nhóm vào Phiếu Sự Cố Gốc Đang Xử Lý: #{$validParent['ticket_code']}";
+            }
         }
         $sql .= " WHERE id = :id";
         db()->prepare($sql)->execute($params);
-
-        $parentMsg = "";
-        if ($parentTicketId && $parentTicketId !== $id) {
-            $parentCode = db()->query("SELECT ticket_code FROM tickets WHERE id = {$parentTicketId}")->fetchColumn() ?: "#{$parentTicketId}";
-            $parentMsg = "\n🔗 Phiếu này đã được gom nhóm vào Phiếu Sự Cố Gốc: {$parentCode}";
-        }
 
         TicketRepository::addReply($id, (int)$currentUser['id'], "📑 [ĐÓNG DO TRÙNG LẶP]: {$dupNote}{$parentMsg}", false, 'closed');
         set_flash('info', "Đã đóng phiếu với lý do Trùng lặp sự cố (duplicate) thành công!");
@@ -2688,17 +2692,44 @@ $flash   = get_flash();
             <div>
                 <label class="block font-bold text-slate-700 mb-1">Gom nhóm vào Phiếu Sự Cố Gốc / Phiếu Cha (parent_ticket_id):</label>
                 <?php 
-                $majorTicketsList = db()->query("SELECT id, ticket_code, title FROM tickets WHERE (is_major_incident = 1 OR id = 1) AND id != {$id} ORDER BY id DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
+                $ticketCatId = (int)($ticket['category_id'] ?? 0);
+                // CHỈ LẤY CÁC PHIẾU ĐANG HOẠT ĐỘNG/XỬ LÝ (status IN ('new', 'in_progress', 'waiting_requester'))
+                // Ưu tiên: Sự cố diện rộng (Major Incident) lên đầu, tiếp đến các phiếu cùng danh mục/hệ thống
+                $activeParentTickets = db()->query("
+                    SELECT id, ticket_code, title, status, is_major_incident, system_affected 
+                    FROM tickets 
+                    WHERE id != {$id} 
+                      AND status IN ('new', 'in_progress', 'waiting_requester')
+                    ORDER BY is_major_incident DESC, 
+                             (CASE WHEN category_id = {$ticketCatId} THEN 1 ELSE 0 END) DESC, 
+                             id DESC 
+                    LIMIT 20
+                ")->fetchAll(PDO::FETCH_ASSOC);
                 ?>
                 <select name="parent_ticket_id" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 font-medium">
                     <option value="">-- Đóng độc lập (Không gán phiếu cha) --</option>
-                    <?php foreach ($majorTicketsList as $mt): ?>
-                        <option value="<?php echo $mt['id']; ?>" <?php echo (!empty($ticket['parent_ticket_id']) && $ticket['parent_ticket_id'] == $mt['id']) ? 'selected' : ''; ?>>
-                            #<?php echo htmlspecialchars($mt['ticket_code']); ?> &ndash; <?php echo htmlspecialchars(mb_substr($mt['title'], 0, 40)); ?>...
-                        </option>
-                    <?php endforeach; ?>
+                    <?php if (empty($activeParentTickets)): ?>
+                        <option value="" disabled>-- Hiện không có sự cố nào đang xử lý để gom nhóm --</option>
+                    <?php else: ?>
+                        <?php foreach ($activeParentTickets as $mt): 
+                            $badge = $mt['is_major_incident'] ? '🔥 [SỰ CỐ DIỆN RỘNG]' : '⚡ [ĐANG XỬ LÝ]';
+                            $statusLabel = match($mt['status']) {
+                                'new' => 'Tiếp nhận mới',
+                                'in_progress' => 'Đang xử lý',
+                                'waiting_requester' => 'Chờ phản hồi',
+                                default => $mt['status']
+                            };
+                            $isSelected = (!empty($ticket['parent_ticket_id']) && $ticket['parent_ticket_id'] == $mt['id']) ? 'selected' : '';
+                        ?>
+                            <option value="<?php echo $mt['id']; ?>" <?php echo $isSelected; ?>>
+                                <?php echo $badge; ?> #<?php echo htmlspecialchars($mt['ticket_code']); ?> &ndash; <?php echo htmlspecialchars(mb_substr($mt['title'], 0, 45)); ?>... (<?php echo $statusLabel; ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
-                <p class="text-[11px] text-slate-500 mt-1">Hệ thống sẽ lưu ID phiếu cha vào <code>parent_ticket_id</code> để gom nhóm theo chuẩn ITIL.</p>
+                <p class="text-[11px] text-slate-500 mt-1">
+                    <span class="text-indigo-600 font-semibold">Quy chuẩn ITIL:</span> Chỉ các phiếu <strong>đang xử lý</strong> hoặc <strong>sự cố diện rộng đang diễn ra</strong> mới được làm phiếu cha để gom nhóm phiếu trùng lặp.
+                </p>
             </div>
 
             <div>
