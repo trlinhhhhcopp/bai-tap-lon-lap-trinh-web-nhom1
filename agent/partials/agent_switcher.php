@@ -25,7 +25,14 @@
             ?>
             <a href="index.php?agent_id=<?php echo $ag['id']; ?>" class="p-3.5 rounded-2xl border <?php echo $cardBorder; ?> transition text-xs block space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-900"><?php echo htmlspecialchars($ag['user_code']); ?></span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-bold text-slate-900"><?php echo htmlspecialchars($ag['user_code']); ?></span>
+                        <?php if ((int)($ag['is_on_duty'] ?? 1) === 1): ?>
+                            <span class="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-emerald-100 text-emerald-800" title="Đang trong ca trực (nhận vé tự động)">🟢 Trực</span>
+                        <?php else: ?>
+                            <span class="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-rose-100 text-rose-800" title="Đang nghỉ ca hoặc báo ốm (không nhận vé)">⏸️ Nghỉ</span>
+                        <?php endif; ?>
+                    </div>
                     <span class="px-2 py-0.5 rounded-full text-[10px] font-bold <?php echo $loadColor; ?>">
                         <?php echo $ag['active_count']; ?>/<?php echo $cap; ?>
                     </span>

@@ -70,6 +70,7 @@ class UserRepository {
                     u.is_active, 
                     u.lock_reason, 
                     u.is_first_login,
+                    u.is_on_duty,
                     COALESCE(c.class_code, c.name, 'Chưa xếp lớp') AS class_name,
                     c.class_code,
                     c.name AS class_full_name,

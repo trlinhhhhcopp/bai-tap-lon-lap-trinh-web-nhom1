@@ -427,6 +427,11 @@ $flash = get_flash();
                                     <span class="badge badge-admin">Quản trị viên</span>
                                 <?php elseif ($u['role'] === 'agent'): ?>
                                     <span class="badge badge-agent">Kỹ thuật viên</span>
+                                    <?php if (($u['is_on_duty'] ?? 1) == 1): ?>
+                                        <span style="font-size: 10px; color: #16a34a; font-weight: bold; display: block; margin-top: 3px;" title="KTV đang trong ca trực (nhận vé tự động)">🟢 Đang trực</span>
+                                    <?php else: ?>
+                                        <span style="font-size: 10px; color: #dc2626; font-weight: bold; display: block; margin-top: 3px;" title="KTV đang nghỉ ca hoặc báo ốm (không nhận vé)">⏸️ Nghỉ ca / Ốm</span>
+                                    <?php endif; ?>
                                 <?php elseif ($u['user_type'] === 'lecturer'): ?>
                                     <span class="badge badge-lecturer">Giảng viên</span>
                                 <?php else: ?>
@@ -448,6 +453,19 @@ $flash = get_flash();
 
                                     <!-- Nút Sửa -->
                                     <button type="button" class="btn btn-outline" onclick='openEditModal(<?= json_encode($u) ?>)'>✏️ Sửa</button>
+
+                                    <!-- Nút Chuyển ca trực KTV (Báo ốm / Bật trực) nếu là Agent -->
+                                    <?php if ($u['role'] === 'agent'): ?>
+                                        <form method="POST" action="user_action.php" style="display:inline;">
+                                            <input type="hidden" name="action" value="toggle_duty">
+                                            <input type="hidden" name="id" value="<?= $u['id'] ?>">
+                                            <?php if (($u['is_on_duty'] ?? 1) == 1): ?>
+                                                <button type="submit" class="btn btn-outline" style="color: #b45309; border-color: #f59e0b; padding: 4px 8px; font-size: 11px;" title="Chuyển sang Nghỉ ca / Báo ốm">⏸️ Nghỉ</button>
+                                            <?php else: ?>
+                                                <button type="submit" class="btn btn-outline" style="color: #15803d; border-color: #22c55e; padding: 4px 8px; font-size: 11px;" title="Bật lại ca trực (Sẵn sàng nhận vé)">▶️ Trực</button>
+                                            <?php endif; ?>
+                                        </form>
+                                    <?php endif; ?>
 
                                     <!-- Nút Khóa / Mở khóa bằng POST không load lại cả trang -->
                                     <form method="POST" action="user_action.php" onsubmit="return handleToggleLock(event, this, <?= $u['id'] ?>);" style="display:inline;">

@@ -143,6 +143,23 @@ try {
             }
             break;
 
+        // ==============================================================================
+        // 4. BẬT / TẮT CA TRỰC KTV (IS_ON_DUTY - QUẢN LÝ CA TRỰC & BÁO ỐM)
+        // ==============================================================================
+        case 'toggle_duty':
+            $id = (int)($_POST['id'] ?? 0);
+            if ($id <= 0) {
+                throw new InvalidArgumentException("ID người dùng không hợp lệ!");
+            }
+            $currentDuty = (int)db()->query("SELECT is_on_duty FROM users WHERE id = {$id} AND role = 'agent'")->fetchColumn();
+            $newDuty = ($currentDuty === 1) ? 0 : 1;
+            db()->prepare("UPDATE users SET is_on_duty = :duty WHERE id = :id AND role = 'agent'")
+                ->execute([':duty' => $newDuty, ':id' => $id]);
+            $uName = db()->query("SELECT name FROM users WHERE id = {$id}")->fetchColumn() ?: "KTV";
+            $msg = ($newDuty === 1) ? "BẬT ca trực (sẵn sàng nhận vé)" : "TẮT ca trực (Nghỉ phép/Báo ốm)";
+            set_flash('success', "Đã chuyển trạng thái KTV [{$uName}] sang: {$msg}!");
+            break;
+
         default:
             set_flash('danger', 'Hành động không được hỗ trợ!');
             break;
