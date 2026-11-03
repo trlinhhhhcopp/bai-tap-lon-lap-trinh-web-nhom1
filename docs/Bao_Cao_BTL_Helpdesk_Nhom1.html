@@ -710,7 +710,13 @@
     <p><strong>Tình huống:</strong> Sinh viên hoặc cán bộ bị mất quyền truy cập (khóa mềm do nhập sai mật khẩu quá 5 lần, hoặc bị khóa tài khoản tạm thời), không thể đăng nhập vào hệ thống để tạo phiếu hỗ trợ nội bộ thông thường.</p>
     <ul>
         <li><strong>Bước 1 &ndash; Người dùng gửi đơn cứu hộ ngoài cổng:</strong> Truy cập màn hình <code>index.php?action=guest_ticket</code> (hoặc <code>guest_rescue.php</code>), nhập Mã sinh viên/Mã cán bộ (ví dụ: <code>224001736</code>), Họ tên, Email liên hệ cá nhân, tải tệp ảnh chụp thẻ sinh viên/CCCD minh chứng và mô tả lý do. Hệ thống đối soát trực tiếp trong CSDL trường học; nếu hợp lệ, hệ thống tự động phát sinh <strong>Mã đơn cứu hộ chuẩn hóa duy nhất (ví dụ: <code>#HD-2026-3110-0G04V1</code>)</strong>. <em>Hệ thống đã tinh gọn tối ưu hóa quy trình: Người dùng chỉ cần lưu giữ duy nhất Mã đơn cứu hộ này để tra cứu kết quả mọi lúc, hoàn toàn không bắt buộc phải nhớ thêm mã PIN phức tạp</em>.</li>
-        <li><strong>Bước 2 &ndash; KTV đối soát hồ sơ bước 1:</strong> Đơn cứu hộ tự động điều phối tới KTV chuyên trách SSO (<code>KTV001</code>). KTV kiểm tra đối soát ảnh thẻ và thông tin cá nhân. Nếu hợp lệ, KTV bấm <em>"Xác Thực Đơn Hợp Lệ &amp; Chuyển Admin Duyệt"</em> (ghi nhận cờ <code>rescue_verified = 1</code>).</li>
+        <li><strong>Bước 2 &ndash; Điều phối Triage &amp; KTV đối soát hồ sơ bước 1:</strong> Đơn cứu hộ được điều phối tự động qua thuật toán Triage (<code>TicketService::dispatchAgent(1)</code>):
+            <ul>
+                <li><strong>Khi KTV chuyên trách đang trực (<code>is_on_duty = 1</code>):</strong> Đơn chuyển ngay đến <code>KTV001 - Nguyễn Văn An</code> (Chuyên trách SSO) để tiếp nhận và đối soát hồ sơ.</li>
+                <li><strong>Khi KTV chuyên trách nghỉ ca / báo ốm (<code>is_on_duty = 0</code>) hoặc kịch tải (&ge; 15 phiếu):</strong> Thuật toán tự động kích hoạt cơ chế tràn tải / điều phối dự phòng (Overflow Dispatch) chuyển ngay đơn cứu hộ sang KTV trực ca khác có tải thấp nhất (ví dụ: <code>KTV002 - Trần Thị Bích</code>), đảm bảo trạm cứu hộ không bao giờ bị nghẽn hay bỏ sót hồ sơ khẩn cấp của người học.</li>
+                <li>KTV được phân công tiến hành kiểm tra đối soát ảnh thẻ/CCCD và thông tin cá nhân. Nếu hợp lệ, KTV bấm <em>"Xác Thực Đơn Hợp Lệ &amp; Chuyển Admin Duyệt"</em> (ghi nhận cờ <code>rescue_verified = 1</code>).</li>
+            </ul>
+        </li>
         <li><strong>Bước 3 &ndash; Admin phê duyệt mở khóa bước 2:</strong> Đơn cứu hộ xuất hiện trong <em>"Trung Tâm Việc Cần Làm Cấp Bách"</em> của Admin. Admin bấm <em>"Phê Duyệt Mở Khóa Tài Khoản"</em> &rarr; Hệ thống tự động đặt lại mật khẩu về <code>123456</code>, gỡ cờ khóa tài khoản (<code>is_active = 1</code>), kích hoạt cờ <code>is_first_login = 1</code> (bắt buộc đổi mật khẩu khi đăng nhập).</li>
         <li><strong>Bước 4 &ndash; Sinh viên tra cứu &amp; Đăng nhập:</strong> Sinh viên nhập Mã đơn cứu hộ vào trang <code>guest_lookup</code> để theo dõi tiến độ. Khi Admin đã duyệt, sinh viên nhận thông báo mật khẩu tạm và đăng nhập thực hiện đổi mật khẩu ngay lập tức.</li>
     </ul>
@@ -862,6 +868,20 @@
         <li><strong>Xuất dữ liệu báo cáo CSV (Export CSV):</strong> Cho phép xuất danh sách phiếu sự cố, danh sách bài nộp và điểm số ra tệp CSV chuẩn UTF-8, tự động lọc ký tự đầu dòng (<code>=, +, -, @</code>) ngăn ngừa tấn công CSV Injection.</li>
     </ul>
 
+    <h2 class="sub-title">3.14. Kịch bản 14: Quản Lý Ca Trực KTV (is_on_duty), Báo Nghỉ / Báo Ốm &amp; Thuật Toán Điều Phối Triage Thông Minh</h2>
+    <p>Hệ thống hỗ trợ cơ chế quản trị đội ngũ kỹ thuật viên linh hoạt (Fleet Management) thông qua trường dữ liệu <code>users.is_on_duty</code> (1: Đang trực, 0: Nghỉ ca):</p>
+    <ul>
+        <li><strong>KTV chủ động báo nghỉ / báo ốm trên Dashboard:</strong> KTV có thể chuyển đổi nhanh trạng thái trực ca thông qua nút bấm chuyển đổi (Toggle) và Modal ghi nhận lý do chi tiết (Báo ốm đột xuất, Nghỉ phép cá nhân, Đi họp công tác, Tạm rời vị trí). Khi KTV nghỉ ca, hệ thống không phân công vé mới cho KTV này.</li>
+        <li><strong>Admin can thiệp quản trị tập trung:</strong> Admin có quyền kiểm tra và chuyển đổi trạng thái ca trực cho từng KTV trực tiếp từ trang Quản lý Người dùng (<code>admin/users.php</code>) và <code>admin/user_action.php</code> khi KTV quên báo hoặc có việc đột xuất.</li>
+        <li><strong>Tích hợp Toàn diện với Thuật toán Triage (<code>TicketService::dispatchAgent</code>):</strong> Khi có phiếu sự cố mới hoặc đơn cứu hộ khẩn cấp:
+            <ol>
+                <li>Hệ thống ưu tiên tìm KTV có chuyên môn trùng khớp (<code>specialty_category_id = category_id</code>) <strong>VÀ</strong> đang bật trực ca (<code>is_on_duty = 1</code>) <strong>VÀ</strong> chưa đầy tải (&lt; 15 phiếu).</li>
+                <li>Nếu KTV chuyên trách đang nghỉ ca (<code>is_on_duty = 0</code>) hoặc đã đạt ngưỡng kịch tải (15 phiếu), hệ thống lập tức kích hoạt cơ chế <strong>Tràn Tải / Điều Phối Dự Phòng (Overflow Dispatch)</strong>, tự động chuyển phiếu sang KTV khác đang trực (<code>is_on_duty = 1</code>) có số lượng phiếu đang xử lý ít nhất.</li>
+                <li>Nếu toàn bộ KTV đều đang nghỉ ca, phiếu được lưu vào hàng đợi chờ giao ban trực của ca tiếp theo.</li>
+            </ol>
+        </li>
+    </ul>
+
     <div class="page-break"></div>
 
     <!-- MỤC 4: SƠ ĐỒ PHÂN LUỒNG QUY TRÌNH HỆ THỐNG -->
@@ -909,7 +929,7 @@
             <div class="wf-arrow">&larr;</div>
             <div class="wf-node wf-node-rose"><strong>Admin Duyệt Bước 2</strong><br>Phê duyệt mở khóa &amp; reset pass</div>
             <div class="wf-arrow">&larr;</div>
-            <div class="wf-node wf-node-amber"><strong>KTV001 Duyệt Bước 1</strong><br>Xác thực thẻ SV hợp lệ</div>
+            <div class="wf-node wf-node-amber"><strong>KTV Trực Ca Duyệt Bước 1</strong><br>Xác thực thẻ SV (An / Bích...)</div>
         </div>
     </div>
 

@@ -32,7 +32,7 @@ class TicketService {
     public static function dispatchAgent(int $categoryId): array {
         $pdo = Database::getConnection();
 
-        // 1. Tìm KTV chuyên trách nhóm dịch vụ này đang trực
+        // 1. Tìm KTV chuyên trách nhóm dịch vụ này (bất kể trực hay nghỉ) để kiểm tra trạng thái
         $stmt = $pdo->prepare("
             SELECT u.*, 
                    (SELECT COUNT(*) FROM tickets t 
@@ -42,7 +42,6 @@ class TicketService {
             FROM users u
             WHERE u.role = 'agent' 
               AND u.is_active = 1 
-              AND u.is_on_duty = 1 
               AND u.specialty_category_id = :cat_id
             LIMIT 1
         ");
@@ -52,20 +51,20 @@ class TicketService {
         // Ngưỡng kịch tải cấu hình 15 phiếu
         $maxCap = !empty($primaryAgent['max_capacity']) ? (int)$primaryAgent['max_capacity'] : 15;
 
-        // Nếu có KTV chuyên trách và chưa vượt ngưỡng kịch tải (15 phiếu)
-        if ($primaryAgent && (int)$primaryAgent['current_active_count'] < $maxCap) {
+        // Nếu có KTV chuyên trách VÀ KTV đó ĐANG TRỰC CA (is_on_duty = 1) VÀ chưa vượt ngưỡng kịch tải (15 phiếu)
+        if ($primaryAgent && (int)$primaryAgent['is_on_duty'] === 1 && (int)$primaryAgent['current_active_count'] < $maxCap) {
             return [
                 'agent_id'     => (int)$primaryAgent['id'],
                 'agent_name'   => $primaryAgent['name'],
                 'agent_code'   => $primaryAgent['user_code'],
                 'is_overflow'  => false,
-                'reason'       => "Phân công đúng KTV chuyên trách ({$primaryAgent['name']})",
+                'reason'       => "Phân công đúng KTV chuyên trách đang trực ({$primaryAgent['name']})",
                 'active_count' => (int)$primaryAgent['current_active_count'],
             ];
         }
 
-        // 2. KÍCH HOẠT CƠ CHẾ TRÀN TẢI (OVERFLOW DISPATCH)
-        // Tìm KTV khác đang trực (is_on_duty = 1) có ít phiếu đang xử lý nhất
+        // 2. KÍCH HOẠT CƠ CHẾ ĐIỀU PHỐI DỰ PHÒNG / TRÀN TẢI (OVERFLOW DISPATCH)
+        // Tìm KTV khác ĐANG TRỰC (is_on_duty = 1) có ít phiếu đang xử lý nhất
         $overflowStmt = $pdo->query("
             SELECT u.*, 
                    (SELECT COUNT(*) FROM tickets t 
@@ -82,24 +81,33 @@ class TicketService {
         $backupAgent = $overflowStmt->fetch();
 
         if ($backupAgent) {
-            $primaryName = $primaryAgent ? $primaryAgent['name'] : 'Chưa có KTV chuyên trách';
+            $reason = "";
+            if (!$primaryAgent) {
+                $reason = "Chưa có KTV chuyên trách cho danh mục này. Tự động điều phối sang KTV đang trực {$backupAgent['name']}.";
+            } elseif ((int)$primaryAgent['is_on_duty'] !== 1) {
+                $reason = "KTV chuyên trách ({$primaryAgent['name']}) đang nghỉ ca / báo ốm (is_on_duty = 0). Tự động điều phối dự phòng sang {$backupAgent['name']}.";
+            } else {
+                $reason = "KTV chuyên trách ({$primaryAgent['name']}) đã đạt ngưỡng tải tối đa ({$maxCap} phiếu). Kích hoạt cơ chế TRÀN TẢI sang {$backupAgent['name']}.";
+            }
+
             return [
                 'agent_id'     => (int)$backupAgent['id'],
                 'agent_name'   => $backupAgent['name'],
                 'agent_code'   => $backupAgent['user_code'],
                 'is_overflow'  => true,
-                'reason'       => "Kích hoạt cơ chế TRÀN TẢI tự động do KTV chuyên trách ({$primaryName}) đã đạt ngưỡng tải tối đa. Điều phối sang {$backupAgent['name']}.",
+                'reason'       => $reason,
                 'active_count' => (int)$backupAgent['current_active_count'],
             ];
         }
 
-        // Trường hợp dự phòng nếu không có KTV nào đang trực (gán mặc định KTV 1)
+        // Trường hợp khẩn cấp nếu toàn bộ KTV đều nghỉ ca: Gán cho KTV chuyên trách hoặc KTV đầu tiên chờ giao ban
+        $fallbackAgent = $primaryAgent ?: $pdo->query("SELECT * FROM users WHERE role = 'agent' AND is_active = 1 ORDER BY id ASC LIMIT 1")->fetch();
         return [
-            'agent_id'     => 2,
-            'agent_name'   => 'KTV Trực Ban Hệ Thống',
-            'agent_code'   => 'KTV001',
+            'agent_id'     => $fallbackAgent ? (int)$fallbackAgent['id'] : 2,
+            'agent_name'   => $fallbackAgent ? $fallbackAgent['name'] : 'KTV Trực Ban Hệ Thống',
+            'agent_code'   => $fallbackAgent ? $fallbackAgent['user_code'] : 'KTV001',
             'is_overflow'  => false,
-            'reason'       => 'Gán KTV trực ban mặc định',
+            'reason'       => 'Toàn bộ KTV đang nghỉ ca. Phiếu lưu vào hàng đợi chờ giao ban trực.',
             'active_count' => 0,
         ];
     }

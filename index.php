@@ -874,10 +874,16 @@ if ($action === 'guest_ticket') {
                 }
             }
 
+            // THUẬT TOÁN ĐIỀU PHỐI TRIAGE: TỰ ĐỘNG KIỂM TRA CA TRỰC KTV (is_on_duty)
+            require_once __DIR__ . '/app/Services/TicketService.php';
+            $dispatch = \App\Services\TicketService::dispatchAgent(1); // 1 = CAT_SSO
+            $assignedAgentId   = (int)$dispatch['agent_id'];
+            $assignedAgentName = $dispatch['agent_name'];
+
             $ticketId = \App\Models\Ticket::create([
                 'requester_id'     => $userId,
                 'requester_name'   => $name,
-                'assigned_to'      => 2, // Phân công ngay cho KTV Nguyễn Văn An (Chuyên trách SSO)
+                'assigned_to'      => $assignedAgentId,
                 'category_id'      => 1, // CAT_SSO: Tài khoản & Xác thực
                 'priority_id'      => 2, // HIGH
                 'is_guest_ticket'  => 1,
@@ -891,11 +897,11 @@ if ($action === 'guest_ticket') {
             $createdTicket = \App\Models\Ticket::findById($ticketId);
             $ticketCode = $createdTicket['ticket_code'];
 
-            // Gửi thông báo thời gian thực đến KTV chuyên trách SSO và toàn bộ đội ngũ KTV
+            // Gửi thông báo thời gian thực đến KTV được phân công trực tiếp và toàn bộ đội ngũ KTV
             try {
                 require_once __DIR__ . '/app/Services/NotificationService.php';
                 \NotificationService::send(
-                    2,
+                    $assignedAgentId,
                     "🚑 CÓ ĐƠN CỨU HỘ MỚI #{$ticketCode}",
                     "Sinh viên {$name} ({$userCode}) vừa gửi đơn cứu hộ tài khoản khẩn cấp. Vui lòng kiểm tra và xác thực hồ sơ!",
                     "tickets/show.php?id={$ticketId}",
@@ -905,16 +911,20 @@ if ($action === 'guest_ticket') {
                 \NotificationService::sendToRole(
                     'agent',
                     "🚑 ĐƠN CỨU HỘ KHẨN CẤP #{$ticketCode}",
-                    "Trạm cứu hộ vừa tiếp nhận đơn của sinh viên {$name} ({$userCode}). KTV vui lòng kiểm tra!",
+                    "Trạm cứu hộ vừa tiếp nhận đơn của sinh viên {$name} ({$userCode}). Đã phân công cho {$assignedAgentName}!",
                     "tickets/index.php?warning=guest",
                     'guest_rescue',
-                    2
+                    $assignedAgentId
                 );
             } catch (\Throwable $e) {}
 
+            $dispatchNotice = !empty($dispatch['is_overflow']) 
+                ? " (Hệ thống tự động điều phối sang <strong>{$assignedAgentName}</strong> do KTV chuyên trách đang nghỉ ca/báo ốm)" 
+                : "";
+
             $_SESSION['flash'] = [
                 'type'    => 'success',
-                'message' => "🎉 Đã gửi đơn cứu hộ thành công! Mã tra cứu duy nhất của bạn: <strong>{$ticketCode}</strong>. Yêu cầu đã được chuyển ngay đến <strong>KTV Nguyễn Văn An (Chuyên trách SSO)</strong> tiếp nhận xử lý trong vòng 2 giờ."
+                'message' => "🎉 Đã gửi đơn cứu hộ thành công! Mã tra cứu duy nhất của bạn: <strong>{$ticketCode}</strong>. Yêu cầu đã được chuyển ngay đến <strong>{$assignedAgentName}</strong> tiếp nhận xử lý trong vòng 2 giờ{$dispatchNotice}."
             ];
             header('Location: ' . $appBase . 'index.php?action=guest_lookup&code=' . urlencode($ticketCode));
             exit;
