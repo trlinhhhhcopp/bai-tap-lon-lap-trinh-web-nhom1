@@ -1,720 +1,1066 @@
-# NGÂN HÀNG 100 CÂU HỎI TRẮC NGHIỆM ĐÁNH GIÁ KIẾN THỨC TOÀN DIỆN
-## HỆ THỐNG TIẾP NHẬN & XỬ LÝ HỖ TRỢ CNTT (ITIL v4 HELPDESK) — ĐH THỦ ĐÔ HÀ NỘI
-**Nhóm tác giả:** Nhóm 1 | **Học phần:** Lập trình Web & Ứng dụng (WEB101)  
-**Kiến trúc:** Clean MVC Pure PHP 8 + MySQL 8 InnoDB 3NF (14 Bảng)
+# NGÂN HÀNG 100 CÂU HỎI TRẮC NGHIỆM KIỂM TRA TOÀN DIỆN HỆ THỐNG HELPDESK CNTT (TUD)
+
+> **Phân hệ:** Hệ Thống Hỗ Trợ Kỹ Thuật & Quản Lý Sự Cố Công Nghệ Thông Tin (IT Service Management Helpdesk)
+> **Đơn vị:** Nhóm 1 &ndash; Trường Đại học Thủ Đô Hà Nội (TUD)
+> **Bộ đề kiểm tra mới:** 100 câu hỏi chuyên sâu về Kiến trúc mã nguồn, Cơ sở dữ liệu 3NF, Thuật toán SLA, State Machine, Phân quyền RBAC và Xử lý Ngoại lệ Edge Cases.
 
 ---
 
-### PHẦN 1: KIẾN TRÚC TỔNG THỂ, CÔNG NGHỆ & AN TOÀN THÔNG TIN (CÂU 1 - 12)
+## 📑 MỤC LỤC 8 DẠNG CHUYÊN ĐỀ (100 CÂU HỎI MỚI)
 
-#### Câu 1. Kiến trúc phần mềm cốt lõi được dự án lựa chọn xây dựng là gì?
-- A. Microservices dựa trên Docker và Kubernetes.
-- B. Clean MVC phân tầng thuần PHP 8 (Pure PHP), không phụ thuộc framework nặng, tổ chức Controller, Model, Service và View rõ ràng.
-- C. Monolithic truyền thống nhúng toàn bộ logic SQL trực tiếp trong các tệp HTML.
-- D. Single Page Application (SPA) hoàn toàn viết bằng React và Node.js.
-
-#### Câu 2. Trong kiến trúc Clean MVC của dự án, tầng Model (`app/Models/`) chịu trách nhiệm chính về việc gì?
-- A. Tiếp nhận yêu cầu HTTP từ trình duyệt và điều hướng trang.
-- B. Định dạng giao diện CSS và hiển thị các khối giao diện cho người dùng.
-- C. Đại diện cho các thực thể bảng dữ liệu, đóng gói các truy vấn CSDL bằng PDO Prepared Statements, ngăn chặn rò rỉ SQL ra ngoài View.
-- D. Gửi email thông báo tự động và quản lý tiến trình nền.
-
-#### Câu 3. Để phòng chống triệt để lỗ hổng SQL Injection (theo tiêu chuẩn OWASP Top 10), toàn bộ hệ thống áp dụng cơ chế nào?
-- A. Nối chuỗi trực tiếp `$sql = "SELECT * FROM users WHERE id = " . $_GET['id']`.
-- B. Chỉ dùng hàm `addslashes()` lọc chuỗi đầu vào.
-- C. Sử dụng PDO Prepared Statements với tham số ràng buộc có tên (Named Parameters `:param`) cho 100% câu lệnh truy vấn.
-- D. Sử dụng `strip_tags()` để xóa thẻ HTML trong câu lệnh SQL.
-
-#### Câu 4. Cơ chế chống tấn công Cross-Site Request Forgery (CSRF) trong hệ thống hoạt động như thế nào?
-- A. Kiểm tra địa chỉ IP của người dùng qua `$_SERVER['REMOTE_ADDR']`.
-- B. Sinh một chuỗi ngẫu nhiên mã hóa `csrf_token` trong `$_SESSION`, nhúng vào các biểu mẫu POST dưới dạng input ẩn và kiểm tra khớp trước khi xử lý.
-- C. Yêu cầu nhập mã Captcha hình ảnh ở tất cả các biểu mẫu.
-- D. Chặn hoàn toàn tất cả các yêu cầu gửi bằng phương thức HTTP POST.
-
-#### Câu 5. Thuật toán băm mật khẩu được hệ thống áp dụng để bảo vệ thông tin đăng nhập trong bảng `users` là gì?
-- A. Thuật toán băm một chiều MD5 không salt (`md5($pass)`).
-- B. Thuật toán SHA-1 đơn thuần (`sha1($pass)`).
-- C. Thuật toán Bcrypt tiêu chuẩn công nghiệp với salt ngẫu nhiên thông qua hàm `password_hash($pass, PASSWORD_BCRYPT)`.
-- D. Mã hóa đối xứng AES-256 có thể giải mã ngược lại mật khẩu gốc.
-
-#### Câu 6. Phiên làm việc (Session) của người dùng sau khi xác thực thành công được lưu giữ tại đâu và quản lý qua lớp nào?
-- A. Lưu vào LocalStorage của trình duyệt và gửi qua Header `Authorization`.
-- B. Lưu trong mảng toàn cục `$_SESSION['user']` và được bao bọc, quản lý qua lớp tiện ích `App\Core\Session`.
-- C. Lưu vào một tệp văn bản `.txt` công khai trong thư mục gốc.
-- D. Lưu vào bảng `sessions` trong CSDL với cơ chế Memcached.
-
-#### Câu 7. Để ngăn chặn tấn công tải lên tệp độc hại (Malicious File Upload / Webshell), dịch vụ `UploadService.php` thực hiện các biện pháp nào?
-- A. Cho phép tải lên mọi định dạng nhưng giới hạn tên tệp dưới 10 ký tự.
-- B. Kiểm tra danh sách trắng định dạng đuôi tệp (Whitelist), kiểm tra MIME type thực tế, giới hạn dung lượng và đổi tên tệp ngẫu nhiên kèm mã băm thời gian.
-- C. Chỉ kiểm tra phần mở rộng bằng hàm `substr()` và giữ nguyên tên tệp của người dùng.
-- D. Lưu trực tiếp tệp vào CSDL dưới dạng chuỗi Base64.
-
-#### Câu 8. Để ngăn ngừa tấn công CSV Injection khi xuất danh sách phiếu hoặc điểm số ra file CSV, hệ thống áp dụng quy tắc gì?
-- A. Xóa bỏ toàn bộ số và dấu chấm trong file CSV.
-- B. Thêm dấu nháy đơn `'` phía trước các ô dữ liệu bắt đầu bằng các ký tự công thức nguy hiểm như `=`, `+`, `-`, `@`.
-- C. Chỉ xuất file dưới định dạng hình ảnh PNG.
-- D. Mã hóa toàn bộ nội dung file CSV bằng mật mã Base64.
-
-#### Câu 9. Cơ chế định tuyến (Routing) trong hệ thống được xử lý như thế nào?
-- A. Cấu hình tệp `web.xml` phức tạp của máy chủ Java.
-- B. Sử dụng tệp điều hướng trung tâm `index.php` kết hợp tham số truy vấn `action` (Query Parameter) và các bộ định tuyến phân hệ (`student/`, `lecturer/`, `admin/`, `tickets/`).
-- C. Bắt buộc phải cài đặt mô-đun `mod_rewrite` của Apache để ánh xạ URL ảo.
-- D. Gọi trực tiếp các tệp trong thư mục `vendor/`.
-
-#### Câu 10. Phiên bản PHP tối thiểu để hệ thống hoạt động ổn định và tận dụng các tính năng mới (Named Arguments, Match Expression, Constructor Promotion) là gì?
-- A. PHP 5.6.
-- B. PHP 7.2.
-- C. PHP 8.0 trở lên (khuyến nghị chạy trên PHP 8.2).
-- D. PHP 5.3.
-
-#### Câu 11. Bảng mã và tập ký tự được thiết lập thống nhất từ MySQL đến kết nối PHP PDO để bảo đảm tiếng Việt không bị lỗi font là gì?
-- A. `latin1_swedish_ci`.
-- B. `ascii_general_ci`.
-- C. `utf8mb4` với đối chiếu `utf8mb4_unicode_ci`.
-- D. `cp1258_vietnamese_ci`.
-
-#### Câu 12. Script nạp CSDL tự động `dong_bo_database.bat` hoạt động theo cơ chế nào?
-- A. Bắt buộc người dùng phải cài đặt Python và Composer.
-- B. Tự động dò tìm bộ thông dịch `php.exe` và kết nối PDO để nạp `database_full_nhom1.sql`, nếu không thấy sẽ thử `mysql.exe` với mã hóa UTF-8 sạch.
-- C. Xóa sạch toàn bộ hệ điều hành Windows trước khi nạp dữ liệu.
-- D. Chỉ mở trang web phpMyAdmin và bắt người dùng tự import thủ công.
+- **[Chuyên đề 1: 1. Kiến trúc Mã nguồn, Cấu trúc Thư mục & Luồng Điều hướng](#chuyen-de-1)** (12 câu)
+- **[Chuyên đề 2: 2. Thiết kế CSDL Chuyên sâu, Khóa ngoại & Tối ưu Index](#chuyen-de-2)** (12 câu)
+- **[Chuyên đề 3: 3. Ma trận Phân quyền RBAC, Middleware & Kiểm soát Truy cập](#chuyen-de-3)** (12 câu)
+- **[Chuyên đề 4: 4. Thuật toán Điều phối Triage & Quản lý Ca trực KTV](#chuyen-de-4)** (13 câu)
+- **[Chuyên đề 5: 5. Động cơ SLA Giờ Hành chính, Cơ chế Pause SLA & Lịch Nghỉ lễ](#chuyen-de-5)** (13 câu)
+- **[Chuyên đề 6: 6. Luồng Nghiệp vụ Trạm Cứu hộ, Quên Mật khẩu SSPR & Đổi Mật khẩu](#chuyen-de-6)** (13 câu)
+- **[Chuyên đề 7: 7. Quản lý Học phần, Bài tập Buổi học & Nghiệm thu CSAT 5 Sao](#chuyen-de-7)** (12 câu)
+- **[Chuyên đề 8: 8. An toàn Thông tin, Chống Tấn công Web & Xử lý Ngoại lệ Edge Cases](#chuyen-de-8)** (13 câu)
+- **[Bảng Đáp Án Chi Tiết 100 Câu](#bang-dap-an)**
 
 ---
 
-### PHẦN 2: THIẾT KẾ CƠ SỞ DỮ LIỆU 14 BẢNG & CHUẨN HÓA 3NF (CÂU 13 - 27)
+## <a id="chuyen-de-1"></a>1. Kiến trúc Mã nguồn, Cấu trúc Thư mục & Luồng Điều hướng
 
-#### Câu 13. Tổng số lượng bảng quan hệ trong CSDL `helpdesk_thudo` sau khi tối ưu hóa chuẩn 3NF là bao nhiêu bảng?
-- A. 10 bảng.
-- B. 12 bảng.
-- C. 14 bảng.
-- D. 18 bảng.
+#### Câu 1. Trong kiến trúc tầng Controller, phương thức `TicketController::index()` tiếp nhận các tham số lọc trạng thái (`status`), chuyên mục (`category_id`) và từ khóa tìm kiếm thông qua mảng siêu toàn cục nào của PHP?
 
-#### Câu 14. Bảng nào trước đây từng tồn tại nhưng đã được phân tích và loại bỏ hoàn toàn khỏi CSDL vì tính chất dư thừa dữ liệu?
-- A. Bảng `ticket_replies`.
-- B. Bảng `holidays`.
-- C. Bảng `class_students`.
-- D. Bảng `password_resets`.
+- **A.** \$_POST.
+- **B.** \$_GET.
+- **C.** \$_SESSION.
+- **D.** \$_ENV.
 
-#### Câu 15. Lý do kỹ thuật chính xác khiến bảng `class_students` bị loại bỏ là gì?
-- A. Do lớp học không cần quản lý sinh viên.
-- B. Do bảng `users` đã có sẵn cột khóa ngoại trực tiếp `class_id` tham chiếu đến `classes(id)` (1 sinh viên chính quy thuộc 1 lớp cố định), việc dùng thêm bảng trung gian là dư thừa và làm chậm truy vấn.
-- C. Do CSDL MySQL không hỗ trợ bảng có tên chứa dấu gạch dưới.
-- D. Do giảng viên yêu cầu sinh viên phải học tự do không theo lớp.
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Phương thức TicketController::index() dùng HTTP GET để nhận các tham số lọc như ?status=...&category_id=...&keyword=... qua mảng siêu toàn cục $_GET, giúp người dùng có thể bookmark hoặc chia sẻ liên kết tìm kiếm một cách thuận tiện.
 
-#### Câu 16. Trong bảng `tickets`, các khóa ngoại chính liên kết đến các bảng nào?
-- A. Chỉ liên kết duy nhất tới bảng `users`.
-- B. `requester_id -> users(id)`, `assigned_to -> users(id)`, `category_id -> categories(id)`, `priority_id -> priorities(id)`, `class_id -> classes(id)`, `course_id -> courses(id)`.
-- C. Chỉ liên kết tới bảng `classes` và `courses`.
-- D. Không có khóa ngoại nào, toàn bộ lưu dưới dạng chuỗi tự do.
+#### Câu 2. Tệp tin `includes/auth.php` đóng vai trò trung tâm nào trong vòng đời xử lý mỗi HTTP Request của ứng dụng Helpdesk?
 
-#### Câu 17. Mối quan hệ giữa bảng `tickets` và bảng `ticket_ratings` được thiết lập theo tỷ lệ nào?
-- A. Quan hệ Nhiều &ndash; Nhiều (N-N).
-- B. Quan hệ Một &ndash; Nhiều (1-N), một phiếu có thể đánh giá hàng chục lần.
-- C. Quan hệ Một &ndash; Một (1-1) tuyệt đối, thông qua ràng buộc `UNIQUE KEY uq_ticket_rating (ticket_id)`.
-- D. Quan hệ tự thân (Self-referencing).
+- **A.** Chỉ dùng để kết nối CSDL MySQL.
+- **B.** Khởi động phiên làm việc `session_start()`, kiểm tra trạng thái xác thực `$_SESSION['user']`, nạp thông tin người dùng hiện tại và cung cấp các hàm trợ giúp phân quyền.
+- **C.** Tự động gửi email thông báo cho sinh viên.
+- **D.** Xóa toàn bộ cookie của trình duyệt khi tải trang.
 
-#### Câu 18. Mã token đặt lại mật khẩu trong bảng `password_resets` được lưu trữ dưới dạng nào trong CSDL?
-- A. Văn bản thuần rõ ràng không mã hóa (Plain text).
-- B. Chuỗi băm SHA-256 có độ dài 64 ký tự hex (`token_hash`) nhằm ngăn ngừa lộ token khi DB bị rò rỉ.
-- C. Chuỗi Base64 có thể dịch ngược lại.
-- D. Mã PIN 4 chữ số.
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Tệp `includes/auth.php` là middleware xác thực nền tảng, chịu trách nhiệm gọi `session_start()`, kiểm tra đăng nhập qua biến `$_SESSION['user']`, khởi tạo biến toàn cục người dùng hiện tại và cung cấp các hàm kiểm tra vai trò.
 
-#### Câu 19. Bảng nào trong hệ thống đóng vai trò cung cấp dữ liệu các ngày nghỉ lễ toàn trường để loại trừ khi tính toán thời hạn SLA?
-- A. Bảng `classes`.
-- B. Bảng `categories`.
-- C. Bảng `holidays`.
-- D. Bảng `course_lessons`.
+#### Câu 3. Tại sao các Controller phục vụ chức năng quản trị cấp cao lại được đặt trong namespace chuyên biệt `PhanCongThanh_Admin\Controllers\Admin` thay vì đặt chung thư mục với Controller người dùng?
 
-#### Câu 20. Cột điểm số `score` của sinh viên trong bảng `student_assignment_submissions` có kiểu dữ liệu là gì?
-- A. `VARCHAR(10)`.
-- B. `INT(11)`.
-- C. `DECIMAL(4,2)` cho phép lưu điểm số từ 0.00 đến 10.00 chính xác đến 2 chữ số thập phân.
-- D. `BOOLEAN`.
+- **A.** Để hệ điều hành Windows không bị tràn dung lượng ổ cứng.
+- **B.** Tuân thủ quy chuẩn nạp tự động PSR-4, phân tách rõ ràng trách nhiệm nghiệp vụ (Separation of Concerns) và cô lập hoàn toàn mã nguồn quản trị viên chống xung đột lớp.
+- **C.** Do ngôn ngữ PHP bắt buộc mỗi thư mục chỉ được chứa tối đa 3 file.
+- **D.** Để tránh việc CSDL MySQL tự động xóa bảng dữ liệu.
 
-#### Câu 21. Khi một bản ghi trong bảng `classes` bị xóa, hành vi toàn vẹn khóa ngoại đối với cột `class_id` trong bảng `users` được định nghĩa là gì?
-- A. `ON DELETE CASCADE` (xóa luôn tài khoản người dùng).
-- B. `ON DELETE RESTRICT` (báo lỗi không cho xóa lớp).
-- C. `ON DELETE SET NULL` (giữ lại tài khoản người dùng và gán lớp về rỗng).
-- D. `ON DELETE NO ACTION`.
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Việc phân chia namespace chuẩn PSR-4 giúp phân định ranh giới kiến trúc rõ ràng giữa phân hệ quản trị (Admin) và phân hệ dùng chung, ngăn chặn nguy cơ gọi nhầm lớp và tăng tính mô-đun hóa dự án.
 
-#### Câu 22. Cột `is_internal` kiểu `TINYINT(1)` trong bảng `ticket_replies` mang ý nghĩa nghiệp vụ gì?
-- A. Đánh dấu tin nhắn do robot tự động gửi.
-- B. Đánh dấu tin nhắn ghi chú kỹ thuật nội bộ chỉ Kỹ thuật viên (Agent) và Quản trị viên (Admin) thấy, Sinh viên không nhìn thấy.
-- C. Đánh dấu tin nhắn đã được gửi qua mạng nội bộ LAN.
-- D. Đánh dấu tin nhắn bị xóa tạm thời.
+#### Câu 4. Khi người dùng chưa đăng nhập bấm vào liên kết 'Quên mật khẩu' (`index.php?action=forgot_password`), bộ điều hướng (Action Dispatcher) ở `index.php` sẽ thực thi khối logic nào?
 
-#### Câu 23. Các bảng trong CSDL `helpdesk_thudo` tuân thủ dạng chuẩn mấy (Normal Form)?
-- A. Chỉ đạt dạng chuẩn 1 (1NF).
-- B. Đạt dạng chuẩn 2 (2NF).
-- C. Đạt chuẩn hóa dạng 3 (3NF) &ndash; không có phụ thuộc bắc cầu, mỗi thuộc tính không khóa đều phụ thuộc trực tiếp vào khóa chính.
-- D. Chưa chuẩn hóa (Unnormalized).
+- **A.** Lập tức xóa tài khoản của người dùng khỏi cơ sở dữ liệu.
+- **B.** Hiển thị biểu mẫu nhập địa chỉ email trường cấp (`@daihocthudo.edu.vn`) và kích hoạt quy trình sinh mã khôi phục tự phục vụ SSPR.
+- **C.** Tự động đặt lại mật khẩu về `123456` mà không cần kiểm tra danh tính.
+- **D.** Chuyển hướng người dùng sang trang Facebook nhà trường.
 
-#### Câu 24. Bảng `course_assignments` thể hiện quy tắc nghiệp vụ cốt lõi nào trong phân công giảng dạy?
-- A. Một lớp học phần có thể có nhiều giảng viên cùng tranh chấp quyền nhập điểm.
-- B. Mỗi lớp học phần (1 môn của 1 lớp trong 1 kỳ học) chỉ có duy nhất 1 Giảng viên phụ trách thông qua cặp ràng buộc logic.
-- C. Sinh viên tự do phân công giảng viên dạy mình.
-- D. Giảng viên không cần liên kết với lớp học nào.
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Action `forgot_password` trong `index.php` hiển thị giao diện khôi phục mật khẩu tự phục vụ SSPR, yêu cầu người dùng nhập email trường học để hệ thống kiểm tra và phát hành token bảo mật 15 phút.
 
-#### Câu 25. Bảng `notifications` lưu trữ những loại phân loại thông báo (`type`) nào?
-- A. Chỉ lưu thông báo quảng cáo.
-- B. Các loại: `ticket` (sự cố), `deadline` (hạn bài tập), `rescue` (cứu hộ tài khoản), `broadcast` (sự cố diện rộng).
-- C. Chỉ lưu thông báo nộp học phí.
-- D. Chỉ lưu thông báo sinh nhật.
+#### Câu 5. Hai hàm trợ giúp `set_flash($type, $message)` và `get_flash()` trong hệ thống sử dụng cơ chế kỹ thuật nào để hiển thị thông báo một lần duy nhất (Flash Message) sau khi chuyển hướng trang (`header('Location: ...')`)?
 
-#### Câu 26. Cột `parent_ticket_id` (trỏ ngược về `tickets.id`) trong bảng `tickets` phục vụ mục đích gì?
-- A. Dùng để xóa phiếu tự động.
-- B. Dùng để gom nhóm các phiếu sự cố con vào một phiếu sự cố cha khi xảy ra sự cố kỹ thuật diện rộng (Major Incident).
-- C. Dùng để liên kết ticket với tài khoản ngân hàng.
-- D. Không có ý nghĩa gì.
+- **A.** Ghi thông báo vào tệp văn bản tĩnh trên ổ cứng máy chủ.
+- **B.** Lưu thông báo vào biến phiên `$_SESSION['flash']` và tự động hủy (`unset`) ngay sau khi đọc ra giao diện.
+- **C.** Lưu vĩnh viễn thông báo vào bảng `users` trong CSDL MySQL.
+- **D.** Sử dụng LocalStorage của trình duyệt phía Client.
 
-#### Câu 27. Cờ `is_guest_ticket` kiểu `TINYINT(1)` trong bảng `tickets` dùng để phân biệt điều gì?
-- A. Phân biệt phiếu của khách tham quan trường.
-- B. Đánh dấu phiếu gửi từ Trạm Cứu Hộ Tài Khoản Khách (dành cho người mất quyền đăng nhập, tra cứu bằng mã đơn).
-- C. Phân biệt phiếu của sinh viên nước ngoài.
-- D. Đánh dấu phiếu gửi từ thiết bị di động.
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Flash Message hoạt động bằng cách lưu mảng gồm `type` và `message` vào `$_SESSION['flash']`, và trong hàm `get_flash()`, dữ liệu này được đọc ra đồng thời `unset($_SESSION['flash'])` để thông báo chỉ hiển thị đúng một lần.
+
+#### Câu 6. Trong tệp `config/database.php`, mẫu thiết kế (Design Pattern) nào được áp dụng để đảm bảo chỉ có duy nhất một kết nối PDO tới MySQL trong suốt vòng đời của một Request?
+
+- **A.** Factory Pattern.
+- **B.** Singleton Pattern.
+- **C.** Observer Pattern.
+- **D.** Decorator Pattern.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hàm `db()` hoặc lớp `Database` sử dụng mẫu Singleton (lưu biến static connection `$instance`), chỉ khởi tạo kết nối PDO khi biến bằng `null`, tái sử dụng kết nối cho toàn bộ các truy vấn trong cùng một request.
+
+#### Câu 7. Tham số `view_as` trên URL (ví dụ: `tickets/show.php?id=10&view_as=agent`) phục vụ mục đích kỹ thuật nào trong hệ thống?
+
+- **A.** Dùng để tấn công leo thang đặc quyền trái phép.
+- **B.** Cho phép Quản trị viên (Admin) hoặc người kiểm thử giả lập góc nhìn giao diện theo vai trò cụ thể mà không cần phải đăng xuất và đăng nhập lại nhiều tài khoản.
+- **C.** Bắt buộc người dùng phải tải lại toàn bộ trang web.
+- **D.** Dùng để mã hóa dữ liệu đường truyền SSL.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Tham số `view_as` là tiện ích đóng vai người dùng (Impersonation / Role Preview) được bảo vệ, giúp Admin kiểm thử trực quan giao diện của Agent, Requester hoặc Lecturer một cách nhanh chóng.
+
+#### Câu 8. Thư mục `storage/` trong cấu trúc dự án chứa tệp tin đặc thù `storage/mailbox.json` phục vụ cho mục đích kỹ thuật nào?
+
+- **A.** Chứa toàn bộ mã nguồn của hệ điều hành Linux.
+- **B.** Đóng vai trò hòm thư ảo (Virtual Mailbox) mô phỏng việc gửi email trên môi trường phát triển Localhost khi chưa có máy chủ SMTP Internet.
+- **C.** Chứa mật khẩu gốc của tất cả giảng viên trong trường.
+- **D.** Dùng để lưu trữ các bản sao lưu video bài giảng.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Tệp `storage/mailbox.json` đóng vai trò là Fake Mailbox: các hàm gửi email ghi trực tiếp nội dung thư (gồm người nhận, tiêu đề, mã token) vào đây để lập trình viên kiểm thử luồng quên mật khẩu ngay trên Localhost.
+
+#### Câu 9. Khi phương thức `TicketRepository::findById($id)` thực thi, kết quả trả về từ PDO Statement được cấu hình theo chế độ nạp nào?
+
+- **A.** `PDO::FETCH_NUM` (mảng chỉ mục số nguyên).
+- **B.** `PDO::FETCH_ASSOC` (mảng kết hợp ánh xạ tên cột thành khóa mảng).
+- **C.** `PDO::FETCH_BOTH` (kết hợp cả số và chữ gây tốn gấp đôi bộ nhớ).
+- **D.** `PDO::FETCH_LAZY`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hệ thống thiết lập mặc định `PDO::FETCH_ASSOC` để các trường dữ liệu như `ticket_code`, `status`, `title` có thể truy cập trực tiếp qua khóa mảng dạng `$ticket['ticket_code']` rõ ràng và tối ưu bộ nhớ.
+
+#### Câu 10. Khi người dùng bấm 'Đăng xuất' qua tệp `logout.php`, hệ thống thực hiện chuỗi thao tác nào để hủy phiên làm việc an toàn?
+
+- **A.** Chỉ đổi URL về trang đăng nhập mà giữ nguyên biến `$_SESSION`.
+- **B.** Gán `$_SESSION = []`, xóa cookie phiên `session_destroy()` và điều hướng người dùng về trang chủ `index.php`.
+- **C.** Xóa toàn bộ bản ghi người dùng trong CSDL.
+- **D.** Khóa tài khoản người dùng trong 30 phút.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Quy trình đăng xuất an toàn bắt buộc phải làm sạch mảng phiên `$_SESSION = []`, hủy bỏ định danh phiên qua `session_destroy()` và xóa cookie phiên để chống tấn công chiếm đoạt phiên (Session Hijacking).
+
+#### Câu 11. Trong các Controller hướng đối tượng kế thừa từ `App\Core\Controller`, phương thức `$this->view($template, $data)` sử dụng hàm PHP nào để chuyển mảng dữ liệu thành các biến cục bộ trong view?
+
+- **A.** `array_push()`.
+- **B.** `extract($data)`.
+- **C.** `json_encode()`.
+- **D.** `serialize()`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hàm `extract($data)` trong PHP duyệt qua mảng kết hợp và biến đổi mỗi phần tử thành một biến cục bộ tương ứng (ví dụ `['ticket' => $t]` trở thành biến `$ticket`), cho phép tệp giao diện sử dụng tự nhiên.
+
+#### Câu 12. Tệp cấu hình `.htaccess` đặt tại thư mục gốc của dự án trên máy chủ Apache đảm nhận vai trò bảo mật nào sau đây?
+
+- **A.** Ngăn chặn việc duyệt thư mục trực tiếp (`Options -Indexes`) và cấm truy cập trực tiếp vào các tệp nhạy cảm như `.sql`, `.env`, `.md`.
+- **B.** Tự động tăng tốc độ mạng Internet lên gấp 2 lần.
+- **C.** Thay thế toàn bộ mã nguồn PHP bằng ngôn ngữ Java.
+- **D.** Tự động tạo tài khoản Admin mới mỗi khi khởi động lại máy chủ.
+
+> **👉 Đáp án đúng:** [**A**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Tệp `.htaccess` cấu hình bảo mật máy chủ web Apache, thiết lập chặn duyệt thư mục (`Options -Indexes`), điều hướng URL tĩnh và ngăn chặn người ngoài tải về các tệp cơ sở dữ liệu (`.sql`) hoặc cấu hình nhạy cảm.
+
+## <a id="chuyen-de-2"></a>2. Thiết kế CSDL Chuyên sâu, Khóa ngoại & Tối ưu Index
+
+#### Câu 13. Chỉ mục phức hợp (Composite Index) `idx_agent_dispatch (role, is_active, is_on_duty, specialty_category_id, active_tickets_count)` trong bảng `users` được thiết kế nhằm tối ưu hóa câu truy vấn nào?
+
+- **A.** Truy vấn hiển thị danh sách lớp sinh hoạt của sinh viên.
+- **B.** Tối ưu hóa câu truy vấn quét và gán KTV thông minh của thuật toán Triage trong `TicketService::dispatchAgent` mà không phải quét toàn bộ bảng (Table Scan).
+- **C.** Truy vấn xuất bảng điểm học phần của Giảng viên.
+- **D.** Truy vấn lịch sử đăng nhập sai mật khẩu.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Index phức hợp `idx_agent_dispatch` tập hợp đúng 5 thuộc tính mà câu lệnh SQL tìm KTV chuyên trách sử dụng trong mệnh đề `WHERE` và `ORDER BY`, giúp MySQL tìm được KTV trực ca tối ưu chỉ trong O(log N) thời gian.
+
+#### Câu 14. Trong bảng `tickets`, khóa ngoại `parent_ticket_id` liên kết đệ quy về `tickets(id)` được cấu hình quy tắc hành vi `ON DELETE` như thế nào khi bản ghi sự cố cha bị xóa?
+
+- **A.** `ON DELETE CASCADE` (xóa toàn bộ phiếu con theo).
+- **B.** `ON DELETE SET NULL` (đưa trường `parent_ticket_id` của phiếu con về NULL để bảo toàn dữ liệu lịch sử phiếu con).
+- **C.** `ON DELETE RESTRICT` (báo lỗi chặn không cho xóa phiếu cha).
+- **D.** `ON DELETE NO ACTION`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Ràng buộc `FOREIGN KEY (parent_ticket_id) REFERENCES tickets(id) ON DELETE SET NULL` đảm bảo rằng nếu bản ghi phiếu cha bị xóa hoặc dọn dẹp, các phiếu sự cố của sinh viên bên dưới vẫn tồn tại độc lập mà không bị mất dữ liệu.
+
+#### Câu 15. Bảng `categories` có cột `default_priority_code` với các giá trị như `MED`, `HIGH`. Cột này có ý nghĩa gì khi người dùng chọn danh mục trên form tạo vé?
+
+- **A.** Quy định số lượng sinh viên tối đa trong một lớp học.
+- **B.** Cung cấp mức độ ưu tiên mặc định cho danh mục đó, giúp hệ thống tự động gán `priority_id` khi người dùng không chủ động chọn mức ưu tiên.
+- **C.** Dùng để phân biệt màu sắc của logo trường học.
+- **D.** Chỉ dùng để trang trí giao diện quản trị.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** `default_priority_code` xác định mức độ quan trọng tự nhiên của nhóm sự cố (ví dụ hệ thống QLĐT hay Canvas LMS mặc định là HIGH), giúp đơn giản hóa biểu mẫu tạo vé của sinh viên.
+
+#### Câu 16. Bảng `ticket_ratings` liên kết với bảng `tickets` qua khóa ngoại `ticket_id` với ràng buộc duy nhất `uq_ticket_rating (ticket_id)`. Ràng buộc này đảm bảo nguyên tắc nghiệp vụ nào?
+
+- **A.** Mỗi KTV chỉ được nhận tối đa 1 phiếu mỗi ngày.
+- **B.** Mỗi phiếu sự cố chỉ được người dùng thực hiện đánh giá chất lượng CSAT duy nhất 1 lần, chống việc gửi đánh giá lặp lại làm méo mó KPI.
+- **C.** Mỗi sinh viên chỉ được tạo 1 phiếu trong suốt khóa học.
+- **D.** Mỗi buổi học chỉ được nộp bài 1 lần duy nhất.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Ràng buộc `UNIQUE KEY uq_ticket_rating (ticket_id)` ở tầng CSDL ngăn chặn triệt để tình trạng người dùng bấm gửi nhiều lần hoặc dùng công cụ tự động gửi nhiều lượt vote cho cùng một phiếu.
+
+#### Câu 17. Kiểu dữ liệu của cột `sla_factor` trong bảng `priorities` được thiết kế là `DECIMAL(3,2)`. Ưu điểm vượt trội của `DECIMAL` so với `FLOAT` hoặc `DOUBLE` trong trường hợp này là gì?
+
+- **A.** `DECIMAL` tốn ít dung lượng ổ đĩa hơn kiểu số nguyên.
+- **B.** `DECIMAL` lưu trữ số thập phân có độ chính xác tuyệt đối (Fixed-Point Arithmetic), triệt tiêu hoàn toàn sai số làm tròn số thực trong các phép tính toán thời gian cam kết SLA.
+- **C.** `DECIMAL` tự động mã hóa chuỗi thành Bcrypt.
+- **D.** `DECIMAL` chỉ dùng được trên hệ điều hành Windows.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Kiểu `DECIMAL(3,2)` (ví dụ 0.50, 0.80, 1.50) tránh được các lỗi sai số dấu phẩy động (Floating-Point Precision Issues) vốn có của `FLOAT`/`DOUBLE`, đảm bảo tính toán thời gian SLA chuẩn mực đến từng phút.
+
+#### Câu 18. Bảng `holidays` lưu trữ các ngày nghỉ lễ trường học. Tại sao bảng này không cần nối khóa ngoại (Foreign Key) trực tiếp vào bảng `tickets`?
+
+- **A.** Do MySQL không cho phép tạo quá 5 khóa ngoại trong một cơ sở dữ liệu.
+- **B.** Vì lịch nghỉ lễ áp dụng chung cho toàn trường theo khoảng thời gian thực tế; động cơ `SlaService` truy vấn động theo điều kiện `BETWEEN start_date AND end_date`.
+- **C.** Vì bảng `holidays` được lưu trữ trên một máy chủ đám mây khác.
+- **D.** Để tiết kiệm RAM của máy tính người dùng.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Ngày nghỉ lễ là dữ liệu dùng chung theo lịch dương lịch, áp dụng cho mọi phiếu tạo trong hoặc giáp kỳ nghỉ lễ; do đó động cơ SLA dùng phép so sánh khoảng ngày (`WHERE :date BETWEEN start_date AND end_date`) mà không cần FK.
+
+#### Câu 19. Trường `closed_reason` trong bảng `tickets` lưu trữ lý do kết thúc vòng đời của phiếu. Giá trị `'duplicate'` được lưu vào trường này khi nào?
+
+- **A.** Khi sinh viên đạt điểm 10 môn Lập trình Web.
+- **B.** Khi KTV hoặc Admin sử dụng tính năng 'Đóng do Trùng lặp sự cố' để gom phiếu con vào phiếu sự cố gốc (Parent Ticket).
+- **C.** Khi hệ thống bị mất điện đột ngột.
+- **D.** Khi người dùng đổi mật khẩu thành công.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Khi xử lý trùng lặp (`action=close_duplicate`), hệ thống cập nhật `status = 'closed'`, `closed_at = NOW()` và ghi nhận `closed_reason = 'duplicate'` để thống kê tỷ lệ phiếu trùng trong báo cáo tổng kết.
+
+#### Câu 20. Trong bảng liên kết nhiều-nhiều `student_classes`, cặp thuộc tính `(student_id, class_id)` được gán ràng buộc nào để đảm bảo tính toàn vẹn dữ liệu?
+
+- **A.** Chỉ mục FULLTEXT Index.
+- **B.** Khóa chính phức hợp `PRIMARY KEY (student_id, class_id)` chống việc ghi nhận trùng lặp một sinh viên hai lần vào cùng một lớp học.
+- **C.** Khóa ngoại tự tham chiếu.
+- **D.** Thuộc tính tự tăng AUTO_INCREMENT.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cặp `PRIMARY KEY (student_id, class_id)` trong bảng trung gian `student_classes` là chuẩn thiết kế 3NF cho quan hệ N-N, đảm bảo một sinh viên không thể có 2 bản ghi trong cùng một lớp.
+
+#### Câu 21. Cột `is_guest_ticket` (kiểu `TINYINT(1)`) trong bảng `tickets` phục vụ mục đích phân loại kỹ thuật nào?
+
+- **A.** Đánh dấu phiếu do robot tự động gửi.
+- **B.** Phân biệt rõ ràng giữa phiếu hỗ trợ nội bộ thông thường của người đã đăng nhập với đơn cứu hộ khẩn cấp của khách chưa đăng nhập ngoài cổng.
+- **C.** Đánh dấu phiếu cần gửi tin nhắn SMS tới phụ huynh.
+- **D.** Dùng để kích hoạt chế độ tối (Dark Mode) cho trang web.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** `is_guest_ticket = 1` đánh dấu các đơn xuất phát từ Trạm cứu hộ tài khoản khách (`GuestTicketController`), giúp hệ thống hiển thị quy trình xác thực 2 bước chuyên biệt và áp dụng mẫu tra cứu bằng mã đơn.
+
+#### Câu 22. Khi truy vấn danh sách phiếu tại `tickets/index.php`, tại sao câu lệnh SQL bắt buộc phải sử dụng `LEFT JOIN users u ON t.assigned_to = u.id` thay vì `INNER JOIN`?
+
+- **A.** Vì INNER JOIN chạy chậm hơn LEFT JOIN 10 lần.
+- **B.** Để không làm mất các phiếu mới tiếp nhận ở trạng thái `new` chưa được gán KTV nào tiếp nhận (`t.assigned_to IS NULL`).
+- **C.** Vì MySQL cấm dùng INNER JOIN với bảng users.
+- **D.** Để bảo vệ mật khẩu của Admin không bị hiển thị.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Nếu dùng `INNER JOIN`, mọi phiếu mới tạo đang ở trạng thái `new` hoặc chưa phân công KTV (`assigned_to IS NULL`) sẽ bị loại bỏ hoàn toàn khỏi kết quả truy vấn, khiến hàng đợi tiếp nhận bị trống.
+
+#### Câu 23. Cột `is_recurring` trong bảng `holidays` mang giá trị 1 biểu thị điều gì đối với cơ chế kiểm tra lịch nghỉ lễ của `SlaService`?
+
+- **A.** Ngày lễ đó chỉ diễn ra một lần duy nhất rồi tự động xóa khỏi CSDL.
+- **B.** Ngày lễ lặp lại cố định hàng năm theo ngày-tháng (ví dụ 01/01, 30/04, 02/09); động cơ SLA chỉ cần so sánh chuỗi `m-d` với ngày hiện tại mà không phụ thuộc năm.
+- **C.** Ngày lễ bắt buộc tất cả sinh viên phải đến trường lao động công ích.
+- **D.** Ngày lễ tính gấp 3 lần thời gian SLA.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Thuộc tính `is_recurring = 1` đại diện cho các ngày lễ cố định theo dương lịch hàng năm, hàm `SlaService::isHoliday()` trích xuất tháng-ngày (`format('m-d')`) để đối soát tự động cho mọi năm học tiếp theo.
+
+#### Câu 24. Bảng `password_resets` có cột `token_hash VARCHAR(64)`. Tại sao hệ thống lại lưu trữ chuỗi băm 64 ký tự thay vì lưu mã OTP gốc do người dùng nhận được?
+
+- **A.** Vì CSDL không hỗ trợ lưu chữ hoa.
+- **B.** Sử dụng thuật toán băm SHA-256 (`hash('sha256', $otp)`) để bảo vệ mã OTP, chống rò rỉ mã khôi phục ngay cả khi cơ sở dữ liệu bị lộ lọt (Data Breach).
+- **C.** Để làm cho mã token có hiệu lực vĩnh viễn.
+- **D.** Do giao thức HTTP yêu cầu bắt buộc phải lưu 64 ký tự.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Theo chuẩn an toàn OWASP, mã token khôi phục mật khẩu không bao giờ được lưu dạng văn bản thô (Plaintext). Hệ thống chỉ lưu chuỗi băm SHA-256 (`hash('sha256', $token)`), khi người dùng nhập mã sẽ băm lại để so khớp.
+
+## <a id="chuyen-de-3"></a>3. Ma trận Phân quyền RBAC, Middleware & Kiểm soát Truy cập
+
+#### Câu 25. Theo ma trận phân quyền hệ thống Helpdesk, vai trò nào có thẩm quyền độc quyền sử dụng tính năng 'Thu hồi Cảnh báo Khẩn cấp / Sự cố diện rộng' (Revoke Major Incident)?
+
+- **A.** Sinh viên gửi phiếu.
+- **B.** Kỹ thuật viên phụ trách hạ tầng.
+- **C.** Độc quyền Quản trị viên (Admin) sau khi sự cố kỹ thuật diện rộng đã được khắc phục hoàn toàn.
+- **D.** Giảng viên bộ môn.
+
+> **👉 Đáp án đúng:** [**C**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Chỉ có Quản trị viên (Admin) mới có thẩm quyền cao nhất để công bố hoặc thu hồi cảnh báo khẩn cấp diện rộng, đưa cờ `is_major_incident` về 0 và gỡ banner cảnh báo đỏ toàn trường.
+
+#### Câu 26. Khi một Sinh viên gửi request chỉnh sửa nội dung phiếu hỗ trợ tại `tickets/edit.php`, chuỗi điều kiện kiểm tra nghiệp vụ nào bắt buộc phải thỏa mãn đồng thời?
+
+- **A.** Chỉ cần sinh viên đó biết số điện thoại của KTV phụ trách.
+- **B.** Phải là người tạo phiếu (`requester_id == current_user_id`), trong vòng 15 phút đầu sau khi tạo (`TIMESTAMPDIFF(MINUTE, created_at, NOW()) <= 15`) và phiếu vẫn ở trạng thái `new` hoặc `waiting_requester`.
+- **C.** Chỉ được sửa vào ban đêm sau 22:00.
+- **D.** Phiếu phải có đánh giá CSAT 5 sao.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Quy tắc 15 phút (Golden 15-Minute Window) cho phép người tạo tự sửa sai chính tả hoặc bổ sung ảnh minh chứng chỉ trong 15 phút đầu kể từ lúc tạo, khi KTV chưa tiếp nhận xử lý.
+
+#### Câu 27. Giảng viên khi đăng nhập vào Cổng Học Phần Giảng Viên (`Lecturer Portal`) có thể xem và chấm điểm danh sách bài nộp của những sinh viên nào?
+
+- **A.** Toàn bộ sinh viên trong trường bất kể khoa nào.
+- **B.** Chỉ xem và chấm điểm được bài nộp của sinh viên thuộc các Lớp học phần do chính Giảng viên đó phụ trách giảng dạy theo phân công đào tạo.
+- **C.** Chỉ xem được bài nộp của sinh viên có điểm tổng kết trên 8.0.
+- **D.** Chỉ xem được bài nộp của sinh viên cùng quê quán.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Nguyên tắc cô lập dữ liệu học thuật (Academic Privacy Isolation) ràng buộc Giảng viên chỉ được truy xuất dữ liệu lớp học thông qua điều kiện `WHERE c.lecturer_id = :current_user_id`.
+
+#### Câu 28. Trong cơ chế đăng nhập lần đầu, điều kiện nào kích hoạt Middleware chuyển hướng người dùng bắt buộc sang trang `index.php?action=first_login`?
+
+- **A.** Khi người dùng đăng nhập từ trình duyệt Google Chrome.
+- **B.** Khi người dùng đăng nhập thành công và cờ `users.is_first_login == 1` (tài khoản mới cấp hoặc vừa được Admin reset về `123456`).
+- **C.** Khi tài khoản người dùng đã sử dụng quá 3 năm.
+- **D.** Khi người dùng đăng nhập vào ngày Chủ Nhật.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cờ `is_first_login = 1` đánh dấu tài khoản đang sử dụng mật khẩu khởi tạo mặc định `123456`, Middleware sẽ chặn mọi đường dẫn điều hướng khác và ép buộc người dùng phải đổi mật khẩu cá nhân mới.
+
+#### Câu 29. Kỹ thuật viên CNTT (Agent) có được phép tự ý thêm, sửa hoặc xóa các bản ghi ngày lễ trường học trong bảng `holidays` không?
+
+- **A.** Được phép nếu KTV đó có thâm niên làm việc trên 2 năm.
+- **B.** Tuyệt đối không; quyền cấu hình lịch nghỉ lễ trường học là độc quyền của Quản trị viên (Admin) tại phân hệ `Admin\HolidayController`.
+- **C.** Được phép nếu có sự đồng ý của Giảng viên bộ môn.
+- **D.** Được phép vào các ngày cuối tuần.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Lịch nghỉ lễ toàn trường ảnh hưởng trực tiếp đến động cơ tính hạn SLA và lịch học của hàng nghìn sinh viên, do đó quyền hạn này được khóa chặt độc quyền cho vai trò Admin.
+
+#### Câu 30. Khi KTV phát hiện sinh viên cố tình gửi phiếu spam, dùng lời lẽ xúc phạm hoặc gian lận cứu hộ, KTV bấm nút 'Báo cáo Vi phạm' thì hệ thống xử lý như thế nào?
+
+- **A.** Tự động xóa vĩnh viễn sinh viên khỏi CSDL.
+- **B.** Cập nhật `is_spam = 1`, `status = 'resolved'`, ghi nhận biên bản vi phạm và đẩy hồ sơ vào 'Trung Tâm Việc Cần Làm Cấp Bách' của Admin để xem xét kỷ luật.
+- **C.** Trừ 50% tiền học phí của sinh viên.
+- **D.** Gửi tin nhắn cảnh cáo tới nhóm Zalo phụ huynh.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Tính năng Báo cáo Vi phạm giúp KTV lập biên bản sự việc, kết thúc xử lý kỹ thuật của KTV và chuyển toàn bộ hồ sơ bằng chứng sang bảng điều khiển của Admin để Hội đồng kỷ luật xử lý.
+
+#### Câu 31. Theo quy định chuẩn hóa về phân quyền quản lý nhân sự, Kỹ thuật viên (Agent) có được tự ý bấm chuyển đổi trạng thái ca trực (`is_on_duty`) của mình trên Bàn làm việc không?
+
+- **A.** Được phép tự do bật tắt bất cứ lúc nào tùy thích.
+- **B.** Tuyệt đối không; KTV chỉ được theo dõi trạng thái ca trực (Read-only); thẩm quyền phân công và điều chuyển trạng thái ca trực `is_on_duty` thuộc độc quyền của Quản trị viên (Admin).
+- **C.** Được phép nếu nhờ sinh viên bấm hộ.
+- **D.** Được phép nếu đã hoàn thành đủ 5 phiếu trong ca.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Để đảm bảo kỷ luật ca trực và phân bổ nguồn lực công bằng, KTV không được tự ý tắt ca để né tránh nhận vé; chỉ duy nhất Admin mới có quyền điều chỉnh `is_on_duty` cho KTV trong hệ thống.
+
+#### Câu 32. Nếu một người dùng có tài khoản bị khóa vĩnh viễn với lý do `banned_rescue_abuse` cố tình gửi thông tin tại Trạm cứu hộ tài khoản khách, hệ thống sẽ phản ứng như thế nào?
+
+- **A.** Vẫn tiếp nhận và gửi mã đơn cứu hộ bình thường.
+- **B.** Hệ thống lập tức từ chối tiếp nhận, hiển thị thông báo lỗi cấm truy cập do tài khoản đã bị khóa vĩnh viễn vì hành vi nghịch phá trạm cứu hộ.
+- **C.** Tự động mở khóa tài khoản cho người dùng sau 5 phút.
+- **D.** Gửi email thông báo trúng thưởng điện thoại.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Tại `GuestTicketController::submit()`, hệ thống kiểm tra `if ($user['lock_reason'] === 'banned_rescue_abuse' || $user['lock_reason'] === 'spam')` và lập tức từ chối tiếp nhận đơn từ các tài khoản vi phạm nặng.
+
+#### Câu 33. Trong tính năng trao đổi trên phiếu hỗ trợ, khi KTV gửi một phản hồi với tùy chọn 'Ghi chú nội bộ' (`is_internal = 1`), những đối tượng nào có quyền nhìn thấy nội dung này?
+
+- **A.** Toàn bộ sinh viên trong trường.
+- **B.** Chỉ các Kỹ thuật viên (Agent) và Quản trị viên (Admin); người tạo phiếu (Sinh viên/Giảng viên) hoàn toàn không nhìn thấy.
+- **C.** Chỉ có Giảng viên bộ môn nhìn thấy.
+- **D.** Bất kỳ ai có đường link đều xem được.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Ghi chú nội bộ (`is_internal = 1`) là kênh trao đổi nghiệp vụ riêng giữa đội ngũ hỗ trợ kỹ thuật và ban quản trị, câu truy vấn hiển thị tin nhắn phía sinh viên luôn có điều kiện `AND is_internal = 0`.
+
+#### Câu 34. Trong quy trình cứu hộ tài khoản 2 bước bảo mật, thao tác 'Xác thực đơn hợp lệ Bước 1' (`rescue_verified = 1`) thuộc trách nhiệm của vai trò nào?
+
+- **A.** Bảo vệ cổng trường.
+- **B.** Kỹ thuật viên trực ca được phân công tiếp nhận đơn cứu hộ sau khi đối soát ảnh thẻ và thông tin cá nhân.
+- **C.** Sinh viên tự xác thực cho chính mình.
+- **D.** Hệ thống ngân hàng liên kết.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** KTV chuyên trách trực ca kiểm tra đối soát thẻ sinh viên/CCCD với thông tin trên CSDL; nếu hợp lệ, KTV bấm xác thực ghi nhận cờ `rescue_verified = 1` và đẩy lên cho Admin phê duyệt mở khóa.
+
+#### Câu 35. Vai trò nào trong hệ thống có thẩm quyền độc quyền thực hiện chức năng 'Bulk Import Người Dùng' từ tệp bảng tính Excel / CSV?
+
+- **A.** Sinh viên lớp trưởng.
+- **B.** Kỹ thuật viên chuyên trách mạng.
+- **C.** Độc quyền Quản trị viên (Admin) tại phân hệ Quản lý Người dùng.
+- **D.** Giảng viên trợ giảng.
+
+> **👉 Đáp án đúng:** [**C**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Chức năng nạp dữ liệu hàng loạt (Bulk Import) cho phép khởi tạo hàng trăm tài khoản và mã hóa mật khẩu Bcrypt cùng lúc, do đó thẩm quyền này được bảo vệ độc quyền cho tài khoản Admin.
+
+#### Câu 36. Khi Giảng viên đại học gửi một phiếu yêu cầu hỗ trợ sự cố phòng máy hoặc phần mềm giảng dạy, hệ thống áp dụng cơ chế ưu tiên nghiệp vụ nào?
+
+- **A.** Xếp vào hàng đợi bình thường như sinh viên, giải quyết trong 24 giờ.
+- **B.** Tự động nhận diện vai trò Giảng viên và ưu tiên cam kết thời gian xử lý nhanh trong vòng 2 giờ làm việc để không làm gián đoạn giờ giảng dạy trên lớp.
+- **C.** Tự động chuyển phiếu sang cho lớp trưởng giải quyết.
+- **D.** Từ chối tiếp nhận vì giảng viên phải tự sửa phòng máy.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Trong `SlaService.php`, logic nghiệp vụ quy định: nếu người gửi là giảng viên (`userType === 'lecturer'`) với mức ưu tiên Khẩn cấp/Cao, thời gian cam kết SLA tự động đưa về chuẩn 2 giờ (120 phút).
+
+## <a id="chuyen-de-4"></a>4. Thuật toán Điều phối Triage & Quản lý Ca trực KTV
+
+#### Câu 37. Thuật toán điều phối thông minh trong `TicketService::dispatchAgent($categoryId)` ưu tiên gán phiếu hỗ trợ mới cho đối tượng KTV nào đầu tiên?
+
+- **A.** Gán ngẫu nhiên cho bất kỳ nhân viên nào trong trường.
+- **B.** KTV có chuyên môn trùng khớp (`specialty_category_id = category_id`), đang trong ca trực do Admin phân công (`is_on_duty = 1`) và chưa vượt ngưỡng kịch tải (`current_active_count < max_capacity`).
+- **C.** Gán thẳng cho Admin hệ thống.
+- **D.** Gán cho KTV có số điện thoại đẹp nhất.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Bước 1 của thuật toán Triage luôn tìm KTV chuyên trách nhóm dịch vụ (`specialty_category_id = category_id`) đang bật trực ca (`is_on_duty = 1`, `is_active = 1`) và còn slot xử lý để đảm bảo chất lượng chuyên môn cao nhất.
+
+#### Câu 38. Hạn mức tải tối đa (Max Capacity) mặc định được thiết lập cho mỗi Kỹ thuật viên trong hệ thống là bao nhiêu phiếu đang xử lý đồng thời?
+
+- **A.** 5 phiếu.
+- **B.** 15 phiếu đang hoạt động ở các trạng thái `new`, `in_progress`, `waiting_requester`.
+- **C.** 50 phiếu.
+- **D.** Không giới hạn số lượng.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hệ thống cấu hình ngưỡng an toàn `max_capacity = 15` phiếu/KTV. Khi số phiếu active đạt mốc 15, KTV được coi là kịch tải và hệ thống tự động kích hoạt cơ chế tràn tải sang người khác.
+
+#### Câu 39. Khi KTV chuyên trách đang nghỉ ca (`is_on_duty = 0`) hoặc đã đạt ngưỡng kịch tải (15 phiếu), thuật toán Triage sẽ kích hoạt cơ chế nào?
+
+- **A.** Lập tức hủy bỏ phiếu sự cố của sinh viên.
+- **B.** Cơ chế Tràn tải / Điều phối dự phòng (Overflow Dispatch): tự động tìm KTV khác đang trực (`is_on_duty = 1`) có số phiếu đang xử lý ít nhất để phân công tạm thời.
+- **C.** Bắt sinh viên phải chờ đợi 7 ngày.
+- **D.** Tự động tắt máy chủ CSDL.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cơ chế Overflow Dispatch quét danh sách KTV đang trực (`is_on_duty = 1`) và sắp xếp theo `current_active_count ASC` để gán cho KTV có tải nhẹ nhất, ngăn ngừa nghẽn hàng đợi.
+
+#### Câu 40. Khi sinh viên tạo đơn cứu hộ tại Trạm cứu hộ tài khoản khách mà KTV Nguyễn Văn An (Chuyên trách SSO) đang nghỉ ca (`is_on_duty = 0`), hệ thống tiếp nhận và phân công đơn như thế nào?
+
+- **A.** Vẫn cố tình gán cho KTV An bất kể đang nghỉ.
+- **B.** Thuật toán Triage tự động nhận diện KTV An đang nghỉ ca và điều phối dự phòng sang KTV khác đang trực ca (ví dụ KTV Trần Thị Bích), ghi rõ lý do điều phối trên thông báo.
+- **C.** Báo lỗi hệ thống đóng cửa và yêu cầu sinh viên quay lại vào tuần sau.
+- **D.** Xóa tài khoản của sinh viên.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Tại `GuestTicketController` và `index.php`, hệ thống gọi `TicketService::dispatchAgent(1)`. Khi KTV chuyên trách có `is_on_duty = 0`, đơn cứu hộ tự động chuyển sang KTV trực ca thay thế có tải thấp nhất.
+
+#### Câu 41. Trong tình huống giả định khẩn cấp khi toàn bộ 5 KTV đều đang nghỉ ca (`is_on_duty = 0`), thuật toán Triage xử lý phiếu sự cố mới như thế nào?
+
+- **A.** Xóa toàn bộ CSDL của nhà trường.
+- **B.** Phiếu được lưu an toàn vào hàng đợi ở trạng thái `new` gán cho KTV chuyên trách để sẵn sàng xử lý ngay khi KTV vào ca trực tiếp theo.
+- **C.** Gửi tin nhắn phạt tiền sinh viên.
+- **D.** Tự động đánh dấu phiếu là đã giải quyết xong.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Khi tất cả KTV đều nghỉ, hệ thống kích hoạt cơ chế Fallback Queue: phiếu được lưu an toàn vào hàng đợi của KTV chuyên trách danh mục đó để giao ban xử lý vào ca làm việc kế tiếp.
+
+#### Câu 42. Khi KTV nhận phiếu nhưng phát hiện sự cố thuộc chuyên môn của bộ môn khác (ví dụ từ Mạng sang LMS), thao tác 'Chuyển giao phiếu' (Re-assignment) ghi nhận lịch sử vào bảng nào?
+
+- **A.** Bảng `holidays`.
+- **B.** Ghi nhận thông tin chuyển giao kèm lý do bàn giao vào bảng `ticket_replies` để minh bạch lịch sử xử lý và theo dõi trách nhiệm.
+- **C.** Bảng `classes`.
+- **D.** Bảng `courses`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Mọi thao tác chuyển giao chuyên môn (Re-assign) đều được hệ thống tự động chèn một bản ghi ghi chú vào bảng `ticket_replies` nêu rõ KTV chuyển giao, KTV tiếp nhận và lý do bàn giao.
+
+#### Câu 43. Quy tắc tính điểm KPI hoàn thành nhiệm vụ của Kỹ thuật viên trong hệ thống Helpdesk được quy định như thế nào?
+
+- **A.** KTV nào nhận chuyển giao phiếu nhiều nhất sẽ được điểm cao nhất.
+- **B.** Điểm KPI hoàn thành phiếu chỉ được tính cho KTV xử lý cuối cùng &ndash; người trực tiếp đưa phiếu về trạng thái `resolved` và nhận nghiệm thu đánh giá CSAT từ người dùng.
+- **C.** Chia đều điểm cho toàn bộ KTV trong trường.
+- **D.** Chỉ tính KPI cho Admin.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Quy tắc KTV xử lý cuối cùng (Final Resolver Credit) ngăn ngừa tình trạng KTV nhận phiếu rồi chuyển tiếp lòng vòng để lấy thành tích; chỉ người thực sự giải quyết triệt để sự cố mới được ghi nhận KPI.
+
+#### Câu 44. Khi một phiếu sự cố bị các KTV chuyển giao liên tiếp vượt quá 3 lần, hệ thống sẽ kích hoạt phản ứng nghiệp vụ nào?
+
+- **A.** Tự động đóng phiếu và trừ điểm sinh viên.
+- **B.** Kích hoạt cảnh báo đỏ 'Đùn đẩy phiếu / Bất thường' trên Dashboard của Admin để lãnh đạo Trung tâm CNTT can thiệp chỉ định KTV chịu trách nhiệm dứt điểm.
+- **C.** Xóa tài khoản của 3 KTV đó.
+- **D.** Gửi phiếu sang trường đại học khác.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Chỉ số chuyển giao quá 3 lần (Ticket Ping-pong Alert) là cơ chế kiểm soát chất lượng dịch vụ, giúp Admin phát hiện ngay các sự cố khó hoặc hiện tượng đùn đẩy trách nhiệm để chỉ đạo trực tiếp.
+
+#### Câu 45. Cột `active_tickets_count` trong bảng `users` được cập nhật vào những thời điểm nào trong vòng đời xử lý phiếu?
+
+- **A.** Chỉ cập nhật 1 lần duy nhất vào ngày đầu năm mới.
+- **B.** Tự động tăng khi có phiếu mới được gán cho KTV và tự động giảm khi phiếu được chuyển sang trạng thái kết thúc (`resolved` hoặc `closed`).
+- **C.** Chỉ cập nhật khi KTV đăng xuất.
+- **D.** Không bao giờ thay đổi.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** `active_tickets_count` phản ánh số phiếu đang gánh trên vai KTV ở thời gian thực (`status IN ('new', 'in_progress', 'waiting_requester')`), giúp thuật toán cân bằng tải đưa ra quyết định chuẩn xác.
+
+#### Câu 46. Khi KTV mở Modal 'Đóng phiếu do Trùng lặp sự cố', danh sách các phiếu sự cố cha trong dropdown (`parent_ticket_id`) được lọc theo điều kiện bắt buộc nào?
+
+- **A.** Hiển thị toàn bộ các phiếu đã đóng từ năm trước.
+- **B.** Chỉ hiển thị các phiếu ĐANG TRONG QUÁ TRÌNH XỬ LÝ (`status IN ('new', 'in_progress', 'waiting_requester')`), ưu tiên các Sự cố diện rộng (Major Incident) đang diễn ra.
+- **C.** Chỉ hiển thị các phiếu do chính sinh viên đó tạo.
+- **D.** Hiển thị các phiếu có điểm CSAT 1 sao.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Dropdown chọn phiếu cha bắt buộc phải lọc `status IN ('new', 'in_progress', 'waiting_requester')` vì theo chuẩn ITIL, chỉ sự cố đang diễn ra mới được làm phiếu gốc gom nhóm các phiếu con mới phát sinh.
+
+#### Câu 47. Tại sao hệ thống cấm chọn một phiếu đã ở trạng thái `resolved` hoặc `closed` làm Phiếu Cha (Parent Ticket) khi gom nhóm sự cố trùng lặp?
+
+- **A.** Vì CSDL MySQL không hỗ trợ số nguyên lớn.
+- **B.** Vì phiếu đã giải quyết xong trong quá khứ không thể đại diện cho sự cố kỹ thuật đang diễn ra ở hiện tại; gộp vào phiếu đã đóng sẽ làm sinh viên mới không được hỗ trợ.
+- **C.** Để bắt buộc KTV phải tạo thêm tài khoản mới.
+- **D.** Do hệ điều hành máy chủ cấm chọn phiếu cũ.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Gom nhóm phiếu con vào một phiếu đã đóng là lỗi logic nghiêm trọng trong ITIL Incident Management: phiếu con sẽ bị 'bỏ rơi' mà không có ai tiếp tục xử lý lỗi kỹ thuật.
+
+#### Câu 48. Khi KTV bấm nút 'Nghiệm Thu Xong' đưa phiếu về trạng thái `resolved`, KTV bắt buộc phải hoàn thành nội dung nào trong Modal nghiệm thu?
+
+- **A.** Điền số thẻ ngân hàng của sinh viên.
+- **B.** Ghi rõ nội dung biên bản giải pháp kỹ thuật cụ thể đã áp dụng để khắc phục triệt để sự cố cho người dùng.
+- **C.** Tải lên video nhảy múa giải trí.
+- **D.** Điền mã số định danh CCCD của KTV.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** KTV bắt buộc phải nhập `solution` (giải pháp kỹ thuật) trước khi hoàn tất phiếu, nội dung này được gửi cho sinh viên kiểm tra và lưu vào kho tri thức Knowledge Base để tái sử dụng.
+
+#### Câu 49. Trong máy trạng thái (State Machine), khi KTV gửi một tin nhắn trao đổi công khai cho sinh viên, trạng thái phiếu sẽ tự động luân chuyển thành trạng thái nào?
+
+- **A.** `closed`.
+- **B.** `waiting_requester` (Chờ người dùng kiểm tra và phản hồi xác nhận).
+- **C.** `resolved`.
+- **D.** `new`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cơ chế State Machine tự động: khi KTV gửi tin nhắn công khai yêu cầu sinh viên cung cấp thêm thông tin hoặc thử lại, phiếu chuyển sang `waiting_requester` để tạm dừng đồng hồ SLA của KTV.
+
+## <a id="chuyen-de-5"></a>5. Động cơ SLA Giờ Hành chính, Cơ chế Pause SLA & Lịch Nghỉ lễ
+
+#### Câu 50. Trong `SlaService.php`, khung giờ làm việc buổi chiều của Trung tâm CNTT được định nghĩa chính xác từ mấy giờ đến mấy giờ?
+
+- **A.** 13:00 đến 17:00.
+- **B.** 13:30 đến 17:30 (4 tiếng làm việc = 240 phút hành chính).
+- **C.** 14:00 đến 18:00.
+- **D.** 12:00 đến 16:30.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cấu hình chuẩn trong `SlaService`: Buổi sáng `08:00 - 12:00` (240 phút), Buổi chiều `13:30 - 17:30` (240 phút), tổng một ngày làm việc hành chính là đúng 8 tiếng (480 phút).
+
+#### Câu 51. Khoảng thời gian nghỉ trưa từ `12:00` đến `13:30` (90 phút) được thuật toán `SlaService::addBusinessMinutes()` xử lý như thế nào?
+
+- **A.** Vẫn tính giờ làm việc bình thường và phạt KTV nếu không trực trưa.
+- **B.** Đóng băng hoàn toàn đồng hồ đếm SLA; số phút công việc còn lại sẽ được cộng tiếp tục bắt đầu từ mốc 13:30 chiều.
+- **C.** Tự động hủy bỏ phiếu hỗ trợ.
+- **D.** Tự động cộng thêm 5 tiếng vào hạn SLA.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Động cơ SLA đóng băng trong giờ nghỉ trưa (12:00 - 13:30): nếu phiếu cần thêm thời gian khi chạm mốc 12:00, thuật toán sẽ tự động dời sang 13:30 để tiếp tục tính các phút làm việc còn lại.
+
+#### Câu 52. Nếu người dùng tạo phiếu vào lúc `16:30` chiều Thứ Sáu với thời hạn cam kết là 2.0 giờ làm việc (120 phút), mốc `due_at` chính xác sẽ là thời điểm nào?
+
+- **A.** 18:30 tối Thứ Sáu.
+- **B.** Thứ Hai tuần kế tiếp lúc 09:00 sáng (Thứ Sáu tính 1h từ 16:30 đến 17:30; đóng băng Thứ 7, CN; sáng Thứ Hai tính tiếp 1h từ 08:00 đến 09:00).
+- **C.** 12:00 trưa Thứ Bảy.
+- **D.** 08:00 sáng Thứ Hai.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Chiều Thứ Sáu chỉ còn 60 phút làm việc (16:30 - 17:30), 60 phút còn lại được bảo lưu qua 2 ngày nghỉ cuối tuần (Thứ 7 & CN) và được tính vào đầu giờ sáng Thứ Hai (08:00 + 60 phút = 09:00).
+
+#### Câu 53. Khi phiếu hỗ trợ đang ở trạng thái `waiting_requester`, bộ đếm giờ cam kết SLA của KTV hoạt động như thế nào theo chuẩn quy trình ITIL v4?
+
+- **A.** Tiếp tục chạy bình thường để ép KTV phải tự mò mẫm sửa lỗi.
+- **B.** Tự động tạm dừng (Pause SLA clock), đóng băng thời gian cam kết và không tính vi phạm quá hạn cho KTV trong suốt thời gian chờ người dùng phản hồi.
+- **C.** Trừ 5 điểm KPI của sinh viên mỗi giờ.
+- **D.** Đặt lại hạn SLA về 00:00.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Theo chuẩn ITIL v4, khi KTV đang chờ phản hồi xác nhận từ người dùng (`waiting_requester`), SLA phải được Pause để đảm bảo tính công bằng và đánh giá đúng hiệu suất thực tế của đội ngũ kỹ thuật.
+
+#### Câu 54. Trên giao diện danh sách phiếu (`tickets/index.php`) và hàng đợi KTV (`agent/index.php`), phiếu đang ở trạng thái `waiting_requester` sẽ hiển thị huy hiệu SLA nào thay vì còi báo động quá hạn đỏ?
+
+- **A.** QUÁ HẠN KHẨN CẤP.
+- **B.** Huy hiệu màu tím `⏸️ TẠM DỪNG SLA (Chờ phản hồi)`.
+- **C.** ĐÃ HỦY VÉ.
+- **D.** KHÔNG CÓ HẠN.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hệ thống hiển thị huy hiệu màu tím `⏸️ TẠM DỪNG SLA (Chờ phản hồi)` và loại trừ trạng thái này khỏi bộ đếm vi phạm quá hạn, giúp giao diện làm việc minh bạch và rõ ràng.
+
+#### Câu 55. Công thức tính tổng thời gian cam kết thực tế (Effective SLA Minutes) trong `SlaService.php` được biểu diễn như thế nào?
+
+- **A.** `effectiveMinutes = slaHours + priorityId`.
+- **B.** `effectiveMinutes = round(slaHours * slaFactor * 60)`.
+- **C.** `effectiveMinutes = slaHours / 60`.
+- **D.** `effectiveMinutes = slaFactor * 100`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Công thức chuẩn: Lấy số giờ chuẩn của danh mục (`slaHours`) nhân với hệ số điều chỉnh ưu tiên (`slaFactor`) rồi nhân với 60 phút để ra tổng số phút làm việc hành chính cam kết.
+
+#### Câu 56. Đối với danh mục Tài khoản & Xác thực SSO (`sla_hours = 2.0`), nếu phiếu có mức ưu tiên Khẩn cấp (URGENT với `sla_factor = 0.50`), thời gian cam kết giải quyết thực tế là bao nhiêu?
+
+- **A.** 2.0 giờ (120 phút).
+- **B.** 1.0 giờ (60 phút làm việc hành chính).
+- **C.** 4.0 giờ (240 phút).
+- **D.** 30 phút.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Áp dụng công thức: `2.0 giờ * 0.50 * 60 phút = 60 phút (1.0 giờ)`. Mức Khẩn cấp rút ngắn một nửa thời gian cam kết để KTV ưu tiên xử lý tức thời.
+
+#### Câu 57. Đối với danh mục Email Trường & M365 (`sla_hours = 4.0`), nếu phiếu có mức ưu tiên Thấp (LOW với `sla_factor = 1.50`), thời gian cam kết giải quyết thực tế là bao nhiêu?
+
+- **A.** 4.0 giờ (240 phút).
+- **B.** 6.0 giờ (360 phút làm việc hành chính).
+- **C.** 8.0 giờ (480 phút).
+- **D.** 1.5 giờ (90 phút).
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Áp dụng công thức: `4.0 giờ * 1.50 * 60 phút = 360 phút (6.0 giờ)`. Mức Thấp cho phép kéo dài thời gian thêm 50% đối với các yêu cầu không cấp bách.
+
+#### Câu 58. Khi tính toán hạn SLA cho phiếu hỗ trợ được tạo vào ngày Thứ Bảy hoặc Chủ Nhật, thuật toán `SlaService::moveToNextWorkingTime()` xử lý mốc bắt đầu như thế nào?
+
+- **A.** Vẫn tính giờ ngay trong ngày Thứ Bảy.
+- **B.** Tự động dời mốc bắt đầu tính giờ làm việc sang đúng 08:00 sáng Thứ Hai của tuần làm việc kế tiếp.
+- **C.** Từ chối tiếp nhận và xóa phiếu.
+- **D.** Chuyển sang 12:00 trưa Chủ Nhật.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hai ngày cuối tuần hoàn toàn không phải ngày làm việc của KTV (`isWorkingDay() = false`), do đó điểm mốc tính giờ hành chính tự động dịch chuyển đến đầu giờ sáng Thứ Hai (08:00).
+
+#### Câu 59. Giả sử ngày 02/09 rơi vào Thứ Ba và được Admin khai báo trong bảng `holidays`. Một phiếu gửi lúc `17:00` chiều Thứ Hai (01/09) với hạn SLA là 2.0 giờ sẽ đến hạn vào thời điểm nào?
+
+- **A.** 19:00 tối Thứ Hai 01/09.
+- **B.** Sáng Thứ Tư (03/09) lúc 09:00 sáng (vì chiều Thứ Hai tính 30 phút từ 17:00-17:30, toàn bộ ngày Thứ Ba 02/09 nghỉ lễ được loại trừ, sáng Thứ Tư tính tiếp 90 phút từ 08:00-09:30... chính xác là 09:30).
+- **C.** 12:00 trưa Thứ Ba 02/09.
+- **D.** 08:00 sáng Thứ Ba 02/09.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Chiều Thứ Hai chỉ còn 30 phút làm việc (17:00 - 17:30). Cả ngày Thứ Ba nghỉ lễ 02/09 được bỏ qua 100%. Sáng Thứ Tư tính tiếp 90 phút còn lại từ 08:00 đến 09:30 sáng.
+
+#### Câu 60. Hạn chót tiếp nhận ban đầu (Triage Due At) cam kết tối đa cho đội ngũ KTV kể từ khi phiếu được tạo ra trên hệ thống là bao nhiêu phút làm việc hành chính?
+
+- **A.** 5 phút.
+- **B.** 15 phút hành chính.
+- **C.** 60 phút.
+- **D.** 120 phút.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Chỉ số Triage SLA cam kết phản hồi/tiếp nhận ban đầu trong vòng 15 phút làm việc hành chính (`addBusinessMinutes($now, 15)`) để người dùng an tâm rằng yêu cầu đã có người tiếp nhận.
+
+#### Câu 61. Mức độ ưu tiên Cao (HIGH) trong bảng `priorities` có hệ số nhân `sla_factor` được cấu hình là bao nhiêu để rút ngắn 20% thời gian cam kết giải quyết?
+
+- **A.** `1.00`.
+- **B.** `0.80` (rút ngắn 20% thời gian cam kết).
+- **C.** `0.50`.
+- **D.** `1.20`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Mức Cao (HIGH) có `sla_factor = 0.80`, giúp rút ngắn 20% thời gian giải quyết đối với các sự cố ảnh hưởng đến công việc quan trọng nhưng chưa phải cấp cứu khẩn cấp.
+
+#### Câu 62. Khi một phiếu hỗ trợ đã trôi qua mốc `due_at` mà trạng thái vẫn chưa đưa về `resolved` hoặc `closed` (và không ở trạng thái `waiting_requester`), hệ thống thể hiện điều gì?
+
+- **A.** Tự động xóa sạch dữ liệu của KTV.
+- **B.** Kích hoạt nhãn đỏ cảnh báo nhấp nháy `⏰ QUÁ HẠN SLA`, đếm số phút chậm trễ và tính vào tỷ lệ vi phạm SLA trên báo cáo KPI của KTV.
+- **C.** Tự động hoàn tiền học phí cho sinh viên.
+- **D.** Khóa cổng đăng nhập của KTV.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Khi `due_at < NOW()` và phiếu chưa hoàn tất (ngoại trừ lúc pause), hệ thống hiển thị cảnh báo đỏ quá hạn trên cả Dashboard Admin, Bàn làm việc KTV và trừ điểm KPI tuân thủ SLA.
+
+## <a id="chuyen-de-6"></a>6. Luồng Nghiệp vụ Trạm Cứu hộ, Quên Mật khẩu SSPR & Đổi Mật khẩu
+
+#### Câu 63. Tại sao Trạm cứu hộ tài khoản khách (`GuestTicketController`) chỉ cấp duy nhất Mã đơn cứu hộ mà tuyệt đối không bắt người dùng phải nhớ thêm mã PIN?
+
+- **A.** Vì CSDL MySQL không lưu được số PIN.
+- **B.** Tinh gọn tối đa trải nghiệm người dùng (UX): người dùng đã bị khóa tài khoản và quên mật khẩu thì không nên ép họ phải gánh thêm áp lực ghi nhớ mã PIN phức tạp dễ thất lạc.
+- **C.** Do mã PIN tốn nhiều tiền bản quyền phần mềm.
+- **D.** Để bảo vệ máy chủ không bị quá tải.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Quy trình tinh gọn chỉ dùng duy nhất Mã đơn cứu hộ chuẩn hóa (ví dụ `#HD-2026-3110-0G04V1`) làm khóa tra cứu kết hợp đối soát thông tin cá nhân, nâng cao tính khả dụng và giảm khiếu nại.
+
+#### Câu 64. Trong quy trình cứu hộ tài khoản 2 bước bảo mật, thao tác nghiệp vụ của Kỹ thuật viên ở Bước 1 là gì?
+
+- **A.** Tự ý đặt lại mật khẩu của sinh viên thành ngày sinh nhật.
+- **B.** Kiểm tra đối soát hình ảnh chụp thẻ sinh viên/CCCD đính kèm với dữ liệu hồ sơ trong CSDL trường; nếu hợp lệ thì bấm nút xác thực ghi nhận cờ `rescue_verified = 1`.
+- **C.** Xóa tài khoản sinh viên để tạo lại từ đầu.
+- **D.** Chuyển tiền hỗ trợ vào tài khoản sinh viên.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** KTV ở Bước 1 chỉ có quyền xác thực tính hợp lệ của hồ sơ minh chứng (`rescue_verified = 1`), không được quyền tự ý mở khóa hoặc đổi mật khẩu trực tiếp nhằm đảm bảo kiểm soát chéo.
+
+#### Câu 65. Khi Admin bấm nút 'Phê duyệt Mở khóa Tài khoản' ở Bước 2 của trạm cứu hộ, hệ thống tự động thực hiện những cập nhật nào vào bảng `users`?
+
+- **A.** Chỉ đổi tên sinh viên thành Admin.
+- **B.** Đặt lại mật khẩu mã hóa Bcrypt về `123456`, mở khóa `is_active = 1`, reset số lần sai `failed_attempts = 0`, xóa `locked_until = NULL`, và bật cờ `is_first_login = 1`.
+- **C.** Xóa sinh viên khỏi danh sách lớp học.
+- **D.** Khóa tài khoản sinh viên thêm 30 ngày.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Admin phê duyệt mở khóa sẽ kích hoạt chuỗi lệnh: gỡ khóa tài khoản (`is_active = 1`), reset số lần nhập sai, cấp mật khẩu tạm mặc định `123456` và kích hoạt `is_first_login = 1` để ép đổi mật khẩu.
+
+#### Câu 66. Hàm `TicketRepository::findDuplicateGuest($userId)` áp dụng cơ chế nghiệp vụ nào để ngăn chặn hành vi spam phá hoại trạm cứu hộ?
+
+- **A.** Chặn không cho sinh viên nộp bài tập lớn.
+- **B.** Kiểm tra nếu người dùng đã có đơn cứu hộ chưa đóng (`status != 'closed'`) hoặc đã gửi đơn trong ngày hôm nay (`DATE(created_at) = CURDATE()`) thì lập tức chặn gửi mới và điều hướng xem lại tiến độ đơn cũ.
+- **C.** Tự động khóa máy tính của người gửi.
+- **D.** Gửi thông báo cảnh sát mạng.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Chống spam trạm cứu hộ: một sinh viên chỉ được phép có 1 đơn cứu hộ đang mở hoặc 1 đơn trong ngày; hệ thống điều hướng trực tiếp sang trang `guest_lookup` kèm mã đơn cũ để theo dõi.
+
+#### Câu 67. Trong tính năng Quên mật khẩu tự phục vụ (SSPR), mã OTP ngẫu nhiên do hàm `PasswordReset::generateAlphabeticOtp(6)` sinh ra có đặc điểm bảo mật và UX nào đặc biệt?
+
+- **A.** Gồm 6 chữ số từ 0 đến 9.
+- **B.** Gồm 6 chữ cái in hoa ngẫu nhiên nhưng đã loại bỏ triệt để hai ký tự `I` và `O` để người dùng không bao giờ bị gõ nhầm với số `1` và số `0`.
+- **C.** Luôn cố định là chuỗi `AAAAAA`.
+- **D.** Chứa các ký tự đặc biệt tiếng Trung Quốc.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hàm sinh OTP chữ cái thông minh loại bỏ chữ `I` và `O` giúp loại trừ 100% các lỗi nhìn nhầm giữa `I` với `1` và `O` với `0`, giảm tối đa sự bực bội của người dùng khi nhập mã trên điện thoại.
+
+#### Câu 68. Thời hạn hiệu lực an toàn của mã token khôi phục mật khẩu gửi qua email trường cấp được quy định chính xác là bao nhiêu phút?
+
+- **A.** 1 phút.
+- **B.** Chính xác 15 phút kể từ thời điểm phát hành qua email (`expires_at = NOW() + INTERVAL 15 MINUTE`).
+- **C.** 24 giờ.
+- **D.** Vĩnh viễn không bao giờ hết hạn.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Theo chuẩn an ninh OWASP SSPR, thời hạn hiệu lực của OTP/token khôi phục mật khẩu phải đủ ngắn (15 phút) để giảm thiểu cửa sổ tấn công nếu hòm thư của người dùng bị lộ.
+
+#### Câu 69. Khi người dùng yêu cầu khôi phục mật khẩu mới tại `forgot_password`, hệ thống thực hiện thao tác gì với các token cũ của tài khoản đó trong bảng `password_resets`?
+
+- **A.** Giữ nguyên tất cả token cũ để dùng lại.
+- **B.** Tự động xóa bỏ toàn bộ các bản ghi token cũ của tài khoản đó (`DELETE FROM password_resets WHERE user_id = :uid`) nhằm ngăn chặn tấn công phát lại (Replay Attack).
+- **C.** Chuyển token cũ sang cho bạn cùng lớp.
+- **D.** Gửi toàn bộ token cũ lên mạng xã hội.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Nguyên tắc One-Active-Token: mỗi tài khoản chỉ được phép tồn tại duy nhất một token khôi phục hợp lệ tại một thời điểm, các token phát hành trước đó đều bị tiêu hủy ngay lập tức.
+
+#### Câu 70. Tiện ích trải nghiệm người dùng (UX) trên màn hình web ngay sau khi người dùng gửi yêu cầu khôi phục mật khẩu thành công hiển thị những tính năng gì?
+
+- **A.** Một trò chơi điện tử để giết thời gian.
+- **B.** Đồng hồ đếm ngược 15:00 trực quan thông báo thời hạn hiệu lực của token và nút bấm tiện ích `📬 Mở tab Gmail của bạn ➔` trên trình duyệt.
+- **C.** Danh sách điểm học phần của sinh viên.
+- **D.** Bắt buộc người dùng phải điền thêm thông tin gia đình.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Giao diện hiển thị đồng hồ đếm ngược 15 phút để nhắc nhở người dùng nhanh chóng vào hòm thư, kèm nút bấm một chạm mở tab webmail (Gmail/Outlook) trên trình duyệt giúp trải nghiệm mượt mà.
+
+#### Câu 71. Khi sinh viên thiết lập mật khẩu mới tại màn hình `reset_password`, hệ thống kiểm tra những điều kiện ràng buộc an toàn nào đối với mật khẩu mới?
+
+- **A.** Chỉ cần mật khẩu có ít nhất 1 chữ số.
+- **B.** Độ dài tối thiểu >= 6 ký tự, không được đặt lại về mật khẩu mặc định `123456`, và bắt buộc không được trùng với mật khẩu cũ hiện tại (kiểm tra qua `password_verify()`).
+- **C.** Mật khẩu bắt buộc phải trùng với mã số sinh viên.
+- **D.** Không có bất kỳ ràng buộc nào.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hệ thống kiểm tra 3 tầng an ninh: độ dài tối thiểu, chặn mật khẩu khởi tạo phổ biến `123456`, và dùng `password_verify($newPass, $currentHash)` để ngăn người dùng đặt lại đúng mật khẩu cũ.
+
+#### Câu 72. Cột `is_first_login` trong bảng `users` được cập nhật lại thành giá trị gì sau khi người dùng đổi mật khẩu lần đầu thành công?
+
+- **A.** `1`.
+- **B.** `0` (đánh dấu tài khoản đã được bảo vệ bằng mật khẩu riêng, giải phóng quyền truy cập đầy đủ).
+- **C.** `NULL`.
+- **D.** `-1`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cập nhật `is_first_login = 0` giúp giải phóng tài khoản khỏi trạng thái bắt buộc đổi mật khẩu, người dùng sẽ không bị Middleware chặn lại ở các lần đăng nhập tiếp theo.
+
+#### Câu 73. Trên trang tra cứu đơn cứu hộ `guest_lookup`, nếu người dùng nhập mã của một phiếu nội bộ thông thường (ví dụ phiếu học phần nộp bài) thay vì mã đơn cứu hộ, hệ thống phản ứng ra sao?
+
+- **A.** Hiển thị công khai toàn bộ thông tin phiếu nội bộ cho người ngoài xem.
+- **B.** Nhận diện đây là phiếu nội bộ (`is_guest_ticket = 0`), giấu kín thông tin và hiển thị thông báo yêu cầu người dùng đăng nhập tài khoản trường để xem tiến độ.
+- **C.** Xóa phiếu nội bộ đó ngay lập tức.
+- **D.** Tự động giải quyết phiếu.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cơ chế bảo vệ dữ liệu cá nhân: nếu `$ticket && empty($ticket['is_guest_ticket'])`, hệ thống bật cờ `isInternalTicket = true` và yêu cầu đăng nhập, không để lộ nội dung trao đổi nội bộ ra ngoài cổng khách.
+
+#### Câu 74. Cơ chế khóa mềm tài khoản (Soft Lock) tự động kích hoạt khi người dùng gõ sai mật khẩu bao nhiêu lần liên tiếp trên hệ thống?
+
+- **A.** Sai 1 lần.
+- **B.** Gõ sai mật khẩu quá 5 lần liên tiếp sẽ bị khóa tạm thời 30 phút qua trường `locked_until = NOW() + INTERVAL 30 MINUTE`.
+- **C.** Sai 20 lần.
+- **D.** Không bao giờ khóa tài khoản.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cơ chế chống dò quét mật khẩu (Anti-Brute Force): trường `failed_attempts` tăng dần sau mỗi lần sai; khi đạt mốc 5 lần, hệ thống gán `locked_until` 30 phút và chặn đăng nhập đến khi hết hạn.
+
+#### Câu 75. Trong môi trường thử nghiệm localhost không có kết nối máy chủ gửi thư SMTP Internet, email reset mật khẩu và thông báo được ghi nhận vào đâu để kiểm thử trực quan?
+
+- **A.** Tự động in ra máy in để bàn.
+- **B.** Ghi nhận đầy đủ vào hòm thư ảo `storage/mailbox.json` với giao diện xem hòm thư tích hợp sẵn trên hệ thống.
+- **C.** Gửi qua tin nhắn Telegram của Admin.
+- **D.** Bị hủy bỏ hoàn toàn không lưu vết.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Dịch vụ gửi thư phát hiện môi trường Localhost sẽ tự động tuần tự hóa thư thành JSON và lưu vào `storage/mailbox.json`, cho phép lập trình viên và giáo viên chấm thi kiểm tra nội dung email ngay lập tức.
+
+## <a id="chuyen-de-7"></a>7. Quản lý Học phần, Bài tập Buổi học & Nghiệm thu CSAT 5 Sao
+
+#### Câu 76. Tính năng 'Cứu hộ Buổi học' (Lesson Rescue Ticket) liên kết chặt chẽ với bảng nào trong CSDL để chỉ định chính xác bài tập mà sinh viên gặp sự cố nộp bài?
+
+- **A.** Bảng `holidays`.
+- **B.** Bảng `lessons` thông qua khóa ngoại `tickets.lesson_id` trỏ tới bài tập buổi học cụ thể.
+- **C.** Bảng `password_resets`.
+- **D.** Bảng `classes`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Phiếu cứu hộ buổi học gắn với `tickets.lesson_id`, tự động trích xuất thông tin học phần, buổi học, hạn chót deadline và nội dung đề bài để KTV và Giảng viên đối soát nguyên nhân trễ bài.
+
+#### Câu 77. Khi sinh viên nộp tệp bài tập thực hành lên Cổng Học Phần, tệp đính kèm được hệ thống lưu trữ vào thư mục nào trên máy chủ với quy tắc đặt tên ra sao?
+
+- **A.** Lưu thẳng vào thư mục `C:\Windows\System32`.
+- **B.** Lưu vào thư mục `uploads/assignments/` với tiền tố tên tệp chuẩn hóa `sub_{student_id}_lesson{lesson_id}_{timestamp}.ext` nhằm chống trùng lặp và an toàn tải lên.
+- **C.** Lưu vào thư mục gốc của ổ cứng D.
+- **D.** Lưu tạm trong RAM máy tính.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Dịch vụ nộp bài đặt tên file theo cấu trúc `sub_{student_id}_lesson{lesson_id}_{timestamp}.{ext}`, lưu riêng biệt trong `uploads/assignments/` để Giảng viên dễ dàng tải về chấm bài theo từng sinh viên.
+
+#### Câu 78. Giảng viên phụ trách bộ môn thực hiện chấm điểm và ghi nhận nhận xét bài tập của sinh viên tại bảng nào trong CSDL?
+
+- **A.** Bảng `ticket_replies`.
+- **B.** Bảng `assignments` với hai trường thông tin nghiệp vụ chính là `score` (thang điểm 10 hệ số thập phân) và `feedback` (nhận xét đánh giá của giảng viên).
+- **C.** Bảng `priorities`.
+- **D.** Bảng `categories`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Bảng `assignments` lưu trữ toàn bộ trạng thái nộp bài của sinh viên; khi Giảng viên chấm bài, hệ thống cập nhật `score`, `feedback` và thời điểm chấm `graded_at`.
+
+#### Câu 79. Sau khi sinh viên đã nộp bài tập lớn thành công, sinh viên có được phép nộp lại hoặc cập nhật file bài tập mới không?
+
+- **A.** Tuyệt đối không được nộp lại trong bất kỳ trường hợp nào.
+- **B.** Được phép cập nhật nộp lại file mới miễn là thời điểm nộp lại vẫn còn nằm trước hạn chót Deadline của buổi học đó.
+- **C.** Được nộp lại sau khi kỳ học đã kết thúc 1 năm.
+- **D.** Chỉ được nộp lại nếu trả thêm phí chấm bài.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Quy chế học phần hỗ trợ sinh viên nộp đè bản cập nhật bài tập lớn trước hạn deadline (`NOW() <= due_date`), file cũ được thay thế bằng file mới và hệ thống cập nhật lại thời điểm `submitted_at`.
+
+#### Câu 80. Quy trình đánh giá chất lượng dịch vụ CSAT (Customer Satisfaction) được kích hoạt hiển thị cho sinh viên vào thời điểm nào trong vòng đời phiếu?
+
+- **A.** Ngay khi sinh viên vừa bấm nút gửi phiếu hỗ trợ mới.
+- **B.** Khi KTV đã khắc phục xong sự cố và chuyển trạng thái phiếu sang `resolved` (Đã giải quyết), sinh viên nhận thông báo vào nghiệm thu kết quả.
+- **C.** Sau khi sinh viên đã tốt nghiệp ra trường.
+- **D.** Chỉ kích hoạt vào ngày Nhà giáo Việt Nam 20/11.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** CSAT chỉ xuất hiện khi phiếu ở trạng thái `resolved`: KTV đã giải quyết xong và mời người dùng vào kiểm tra nghiệm thu thực tế, đánh giá từ 1 đến 5 sao trước khi phiếu chính thức đóng hoàn tất.
+
+#### Câu 81. Hệ thống Helpdesk CNTT Nhóm 1 thiết kế trải nghiệm đánh giá chất lượng CSAT theo mô hình hiện đại nào của các ứng dụng công nghệ phổ biến (Grab / Be / Shopee)?
+
+- **A.** Gửi thư tay qua đường bưu điện.
+- **B.** Bộ chọn 5 ngôi sao trực quan tương tác (Interactive 5-Star Rating) kèm ô nhập nhận xét góp ý nhanh và các nhãn gợi ý cảm xúc.
+- **C.** Gọi điện thoại tự động ghi âm.
+- **D.** Bắt sinh viên đến trực tiếp văn phòng trường để làm bài khảo sát trắc nghiệm 50 câu.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Giao diện CSAT được thiết kế chuẩn UX hiện đại với 5 ngôi sao vàng trực quan, sinh viên có thể chấm điểm nhanh 1-5 sao và để lại lời cảm ơn hoặc góp ý chỉ trong 1 thao tác bấm chuột.
+
+#### Câu 82. Điểm đánh giá CSAT trung bình của mỗi Kỹ thuật viên (ví dụ: ⭐ 4.9 / 5.0) được hệ thống tính toán và hiển thị công khai ở những khu vực nào?
+
+- **A.** Chỉ Admin mới xem được trong cơ sở dữ liệu ngầm.
+- **B.** Hiển thị công khai cạnh tên KTV trên Bàn làm việc KTV (Agent Workspace), Admin Dashboard và thẻ thông tin người tiếp nhận trên chi tiết phiếu.
+- **C.** Đăng tải lên báo chí truyền thông.
+- **D.** In thành bảng vàng treo ở cổng trường.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Điểm sao CSAT trung bình được tính bằng `AVG(score)` từ bảng `ticket_ratings` và hiển thị minh bạch cạnh tên KTV, tạo động lực cạnh tranh lành mạnh và nâng cao tinh thần phục vụ người học.
+
+#### Câu 83. Nếu sau khi KTV chuyển phiếu sang trạng thái `resolved` mà sinh viên không vào đánh giá CSAT thì hệ thống xử lý như thế nào sau 24 giờ?
+
+- **A.** Tự động trừ 1 điểm rèn luyện của sinh viên.
+- **B.** Cơ chế tự động đóng (Auto-close): hệ thống tự động chuyển trạng thái phiếu từ `resolved` sang `closed` với lý do hoàn tất mặc định sau 24 giờ để không tồn đọng phiếu.
+- **C.** Khóa tài khoản KTV phụ trách.
+- **D.** Gửi phiếu quay lại trạng thái `new`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Quy tắc tự động đóng sau 24 giờ (24h Auto-close Rule) là chuẩn mực ITIL v4: nếu người dùng hài lòng và không phản hồi thêm trong 24h, phiếu sẽ tự động đóng để KTV được ghi nhận KPI.
+
+#### Câu 84. Nếu sự cố kỹ thuật của sinh viên vẫn chưa được khắc phục triệt để sau khi KTV bấm `resolved`, sinh viên sử dụng tính năng gì trên giao diện?
+
+- **A.** Gửi đơn khiếu nại lên Bộ Giáo dục.
+- **B.** Bấm nút 'Yêu cầu Hỗ trợ lại / Mở lại phiếu' (Reopen Ticket), nhập lý do cụ thể để phiếu quay về trạng thái `in_progress` cho KTV tiếp tục xử lý.
+- **C.** Đổi mật khẩu tài khoản của KTV.
+- **D.** Tạo thêm 10 phiếu mới giống hệt nhau.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Nút 'Yêu cầu tiếp tục hỗ trợ' (Reopen Ticket) kèm Modal nhập lý do mở lại giúp sinh viên phản hồi ngay khi giải pháp của KTV chưa triệt để, bảo đảm quyền lợi tối đa cho người học.
+
+#### Câu 85. Khi phiếu hỗ trợ được sinh viên kích hoạt mở lại (Reopened), trường dữ liệu `reopen_count` trong bảng `tickets` thay đổi như thế nào?
+
+- **A.** Được đặt lại về số 0.
+- **B.** Tự động tăng thêm 1 đơn vị (`reopen_count = reopen_count + 1`) và hệ thống hiển thị huy hiệu cảnh báo tím `🔄 MỞ LẠI (X LẦN)` trên danh sách vé.
+- **C.** Tự động nhân đôi số tiền học phí.
+- **D.** Bị xóa khỏi CSDL.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** `reopen_count` đếm số lần sinh viên phải mở lại phiếu, giúp Admin và trưởng bộ môn đo lường chỉ số FCR (First Contact Resolution - Tỷ lệ giải quyết dứt điểm ngay lần đầu) của đội ngũ KTV.
+
+#### Câu 86. Giảng viên có thể xuất bảng điểm và danh sách nộp bài tập của lớp học phần ra định dạng tệp nào để lưu trữ hoặc nộp báo cáo cho Phòng Đào tạo?
+
+- **A.** Tệp âm thanh MP3.
+- **B.** Định dạng tệp CSV chuẩn UTF-8 có chèn ký tự BOM (`\xEF\xBB\xBF`) giúp hiển thị hoàn hảo tiếng Việt có dấu trên Microsoft Excel mà không bị lỗi font.
+- **C.** Tệp Photoshop PSD.
+- **D.** Tệp video MP4.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hàm xuất CSV chèn chuỗi BOM UTF-8 (`\xEF\xBB\xBF`) ở đầu tệp, giúp phần mềm Microsoft Excel tự động nhận diện bảng mã UTF-8 tiếng Việt chuẩn mực mà người dùng không cần chỉnh tay.
+
+#### Câu 87. Cơ chế 'Chặn sinh viên nộp bài trễ hạn' được thực hiện bằng phép so sánh thời gian nào giữa thời điểm nộp và dữ liệu trong bảng `lessons`?
+
+- **A.** So sánh ngày sinh của sinh viên với ngày lễ.
+- **B.** So sánh thời điểm hiện tại `NOW()` với trường thời hạn chót nộp bài `lessons.due_date`; nếu `NOW() > due_date` thì khóa form nộp và hiển thị thông báo đã hết hạn.
+- **C.** So sánh số lượng sinh viên trong lớp với sĩ số tối đa.
+- **D.** So sánh mã sinh viên với mã khóa học.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Kiểm tra deadline: hệ thống so khớp thời gian thực tế `time() > strtotime($lesson['due_date'])`; khi quá hạn, form tải file bị vô hiệu hóa và sinh viên được hướng dẫn tạo phiếu 'Cứu hộ buổi học' nếu có lý do chính đáng.
+
+## <a id="chuyen-de-8"></a>8. An toàn Thông tin, Chống Tấn công Web & Xử lý Ngoại lệ Edge Cases
+
+#### Câu 88. Để triệt tiêu hoàn toàn lỗ hổng SQL Injection trên toàn bộ hệ thống, chuẩn mực lập trình nào bắt buộc phải tuân thủ nghiêm ngặt trong mã nguồn PHP PDO?
+
+- **A.** Ghép trực tiếp biến `$_GET` và `$_POST` vào câu lệnh SQL bằng toán tử dấu chấm `.`. 
+- **B.** Bắt buộc sử dụng Prepared Statements với các tham số giữ chỗ ràng buộc (`$pdo->prepare()` và `$stmt->execute([':param' => $value])`), tuyệt đối không nối chuỗi biến ngoài vào SQL.
+- **C.** Chỉ sử dụng cơ sở dữ liệu trên tệp Excel.
+- **D.** Tắt tính năng thông báo lỗi của máy chủ.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Kỹ thuật Prepared Statements tách rời hoàn toàn mã lệnh SQL và dữ liệu đầu vào của người dùng, CSDL biên dịch cấu trúc trước rồi mới gắn giá trị, khiến kẻ tấn công không thể bẻ gãy cú pháp SQL.
+
+#### Câu 89. Kỹ thuật xử lý dữ liệu nào được áp dụng khi xuất báo cáo ra file CSV nhằm triệt tiêu lỗ hổng tấn công CSV Formula Injection (Excel Macro Injection)?
+
+- **A.** Chuyển toàn bộ nội dung thành hình ảnh.
+- **B.** Tự động kiểm tra và chèn thêm dấu nháy đơn `'` hoặc loại bỏ các ký tự khởi đầu công thức nguy hiểm (`=`, `+`, `-`, `@`) ở đầu mỗi ô dữ liệu trước khi ghi ra tệp CSV.
+- **C.** Đổi đuôi file thành `.exe`.
+- **D.** Nén tệp bằng mật khẩu 50 ký tự.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Lỗ hổng CSV Injection xảy ra khi ô dữ liệu bắt đầu bằng `=`, `+`, `-`, `@` bị Excel hiểu là lệnh thực thi mã độc. Thêm dấu nháy đơn `'` phía trước ép Excel hiểu ô đó chỉ là văn bản thuần túy (Text literal).
+
+#### Câu 90. Để ngăn ngừa lỗ hổng Cross-Site Scripting (XSS) khi hiển thị tiêu đề phiếu, tên người dùng hoặc nội dung trao đổi ra màn hình trình duyệt, hàm PHP nào được sử dụng bắt buộc?
+
+- **A.** `md5()`.
+- **B.** `htmlspecialchars($string, ENT_QUOTES, 'UTF-8')`.
+- **C.** `base64_encode()`.
+- **D.** `strtoupper()`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hàm `htmlspecialchars()` chuyển đổi các ký tự nguy hiểm của HTML như `<`, `>`, `&`, `"`, `'` thành các thực thể an toàn tương ứng (như `&lt;`, `&gt;`), ngăn ngừa trình duyệt thực thi mã JavaScript độc hại.
+
+#### Câu 91. Khi người dùng tải tệp minh chứng hoặc bài tập lên máy chủ, quy trình thẩm định an toàn tệp tải lên (File Upload Security) kiểm tra những yếu tố nào?
+
+- **A.** Chỉ kiểm tra tên người nộp bài có đẹp hay không.
+- **B.** Kiểm tra mã lỗi upload `UPLOAD_ERR_OK`, đối soát đuôi tệp trong Whitelist an toàn (`jpg, png, pdf, zip`), giới hạn dung lượng tệp và đổi tên file bằng hàm băm ngẫu nhiên chống Path Traversal.
+- **C.** Cho phép tải lên mọi loại tệp kể cả file thực thi `.exe`, `.php`, `.sh`.
+- **D.** Tự động gửi tệp lên mạng xã hội.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Dịch vụ `UploadService` kiểm tra nghiêm ngặt Whitelist định dạng, kiểm tra dung lượng an toàn và tạo tên tệp ngẫu nhiên mới lưu vào thư mục riêng, triệt tiêu hoàn toàn tấn công ghi đè file hoặc thực thi webshell.
+
+#### Câu 92. Cơ chế chống tấn công giả mạo yêu cầu chéo trang (Cross-Site Request Forgery &ndash; CSRF) trong các biểu mẫu thay đổi dữ liệu quan trọng hoạt động ra sao?
+
+- **A.** Bắt người dùng phải quét vân tay trước mỗi lần bấm nút.
+- **B.** Khởi tạo một mã token ngẫu nhiên bí mật lưu trong `$_SESSION['csrf_token']`, nhúng vào thẻ `<input type="hidden" name="csrf_token">` và kiểm tra so khớp token này ở mỗi request POST gửi lên.
+- **C.** Chỉ cho phép truy cập web từ máy tính ở thư viện.
+- **D.** Tự động chặn tất cả người dùng sau 18:00 tối.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Mã CSRF Token bí mật được sinh ngẫu nhiên theo từng phiên làm việc của người dùng, kẻ tấn công từ trang web thứ ba không thể đoán được token này để thực thi các lệnh POST trái phép nhân danh người dùng.
+
+#### Câu 93. Tại sao thuật toán mã hóa mật khẩu của hệ thống sử dụng hàm `password_hash($password, PASSWORD_BCRYPT)` thay vì các hàm băm cũ như `md5()` hay `sha1()`?
+
+- **A.** Vì Bcrypt chạy nhanh hơn MD5 gấp 100 lần.
+- **B.** Bcrypt tự động tích hợp muối (Salt) ngẫu nhiên cho từng tài khoản và có độ phức tạp tính toán (Work Factor) cao, chống bẻ khóa hiệu quả trước các cuộc tấn công dùng bảng cầu vồng (Rainbow Table).
+- **C.** Do MD5 không dùng được trên điện thoại.
+- **D.** Bcrypt tự động dịch mật khẩu sang tiếng Anh.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** MD5 và SHA-1 đã lỗi thời và dễ dàng bị bẻ khóa trong vài giây bằng GPU. Bcrypt là thuật toán băm chậm thích ứng (Adaptive Slow Hash), tích hợp muối tự động, là chuẩn mực bảo mật mật khẩu quốc tế hiện nay.
+
+#### Câu 94. Khi người dùng gửi một biểu mẫu có tệp tải lên vượt quá giới hạn cấu hình `upload_max_filesize` của PHP trong `php.ini`, hệ thống xử lý ngoại lệ như thế nào?
+
+- **A.** Hệ thống bị sập hoàn toàn và hiển thị màn hình trắng (White Screen of Death).
+- **B.** Bắt mã lỗi `UPLOAD_ERR_INI_SIZE` từ mảng `$_FILES['attachment']['error']`, lưu thông báo lỗi thân thiện vào flash message và điều hướng an toàn về form cũ để người dùng chọn tệp nhẹ hơn.
+- **C.** Tự động xóa tài khoản của người gửi.
+- **D.** Tự động nén tệp lại còn 0 byte.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hệ thống kiểm tra mã lỗi `$_FILES['attachment']['error'] === UPLOAD_ERR_INI_SIZE` và hiển thị cảnh báo thân thiện cho người dùng biết tệp vượt quá dung lượng quy định, bảo vệ máy chủ hoạt động ổn định.
+
+#### Câu 95. Khi xảy ra sự cố đứt cáp quang mạng hoặc lỗi máy chủ Canvas LMS diện rộng toàn trường, tính năng 'Báo Cáo Sự Cố Diện Rộng' (Major Incident) mang lại lợi ích gì cho hệ thống?
+
+- **A.** Tự động cho toàn bộ sinh viên nghỉ học 1 tuần.
+- **B.** Admin công bố Banner cảnh báo đỏ toàn trường, thông báo cho người dùng biết sự cố đã được tiếp nhận và cho phép gộp hàng loạt phiếu con vào phiếu cha (`parent_ticket_id`), ngăn chặn nguy cơ vỡ tải KTV.
+- **C.** Xóa toàn bộ bài tập của sinh viên.
+- **D.** Tự động gửi tin nhắn đòi nợ.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cơ chế Major Incident chuẩn ITIL: công bố thông tin tức thời cho toàn trường để sinh viên không hoang mang và không tiếp tục tạo thêm hàng trăm phiếu rác cùng một vấn đề, giúp KTV tập trung sửa lỗi hạ tầng.
+
+#### Câu 96. Khi một Phiếu Sự Cố Cha (Major Incident) được Admin hoặc KTV xử lý xong và chuyển sang trạng thái hoàn tất, các phiếu con liên kết (`parent_ticket_id = ID_Cha`) sẽ được xử lý như thế nào?
+
+- **A.** Các phiếu con vẫn bị bỏ mặc không ai giải quyết.
+- **B.** Hệ thống tự động cập nhật đồng loạt các phiếu sự cố con sang trạng thái hoàn tất kèm thông báo giải pháp kỹ thuật, tiết kiệm tối đa thời gian thao tác thủ công cho đội ngũ hỗ trợ.
+- **C.** Xóa sạch toàn bộ các phiếu con khỏi CSDL.
+- **D.** Chuyển các phiếu con sang trường khác.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cơ chế đóng hàng loạt (Cascade Resolution) theo chuẩn ITIL: đóng phiếu sự cố gốc sẽ tự động kích hoạt cập nhật trạng thái `resolved`/`closed` cho toàn bộ các phiếu con kèm thông báo gửi đến từng sinh viên.
+
+#### Câu 97. Để ngăn ngừa nguy cơ bị chiếm đoạt phiên làm việc (Session Fixation Attack), hàm PHP nào được hệ thống gọi ngay sau khi người dùng xác thực mật khẩu thành công tại `login.php`?
+
+- **A.** `session_destroy()`.
+- **B.** `session_regenerate_id(true)` để cấp một định danh phiên làm việc mới hoàn toàn và hủy bỏ ID phiên cũ.
+- **C.** `session_unset()`.
+- **D.** `session_abort()`.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** `session_regenerate_id(true)` thay đổi Session ID của người dùng ngay thời điểm chuyển từ trạng thái khách sang trạng thái đã đăng nhập, vô hiệu hóa hoàn toàn mọi nỗ lực cài sẵn ID phiên của kẻ tấn công.
+
+#### Câu 98. Trong trường hợp CSDL MySQL gặp sự cố kết nối hoặc quá tải đột ngột, khối xử lý ngoại lệ `try ... catch (\PDOException $e)` ở các Controller phản ứng ra sao để bảo vệ hệ thống?
+
+- **A.** In toàn bộ tên đăng nhập, mật khẩu CSDL và cấu trúc bảng lỗi ra màn hình để người dùng đọc.
+- **B.** Bắt trọn vẹn ngoại lệ, ghi log lỗi nội bộ trên máy chủ và hiển thị thông báo lỗi thân thiện, bảo mật thông tin kiến trúc hạ tầng trước kẻ gian.
+- **C.** Tự động tắt nguồn máy tính của người dùng.
+- **D.** Tự động tạo ra một CSDL mới trên Facebook.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Nguyên tắc an ninh Error Handling: không bao giờ để lộ thông báo lỗi CSDL (Database Stack Trace) ra giao diện người dùng; hệ thống ghi log bảo mật và trả về giao diện thông báo hệ thống đang bảo trì.
+
+#### Câu 99. Cơ chế 'Bảng dữ liệu có thể thu gọn' (Collapsible Data Tables) với nút bấm 'Ẩn bảng / Hiện bảng' trên giao diện quản trị mang lại giá trị thực tiễn nào cho trải nghiệm người dùng?
+
+- **A.** Tự động xóa vĩnh viễn các bản ghi trong bảng khi bấm ẩn.
+- **B.** Cho phép người dùng chủ động tùy biến ẩn bớt các khối thông tin phụ hoặc danh sách dài để tập trung vào các tác vụ khẩn cấp, giảm tải thị giác và tối ưu hóa không gian làm việc trên màn hình nhỏ.
+- **C.** Làm cho trang web chạy chậm hơn.
+- **D.** Dùng để che giấu các sai phạm của KTV.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Collapsible UI nâng cao tính công thái học (Ergonomics): người dùng có thể đóng gọn các bảng dữ liệu lịch sử hoặc thống kê ít dùng để màn hình làm việc thoáng đãng và thao tác nhanh chóng hơn.
+
+#### Câu 100. Khi một sinh viên cố tình sử dụng công cụ tự động (Bot Script) gửi liên tiếp hàng chục request tạo phiếu trong thời gian ngắn, hệ thống chặn đứng hành vi này bằng tầng phòng thủ nào?
+
+- **A.** Hệ thống chấp nhận tất cả các phiếu và gửi cho KTV xử lý mệt mỏi.
+- **B.** Tầng kiểm soát trùng lặp 3 lớp trong `TicketRepository::findDuplicate()` kết hợp kiểm tra danh mục, bài học và trạng thái phiếu đang mở, ngay lập tức chặn đứng và chuyển hướng xem phiếu cũ.
+- **C.** Tự động gửi tin nhắn báo công an.
+- **D.** Tự động đăng ký thêm 5 môn học cho sinh viên.
+
+> **👉 Đáp án đúng:** [**B**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Bộ lọc kiểm soát trùng lặp 3 lớp (Anti-Spam & Duplicate Shield) phát hiện ngay việc người gửi đang có phiếu chưa hoàn tất hoặc đã gửi phiếu cùng mảng trong ngày, từ chối tạo mới và bảo vệ hàng đợi SLA không bị ngập lụt.
 
 ---
 
-### PHẦN 3: PHÂN QUYỀN RBAC & VAI TRÒ NGƯỜI DÙNG (CÂU 28 - 40)
+## <a id="bang-dap-an"></a>📊 BẢNG TỔNG HỢP ĐÁP ÁN 100 CÂU HỎI
 
-#### Câu 28. Hệ thống Helpdesk phân chia người dùng thành bao nhiêu vai trò chính (Roles) trong ma trận kiểm soát truy cập RBAC?
-- A. 2 vai trò: Khách và Thành viên.
-- B. 3 vai trò: Sinh viên, Giáo viên, Giám đốc.
-- C. 4 vai trò: `student` (hoặc `requester`), `agent` (KTV), `lecturer` (Giảng viên), `admin` (Quản trị viên).
-- D. 6 vai trò khác nhau.
-
-#### Câu 29. Vai trò nào trong hệ thống có thẩm quyền tạo bài học mới, đăng tải tài liệu slide và thiết lập hạn nộp bài tập (`deadline_at`)?
-- A. Kỹ thuật viên (`agent`).
-- B. Sinh viên (`student`).
-- C. Giảng viên phụ trách lớp học phần (`lecturer`).
-- D. Trưởng phòng tài vụ.
-
-#### Câu 30. Vai trò nào chịu trách nhiệm xác thực kỹ thuật khách quan trên hệ thống log (`it_verified = 1`) khi sinh viên gặp lỗi mạng/LMS không nộp được bài?
-- A. Giảng viên bộ môn.
-- B. Kỹ thuật viên CNTT (`agent`).
-- C. Lớp trưởng lớp sinh hoạt.
-- D. Ban Giám hiệu nhà trường.
-
-#### Câu 31. Khi sự cố kỹ thuật được KTV xác nhận hợp lệ, ai là người duy nhất nắm thẩm quyền học thuật để bấm "Phê duyệt gia hạn hạn nộp bài"?
-- A. Quản trị viên hệ thống.
-- B. Kỹ thuật viên xử lý ticket.
-- C. Giảng viên phụ trách trực tiếp lớp học phần đó (`lecturer`).
-- D. Sinh viên tự gia hạn cho mình.
-
-#### Câu 32. Trong quy trình Trạm Cứu Hộ tài khoản khách, vai trò nào có thẩm quyền thực hiện Bước 2: "Phê duyệt mở khóa tài khoản"?
-- A. Kỹ thuật viên.
-- B. Quản trị viên cấp cao (`admin`).
-- C. Giảng viên chủ nhiệm.
-- D. Bất kỳ người dùng nào truy cập vào trang.
-
-#### Câu 33. Cột trạng thái học tập `academic_status` của sinh viên trong bảng `users` có thể nhận những giá trị nào?
-- A. `online`, `offline`, `away`.
-- B. `studying` (đang học), `suspended` (đình chỉ tạm thời), `expelled` (buộc thôi học do kỷ luật), `graduated` (đã tốt nghiệp).
-- C. `vip`, `normal`, `gold`.
-- D. `pass`, `fail`.
-
-#### Câu 34. Điều gì sẽ xảy ra nếu một sinh viên có trạng thái `academic_status = 'expelled'` cố gắng đăng nhập vào hệ thống?
-- A. Đăng nhập bình thường nhưng không được gửi ticket.
-- B. Hệ thống lập tức từ chối xác thực, thông báo tài khoản bị kỷ luật buộc thôi học và chặn hoàn toàn tính năng khôi phục mật khẩu SSPR.
-- C. Hệ thống tự động chuyển tài khoản sang vai trò Giảng viên.
-- D. Đăng nhập được nhưng bị ẩn ảnh đại diện.
-
-#### Câu 35. Trường `is_on_duty` (trạng thái ca trực) của Kỹ thuật viên trong bảng `users` có tác dụng gì đối với bộ máy điều phối tự động?
-- A. Để chấm công nhận lương cuối tháng.
-- B. Chỉ những KTV đang bật trạng thái trực (`is_on_duty = 1`) và tài khoản đang hoạt động (`is_active = 1`) mới được thuật toán tự động gán vé mới.
-- C. Để hiển thị màu áo của KTV trên hệ thống.
-- D. Không có tác dụng trong mã nguồn.
-
-#### Câu 36. Nếu một Kỹ thuật viên xin nghỉ ốm đột xuất, ai là người có thẩm quyền chuyển trạng thái ca trực (`is_on_duty = 0`) để họ không bị thuật toán tự động điều phối thêm vé mới vào ca của mình?
-- A. Bản thân KTV tự ý bấm tắt ca trực bất cứ lúc nào.
-- B. Độc quyền Quản trị viên (Admin) phê duyệt và chuyển trạng thái ca trực (`is_on_duty = 0`) trong phân hệ Quản lý Người dùng.
-- C. Xóa tài khoản của mình khỏi CSDL.
-- D. Nhờ sinh viên không gửi ticket nữa.
-
-#### Câu 37. Theo nguyên tắc bảo mật thông tin cá nhân (Privacy Isolation), Sinh viên A có xem được danh sách phiếu hỗ trợ của Sinh viên B không?
-- A. Xem được nếu biết mã sinh viên của bạn B.
-- B. Xem được toàn bộ vì hệ thống mở công khai.
-- C. Tuyệt đối không; câu truy vấn SQL của Sinh viên luôn bị ràng buộc điều kiện cứng `WHERE requester_id = :current_user_id`.
-- D. Xem được nếu cùng lớp sinh hoạt.
-
-#### Câu 38. Kỹ thuật viên CNTT (Agent) có quyền sửa đổi điểm số bài tập của sinh viên trong môn Lập trình Web không?
-- A. Có quyền sửa nếu sinh viên nhờ hỗ trợ.
-- B. Không có quyền; nghiệp vụ chấm điểm và sửa điểm hoàn toàn bị giới hạn bởi middleware kiểm tra vai trò Giảng viên (`LecturerMiddleware`).
-- C. Có quyền sửa nếu được Admin cho phép bằng văn bản.
-- D. Có quyền sửa trong vòng 24 giờ.
-
-#### Câu 39. Giảng viên X có thể xem danh sách nộp bài và chấm điểm cho lớp học phần do Giảng viên Y phụ trách không?
-- A. Có thể xem và chấm tự do bất kỳ môn nào.
-- B. Không; Controller đối soát nghiêm ngặt `lecturer_id = current_user_id` trong bảng `course_assignments`, từ chối truy cập nếu không được phân công.
-- C. Có thể xem nếu dạy cùng khoa CNTT.
-- D. Chỉ được xem danh sách nhưng không được bấm chấm điểm.
-
-#### Câu 40. Quản trị viên (Admin) và Kỹ thuật viên (Agent) có thể xem được nội dung các ghi chú nội bộ (`is_internal = 1`) trong phiếu hỗ trợ không?
-- A. Chỉ Admin xem được, KTV không xem được.
-- B. Cả Admin và KTV đều xem được để phối hợp nghiệp vụ, trong khi vai trò Sinh viên và Khách bị ẩn hoàn toàn trường này.
-- C. Sinh viên xem được nếu đã gửi đánh giá CSAT.
-- D. Không ai xem được vì tin nhắn bị mã hóa một chiều.
-
----
-
-### PHẦN 4: VÒNG ĐỜI TICKET, ITIL v4 & ĐIỀU PHỐI TRIAGE (CÂU 41 - 55)
-
-#### Câu 41. Trật tự vòng đời trạng thái chuẩn (Status Lifecycle) của một phiếu hỗ trợ trong hệ thống diễn ra như thế nào?
-- A. `closed` &rarr; `resolved` &rarr; `new`.
-- B. `new` (Mới tạo) &rarr; `in_progress` (Đang xử lý) &rarr; `waiting_requester` (Chờ người dùng phản hồi) &rarr; `resolved` (Đã giải quyết) &rarr; `closed` (Đóng phiếu).
-- C. `pending` &rarr; `approved` &rarr; `rejected`.
-- D. `draft` &rarr; `published` &rarr; `archived`.
-
-#### Câu 42. Khi một sinh viên gửi thành công một yêu cầu hỗ trợ mới qua biểu mẫu, trạng thái khởi tạo ban đầu của phiếu luôn là gì?
-- A. `in_progress`.
-- B. `resolved`.
-- C. `new`.
-- D. `waiting_requester`.
-
-#### Câu 43. Thuật toán phân công thông minh (Smart Auto-Dispatching) trong `TicketService.php` ưu tiên gán vé cho ai?
-- A. Gán ngẫu nhiên cho bất kỳ người dùng nào trong trường.
-- B. Gán cho KTV có chuyên môn trùng với danh mục sự cố (`specialty_category_id = category_id`), đang trong ca trực (`is_on_duty = 1`), và có số lượng vé đang xử lý (`active_tickets_count`) ít nhất.
-- C. Luôn gán cho Admin cao nhất xử lý.
-- D. Gán cho KTV có tuổi đời lớn nhất.
-
-#### Câu 44. Trường hợp không có KTV nào đúng chuyên môn danh mục đang bật ca trực, thuật toán điều phối xử lý ra sao?
-- A. Báo lỗi 500 và từ chối lưu phiếu vào CSDL.
-- B. Tìm KTV bất kỳ khác đang trong ca trực có tải công việc thấp nhất để gán; nếu không có ai trực sẽ để vé ở trạng thái chờ và gửi thông báo cảnh báo cho Admin.
-- C. Tự động xóa phiếu sau 5 phút.
-- D. Chuyển ticket về email của Giảng viên.
-
-#### Câu 45. Kỹ thuật viên đang phụ trách phiếu được phép thực hiện thao tác "Chuyển giao phiếu" (Reassign) khi nào?
-- A. Bất cứ khi nào KTV cảm thấy lười xử lý mà không cần lý do.
-- B. Khi kiểm tra nội dung sự cố và nhận thấy vấn đề thuộc chuyên môn của KTV khác (ví dụ từ Mạng sang Phần mềm đào tạo), kèm theo lý do bàn giao bắt buộc lưu vào nhật ký.
-- C. Chỉ khi sinh viên yêu cầu đổi KTV.
-- D. Hệ thống không cho phép chuyển giao phiếu.
-
-#### Câu 46. Theo quy tắc nghiệp vụ ITIL, điểm số KPI hoàn thành phiếu và điểm đánh giá sao CSAT sẽ được hệ thống tính cho ai?
-- A. KTV đầu tiên nhận vé nhưng đã bấm chuyển giao đi.
-- B. Chia đều cho tất cả các KTV trong ca trực.
-- C. Tính duy nhất cho Kỹ thuật viên phụ trách xử lý cuối cùng (người đưa trạng thái phiếu về `resolved` và nhận đánh giá CSAT của người dùng).
-- D. Luôn tính KPI cho Quản trị viên.
-
-#### Câu 47. Cơ chế "Cảnh báo đùn đẩy trách nhiệm" trong hệ thống sẽ tự động kích hoạt cảnh báo đỏ gửi tới Admin khi nào?
-- A. Khi phiếu bị chuyển giao (Reassign) qua lại quá 3 lần giữa các KTV.
-- B. Khi phiếu chưa được xem sau 10 phút.
-- C. Khi sinh viên chấm 1 sao.
-- D. Khi ticket có tệp đính kèm lớn hơn 10MB.
-
-#### Câu 48. Trạng thái `waiting_requester` (Chờ người gửi phản hồi) được KTV sử dụng trong tình huống nào?
-- A. Khi KTV đã giải quyết xong sự cố và đi về.
-- B. Khi KTV cần người dùng cung cấp thêm thông tin minh chứng, ảnh chụp màn hình lỗi rõ hơn hoặc yêu cầu xác nhận kết quả thử nghiệm.
-- C. Khi KTV muốn từ chối xử lý phiếu.
-- D. Khi CSDL bị mất kết nối mạng.
-
-#### Câu 49. Trong thời gian phiếu ở trạng thái `waiting_requester`, bộ đếm giờ hạn cam kết SLA sẽ hoạt động thế nào?
-- A. Tiếp tục chạy bình thường để ép KTV phải tự đoán lỗi.
-- B. Tạm dừng (Pause SLA clock) thời gian cam kết của KTV để bảo đảm tính công bằng, chỉ tính tiếp khi người dùng đã gửi tin nhắn phản hồi.
-- C. Tự động trừ điểm KPI của sinh viên.
-- D. Đặt lại thời gian SLA về 0 giờ.
-
-#### Câu 50. Để tránh tình trạng một sinh viên bấm gửi liên tục nhiều phiếu cùng một nội dung (Spam/Duplicate tickets), hệ thống áp dụng cơ chế gì?
-- A. Giới hạn mỗi sinh viên chỉ được tạo tối đa 1 phiếu trong suốt khóa học.
-- B. Kiểm tra truy vấn CSDL: nếu sinh viên đang có phiếu chưa hoàn tất (`status NOT IN ('resolved', 'closed')`) trong cùng một danh mục hoặc buổi học, hệ thống sẽ chặn gửi mới và điều hướng xem lại phiếu cũ.
-- C. Trừ tiền tài khoản sinh viên mỗi lần tạo phiếu.
-- D. Bắt buộc sinh viên phải chờ 7 ngày mới được tạo phiếu mới.
-
-#### Câu 51. Cấu trúc chuẩn của mã định danh phiếu hỗ trợ (`ticket_code`) trong hệ thống có dạng mẫu nào?
-- A. Số tăng dần đơn thuần: `1`, `2`, `3`.
-- B. Định dạng tiêu chuẩn ITIL: `HD-YYYY-DDMM-XXXXXX` (Ví dụ: `HD-2026-3110-0G04V1`).
-- C. Tên sinh viên viết liền không dấu: `nguyenvana`.
-- D. Số chứng minh thư nhân dân của người tạo phiếu.
-
-#### Câu 52. Ai là người có quyền đưa phiếu từ trạng thái `resolved` (Đã giải quyết) sang `closed` (Đóng phiếu hoàn tất)?
-- A. Chỉ có Bộ Giáo dục và Đào tạo.
-- B. Chính người tạo phiếu (Sinh viên/Giảng viên) sau khi xác nhận đã hài lòng, hoặc hệ thống tự động đóng sau một khoảng thời gian chờ không có khiếu nại.
-- C. Bất kỳ ai trên Internet.
-- D. Phiếu sau khi `resolved` sẽ không bao giờ chuyển sang `closed`.
-
-#### Câu 53. Khi một phiếu đã được KTV chuyển sang trạng thái `resolved`, người dùng sẽ nhìn thấy khối chức năng nào xuất hiện trên giao diện?
-- A. Nút bấm xóa tài khoản.
-- B. Khung đánh giá chất lượng dịch vụ CSAT (Chọn từ 1 đến 5 sao và nhập nhận xét góp ý).
-- C. Nút bấm thanh toán tiền phí hỗ trợ.
-- D. Form đăng ký môn học lại.
-
-#### Câu 54. Nếu người dùng nhận thông báo phiếu đã `resolved` nhưng kiểm tra thực tế vẫn còn lỗi, họ có thể làm gì?
-- A. Không thể làm gì khác ngoài việc tạo tài khoản mới.
-- B. Gửi tin nhắn phản hồi yêu cầu mở lại phiếu (Reopen ticket), hệ thống tự động chuyển trạng thái phiếu trở lại `in_progress` để KTV tiếp tục hỗ trợ.
-- C. Báo công an xử lý.
-- D. Hệ thống khóa luôn quyền truy cập của người dùng.
-
-#### Câu 55. Khối chức năng "Trung Tâm Việc Cần Làm Cấp Bách" trên Dashboard của KTV và Admin làm nhiệm vụ gì?
-- A. Hiển thị danh sách sinh viên sinh nhật trong ngày.
-- B. Tổng hợp và làm nổi bật các sự vụ ưu tiên cao: vé sắp hoặc đã quá hạn SLA, đơn cứu hộ tài khoản chờ xác thực, báo cáo vi phạm cần xử lý, sự cố diện rộng.
-- C. Hiển thị thời tiết và tỷ giá vàng.
-- D. Hiển thị lịch thi đấu bóng đá trường.
-
----
-
-### PHẦN 5: THUẬT TOÁN SLA GIỜ HÀNH CHÍNH & LỊCH NGHỈ LỄ (CÂU 56 - 65)
-
-#### Câu 56. Khung giờ làm việc hành chính chuẩn được cấu hình trong `SlaService.php` để tính thời hạn giải quyết bao gồm những khoảng thời gian nào?
-- A. 24/24 giờ liên tục không ngừng nghỉ tất cả các ngày.
-- B. Ca sáng: 08:00 &ndash; 12:00 (4 tiếng); Ca chiều: 13:30 &ndash; 17:30 (4 tiếng), tổng cộng 8 giờ làm việc/ngày từ Thứ Hai đến Thứ Sáu.
-- C. Làm việc từ 07:00 đến 19:00 không nghỉ trưa.
-- D. Chỉ làm việc vào các buổi tối từ 18:00 đến 22:00.
-
-#### Câu 57. Khoảng thời gian nghỉ trưa hành chính không tính vào thời hạn cam kết SLA của hệ thống là bao lâu?
-- A. Nghỉ từ 11:30 đến 13:00 (1.5 tiếng).
-- B. Nghỉ từ 12:00 đến 13:30 (1.5 tiếng).
-- C. Không có giờ nghỉ trưa.
-- D. Nghỉ từ 12:00 đến 14:00 (2 tiếng).
-
-#### Câu 58. Giả sử sinh viên tạo phiếu vào lúc 11:30 sáng Thứ Sáu với thời gian cam kết SLA là 2.0 giờ làm việc. Hạn chót giải quyết (`due_at`) chính xác sẽ là thời điểm nào?
-- A. 13:30 chiều Thứ Sáu.
-- B. 15:00 chiều Thứ Sáu (11:30 &ndash; 12:00 hết 0.5h, nghỉ trưa đến 13:30, cộng thêm 1.5h còn lại).
-- C. 14:00 chiều Thứ Sáu.
-- D. 08:00 sáng Thứ Bảy.
-
-#### Câu 59. Giả sử sinh viên gửi phiếu lúc 16:30 chiều Thứ Sáu với thời hạn cam kết SLA là 2.0 giờ làm việc. Khi nào phiếu này sẽ đến hạn chót (`due_at`)?
-- A. 18:30 tối Thứ Sáu.
-- B. 09:30 sáng Thứ Bảy.
-- C. 09:00 sáng Thứ Hai tuần kế tiếp (16:30 &ndash; 17:30 hết 1.0h, Thứ Bảy và Chủ Nhật nghỉ hoàn toàn, cộng 1.0h vào sáng Thứ Hai từ 08:00 đến 09:00).
-- D. 12:00 trưa Thứ Hai.
-
-#### Câu 60. Nếu người dùng gửi yêu cầu hỗ trợ vào lúc 10:00 sáng Chủ Nhật, thời điểm bắt đầu tính giờ cam kết SLA trong thuật toán sẽ là thời điểm nào?
-- A. Bắt đầu tính ngay từ 10:00 sáng Chủ Nhật.
-- B. Bắt đầu tính từ 08:00 sáng Thứ Hai (ngày làm việc kế tiếp).
-- C. Không bao giờ được xử lý.
-- D. Bắt đầu tính từ 13:30 chiều Chủ Nhật.
-
-#### Câu 61. Hệ số nhân thời gian cam kết SLA (`sla_factor`) đối với mức độ ưu tiên Khẩn cấp (URGENT) trong bảng `priorities` là bao nhiêu?
-- A. 1.0x (giữ nguyên).
-- B. 0.5x (rút ngắn một nửa thời gian cam kết để ưu tiên xử lý nhanh).
-- C. 2.0x (gấp đôi thời gian).
-- D. 0.0x (xử lý tức thì trong 0 giây).
-
-#### Câu 62. Hệ số nhân thời gian cam kết SLA đối với mức độ ưu tiên Thấp (LOW) là bao nhiêu?
-- A. 0.5x.
-- B. 1.0x.
-- C. 1.5x (cho phép thời gian cam kết dài hơn các phiếu thông thường).
-- D. 5.0x.
-
-#### Câu 63. Bảng `holidays` trong CSDL can thiệp vào thuật toán tính hạn SLA như thế nào?
-- A. Tự động xóa các phiếu tạo trong ngày lễ.
-- B. Thuật toán `SlaService` duyệt qua từng ngày: nếu ngày đó trùng vào khoảng `start_date` đến `end_date` của bất kỳ bản ghi ngày lễ nào, toàn bộ 8 giờ làm việc của ngày đó sẽ bị bỏ qua và nhảy sang ngày làm việc tiếp theo.
-- C. Ngày lễ vẫn tính giờ làm việc bình thường nhưng tính thêm phụ cấp cho KTV.
-- D. Chỉ áp dụng cho ngày nghỉ Tết Nguyên Đán, các ngày lễ khác vẫn tính giờ.
-
-#### Câu 64. Cờ `is_recurring = 1` trong bảng `holidays` được dùng để xử lý tình huống nào?
-- A. Ngày lễ chỉ diễn ra một lần duy nhất trong lịch sử trường.
-- B. Các kỳ nghỉ lễ định kỳ lặp lại hàng năm theo dương lịch (ví dụ: Ngày Giải phóng 30/4, Quốc tế Lao động 1/5, Quốc khánh 2/9) mà không cần nhập lại mỗi năm.
-- C. Đánh dấu ngày KTV được đi du lịch.
-- D. Đánh dấu các ngày thi hết môn của sinh viên.
-
-#### Câu 65. Khi một phiếu hỗ trợ đã trôi qua thời điểm `due_at` mà trạng thái vẫn chưa là `resolved` hoặc `closed`, hệ thống sẽ phản ứng như thế nào?
-- A. Tự động xóa phiếu để giấu lỗi.
-- B. Hiển thị nhãn đỏ cảnh báo "Quá hạn SLA", tính toán số phút/giờ trễ, đẩy lên vị trí cảnh báo khẩn trên Dashboard và trừ điểm hiệu suất ca trực.
-- C. Khóa tài khoản của người gửi phiếu.
-- D. Đóng phiếu ngay lập tức.
-
----
-
-### PHẦN 6: QUẢN LÝ HỌC PHẦN, BÀI TẬP & GIA HẠN DEADLINE (CÂU 66 - 77)
-
-#### Câu 66. Quy trình phối hợp 4 bước liên thông giữa Sinh viên &ndash; Kỹ thuật viên &ndash; Giảng viên khi sinh viên gặp sự cố mạng không nộp được bài diễn ra như thế nào?
-- A. Sinh viên gửi ticket &rarr; KTV tự sửa điểm &rarr; Giảng viên ký tên &rarr; Hoàn tất.
-- B. Bước 1: Sinh viên gửi ticket cứu hộ nộp bài &rarr; Bước 2: KTV kiểm tra log hệ thống và bấm xác nhận lỗi kỹ thuật (`it_verified = 1`) &rarr; Bước 3: Giảng viên phụ trách xem xét và bấm phê duyệt mở lại hạn nộp bài (`deadline_at`) &rarr; Bước 4: Sinh viên nộp bài bổ sung và đánh giá sao CSAT.
-- C. Giảng viên mở bài &rarr; Sinh viên nộp bài &rarr; KTV chấm điểm.
-- D. Sinh viên tự ý gia hạn bài làm trên trang cá nhân.
-
-#### Câu 67. Tại sao kiến trúc hệ thống không cho phép Kỹ thuật viên (Agent) tự ý đổi hạn nộp bài (`deadline_at`) của buổi học?
-- A. Do KTV không biết thao tác máy tính.
-- B. Do nguyên tắc phân chia trách nhiệm: KTV chỉ có thẩm quyền xác minh sự cố kỹ thuật khách quan, còn quyết định mở lại hạn nộp bài là quyền học thuật riêng của Giảng viên phụ trách bộ môn.
-- C. Do CSDL không cho phép câu lệnh UPDATE trên bảng `course_lessons`.
-- D. Do Giảng viên không cho KTV mật khẩu.
-
-#### Câu 68. Điều kiện tiên quyết để Giảng viên nhìn thấy nút bấm "Phê duyệt gia hạn nộp bài" trong chi tiết phiếu hỗ trợ là gì?
-- A. Giảng viên phải là Admin cấp cao.
-- B. Phiếu phải gắn đúng môn học mà Giảng viên đang phụ trách, và Kỹ thuật viên đã hoàn thành xác thực giám định có lỗi kỹ thuật (`it_verified = 1`).
-- C. Sinh viên phải nộp phí phạt nộp muộn.
-- D. Phiếu phải được tạo trước 12:00 đêm.
-
-#### Câu 69. Khi Giảng viên phê duyệt gia hạn thành công một yêu cầu cứu hộ nộp bài, trường dữ liệu nào trong CSDL được cập nhật hạn mới?
-- A. `tickets.created_at`.
-- B. `course_lessons.deadline_at` của buổi học tương ứng được cập nhật sang thời điểm mới trong tương lai.
-- C. `users.locked_until`.
-- D. `courses.code`.
-
-#### Câu 70. Điểm số bài nộp của sinh viên trong bảng `student_assignment_submissions` được chuẩn hóa theo thang điểm nào?
-- A. Thang điểm chữ: A, B, C, D, F.
-- B. Thang điểm 100.
-- C. Thang điểm 10 chuẩn đại học Việt Nam (từ 0.00 đến 10.00).
-- D. Thang điểm 4 của Mỹ.
-
-#### Câu 71. Trường hợp sinh viên đã nộp bài tập nhưng vẫn còn trong hạn nộp và muốn nộp tệp bài làm mới thay thế, hệ thống xử lý như thế nào?
-- A. Chặn không cho nộp và báo lỗi vi phạm.
-- B. Cho phép nộp đè: cập nhật đường dẫn tệp mới, thời gian nộp mới, đồng thời tự động xóa kết quả điểm số, nhận xét và xếp hạng sao cũ để Giảng viên chấm lại từ đầu.
-- C. Tạo thêm một bản ghi mới với ID sinh viên mới.
-- D. Tự động cộng thêm 1 điểm thưởng vì tinh thần tự giác.
-
-#### Câu 72. Giới hạn dung lượng tệp tin tối đa khi sinh viên nộp bài tập lớn/tiểu luận trên cổng học phần là bao nhiêu?
-- A. 2 MB.
-- B. 5 MB.
-- C. 25 MB.
-- D. Không giới hạn dung lượng.
-
-#### Câu 73. Danh sách các định dạng tệp tin cho phép (Whitelist Extensions) khi sinh viên tải lên bài tập bao gồm:
-- A. `.exe`, `.bat`, `.sh`, `.cmd`.
-- B. `.zip`, `.rar`, `.7z`, `.pdf`, `.doc`, `.docx`.
-- C. Chỉ duy nhất tệp ảnh `.png`.
-- D. `.mp3`, `.mp4`, `.avi`.
-
-#### Câu 74. Khi thời gian hiện tại đã vượt quá hạn chót (`NOW() > deadline_at`), biểu mẫu nộp bài tập trên giao diện sinh viên sẽ hiển thị ra sao?
-- A. Vẫn cho nộp bình thường không thông báo gì.
-- B. Nút nộp bài bị vô hiệu hóa, hiển thị cảnh báo đỏ "Đã hết hạn nộp bài tập" kèm liên kết hướng dẫn gửi phiếu hỗ trợ nếu có lý do sự cố kỹ thuật chính đáng.
-- C. Tự động xóa bài làm của sinh viên.
-- D. Trừ 5 điểm trực tiếp vào CSDL.
-
-#### Câu 75. Khi sinh viên nộp bài thành công, hệ thống thông báo chuông (Notification) sẽ được gửi đến đối tượng nào?
-- A. Toàn bộ sinh viên trong trường.
-- B. Giảng viên trực tiếp phụ trách lớp học phần đó để theo dõi số lượng bài nộp.
-- C. Nhân viên bảo vệ trường.
-- D. Chỉ gửi cho phụ huynh sinh viên.
-
-#### Câu 76. Trong học kỳ hiện tại, mỗi lớp học phần (ví dụ lớp D24-CNTT1 môn Lập trình Web) có thể có tối đa bao nhiêu Giảng viên phụ trách?
-- A. Không giới hạn số lượng giảng viên.
-- B. Duy nhất 1 Giảng viên phụ trách theo đúng thiết kế nghiệp vụ của bảng `course_assignments`.
-- C. Tối thiểu 3 giảng viên.
-- D. Luôn luôn là 2 giảng viên cùng dạy.
-
-#### Câu 77. Khi Giảng viên hoàn tất chấm điểm và nhận xét bài nộp, sinh viên sẽ theo dõi kết quả ở đâu?
-- A. Phải lên trực tiếp văn phòng khoa để hỏi.
-- B. Nhận thông báo chuông tức thời trên thanh công cụ và xem chi tiết điểm số, lời phê sư phạm, số sao đánh giá ngay tại trang chi tiết môn học.
-- C. Nhận tin nhắn SMS về số điện thoại cá nhân.
-- D. Điểm số chỉ được công bố sau khi tốt nghiệp.
-
----
-
-### PHẦN 7: BẢO MẬT, XÁC THỰC, SSPR & TRẠM CỨU HỘ KHÁCH (CÂU 78 - 90)
-
-#### Câu 78. Khi tài khoản sinh viên được tạo mới hoặc vừa được Admin reset về mật khẩu mặc định, giá trị mật khẩu ban đầu và cờ trạng thái là gì?
-- A. Mật khẩu để trống, `is_first_login = 0`.
-- B. Mật khẩu mặc định là `123456`, và cờ `is_first_login = 1`.
-- C. Mật khẩu là ngày tháng năm sinh, `is_first_login = 0`.
-- D. Mật khẩu là chuỗi 32 ký tự ngẫu nhiên.
-
-#### Câu 79. Khi người dùng đăng nhập thành công nhưng tài khoản đang có cờ `is_first_login = 1`, Middleware hệ thống sẽ có hành vi gì?
-- A. Cho phép người dùng truy cập mọi phân hệ bình thường.
-- B. Chặn mọi đường dẫn điều hướng khác và bắt buộc chuyển hướng người dùng về trang `index.php?action=first_login` để đổi mật khẩu cá nhân mới.
-- C. Tự động đăng xuất người dùng ngay lập tức.
-- D. Gửi email cảnh báo tài khoản bị tấn công.
-
-#### Câu 80. Ở màn hình đổi mật khẩu lần đầu (`first_login`), người dùng có được phép nhập lại mật khẩu `123456` không?
-- A. Được phép nếu người dùng muốn giữ nguyên.
-- B. Tuyệt đối không; hệ thống kiểm tra và chặn cứng nếu `$newPass === '123456'`, yêu cầu đặt mật khẩu mới an toàn hơn.
-- C. Được phép nếu nhập đúng 3 lần.
-- D. Hệ thống không kiểm tra điều này.
-
-#### Câu 81. Ở cả hai luồng: Đổi mật khẩu lần đầu (`first_login`) và Đặt lại mật khẩu qua email (`reset_password`), hệ thống xử lý thế nào nếu người dùng nhập mật khẩu mới trùng khớp hoàn toàn với mật khẩu cũ hiện tại?
-- A. Vẫn chấp nhận đổi bình thường vì Bcrypt sinh salt mới.
-- B. Hệ thống sử dụng hàm `password_verify($newPass, $currentPasswordHash)` đối chiếu trực tiếp với CSDL; nếu phát hiện trùng mật khẩu cũ sẽ lập tức từ chối và hiển thị thông báo lỗi yêu cầu chọn mật khẩu khác.
-- C. Tự động khóa tài khoản vĩnh viễn.
-- D. Hệ thống sẽ cộng thêm số `1` vào sau mật khẩu của người dùng.
-
-#### Câu 82. Trong tính năng khôi phục mật khẩu tự phục vụ qua email (SSPR), mã xác thực OTP gửi về hòm thư người dùng có định dạng như thế nào?
-- A. Một đường link dài 200 ký tự hex.
-- B. Mã OTP gồm 6 chữ cái in hoa ngẫu nhiên (ví dụ: `GLURJH`, `NZSYZY`), dễ đọc và thuận tiện khi sao chép hoặc gõ trên điện thoại.
-- C. Mã số gồm 4 chữ số bí mật.
-- D. Mã QR hình ảnh.
-
-#### Câu 83. Thời gian hiệu lực tiêu chuẩn của mã OTP đặt lại mật khẩu trong bảng `password_resets` là bao lâu?
-- A. 60 giây.
-- B. Đúng 15 phút kể từ thời điểm phát hành (kiểm tra qua điều kiện `expires_at >= NOW()`).
-- C. 24 giờ.
-- D. Không bao giờ hết hạn.
-
-#### Câu 84. Để bảo đảm an toàn thông tin khi CSDL bị lộ lọt (Data Breach), chuỗi OTP 6 chữ cái được lưu vào cột `token_hash` trong CSDL dưới dạng nào?
-- A. Lưu dạng văn bản rõ 6 chữ cái.
-- B. Băm một chiều bằng thuật toán SHA-256 (`hash('sha256', $token)`).
-- C. Băm bằng MD5.
-- D. Lưu dưới dạng mã Morse.
-
-#### Câu 85. Người dùng gửi yêu cầu tại Trạm Cứu Hộ Tài Khoản Khách (`guest_ticket`) cần lưu giữ thông tin gì để tự tra cứu tiến độ phê duyệt?
-- A. Bắt buộc phải nhớ cả Tên đăng nhập và Mã PIN 6 số.
-- B. Chỉ cần lưu giữ duy nhất Mã đơn cứu hộ (ví dụ: `HD-2026-3110-0G04V1`), hoàn toàn không bị ép buộc phải nhớ thêm mã PIN phức tạp.
-- C. Bắt buộc phải mang căn cước công dân đến trường.
-- D. Phải để lại dấu vân tay.
-
-#### Câu 86. Cơ chế kiểm duyệt an toàn 2 bước đối với Đơn cứu hộ tài khoản khách gồm những bước nào?
-- A. Bước 1: Máy tính tự duyệt &rarr; Bước 2: Sinh viên tự duyệt.
-- B. Bước 1: Kỹ thuật viên đối soát hồ sơ, minh chứng và xác thực thông tin hợp lệ (`rescue_verified = 1`) &rarr; Bước 2: Quản trị viên (Admin) xem xét và bấm "Phê Duyệt Mở Khóa Tài Khoản".
-- C. Chỉ cần 1 bước duy nhất do KTV tự mở.
-- D. Ban Giám hiệu trực tiếp gọi điện thoại phỏng vấn.
-
-#### Câu 87. Sau khi Quản trị viên bấm phê duyệt thành công một hồ sơ cứu hộ tài khoản, trạng thái tài khoản của người dùng sẽ thay đổi như thế nào?
-- A. Bị xóa khỏi hệ thống.
-- B. Kích hoạt tài khoản (`is_active = 1`), đặt lại mật khẩu về `123456`, xóa cờ khóa, đặt cờ `is_first_login = 1` để người dùng bắt buộc phải đổi mật khẩu ngay khi đăng nhập.
-- C. Chuyển thành tài khoản Quản trị viên.
-- D. Giữ nguyên không có gì thay đổi.
-
-#### Câu 88. Cơ chế phòng thủ chống tấn công dò quét mật khẩu Brute Force trong hệ thống được cấu hình ra sao?
-- A. Khóa vĩnh viễn tài khoản sau 1 lần gõ sai.
-- B. Đếm số lần đăng nhập thất bại liên tiếp (`failed_attempts`); khi đạt ngưỡng 5 lần sai sẽ tạm khóa tài khoản trong 15 phút (`locked_until`) và ghi nhận lý do `lock_reason = 'brute_force'`.
-- C. Không có cơ chế phòng thủ nào.
-- D. Tắt máy chủ web trong 1 tiếng.
-
-#### Câu 89. Nếu một tài khoản bị Admin gắn nhãn khóa do vi phạm kỷ luật học đường (`lock_reason = 'violation'` hoặc `'expelled'`), người đó có thể dùng tính năng SSPR gửi OTP để tự mở khóa tài khoản không?
-- A. Có thể tự mở khóa dễ dàng bất cứ lúc nào.
-- B. Tuyệt đối không; dịch vụ `AuthService::requestResetToken()` kiểm tra cờ kỷ luật và lập tức ném ngoại lệ từ chối khôi phục mật khẩu.
-- C. Có thể mở khóa nếu nhờ bạn bè xác nhận.
-- D. Mở khóa được nếu nhập mã OTP sau 12:00 đêm.
-
-#### Câu 90. Các tệp tin ảnh chụp màn hình minh chứng lỗi do người dùng đính kèm vào ticket được lưu trữ ở đâu trên máy chủ?
-- A. Lưu lẫn lộn vào thư mục mã nguồn gốc `app/Controllers/`.
-- B. Lưu trong thư mục `uploads/tickets/` với tên tệp ngẫu nhiên chống trùng lặp và ghi nhận đường dẫn vào CSDL.
-- C. Tải trực tiếp lên Google Drive cá nhân của KTV.
-- D. Không lưu trữ tệp tin trên máy chủ.
-
----
-
-### PHẦN 8: TÍNH NĂNG NÂNG CAO, BÁO CÁO VI PHẠM & VẬN HÀNH THỰC TẾ (CÂU 91 - 100)
-
-#### Câu 91. Khi Kỹ thuật viên phát hiện một sinh viên cố tình gửi nội dung tục tĩu, quấy rối hoặc spam đơn hỗ trợ, KTV có thể thực hiện nghiệp vụ gì?
-- A. Tự ý xóa bài tập của sinh viên đó.
-- B. Bấm nút "Báo cáo sinh viên vi phạm / Spam" (`is_spam = 1`), nhập lý do lập biên bản kỹ thuật để chuyển hồ sơ lên Quản trị viên xử lý kỷ luật.
-- C. Nhắn tin chửi lại sinh viên.
-- D. Tắt máy tính đi về.
-
-#### Câu 92. Thẩm quyền quyết định khóa kỷ luật hoặc đình chỉ học tập đối với sinh viên bị báo cáo vi phạm thuộc về ai?
-- A. Giảng viên phụ trách môn.
-- B. Kỹ thuật viên trực ca.
-- C. Quản trị viên (Admin) sau khi xem xét biên bản do KTV đệ trình tại Trung tâm việc khẩn.
-- D. Trưởng nhóm sinh viên.
-
-#### Câu 93. Nghiệp vụ "Đánh dấu Sự cố diện rộng" (`is_major_incident = 1`) được sử dụng trong trường hợp nào?
-- A. Khi một bóng đèn trong phòng học bị cháy.
-- B. Khi xảy ra sự cố kỹ thuật hạ tầng nghiêm trọng ảnh hưởng đến toàn trường (ví dụ đứt cáp quang cổng Wi-Fi chính, hệ thống LMS toàn trường bị gián đoạn diện rộng).
-- C. Khi sinh viên quên mang thẻ sinh viên.
-- D. Khi một chiếc máy in hết mực.
-
-#### Câu 94. Sau khi Quản trị viên (Admin) phê duyệt thông báo sự cố diện rộng, cảnh báo sẽ được hiển thị như thế nào?
-- A. Gửi thư giấy về địa chỉ nhà từng sinh viên.
-- B. Xuất hiện dưới dạng banner thông báo đỏ nổi bật (Broadcast Alert) ở đầu trang của tất cả mọi người dùng đăng nhập vào hệ thống.
-- C. Chỉ hiển thị trong màn hình của KTV.
-- D. Chỉ xuất hiện sau 3 ngày làm việc.
-
-#### Câu 95. Một phiếu hỗ trợ CNTT có thể được sinh viên thực hiện đánh giá mức độ hài lòng (CSAT) tối đa bao nhiêu lần?
-- A. Mỗi ngày đánh giá 1 lần.
-- B. Tối đa 5 lần tùy theo số lượng KTV tham gia xử lý.
-- C. Đúng 1 lần duy nhất, được bảo vệ bằng ràng buộc khóa ngoại duy nhất `UNIQUE KEY (ticket_id)` trong bảng `ticket_ratings`.
-- D. Không giới hạn số lần đánh giá.
-
-#### Câu 96. Thang đo đánh giá chất lượng dịch vụ CSAT trong bảng `ticket_ratings` cho phép người dùng chấm trong khoảng giá trị nào?
-- A. Từ 1 đến 100 điểm.
-- B. Từ 1 sao (Rất không hài lòng) đến 5 sao (Rất hài lòng) kèm theo nhận xét chất lượng.
-- C. Chỉ có 2 mức: Thích hoặc Không thích.
-- D. Đánh giá bằng chữ: Tốt hoặc Kém.
-
-#### Câu 97. Tính năng Nhập tài khoản hàng loạt (Bulk Import User) dành cho Quản trị viên hỗ trợ nhập dữ liệu từ những định dạng tệp nào?
-- A. Chỉ nhận tệp văn bản `.txt`.
-- B. Tệp bảng tính Excel (`.xlsx`) và tệp phân tách dấu phẩy (`.csv`).
-- C. Tệp tài liệu Word (`.docx`).
-- D. Tệp trình chiếu PowerPoint (`.pptx`).
-
-#### Câu 98. Khi Admin tải lên tệp Excel danh sách 50 sinh viên khóa mới, trong đó có 2 sinh viên trùng mã sinh viên đã có trong hệ thống, dịch vụ `SpreadsheetImportService` sẽ phản ứng ra sao?
-- A. Hủy bỏ toàn bộ quá trình và báo lỗi trắng trang.
-- B. Tạo mới thành công 48 tài khoản hợp lệ, tự động bỏ qua 2 bản ghi trùng lặp và xuất bảng thống kê chi tiết các dòng thành công cùng các dòng bị bỏ qua.
-- C. Xóa 2 tài khoản cũ trong CSDL và ghi đè tài khoản mới vào.
-- D. Tạo trùng cả 50 sinh viên với mã giống nhau.
-
-#### Câu 99. Tiện ích "Ẩn bảng / Hiện bảng dữ liệu" (Collapsible Data Tables) được tích hợp trên các giao diện quản trị mang lại giá trị thực tiễn gì?
-- A. Giúp ẩn giấu dữ liệu khi có đoàn thanh tra kiểm tra.
-- B. Giúp người dùng linh hoạt thu gọn các bảng danh sách dài khi không cần xem để tập trung tối đa vào biểu mẫu nhập liệu và tác vụ đang xử lý.
-- C. Làm chậm tốc độ hiển thị trang web.
-- D. Chỉ là một lỗi giao diện vô tình xuất hiện.
-
-#### Câu 100. Trong môi trường phát triển cục bộ (Localhost) không có kết nối Internet để gửi email SMTP thật, hệ thống kiểm tra và xem trước mã OTP khôi phục mật khẩu thông qua cơ chế nào?
-- A. Không có cách nào xem được OTP nên tính năng không thể thử nghiệm.
-- B. Hệ thống tự động ghi nhật ký nội dung thư vào tệp lưu trữ nội bộ `storage/mailbox.json` và cung cấp giao diện Hòm thư nội bộ để người kiểm thử xem trước trực quan.
-- C. Tự động in mã OTP ra máy in giấy văn phòng.
-- D. Phải nạp tiền vào tài khoản để mua gói gửi tin nhắn viễn thông.
-
----
-
-## BẢNG ĐÁP ÁN TỔNG HỢP (ANSWER KEY) 100 CÂU HỎI
-
-| Câu | Đáp án | Câu | Đáp án | Câu | Đáp án | Câu | Đáp án | Câu | Đáp án |
+| Câu | Đ/Á | Câu | Đ/Á | Câu | Đ/Á | Câu | Đ/Á | Câu | Đ/Á |
 |:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **1** | B | **21** | C | **41** | B | **61** | B | **81** | B |
-| **2** | C | **22** | B | **42** | C | **62** | C | **82** | B |
-| **3** | C | **23** | C | **43** | B | **63** | B | **83** | B |
+| **1** | B | **21** | B | **41** | B | **61** | B | **81** | B |
+| **2** | B | **22** | B | **42** | B | **62** | B | **82** | B |
+| **3** | B | **23** | B | **43** | B | **63** | B | **83** | B |
 | **4** | B | **24** | B | **44** | B | **64** | B | **84** | B |
-| **5** | C | **25** | B | **45** | B | **65** | B | **85** | B |
-| **6** | B | **26** | B | **46** | C | **66** | B | **86** | B |
-| **7** | B | **27** | B | **47** | A | **67** | B | **87** | B |
-| **8** | B | **28** | C | **48** | B | **68** | B | **88** | B |
-| **9** | B | **29** | C | **49** | B | **69** | B | **89** | B |
-| **10** | C | **30** | B | **50** | B | **70** | C | **90** | B |
-| **11** | C | **31** | C | **51** | B | **71** | B | **91** | B |
-| **12** | B | **32** | B | **52** | B | **72** | C | **92** | C |
-| **13** | C | **33** | B | **53** | B | **73** | B | **93** | B |
-| **14** | C | **34** | B | **54** | B | **74** | B | **94** | B |
-| **15** | B | **35** | B | **55** | B | **75** | B | **95** | C |
+| **5** | B | **25** | C | **45** | B | **65** | B | **85** | B |
+| **6** | B | **26** | B | **46** | B | **66** | B | **86** | B |
+| **7** | B | **27** | B | **47** | B | **67** | B | **87** | B |
+| **8** | B | **28** | B | **48** | B | **68** | B | **88** | B |
+| **9** | B | **29** | B | **49** | B | **69** | B | **89** | B |
+| **10** | B | **30** | B | **50** | B | **70** | B | **90** | B |
+| **11** | B | **31** | B | **51** | B | **71** | B | **91** | B |
+| **12** | A | **32** | B | **52** | B | **72** | B | **92** | B |
+| **13** | B | **33** | B | **53** | B | **73** | B | **93** | B |
+| **14** | B | **34** | B | **54** | B | **74** | B | **94** | B |
+| **15** | B | **35** | C | **55** | B | **75** | B | **95** | B |
 | **16** | B | **36** | B | **56** | B | **76** | B | **96** | B |
-| **17** | C | **37** | C | **57** | B | **77** | B | **97** | B |
+| **17** | B | **37** | B | **57** | B | **77** | B | **97** | B |
 | **18** | B | **38** | B | **58** | B | **78** | B | **98** | B |
-| **19** | C | **39** | B | **59** | C | **79** | B | **99** | B |
-| **20** | C | **40** | B | **60** | B | **80** | B | **100** | B |
+| **19** | B | **39** | B | **59** | B | **79** | B | **99** | B |
+| **20** | B | **40** | B | **60** | B | **80** | B | **100** | B |
 
 ---
-
-## HƯỚNG DẪN GIẢI THÍCH CHI TIẾT THEO CÁC MÔ-ĐUN TRỌNG TÂM
-
-1. **Về Kiến trúc & An toàn thông tin (Câu 1 &ndash; 12):**
-   - Đề tài lựa chọn mô hình **Clean MVC thuần PHP 8** để các bạn sinh viên hiểu sâu sắc về vòng đời của HTTP Request, cách xây dựng phần mềm không phụ thuộc vào framework bên ngoài (`app/Controllers`, `app/Models`, `app/Services`, `app/Core`).
-   - Phòng thủ đa tầng OWASP: 100% Prepared Statements (chống SQLi), Token ngẫu nhiên theo session (chống CSRF), Bcrypt cost 10 (chống bẻ khóa mật khẩu), kiểm soát phần mở rộng và MIME type thực tế trong `UploadService` (chống tải file độc hại), xử lý tiền tố công thức khi xuất CSV (chống CSV Injection).
-
-2. **Về Cơ sở dữ liệu 14 bảng chuẩn 3NF (Câu 13 &ndash; 27):**
-   - Hệ thống gồm đúng **14 bảng quan hệ InnoDB**.
-   - Quyết định loại bỏ bảng `class_students` giúp mô hình đạt chuẩn 3NF tuyệt đối: Sinh viên chính quy trong trường đại học gắn liền với 1 lớp sinh hoạt cố định (`users.class_id`), loại bỏ dư thừa dữ liệu và loại bỏ các câu truy vấn `UNION` phức tạp.
-   - Các bảng đều có ràng buộc khóa ngoại rõ ràng: `ON DELETE CASCADE` cho các thực thể phụ thuộc dữ liệu (như `ticket_replies` theo `tickets`), và `ON DELETE SET NULL` cho các thực thể độc lập (như xóa lớp không làm mất người dùng).
-
-3. **Về Phân quyền RBAC & Quản lý vai trò (Câu 28 &ndash; 40):**
-   - 4 vai trò rõ rệt:
-     - `student` (hoặc `requester`): Sinh viên &ndash; Người gửi yêu cầu, xem môn học, nộp bài, đánh giá CSAT.
-     - `lecturer`: Giảng viên &ndash; Quản lý lớp học phần được phân công, chấm điểm thang 10, phê duyệt gia hạn bài tập.
-     - `agent`: Kỹ thuật viên &ndash; Trực ca, xử lý sự cố, giám định log kỹ thuật (`it_verified`), báo cáo vi phạm.
-     - `admin`: Quản trị viên &ndash; Điều phối cấp cao, duyệt mở khóa tài khoản, phát cảnh báo diện rộng, cấu hình ngày nghỉ lễ, import tài khoản hàng loạt.
-   - Đảm bảo tính cô lập dữ liệu (Privacy Isolation): Mỗi sinh viên chỉ truy vấn được phiếu của chính mình.
-
-4. **Về Vòng đời Ticket & Điều phối Triage (Câu 41 &ndash; 55):**
-   - Vòng đời: `new` &rarr; `in_progress` &rarr; `waiting_requester` &rarr; `resolved` &rarr; `closed`.
-   - Thuật toán `TicketService::createTicketWithAutoDispatch()` ưu tiên 3 điều kiện:
-     1. Chuyên môn phù hợp (`specialty_category_id = category_id`).
-     2. Đang trong ca trực (`is_on_duty = 1`).
-     3. Tải công việc thấp nhất (`active_tickets_count` nhỏ nhất).
-   - Cơ chế phát hiện "Đùn đẩy" quá 3 lần chuyển giao giúp ngăn ngừa tình trạng trốn tránh trách nhiệm.
-
-5. **Về Thuật toán SLA Giờ hành chính & Lịch nghỉ lễ (Câu 56 &ndash; 65):**
-   - 8 giờ làm việc/ngày: Sáng 08:00 &ndash; 12:00, Chiều 13:30 &ndash; 17:30.
-   - Thứ Bảy, Chủ Nhật và các ngày nghỉ lễ trong bảng `holidays` (bao gồm cả các kỳ nghỉ lặp lại hàng năm `is_recurring = 1`) được bỏ qua hoàn toàn.
-   - Nhân hệ số SLA Factor: Khẩn cấp `0.5x`, Cao `0.8x`, Bình thường `1.0x`, Thấp `1.5x`.
-
-6. **Về Liên thông Học phần & Gia hạn Deadline (Câu 66 &ndash; 77):**
-   - Kỹ thuật viên chỉ có thẩm quyền xác nhận sự cố kỹ thuật khách quan (`it_verified = 1`).
-   - Giảng viên phụ trách là người duy nhất quyết định gia hạn deadline nộp bài (`course_lessons.deadline_at`).
-   - Thang điểm 10 chuẩn đại học (`DECIMAL 4,2`).
-   - Nộp lại bài trước hạn sẽ cập nhật tệp mới và xóa điểm/nhận xét cũ để chấm lại.
-
-7. **Về Bảo mật Mật khẩu & Trạm Cứu Hộ Khách (Câu 78 &ndash; 90):**
-   - Mật khẩu mặc định `123456`, cờ `is_first_login = 1` ép đổi mật khẩu ngay lần đầu.
-   - Cả 2 luồng `first_login` và `reset_password` (SSPR) đều kiểm tra:
-     - Khác `123456`.
-     - Khác hoàn toàn mật khẩu cũ hiện tại qua `password_verify($newPass, $currentHash)`.
-   - SSPR cấp mã OTP 6 chữ cái in hoa ngẫu nhiên hiệu lực 15 phút, lưu trữ dưới dạng băm SHA-256.
-   - Trạm Cứu Hộ Khách chỉ yêu cầu Mã đơn cứu hộ (không cần mã PIN), qua kiểm duyệt 2 bước (KTV xác thực &rarr; Admin mở khóa).
-
-8. **Về Báo cáo vi phạm & Vận hành thực tế (Câu 91 &ndash; 100):**
-   - KTV báo cáo sinh viên spam/vi phạm (`is_spam = 1`) &rarr; Admin ra quyết định kỷ luật.
-   - Sự cố diện rộng (`is_major_incident = 1`) &rarr; Admin duyệt &rarr; Banner Broadcast đỏ hiển thị cho toàn trường.
-   - CSAT Rating: 1 phiếu chỉ được đánh giá 1 lần duy nhất (`UNIQUE KEY ticket_id`).
-   - Bulk Import Excel/CSV tự động bỏ qua các bản ghi trùng lặp và mã hóa Bcrypt tài khoản mới.
-   - Hòm thư ảo `storage/mailbox.json` phục vụ kiểm thử gửi email trực quan trên môi trường Localhost.
-
-
