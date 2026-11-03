@@ -1,0 +1,2078 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Trắc Nghiệm Đánh Giá 100 Câu Hỏi Chuyên Sâu — ITIL Helpdesk Nhóm 1</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        code, pre {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 9999px;
+        }
+        .dark .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #334155;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- HEADER -->
+    <header class="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-400 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 font-black text-lg">
+                    <span>100</span>
+                </div>
+                <div>
+                    <h1 class="font-bold text-white text-base sm:text-lg leading-tight flex items-center gap-2">
+                        <span>Đánh Giá Kiến Thức Hệ Thống ITIL Helpdesk</span>
+                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Nhóm 1 - TUD</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">Ngân hàng 100 câu hỏi trắc nghiệm chuyên sâu bám sát mã nguồn &amp; báo cáo kỹ thuật</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Stats -->
+            <div class="flex items-center gap-3">
+                <div id="exam-timer-box" class="hidden items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-mono text-sm font-bold">
+                    <span>⏱️</span> <span id="exam-time">30:00</span>
+                </div>
+                <div class="flex items-center gap-2 text-xs bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700/80">
+                    <span class="text-slate-400">Đã làm:</span>
+                    <span id="stat-completed" class="font-bold text-white">0/100</span>
+                    <span class="text-slate-500">|</span>
+                    <span class="text-emerald-400 font-semibold">Đúng: <span id="stat-correct">0</span></span>
+                    <span class="text-rose-400 font-semibold">Sai: <span id="stat-wrong">0</span></span>
+                </div>
+                <button onclick="resetAllProgress()" class="text-xs px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition flex items-center gap-1.5">
+                    <span>🔄</span> <span>Làm lại</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- PROGRESS BAR -->
+        <div class="w-full bg-slate-800 h-1.5">
+            <div id="overall-progress" class="bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-400 h-1.5 transition-all duration-300" style="width: 0%"></div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-1 flex flex-col lg:flex-row gap-6">
+
+        <!-- SIDEBAR CONTROLS -->
+        <aside class="w-full lg:w-80 shrink-0 space-y-5">
+            <!-- Mode Selector Card -->
+            <div class="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/80 space-y-3">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Chế độ làm bài</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="mode-study-btn" onclick="setMode('study')" class="px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 shadow-md shadow-indigo-600/30 transition flex flex-col items-center gap-1">
+                        <span class="text-base">🎓</span>
+                        <span>Luyện tập</span>
+                        <span class="text-[10px] font-normal opacity-80">Xem đáp án ngay</span>
+                    </button>
+                    <button id="mode-exam-btn" onclick="setMode('exam')" class="px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 bg-slate-900/60 hover:bg-slate-700 border border-slate-700 transition flex flex-col items-center gap-1">
+                        <span class="text-base">⏱️</span>
+                        <span>Thi thử</span>
+                        <span class="text-[10px] font-normal opacity-80">Tính giờ &amp; Điểm số</span>
+                    </button>
+                </div>
+
+                <!-- Exam Mode Settings -->
+                <div id="exam-settings-box" class="hidden pt-3 border-t border-slate-700 space-y-2.5">
+                    <div class="flex items-center justify-between text-xs text-slate-300">
+                        <span>Số lượng câu thi:</span>
+                        <select id="exam-count" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                            <option value="20">20 câu (15 phút)</option>
+                            <option value="50" selected>50 câu (30 phút)</option>
+                            <option value="100">100 câu (60 phút)</option>
+                        </select>
+                    </div>
+                    <button id="start-exam-btn" onclick="startExam()" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-md shadow-emerald-600/20">
+                        🚀 Bắt đầu làm bài thi
+                    </button>
+                    <button id="submit-exam-btn" onclick="submitExam()" class="hidden w-full py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-xs transition shadow-md shadow-amber-600/20">
+                        📝 Nộp bài &amp; Chấm điểm
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search & Filter Card -->
+            <div class="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/80 space-y-3">
+                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tìm kiếm &amp; Lọc chủ đề</div>
+                <div class="relative">
+                    <input type="text" id="search-input" oninput="handleSearch()" placeholder="Tìm kiếm từ khóa, hàm, bảng..." 
+                           class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 pl-9 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                    <span class="absolute left-3 top-2.5 text-xs text-slate-500">🔍</span>
+                </div>
+
+                <!-- Topic list -->
+                <div class="space-y-1 text-xs custom-scroll max-h-60 overflow-y-auto pr-1">
+                    <button onclick="filterSection(0)" id="filter-btn-0" class="filter-topic-btn active w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between font-medium bg-indigo-600/20 text-indigo-300 border border-indigo-500/30">
+                        <span>Tất cả các chủ đề</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-800 text-[10px] font-mono">100</span>
+                    </button>
+                    <button onclick="filterSection(1)" id="filter-btn-1" class="filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50">
+                        <span>1. Kiến trúc &amp; Bảo mật</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 text-[10px] font-mono text-slate-400">12</span>
+                    </button>
+                    <button onclick="filterSection(2)" id="filter-btn-2" class="filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50">
+                        <span>2. CSDL 14 Bảng 3NF</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 text-[10px] font-mono text-slate-400">15</span>
+                    </button>
+                    <button onclick="filterSection(3)" id="filter-btn-3" class="filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50">
+                        <span>3. Phân quyền RBAC 4 Roles</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 text-[10px] font-mono text-slate-400">13</span>
+                    </button>
+                    <button onclick="filterSection(4)" id="filter-btn-4" class="filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50">
+                        <span>4. Vòng đời Ticket &amp; Triage</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 text-[10px] font-mono text-slate-400">15</span>
+                    </button>
+                    <button onclick="filterSection(5)" id="filter-btn-5" class="filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50">
+                        <span>5. Thuật toán SLA &amp; Nghỉ lễ</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 text-[10px] font-mono text-slate-400">10</span>
+                    </button>
+                    <button onclick="filterSection(6)" id="filter-btn-6" class="filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50">
+                        <span>6. Học phần &amp; Deadline</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 text-[10px] font-mono text-slate-400">12</span>
+                    </button>
+                    <button onclick="filterSection(7)" id="filter-btn-7" class="filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50">
+                        <span>7. Mật khẩu, SSPR &amp; Cứu hộ</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 text-[10px] font-mono text-slate-400">13</span>
+                    </button>
+                    <button onclick="filterSection(8)" id="filter-btn-8" class="filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50">
+                        <span>8. Vi phạm, Sự cố &amp; CSAT</span>
+                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 text-[10px] font-mono text-slate-400">10</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Question Grid Navigator -->
+            <div class="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/80 space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Mạng lưới 100 câu</span>
+                    <span id="grid-summary" class="text-[11px] text-slate-400">0/100</span>
+                </div>
+                <div id="quick-grid" class="grid grid-cols-10 gap-1.5 text-[10px] font-mono max-h-52 overflow-y-auto custom-scroll pr-1">
+                    <!-- Populated via JS -->
+                </div>
+                <div class="flex items-center justify-between text-[10.5px] text-slate-400 pt-2 border-t border-slate-700">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-emerald-500 inline-block"></span> Đúng</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-rose-500 inline-block"></span> Sai</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-indigo-600 inline-block"></span> Đã chọn</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded bg-slate-700 inline-block"></span> Chưa</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- QUESTIONS FEED AREA -->
+        <main class="flex-1 space-y-4">
+
+            <!-- Exam Result Banner (Visible after submitting exam) -->
+            <div id="exam-result-card" class="hidden p-6 rounded-2xl bg-gradient-to-br from-indigo-950 via-slate-900 to-slate-900 border-2 border-indigo-500 shadow-2xl space-y-4">
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="space-y-1 text-center sm:text-left">
+                        <div class="text-xs uppercase tracking-widest text-indigo-400 font-bold">KẾT QUẢ BÀI THI THỬ CHÍNH THỨC</div>
+                        <h2 id="result-rank-title" class="text-2xl font-black text-white">Xuất Sắc! Nắm Vững 100% Hệ Thống</h2>
+                        <p id="result-feedback-text" class="text-xs text-slate-300">Bạn đã hoàn thành bài thi với kết quả tuyệt vời. Sẵn sàng bảo vệ Bài tập lớn đạt điểm tối đa.</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-center px-4 py-2 bg-slate-800 rounded-xl border border-slate-700">
+                            <div class="text-[10px] text-slate-400 uppercase">Điểm số</div>
+                            <div id="result-score-val" class="text-3xl font-black text-amber-400 font-mono">10.0</div>
+                        </div>
+                        <div class="text-center px-4 py-2 bg-slate-800 rounded-xl border border-slate-700">
+                            <div class="text-[10px] text-slate-400 uppercase">Tỷ lệ đúng</div>
+                            <div id="result-percent-val" class="text-3xl font-black text-emerald-400 font-mono">100%</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                    <button onclick="setMode('study')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition">
+                        📖 Chuyển sang Luyện tập để xem chi tiết giải thích
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filter Status Bar -->
+            <div class="flex items-center justify-between px-4 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 text-xs">
+                <div class="flex items-center gap-2">
+                    <span class="text-slate-400">Đang hiển thị:</span>
+                    <span id="active-filter-label" class="font-bold text-white">Tất cả các chủ đề (100 câu)</span>
+                </div>
+                <div class="text-slate-400">
+                    Khớp: <span id="filtered-count" class="font-bold text-indigo-400">100</span> câu
+                </div>
+            </div>
+
+            <!-- QUESTIONS CONTAINER -->
+            <div id="questions-list" class="space-y-4">
+                <!-- Injected via JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- EMBEDDED DATA -->
+    <script>
+        const QUESTIONS_DATA = [
+    {
+        "id": 1,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Kiến trúc phần mềm cốt lõi được dự án lựa chọn xây dựng là gì?",
+        "options": {
+            "A": "Microservices dựa trên Docker và Kubernetes.",
+            "B": "Clean MVC phân tầng thuần PHP 8 (Pure PHP), không phụ thuộc framework nặng, tổ chức Controller, Model, Service và View rõ ràng.",
+            "C": "Monolithic truyền thống nhúng toàn bộ logic SQL trực tiếp trong các tệp HTML.",
+            "D": "Single Page Application (SPA) hoàn toàn viết bằng React và Node.js."
+        },
+        "answer": "B",
+        "explanation": "Hệ thống Helpdesk Nhóm 1 được thiết kế theo Clean MVC thuần PHP 8 (Pure PHP), phân tách rõ ràng Controllers, Models, Services, Middlewares và Views, loại bỏ sự phụ thuộc vào các framework nặng nề."
+    },
+    {
+        "id": 2,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Trong kiến trúc Clean MVC của dự án, tầng Model (`app\/Models\/`) chịu trách nhiệm chính về việc gì?",
+        "options": {
+            "A": "Tiếp nhận yêu cầu HTTP từ trình duyệt và điều hướng trang.",
+            "B": "Định dạng giao diện CSS và hiển thị các khối giao diện cho người dùng.",
+            "C": "Đại diện cho các thực thể bảng dữ liệu, đóng gói các truy vấn CSDL bằng PDO Prepared Statements, ngăn chặn rò rỉ SQL ra ngoài View.",
+            "D": "Gửi email thông báo tự động và quản lý tiến trình nền."
+        },
+        "answer": "C",
+        "explanation": "Tầng Model đại diện cho 14 bảng quan hệ, bao bọc mọi câu lệnh truy vấn bằng PDO Prepared Statements (:params), tách biệt hoàn toàn logic cơ sở dữ liệu khỏi tầng hiển thị View."
+    },
+    {
+        "id": 3,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Để phòng chống triệt để lỗ hổng SQL Injection (theo tiêu chuẩn OWASP Top 10), toàn bộ hệ thống áp dụng cơ chế nào?",
+        "options": {
+            "A": "Nối chuỗi trực tiếp `$sql = \"SELECT * FROM users WHERE id = \" . $_GET['id']`.",
+            "B": "Chỉ dùng hàm `addslashes()` lọc chuỗi đầu vào.",
+            "C": "Sử dụng PDO Prepared Statements với tham số ràng buộc có tên (Named Parameters `:param`) cho 100% câu lệnh truy vấn.",
+            "D": "Sử dụng `strip_tags()` để xóa thẻ HTML trong câu lệnh SQL."
+        },
+        "answer": "C",
+        "explanation": "100% câu truy vấn dữ liệu trong toàn bộ hệ thống đều sử dụng PDO Prepared Statements với tham số buộc dạng :param, loại trừ hoàn toàn nguy cơ bị khai thác SQL Injection."
+    },
+    {
+        "id": 4,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Cơ chế chống tấn công Cross-Site Request Forgery (CSRF) trong hệ thống hoạt động như thế nào?",
+        "options": {
+            "A": "Kiểm tra địa chỉ IP của người dùng qua `$_SERVER['REMOTE_ADDR']`.",
+            "B": "Sinh một chuỗi ngẫu nhiên mã hóa `csrf_token` trong `$_SESSION`, nhúng vào các biểu mẫu POST dưới dạng input ẩn và kiểm tra khớp trước khi xử lý.",
+            "C": "Yêu cầu nhập mã Captcha hình ảnh ở tất cả các biểu mẫu.",
+            "D": "Chặn hoàn toàn tất cả các yêu cầu gửi bằng phương thức HTTP POST."
+        },
+        "answer": "B",
+        "explanation": "Mọi form gửi dữ liệu POST đều sinh và kiểm tra mã csrf_token lưu trữ ngẫu nhiên trong session của người dùng, ngăn chặn kẻ tấn công lợi dụng phiên đăng nhập gửi yêu cầu giả mạo."
+    },
+    {
+        "id": 5,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Thuật toán băm mật khẩu được hệ thống áp dụng để bảo vệ thông tin đăng nhập trong bảng `users` là gì?",
+        "options": {
+            "A": "Thuật toán băm một chiều MD5 không salt (`md5($pass)`).",
+            "B": "Thuật toán SHA-1 đơn thuần (`sha1($pass)`).",
+            "C": "Thuật toán Bcrypt tiêu chuẩn công nghiệp với salt ngẫu nhiên thông qua hàm `password_hash($pass, PASSWORD_BCRYPT)`.",
+            "D": "Mã hóa đối xứng AES-256 có thể giải mã ngược lại mật khẩu gốc."
+        },
+        "answer": "C",
+        "explanation": "Hệ thống sử dụng hàm chuẩn password_hash($pass, PASSWORD_BCRYPT) với chi phí mã hóa cost 10 và salt ngẫu nhiên chống lại các cuộc tấn công tra từ điển và Rainbow Table."
+    },
+    {
+        "id": 6,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Phiên làm việc (Session) của người dùng sau khi xác thực thành công được lưu giữ tại đâu và quản lý qua lớp nào?",
+        "options": {
+            "A": "Lưu vào LocalStorage của trình duyệt và gửi qua Header `Authorization`.",
+            "B": "Lưu trong mảng toàn cục `$_SESSION['user']` và được bao bọc, quản lý qua lớp tiện ích `App\\Core\\Session`.",
+            "C": "Lưu vào một tệp văn bản `.txt` công khai trong thư mục gốc.",
+            "D": "Lưu vào bảng `sessions` trong CSDL với cơ chế Memcached."
+        },
+        "answer": "B",
+        "explanation": "Phiên đăng nhập được quản lý tập trung qua lớp App\\Core\\Session và mảng $_SESSION['user'], kiểm tra trạng thái hoạt động is_active và trạng thái đổi mật khẩu lần đầu."
+    },
+    {
+        "id": 7,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Để ngăn chặn tấn công tải lên tệp độc hại (Malicious File Upload \/ Webshell), dịch vụ `UploadService.php` thực hiện các biện pháp nào?",
+        "options": {
+            "A": "Cho phép tải lên mọi định dạng nhưng giới hạn tên tệp dưới 10 ký tự.",
+            "B": "Kiểm tra danh sách trắng định dạng đuôi tệp (Whitelist), kiểm tra MIME type thực tế, giới hạn dung lượng và đổi tên tệp ngẫu nhiên kèm mã băm thời gian.",
+            "C": "Chỉ kiểm tra phần mở rộng bằng hàm `substr()` và giữ nguyên tên tệp của người dùng.",
+            "D": "Lưu trực tiếp tệp vào CSDL dưới dạng chuỗi Base64."
+        },
+        "answer": "B",
+        "explanation": "UploadService.php áp dụng Whitelist định dạng (zip, rar, 7z, pdf, docx, png, jpg), kiểm tra MIME type thực tế, giới hạn dung lượng tối đa 25MB và sinh tên file ngẫu nhiên chống ghi đè\/webshell."
+    },
+    {
+        "id": 8,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Để ngăn ngừa tấn công CSV Injection khi xuất danh sách phiếu hoặc điểm số ra file CSV, hệ thống áp dụng quy tắc gì?",
+        "options": {
+            "A": "Xóa bỏ toàn bộ số và dấu chấm trong file CSV.",
+            "B": "Thêm dấu nháy đơn `'` phía trước các ô dữ liệu bắt đầu bằng các ký tự công thức nguy hiểm như `=`, `+`, `-`, `@`.",
+            "C": "Chỉ xuất file dưới định dạng hình ảnh PNG.",
+            "D": "Mã hóa toàn bộ nội dung file CSV bằng mật mã Base64."
+        },
+        "answer": "B",
+        "explanation": "Chống CSV Injection bằng cách chèn thêm dấu nháy đơn (') phía trước mọi chuỗi bắt đầu bằng các ký tự công thức Excel nguy hiểm (=, +, -, @) khi xuất báo cáo."
+    },
+    {
+        "id": 9,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Cơ chế định tuyến (Routing) trong hệ thống được xử lý như thế nào?",
+        "options": {
+            "A": "Cấu hình tệp `web.xml` phức tạp của máy chủ Java.",
+            "B": "Sử dụng tệp điều hướng trung tâm `index.php` kết hợp tham số truy vấn `action` (Query Parameter) và các bộ định tuyến phân hệ (`student\/`, `lecturer\/`, `admin\/`, `tickets\/`).",
+            "C": "Bắt buộc phải cài đặt mô-đun `mod_rewrite` của Apache để ánh xạ URL ảo.",
+            "D": "Gọi trực tiếp các tệp trong thư mục `vendor\/`."
+        },
+        "answer": "B",
+        "explanation": "Bộ định tuyến Router phân luồng linh hoạt theo tham số truy vấn index.php?action=... kết hợp với các bộ lọc Middleware bảo vệ phân hệ theo vai trò (AuthMiddleware, LecturerMiddleware, AdminMiddleware)."
+    },
+    {
+        "id": 10,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Phiên bản PHP tối thiểu để hệ thống hoạt động ổn định và tận dụng các tính năng mới (Named Arguments, Match Expression, Constructor Promotion) là gì?",
+        "options": {
+            "A": "PHP 5.6.",
+            "B": "PHP 7.2.",
+            "C": "PHP 8.0 trở lên (khuyến nghị chạy trên PHP 8.2).",
+            "D": "PHP 5.3."
+        },
+        "answer": "C",
+        "explanation": "Dự án sử dụng cú pháp hiện đại của PHP 8.0+ (khuyến nghị chạy trên PHP 8.2), bao gồm constructor promotion, kiểu trả về nghiêm ngặt, match expressions và named arguments."
+    },
+    {
+        "id": 11,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Bảng mã và tập ký tự được thiết lập thống nhất từ MySQL đến kết nối PHP PDO để bảo đảm tiếng Việt không bị lỗi font là gì?",
+        "options": {
+            "A": "`latin1_swedish_ci`.",
+            "B": "`ascii_general_ci`.",
+            "C": "`utf8mb4` với đối chiếu `utf8mb4_unicode_ci`.",
+            "D": "`cp1258_vietnamese_ci`."
+        },
+        "answer": "C",
+        "explanation": "Bảng mã và tập ký tự được thiết lập thống nhất utf8mb4_unicode_ci từ DDL MySQL 8 đến kết nối PDO (SET NAMES utf8mb4), bảo đảm hiển thị tiếng Việt trọn vẹn không lỗi font."
+    },
+    {
+        "id": 12,
+        "section_id": 1,
+        "section_name": "1. Kiến trúc tổng thể & An toàn thông tin",
+        "question": "Script nạp CSDL tự động `dong_bo_database.bat` hoạt động theo cơ chế nào?",
+        "options": {
+            "A": "Bắt buộc người dùng phải cài đặt Python và Composer.",
+            "B": "Tự động dò tìm bộ thông dịch `php.exe` và kết nối PDO để nạp `database_full_nhom1.sql`, nếu không thấy sẽ thử `mysql.exe` với mã hóa UTF-8 sạch.",
+            "C": "Xóa sạch toàn bộ hệ điều hành Windows trước khi nạp dữ liệu.",
+            "D": "Chỉ mở trang web phpMyAdmin và bắt người dùng tự import thủ công."
+        },
+        "answer": "B",
+        "explanation": "Script dong_bo_database.bat tự động nhận diện đường dẫn php.exe hoặc mysql.exe, nạp dữ liệu từ database_full_nhom1.sql với charset UTF-8 sạch chỉ qua một cú nhấp đúp."
+    },
+    {
+        "id": 13,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Tổng số lượng bảng quan hệ trong CSDL `helpdesk_thudo` sau khi tối ưu hóa chuẩn 3NF là bao nhiêu bảng?",
+        "options": {
+            "A": "10 bảng.",
+            "B": "12 bảng.",
+            "C": "14 bảng.",
+            "D": "18 bảng."
+        },
+        "answer": "C",
+        "explanation": "CSDL helpdesk_thudo gồm đúng 14 bảng quan hệ InnoDB 3NF: categories, classes, course_assignments, course_lessons, courses, holidays, notifications, password_resets, priorities, student_assignment_submissions, ticket_ratings, ticket_replies, tickets, users."
+    },
+    {
+        "id": 14,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Bảng nào trước đây từng tồn tại nhưng đã được phân tích và loại bỏ hoàn toàn khỏi CSDL vì tính chất dư thừa dữ liệu?",
+        "options": {
+            "A": "Bảng `ticket_replies`.",
+            "B": "Bảng `holidays`.",
+            "C": "Bảng `class_students`.",
+            "D": "Bảng `password_resets`."
+        },
+        "answer": "C",
+        "explanation": "Bảng class_students đã được phân tích và loại bỏ hoàn toàn do tính chất dư thừa khi cột users.class_id đã đảm nhận trực tiếp quan hệ giữa sinh viên và lớp sinh hoạt."
+    },
+    {
+        "id": 15,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Lý do kỹ thuật chính xác khiến bảng `class_students` bị loại bỏ là gì?",
+        "options": {
+            "A": "Do lớp học không cần quản lý sinh viên.",
+            "B": "Do bảng `users` đã có sẵn cột khóa ngoại trực tiếp `class_id` tham chiếu đến `classes(id)` (1 sinh viên chính quy thuộc 1 lớp cố định), việc dùng thêm bảng trung gian là dư thừa và làm chậm truy vấn.",
+            "C": "Do CSDL MySQL không hỗ trợ bảng có tên chứa dấu gạch dưới.",
+            "D": "Do giảng viên yêu cầu sinh viên phải học tự do không theo lớp."
+        },
+        "answer": "B",
+        "explanation": "Trong môi trường đại học chính quy, 1 sinh viên chỉ thuộc về 1 lớp sinh hoạt cố định (1-N). Cột users.class_id -> classes(id) đã đáp ứng hoàn hảo; việc thêm class_students vi phạm tính tối giản của 3NF và làm chậm truy vấn."
+    },
+    {
+        "id": 16,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Trong bảng `tickets`, các khóa ngoại chính liên kết đến các bảng nào?",
+        "options": {
+            "A": "Chỉ liên kết duy nhất tới bảng `users`.",
+            "B": "`requester_id -> users(id)`, `assigned_to -> users(id)`, `category_id -> categories(id)`, `priority_id -> priorities(id)`, `class_id -> classes(id)`, `course_id -> courses(id)`.",
+            "C": "Chỉ liên kết tới bảng `classes` và `courses`.",
+            "D": "Không có khóa ngoại nào, toàn bộ lưu dưới dạng chuỗi tự do."
+        },
+        "answer": "B",
+        "explanation": "Bảng tickets có mạng lưới khóa ngoại chặt chẽ: requester_id và assigned_to trỏ tới users, category_id trỏ tới categories, priority_id trỏ tới priorities, class_id và course_id trỏ tới classes và courses."
+    },
+    {
+        "id": 17,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Mối quan hệ giữa bảng `tickets` và bảng `ticket_ratings` được thiết lập theo tỷ lệ nào?",
+        "options": {
+            "A": "Quan hệ Nhiều &ndash; Nhiều (N-N).",
+            "B": "Quan hệ Một &ndash; Nhiều (1-N), một phiếu có thể đánh giá hàng chục lần.",
+            "C": "Quan hệ Một &ndash; Một (1-1) tuyệt đối, thông qua ràng buộc `UNIQUE KEY uq_ticket_rating (ticket_id)`.",
+            "D": "Quan hệ tự thân (Self-referencing)."
+        },
+        "answer": "C",
+        "explanation": "Mỗi phiếu hỗ trợ chỉ được đánh giá CSAT đúng 1 lần duy nhất nhờ ràng buộc khóa duy nhất UNIQUE KEY uq_ticket_rating (ticket_id) trong bảng ticket_ratings."
+    },
+    {
+        "id": 18,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Mã token đặt lại mật khẩu trong bảng `password_resets` được lưu trữ dưới dạng nào trong CSDL?",
+        "options": {
+            "A": "Văn bản thuần rõ ràng không mã hóa (Plain text).",
+            "B": "Chuỗi băm SHA-256 có độ dài 64 ký tự hex (`token_hash`) nhằm ngăn ngừa lộ token khi DB bị rò rỉ.",
+            "C": "Chuỗi Base64 có thể dịch ngược lại.",
+            "D": "Mã PIN 4 chữ số."
+        },
+        "answer": "B",
+        "explanation": "Mã OTP khôi phục mật khẩu 6 chữ cái được băm bằng SHA-256 (64 ký tự hex) trước khi lưu vào cột token_hash của bảng password_resets để bảo vệ an toàn ngay cả khi database bị dump."
+    },
+    {
+        "id": 19,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Bảng nào trong hệ thống đóng vai trò cung cấp dữ liệu các ngày nghỉ lễ toàn trường để loại trừ khi tính toán thời hạn SLA?",
+        "options": {
+            "A": "Bảng `classes`.",
+            "B": "Bảng `categories`.",
+            "C": "Bảng `holidays`.",
+            "D": "Bảng `course_lessons`."
+        },
+        "answer": "C",
+        "explanation": "Bảng holidays chứa danh mục tất cả các ngày nghỉ lễ toàn trường do Admin cấu hình (bao gồm cả ngày nghỉ định kỳ lặp lại hàng năm) để thuật toán SLA loại trừ."
+    },
+    {
+        "id": 20,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Cột điểm số `score` của sinh viên trong bảng `student_assignment_submissions` có kiểu dữ liệu là gì?",
+        "options": {
+            "A": "`VARCHAR(10)`.",
+            "B": "`INT(11)`.",
+            "C": "`DECIMAL(4,2)` cho phép lưu điểm số từ 0.00 đến 10.00 chính xác đến 2 chữ số thập phân.",
+            "D": "`BOOLEAN`."
+        },
+        "answer": "C",
+        "explanation": "Cột score có kiểu DECIMAL(4,2), cho phép lưu trữ điểm số học thuật thang 10 chuẩn xác đến 2 chữ số thập phân (từ 0.00 đến 10.00)."
+    },
+    {
+        "id": 21,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Khi một bản ghi trong bảng `classes` bị xóa, hành vi toàn vẹn khóa ngoại đối với cột `class_id` trong bảng `users` được định nghĩa là gì?",
+        "options": {
+            "A": "`ON DELETE CASCADE` (xóa luôn tài khoản người dùng).",
+            "B": "`ON DELETE RESTRICT` (báo lỗi không cho xóa lớp).",
+            "C": "`ON DELETE SET NULL` (giữ lại tài khoản người dùng và gán lớp về rỗng).",
+            "D": "`ON DELETE NO ACTION`."
+        },
+        "answer": "B",
+        "explanation": "Ràng buộc ON DELETE SET NULL tại cột users.class_id bảo đảm nếu một lớp học sinh hoạt bị xóa khỏi hệ thống thì tài khoản của sinh viên vẫn tồn tại an toàn, chỉ để trống trường lớp."
+    },
+    {
+        "id": 22,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Cột `is_internal` kiểu `TINYINT(1)` trong bảng `ticket_replies` mang ý nghĩa nghiệp vụ gì?",
+        "options": {
+            "A": "Đánh dấu tin nhắn do robot tự động gửi.",
+            "B": "Đánh dấu tin nhắn ghi chú kỹ thuật nội bộ chỉ Kỹ thuật viên (Agent) và Quản trị viên (Admin) thấy, Sinh viên không nhìn thấy.",
+            "C": "Đánh dấu tin nhắn đã được gửi qua mạng nội bộ LAN.",
+            "D": "Đánh dấu tin nhắn bị xóa tạm thời."
+        },
+        "answer": "B",
+        "explanation": "Cột is_internal = 1 trong ticket_replies dùng cho các ghi chú nội bộ, trao đổi kỹ thuật hoặc bàn giao giữa KTV và Admin, hoàn toàn bị ẩn khỏi giao diện của Sinh viên\/Khách."
+    },
+    {
+        "id": 23,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Các bảng trong CSDL `helpdesk_thudo` tuân thủ dạng chuẩn mấy (Normal Form)?",
+        "options": {
+            "A": "Chỉ đạt dạng chuẩn 1 (1NF).",
+            "B": "Đạt dạng chuẩn 2 (2NF).",
+            "C": "Đạt chuẩn hóa dạng 3 (3NF) &ndash; không có phụ thuộc bắc cầu, mỗi thuộc tính không khóa đều phụ thuộc trực tiếp vào khóa chính.",
+            "D": "Chưa chuẩn hóa (Unnormalized)."
+        },
+        "answer": "B",
+        "explanation": "CSDL được thiết kế tuân thủ Dạng chuẩn 3 (3NF): loại bỏ nhóm lặp (1NF), loại bỏ phụ thuộc một phần vào khóa phức hợp (2NF) và loại bỏ hoàn toàn phụ thuộc bắc cầu (3NF)."
+    },
+    {
+        "id": 24,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Bảng `course_assignments` thể hiện quy tắc nghiệp vụ cốt lõi nào trong phân công giảng dạy?",
+        "options": {
+            "A": "Một lớp học phần có thể có nhiều giảng viên cùng tranh chấp quyền nhập điểm.",
+            "B": "Mỗi lớp học phần (1 môn của 1 lớp trong 1 kỳ học) chỉ có duy nhất 1 Giảng viên phụ trách thông qua cặp ràng buộc logic.",
+            "C": "Sinh viên tự do phân công giảng viên dạy mình.",
+            "D": "Giảng viên không cần liên kết với lớp học nào."
+        },
+        "answer": "B",
+        "explanation": "Quy tắc nghiệp vụ của course_assignments quy định mỗi lớp học phần (1 môn của 1 lớp trong 1 kỳ học) chỉ có duy nhất 1 Giảng viên phụ trách, tránh xung đột quyền nhập điểm."
+    },
+    {
+        "id": 25,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Bảng `notifications` lưu trữ những loại phân loại thông báo (`type`) nào?",
+        "options": {
+            "A": "Chỉ lưu thông báo quảng cáo.",
+            "B": "Các loại: `ticket` (sự cố), `deadline` (hạn bài tập), `rescue` (cứu hộ tài khoản), `broadcast` (sự cố diện rộng).",
+            "C": "Chỉ lưu thông báo nộp học phí.",
+            "D": "Chỉ lưu thông báo sinh nhật."
+        },
+        "answer": "B",
+        "explanation": "Bảng notifications hỗ trợ các phân loại thông báo: ticket (sự cố kỹ thuật), deadline (hạn bài tập), rescue (cứu hộ tài khoản) và broadcast (sự cố diện rộng toàn trường)."
+    },
+    {
+        "id": 26,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Cột `parent_ticket_id` (trỏ ngược về `tickets.id`) trong bảng `tickets` phục vụ mục đích gì?",
+        "options": {
+            "A": "Dùng để xóa phiếu tự động.",
+            "B": "Dùng để gom nhóm các phiếu sự cố con vào một phiếu sự cố cha khi xảy ra sự cố kỹ thuật diện rộng (Major Incident).",
+            "C": "Dùng để liên kết ticket với tài khoản ngân hàng.",
+            "D": "Không có ý nghĩa gì."
+        },
+        "answer": "B",
+        "explanation": "Cột parent_ticket_id trỏ về tickets.id cho phép gom các phiếu con của nhiều sinh viên vào một phiếu sự cố cha duy nhất khi xảy ra sự cố kỹ thuật diện rộng."
+    },
+    {
+        "id": 27,
+        "section_id": 2,
+        "section_name": "2. Thiết kế CSDL 14 Bảng 3NF",
+        "question": "Cờ `is_guest_ticket` kiểu `TINYINT(1)` trong bảng `tickets` dùng để phân biệt điều gì?",
+        "options": {
+            "A": "Phân biệt phiếu của khách tham quan trường.",
+            "B": "Đánh dấu phiếu gửi từ Trạm Cứu Hộ Tài Khoản Khách (dành cho người mất quyền đăng nhập, tra cứu bằng mã đơn).",
+            "C": "Phân biệt phiếu của sinh viên nước ngoài.",
+            "D": "Đánh dấu phiếu gửi từ thiết bị di động."
+        },
+        "answer": "B",
+        "explanation": "Cờ is_guest_ticket = 1 nhận diện các đơn gửi từ Trạm Cứu Hộ Tài Khoản Khách dành cho người dùng bị mất mật khẩu hoặc mất quyền truy cập, tra cứu tiến độ bằng ticket_code."
+    },
+    {
+        "id": 28,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Hệ thống Helpdesk phân chia người dùng thành bao nhiêu vai trò chính (Roles) trong ma trận kiểm soát truy cập RBAC?",
+        "options": {
+            "A": "2 vai trò: Khách và Thành viên.",
+            "B": "3 vai trò: Sinh viên, Giáo viên, Giám đốc.",
+            "C": "4 vai trò: `student` (hoặc `requester`), `agent` (KTV), `lecturer` (Giảng viên), `admin` (Quản trị viên).",
+            "D": "6 vai trò khác nhau."
+        },
+        "answer": "B",
+        "explanation": "Hệ thống hỗ trợ 4 vai trò rõ rệt: student (Sinh viên), agent (Kỹ thuật viên), lecturer (Giảng viên), admin (Quản trị viên) với bảng ma trận phân quyền chi tiết."
+    },
+    {
+        "id": 29,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Vai trò nào trong hệ thống có thẩm quyền tạo bài học mới, đăng tải tài liệu slide và thiết lập hạn nộp bài tập (`deadline_at`)?",
+        "options": {
+            "A": "Kỹ thuật viên (`agent`).",
+            "B": "Sinh viên (`student`).",
+            "C": "Giảng viên phụ trách lớp học phần (`lecturer`).",
+            "D": "Trưởng phòng tài vụ."
+        },
+        "answer": "B",
+        "explanation": "Chỉ có Giảng viên phụ trách lớp học phần (lecturer) mới có quyền tạo buổi học (course_lessons), cập nhật yêu cầu bài tập và thiết lập deadline_at."
+    },
+    {
+        "id": 30,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Vai trò nào chịu trách nhiệm xác thực kỹ thuật khách quan trên hệ thống log (`it_verified = 1`) khi sinh viên gặp lỗi mạng\/LMS không nộp được bài?",
+        "options": {
+            "A": "Giảng viên bộ môn.",
+            "B": "Kỹ thuật viên CNTT (`agent`).",
+            "C": "Lớp trưởng lớp sinh hoạt.",
+            "D": "Ban Giám hiệu nhà trường."
+        },
+        "answer": "B",
+        "explanation": "Kỹ thuật viên (agent) là người duy nhất thực hiện việc rà soát log mạng\/máy chủ và bấm xác nhận sự cố kỹ thuật khách quan (it_verified = 1)."
+    },
+    {
+        "id": 31,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Khi sự cố kỹ thuật được KTV xác nhận hợp lệ, ai là người duy nhất nắm thẩm quyền học thuật để bấm \"Phê duyệt gia hạn hạn nộp bài\"?",
+        "options": {
+            "A": "Quản trị viên hệ thống.",
+            "B": "Kỹ thuật viên xử lý ticket.",
+            "C": "Giảng viên phụ trách trực tiếp lớp học phần đó (`lecturer`).",
+            "D": "Sinh viên tự gia hạn cho mình."
+        },
+        "answer": "B",
+        "explanation": "Quyết định gia hạn hạn nộp bài là thẩm quyền học thuật độc quyền của Giảng viên phụ trách bộ môn; KTV hay Admin không tự ý can thiệp mở lại hạn nộp."
+    },
+    {
+        "id": 32,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Trong quy trình Trạm Cứu Hộ tài khoản khách, vai trò nào có thẩm quyền thực hiện Bước 2: \"Phê duyệt mở khóa tài khoản\"?",
+        "options": {
+            "A": "Kỹ thuật viên.",
+            "B": "Quản trị viên cấp cao (`admin`).",
+            "C": "Giảng viên chủ nhiệm.",
+            "D": "Bất kỳ người dùng nào truy cập vào trang."
+        },
+        "answer": "B",
+        "explanation": "Quy trình cứu hộ tài khoản khách có 2 bước: KTV xác thực hồ sơ bước 1, sau đó chỉ Quản trị viên (Admin) mới có quyền bấm phê duyệt mở khóa tài khoản bước 2."
+    },
+    {
+        "id": 33,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Cột trạng thái học tập `academic_status` của sinh viên trong bảng `users` có thể nhận những giá trị nào?",
+        "options": {
+            "A": "`online`, `offline`, `away`.",
+            "B": "`studying` (đang học), `suspended` (đình chỉ tạm thời), `expelled` (buộc thôi học do kỷ luật), `graduated` (đã tốt nghiệp).",
+            "C": "`vip`, `normal`, `gold`.",
+            "D": "`pass`, `fail`."
+        },
+        "answer": "B",
+        "explanation": "Cột academic_status gồm 4 trạng thái: studying (đang học), suspended (đình chỉ tạm thời), expelled (buộc thôi học) và graduated (đã tốt nghiệp)."
+    },
+    {
+        "id": 34,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Điều gì sẽ xảy ra nếu một sinh viên có trạng thái `academic_status = 'expelled'` cố gắng đăng nhập vào hệ thống?",
+        "options": {
+            "A": "Đăng nhập bình thường nhưng không được gửi ticket.",
+            "B": "Hệ thống lập tức từ chối xác thực, thông báo tài khoản bị kỷ luật buộc thôi học và chặn hoàn toàn tính năng khôi phục mật khẩu SSPR.",
+            "C": "Hệ thống tự động chuyển tài khoản sang vai trò Giảng viên.",
+            "D": "Đăng nhập được nhưng bị ẩn ảnh đại diện."
+        },
+        "answer": "B",
+        "explanation": "Sinh viên bị buộc thôi học (expelled) bị chặn đăng nhập hoàn toàn, đồng thời dịch vụ SSPR từ chối cấp mã OTP khôi phục mật khẩu."
+    },
+    {
+        "id": 35,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Trường `is_on_duty` (trạng thái ca trực) của Kỹ thuật viên trong bảng `users` có tác dụng gì đối với bộ máy điều phối tự động?",
+        "options": {
+            "A": "Để chấm công nhận lương cuối tháng.",
+            "B": "Chỉ những KTV đang bật trạng thái trực (`is_on_duty = 1`) và tài khoản đang hoạt động (`is_active = 1`) mới được thuật toán tự động gán vé mới.",
+            "C": "Để hiển thị màu áo của KTV trên hệ thống.",
+            "D": "Không có tác dụng trong mã nguồn."
+        },
+        "answer": "B",
+        "explanation": "Chỉ các KTV có is_on_duty = 1 (đang trong ca trực) và is_active = 1 mới được thuật toán Triage tự động gán vé mới."
+    },
+    {
+        "id": 36,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Nếu một Kỹ thuật viên xin nghỉ ốm đột xuất, thao tác nào giúp họ không bị thuật toán tự động điều phối thêm vé mới vào ca của mình?",
+        "options": {
+            "A": "Đổi mật khẩu tài khoản.",
+            "B": "Tắt trạng thái trực ca (`is_on_duty = 0`) ngay trên thanh tác vụ Dashboard.",
+            "C": "Xóa tài khoản của mình khỏi CSDL.",
+            "D": "Nhờ sinh viên không gửi ticket nữa."
+        },
+        "answer": "B",
+        "explanation": "KTV có thể chủ động chuyển trạng thái trực ca is_on_duty = 0 trên giao diện để tạm dừng nhận vé mới khi có lý do cá nhân hoặc nghỉ phép."
+    },
+    {
+        "id": 37,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Theo nguyên tắc bảo mật thông tin cá nhân (Privacy Isolation), Sinh viên A có xem được danh sách phiếu hỗ trợ của Sinh viên B không?",
+        "options": {
+            "A": "Xem được nếu biết mã sinh viên của bạn B.",
+            "B": "Xem được toàn bộ vì hệ thống mở công khai.",
+            "C": "Tuyệt đối không; câu truy vấn SQL của Sinh viên luôn bị ràng buộc điều kiện cứng `WHERE requester_id = :current_user_id`.",
+            "D": "Xem được nếu cùng lớp sinh hoạt."
+        },
+        "answer": "B",
+        "explanation": "Hệ thống áp dụng nguyên tắc cách ly dữ liệu cá nhân (Privacy Isolation): câu truy vấn danh sách phiếu của Sinh viên luôn bị giới hạn bởi WHERE requester_id = :current_user_id."
+    },
+    {
+        "id": 38,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Kỹ thuật viên CNTT (Agent) có quyền sửa đổi điểm số bài tập của sinh viên trong môn Lập trình Web không?",
+        "options": {
+            "A": "Có quyền sửa nếu sinh viên nhờ hỗ trợ.",
+            "B": "Không có quyền; nghiệp vụ chấm điểm và sửa điểm hoàn toàn bị giới hạn bởi middleware kiểm tra vai trò Giảng viên (`LecturerMiddleware`).",
+            "C": "Có quyền sửa nếu được Admin cho phép bằng văn bản.",
+            "D": "Có quyền sửa trong vòng 24 giờ."
+        },
+        "answer": "B",
+        "explanation": "KTV chỉ hỗ trợ về mặt kỹ thuật hạ tầng; mọi tác vụ chấm điểm và sửa điểm bài tập đều bị chặn nghiêm ngặt bởi LecturerMiddleware."
+    },
+    {
+        "id": 39,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Giảng viên X có thể xem danh sách nộp bài và chấm điểm cho lớp học phần do Giảng viên Y phụ trách không?",
+        "options": {
+            "A": "Có thể xem và chấm tự do bất kỳ môn nào.",
+            "B": "Không; Controller đối soát nghiêm ngặt `lecturer_id = current_user_id` trong bảng `course_assignments`, từ chối truy cập nếu không được phân công.",
+            "C": "Có thể xem nếu dạy cùng khoa CNTT.",
+            "D": "Chỉ được xem danh sách nhưng không được bấm chấm điểm."
+        },
+        "answer": "B",
+        "explanation": "Giảng viên chỉ có quyền truy cập vào danh sách bài nộp của lớp học phần do mình phụ trách thông qua phép đối soát khóa ngoại trong course_assignments."
+    },
+    {
+        "id": 40,
+        "section_id": 3,
+        "section_name": "3. Phân quyền RBAC & Vai trò người dùng",
+        "question": "Quản trị viên (Admin) và Kỹ thuật viên (Agent) có thể xem được nội dung các ghi chú nội bộ (`is_internal = 1`) trong phiếu hỗ trợ không?",
+        "options": {
+            "A": "Chỉ Admin xem được, KTV không xem được.",
+            "B": "Cả Admin và KTV đều xem được để phối hợp nghiệp vụ, trong khi vai trò Sinh viên và Khách bị ẩn hoàn toàn trường này.",
+            "C": "Sinh viên xem được nếu đã gửi đánh giá CSAT.",
+            "D": "Không ai xem được vì tin nhắn bị mã hóa một chiều."
+        },
+        "answer": "B",
+        "explanation": "Các ghi chú nội bộ (is_internal = 1) chỉ hiển thị cho người dùng có vai trò agent hoặc admin, giúp phối hợp xử lý mà không làm người dùng hoang mang."
+    },
+    {
+        "id": 41,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Trật tự vòng đời trạng thái chuẩn (Status Lifecycle) của một phiếu hỗ trợ trong hệ thống diễn ra như thế nào?",
+        "options": {
+            "A": "`closed` &rarr; `resolved` &rarr; `new`.",
+            "B": "`new` (Mới tạo) &rarr; `in_progress` (Đang xử lý) &rarr; `waiting_requester` (Chờ người dùng phản hồi) &rarr; `resolved` (Đã giải quyết) &rarr; `closed` (Đóng phiếu).",
+            "C": "`pending` &rarr; `approved` &rarr; `rejected`.",
+            "D": "`draft` &rarr; `published` &rarr; `archived`."
+        },
+        "answer": "B",
+        "explanation": "Vòng đời chuẩn ITIL v4: new -> in_progress -> waiting_requester -> resolved -> closed."
+    },
+    {
+        "id": 42,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Khi một sinh viên gửi thành công một yêu cầu hỗ trợ mới qua biểu mẫu, trạng thái khởi tạo ban đầu của phiếu luôn là gì?",
+        "options": {
+            "A": "`in_progress`.",
+            "B": "`resolved`.",
+            "C": "`new`.",
+            "D": "`waiting_requester`."
+        },
+        "answer": "C",
+        "explanation": "Mọi phiếu hỗ trợ khi vừa được tạo thành công đều có trạng thái khởi tạo mặc định là new."
+    },
+    {
+        "id": 43,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Thuật toán phân công thông minh (Smart Auto-Dispatching) trong `TicketService.php` ưu tiên gán vé cho ai?",
+        "options": {
+            "A": "Gán ngẫu nhiên cho bất kỳ người dùng nào trong trường.",
+            "B": "Gán cho KTV có chuyên môn trùng với danh mục sự cố (`specialty_category_id = category_id`), đang trong ca trực (`is_on_duty = 1`), và có số lượng vé đang xử lý (`active_tickets_count`) ít nhất.",
+            "C": "Luôn gán cho Admin cao nhất xử lý.",
+            "D": "Gán cho KTV có tuổi đời lớn nhất."
+        },
+        "answer": "B",
+        "explanation": "Thuật toán Triage trong TicketService.php tìm KTV có specialty_category_id trùng với danh mục phiếu, đang bật is_on_duty = 1, và có active_tickets_count nhỏ nhất."
+    },
+    {
+        "id": 44,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Trường hợp không có KTV nào đúng chuyên môn danh mục đang bật ca trực, thuật toán điều phối xử lý ra sao?",
+        "options": {
+            "A": "Báo lỗi 500 và từ chối lưu phiếu vào CSDL.",
+            "B": "Tìm KTV bất kỳ khác đang trong ca trực có tải công việc thấp nhất để gán; nếu không có ai trực sẽ để vé ở trạng thái chờ và gửi thông báo cảnh báo cho Admin.",
+            "C": "Tự động xóa phiếu sau 5 phút.",
+            "D": "Chuyển ticket về email của Giảng viên."
+        },
+        "answer": "B",
+        "explanation": "Nếu không có KTV đúng chuyên môn trực ca, hệ thống tìm KTV khác đang trực có tải thấp nhất; nếu không có ai trực, phiếu sẽ chờ Admin điều phối thủ công."
+    },
+    {
+        "id": 45,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Kỹ thuật viên đang phụ trách phiếu được phép thực hiện thao tác \"Chuyển giao phiếu\" (Reassign) khi nào?",
+        "options": {
+            "A": "Bất cứ khi nào KTV cảm thấy lười xử lý mà không cần lý do.",
+            "B": "Khi kiểm tra nội dung sự cố và nhận thấy vấn đề thuộc chuyên môn của KTV khác (ví dụ từ Mạng sang Phần mềm đào tạo), kèm theo lý do bàn giao bắt buộc lưu vào nhật ký.",
+            "C": "Chỉ khi sinh viên yêu cầu đổi KTV.",
+            "D": "Hệ thống không cho phép chuyển giao phiếu."
+        },
+        "answer": "B",
+        "explanation": "KTV được phép chuyển giao vé (Reassign) cho KTV khác kèm lý do bàn giao bắt buộc khi nhận thấy sự cố thuộc phạm vi chuyên môn khác (ví dụ từ Mạng sang Phần mềm)."
+    },
+    {
+        "id": 46,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Theo quy tắc nghiệp vụ ITIL, điểm số KPI hoàn thành phiếu và điểm đánh giá sao CSAT sẽ được hệ thống tính cho ai?",
+        "options": {
+            "A": "KTV đầu tiên nhận vé nhưng đã bấm chuyển giao đi.",
+            "B": "Chia đều cho tất cả các KTV trong ca trực.",
+            "C": "Tính duy nhất cho Kỹ thuật viên phụ trách xử lý cuối cùng (người đưa trạng thái phiếu về `resolved` và nhận đánh giá CSAT của người dùng).",
+            "D": "Luôn tính KPI cho Quản trị viên."
+        },
+        "answer": "C",
+        "explanation": "Điểm KPI hoàn thành phiếu và điểm đánh giá sao CSAT chỉ được tính duy nhất cho KTV xử lý cuối cùng (người đưa phiếu về resolved)."
+    },
+    {
+        "id": 47,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Cơ chế \"Cảnh báo đùn đẩy trách nhiệm\" trong hệ thống sẽ tự động kích hoạt cảnh báo đỏ gửi tới Admin khi nào?",
+        "options": {
+            "A": "Khi phiếu bị chuyển giao (Reassign) qua lại quá 3 lần giữa các KTV.",
+            "B": "Khi phiếu chưa được xem sau 10 phút.",
+            "C": "Khi sinh viên chấm 1 sao.",
+            "D": "Khi ticket có tệp đính kèm lớn hơn 10MB."
+        },
+        "answer": "A",
+        "explanation": "Khi một phiếu bị chuyển giao qua lại quá 3 lần, hệ thống tự động kích hoạt cảnh báo đỏ 'Đùn đẩy phiếu' trong danh sách cảnh báo của Admin."
+    },
+    {
+        "id": 48,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Trạng thái `waiting_requester` (Chờ người gửi phản hồi) được KTV sử dụng trong tình huống nào?",
+        "options": {
+            "A": "Khi KTV đã giải quyết xong sự cố và đi về.",
+            "B": "Khi KTV cần người dùng cung cấp thêm thông tin minh chứng, ảnh chụp màn hình lỗi rõ hơn hoặc yêu cầu xác nhận kết quả thử nghiệm.",
+            "C": "Khi KTV muốn từ chối xử lý phiếu.",
+            "D": "Khi CSDL bị mất kết nối mạng."
+        },
+        "answer": "B",
+        "explanation": "Trạng thái waiting_requester được kích hoạt khi KTV cần người dùng cung cấp thêm thông tin minh chứng hoặc thử nghiệm lại kết quả."
+    },
+    {
+        "id": 49,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Trong thời gian phiếu ở trạng thái `waiting_requester`, bộ đếm giờ hạn cam kết SLA sẽ hoạt động thế nào?",
+        "options": {
+            "A": "Tiếp tục chạy bình thường để ép KTV phải tự đoán lỗi.",
+            "B": "Tạm dừng (Pause SLA clock) thời gian cam kết của KTV để bảo đảm tính công bằng, chỉ tính tiếp khi người dùng đã gửi tin nhắn phản hồi.",
+            "C": "Tự động trừ điểm KPI của sinh viên.",
+            "D": "Đặt lại thời gian SLA về 0 giờ."
+        },
+        "answer": "B",
+        "explanation": "Khi phiếu ở trạng thái waiting_requester, đồng hồ cam kết SLA tạm dừng (Pause SLA) để bảo đảm đánh giá công bằng cho KTV."
+    },
+    {
+        "id": 50,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Để tránh tình trạng một sinh viên bấm gửi liên tục nhiều phiếu cùng một nội dung (Spam\/Duplicate tickets), hệ thống áp dụng cơ chế gì?",
+        "options": {
+            "A": "Giới hạn mỗi sinh viên chỉ được tạo tối đa 1 phiếu trong suốt khóa học.",
+            "B": "Kiểm tra truy vấn CSDL: nếu sinh viên đang có phiếu chưa hoàn tất (`status NOT IN ('resolved', 'closed')`) trong cùng một danh mục hoặc buổi học, hệ thống sẽ chặn gửi mới và điều hướng xem lại phiếu cũ.",
+            "C": "Trừ tiền tài khoản sinh viên mỗi lần tạo phiếu.",
+            "D": "Bắt buộc sinh viên phải chờ 7 ngày mới được tạo phiếu mới."
+        },
+        "answer": "B",
+        "explanation": "Hệ thống chặn sinh viên tạo phiếu trùng lặp nếu đang có phiếu chưa hoàn tất (chưa resolved\/closed) trong cùng một danh mục hoặc buổi học."
+    },
+    {
+        "id": 51,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Cấu trúc chuẩn của mã định danh phiếu hỗ trợ (`ticket_code`) trong hệ thống có dạng mẫu nào?",
+        "options": {
+            "A": "Số tăng dần đơn thuần: `1`, `2`, `3`.",
+            "B": "Định dạng tiêu chuẩn ITIL: `HD-YYYY-DDMM-XXXXXX` (Ví dụ: `HD-2026-3110-0G04V1`).",
+            "C": "Tên sinh viên viết liền không dấu: `nguyenvana`.",
+            "D": "Số chứng minh thư nhân dân của người tạo phiếu."
+        },
+        "answer": "B",
+        "explanation": "Mã phiếu có định dạng chuẩn ITIL: HD-YYYY-DDMM-XXXXXX (ví dụ: HD-2026-3110-0G04V1), đóng vai trò làm mã tra cứu duy nhất."
+    },
+    {
+        "id": 52,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Ai là người có quyền đưa phiếu từ trạng thái `resolved` (Đã giải quyết) sang `closed` (Đóng phiếu hoàn tất)?",
+        "options": {
+            "A": "Chỉ có Bộ Giáo dục và Đào tạo.",
+            "B": "Chính người tạo phiếu (Sinh viên\/Giảng viên) sau khi xác nhận đã hài lòng, hoặc hệ thống tự động đóng sau một khoảng thời gian chờ không có khiếu nại.",
+            "C": "Bất kỳ ai trên Internet.",
+            "D": "Phiếu sau khi `resolved` sẽ không bao giờ chuyển sang `closed`."
+        },
+        "answer": "B",
+        "explanation": "Người yêu cầu (Sinh viên\/Giảng viên) có quyền đóng phiếu sau khi hài lòng, hoặc hệ thống tự động đóng sau 72 giờ không có khiếu nại thêm."
+    },
+    {
+        "id": 53,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Khi một phiếu đã được KTV chuyển sang trạng thái `resolved`, người dùng sẽ nhìn thấy khối chức năng nào xuất hiện trên giao diện?",
+        "options": {
+            "A": "Nút bấm xóa tài khoản.",
+            "B": "Khung đánh giá chất lượng dịch vụ CSAT (Chọn từ 1 đến 5 sao và nhập nhận xét góp ý).",
+            "C": "Nút bấm thanh toán tiền phí hỗ trợ.",
+            "D": "Form đăng ký môn học lại."
+        },
+        "answer": "B",
+        "explanation": "Khi phiếu chuyển sang resolved, giao diện sinh viên hiển thị khối đánh giá CSAT cho phép chấm 1-5 sao và nhập góp ý."
+    },
+    {
+        "id": 54,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Nếu người dùng nhận thông báo phiếu đã `resolved` nhưng kiểm tra thực tế vẫn còn lỗi, họ có thể làm gì?",
+        "options": {
+            "A": "Không thể làm gì khác ngoài việc tạo tài khoản mới.",
+            "B": "Gửi tin nhắn phản hồi yêu cầu mở lại phiếu (Reopen ticket), hệ thống tự động chuyển trạng thái phiếu trở lại `in_progress` để KTV tiếp tục hỗ trợ.",
+            "C": "Báo công an xử lý.",
+            "D": "Hệ thống khóa luôn quyền truy cập của người dùng."
+        },
+        "answer": "B",
+        "explanation": "Nếu vấn đề chưa được khắc phục triệt để, người dùng có thể gửi tin nhắn phản hồi; phiếu sẽ tự động được mở lại và chuyển về trạng thái in_progress."
+    },
+    {
+        "id": 55,
+        "section_id": 4,
+        "section_name": "4. Vòng đời Ticket & Điều phối Triage",
+        "question": "Khối chức năng \"Trung Tâm Việc Cần Làm Cấp Bách\" trên Dashboard của KTV và Admin làm nhiệm vụ gì?",
+        "options": {
+            "A": "Hiển thị danh sách sinh viên sinh nhật trong ngày.",
+            "B": "Tổng hợp và làm nổi bật các sự vụ ưu tiên cao: vé sắp hoặc đã quá hạn SLA, đơn cứu hộ tài khoản chờ xác thực, báo cáo vi phạm cần xử lý, sự cố diện rộng.",
+            "C": "Hiển thị thời tiết và tỷ giá vàng.",
+            "D": "Hiển thị lịch thi đấu bóng đá trường."
+        },
+        "answer": "B",
+        "explanation": "Trung tâm việc cần làm cấp bách tổng hợp các phiếu sắp\/quá hạn SLA, đơn cứu hộ chờ duyệt, báo cáo vi phạm và sự cố diện rộng."
+    },
+    {
+        "id": 56,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Khung giờ làm việc hành chính chuẩn được cấu hình trong `SlaService.php` để tính thời hạn giải quyết bao gồm những khoảng thời gian nào?",
+        "options": {
+            "A": "24\/24 giờ liên tục không ngừng nghỉ tất cả các ngày.",
+            "B": "Ca sáng: 08:00 &ndash; 12:00 (4 tiếng); Ca chiều: 13:30 &ndash; 17:30 (4 tiếng), tổng cộng 8 giờ làm việc\/ngày từ Thứ Hai đến Thứ Sáu.",
+            "C": "Làm việc từ 07:00 đến 19:00 không nghỉ trưa.",
+            "D": "Chỉ làm việc vào các buổi tối từ 18:00 đến 22:00."
+        },
+        "answer": "B",
+        "explanation": "Khung giờ hành chính: Sáng 08:00 - 12:00, Chiều 13:30 - 17:30 (8 tiếng làm việc\/ngày) từ Thứ Hai đến Thứ Sáu."
+    },
+    {
+        "id": 57,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Khoảng thời gian nghỉ trưa hành chính không tính vào thời hạn cam kết SLA của hệ thống là bao lâu?",
+        "options": {
+            "A": "Nghỉ từ 11:30 đến 13:00 (1.5 tiếng).",
+            "B": "Nghỉ từ 12:00 đến 13:30 (1.5 tiếng).",
+            "C": "Không có giờ nghỉ trưa.",
+            "D": "Nghỉ từ 12:00 đến 14:00 (2 tiếng)."
+        },
+        "answer": "B",
+        "explanation": "Thời gian nghỉ trưa từ 12:00 đến 13:30 (1.5 tiếng), hoàn toàn không tính vào thời hạn cam kết SLA."
+    },
+    {
+        "id": 58,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Giả sử sinh viên tạo phiếu vào lúc 11:30 sáng Thứ Sáu với thời gian cam kết SLA là 2.0 giờ làm việc. Hạn chót giải quyết (`due_at`) chính xác sẽ là thời điểm nào?",
+        "options": {
+            "A": "13:30 chiều Thứ Sáu.",
+            "B": "15:00 chiều Thứ Sáu (11:30 &ndash; 12:00 hết 0.5h, nghỉ trưa đến 13:30, cộng thêm 1.5h còn lại).",
+            "C": "14:00 chiều Thứ Sáu.",
+            "D": "08:00 sáng Thứ Bảy."
+        },
+        "answer": "B",
+        "explanation": "Gửi 11:30 Thứ Sáu, SLA 2h: 11:30-12:00 hết 0.5h, nghỉ trưa đến 13:30, cộng thêm 1.5h còn lại -> Đến hạn lúc 15:00 Thứ Sáu."
+    },
+    {
+        "id": 59,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Giả sử sinh viên gửi phiếu lúc 16:30 chiều Thứ Sáu với thời hạn cam kết SLA là 2.0 giờ làm việc. Khi nào phiếu này sẽ đến hạn chót (`due_at`)?",
+        "options": {
+            "A": "18:30 tối Thứ Sáu.",
+            "B": "09:30 sáng Thứ Bảy.",
+            "C": "09:00 sáng Thứ Hai tuần kế tiếp (16:30 &ndash; 17:30 hết 1.0h, Thứ Bảy và Chủ Nhật nghỉ hoàn toàn, cộng 1.0h vào sáng Thứ Hai từ 08:00 đến 09:00).",
+            "D": "12:00 trưa Thứ Hai."
+        },
+        "answer": "C",
+        "explanation": "Gửi 16:30 Thứ Sáu, SLA 2h: 16:30-17:30 hết 1.0h, Thứ Bảy và Chủ Nhật nghỉ, cộng thêm 1.0h vào sáng Thứ Hai -> Đến hạn lúc 09:00 Thứ Hai."
+    },
+    {
+        "id": 60,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Nếu người dùng gửi yêu cầu hỗ trợ vào lúc 10:00 sáng Chủ Nhật, thời điểm bắt đầu tính giờ cam kết SLA trong thuật toán sẽ là thời điểm nào?",
+        "options": {
+            "A": "Bắt đầu tính ngay từ 10:00 sáng Chủ Nhật.",
+            "B": "Bắt đầu tính từ 08:00 sáng Thứ Hai (ngày làm việc kế tiếp).",
+            "C": "Không bao giờ được xử lý.",
+            "D": "Bắt đầu tính từ 13:30 chiều Chủ Nhật."
+        },
+        "answer": "B",
+        "explanation": "Phiếu gửi vào ngày nghỉ (Chủ Nhật) sẽ tự động bắt đầu tính thời gian làm việc từ 08:00 sáng Thứ Hai (ngày làm việc kế tiếp)."
+    },
+    {
+        "id": 61,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Hệ số nhân thời gian cam kết SLA (`sla_factor`) đối với mức độ ưu tiên Khẩn cấp (URGENT) trong bảng `priorities` là bao nhiêu?",
+        "options": {
+            "A": "1.0x (giữ nguyên).",
+            "B": "0.5x (rút ngắn một nửa thời gian cam kết để ưu tiên xử lý nhanh).",
+            "C": "2.0x (gấp đôi thời gian).",
+            "D": "0.0x (xử lý tức thì trong 0 giây)."
+        },
+        "answer": "B",
+        "explanation": "Mức độ Khẩn cấp (URGENT) có sla_factor = 0.5x, giúp rút ngắn một nửa thời gian cam kết để ưu tiên xử lý nhanh."
+    },
+    {
+        "id": 62,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Hệ số nhân thời gian cam kết SLA đối với mức độ ưu tiên Thấp (LOW) là bao nhiêu?",
+        "options": {
+            "A": "0.5x.",
+            "B": "1.0x.",
+            "C": "1.5x (cho phép thời gian cam kết dài hơn các phiếu thông thường).",
+            "D": "5.0x."
+        },
+        "answer": "B",
+        "explanation": "Mức độ Thấp (LOW) có sla_factor = 1.5x, cho phép thời gian cam kết kéo dài hơn đối với các yêu cầu không gấp."
+    },
+    {
+        "id": 63,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Bảng `holidays` trong CSDL can thiệp vào thuật toán tính hạn SLA như thế nào?",
+        "options": {
+            "A": "Tự động xóa các phiếu tạo trong ngày lễ.",
+            "B": "Thuật toán `SlaService` duyệt qua từng ngày: nếu ngày đó trùng vào khoảng `start_date` đến `end_date` của bất kỳ bản ghi ngày lễ nào, toàn bộ 8 giờ làm việc của ngày đó sẽ bị bỏ qua và nhảy sang ngày làm việc tiếp theo.",
+            "C": "Ngày lễ vẫn tính giờ làm việc bình thường nhưng tính thêm phụ cấp cho KTV.",
+            "D": "Chỉ áp dụng cho ngày nghỉ Tết Nguyên Đán, các ngày lễ khác vẫn tính giờ."
+        },
+        "answer": "B",
+        "explanation": "Bảng holidays lưu các ngày lễ toàn trường; SlaService sẽ bỏ qua toàn bộ 8 giờ làm việc của những ngày nằm trong khoảng nghỉ lễ này."
+    },
+    {
+        "id": 64,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Cờ `is_recurring = 1` trong bảng `holidays` được dùng để xử lý tình huống nào?",
+        "options": {
+            "A": "Ngày lễ chỉ diễn ra một lần duy nhất trong lịch sử trường.",
+            "B": "Các kỳ nghỉ lễ định kỳ lặp lại hàng năm theo dương lịch (ví dụ: Ngày Giải phóng 30\/4, Quốc tế Lao động 1\/5, Quốc khánh 2\/9) mà không cần nhập lại mỗi năm.",
+            "C": "Đánh dấu ngày KTV được đi du lịch.",
+            "D": "Đánh dấu các ngày thi hết môn của sinh viên."
+        },
+        "answer": "B",
+        "explanation": "Cờ is_recurring = 1 đại diện cho các kỳ nghỉ lễ lặp lại hàng năm theo dương lịch (30\/4, 1\/5, 2\/9...) mà không cần tạo mới mỗi năm."
+    },
+    {
+        "id": 65,
+        "section_id": 5,
+        "section_name": "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ",
+        "question": "Khi một phiếu hỗ trợ đã trôi qua thời điểm `due_at` mà trạng thái vẫn chưa là `resolved` hoặc `closed`, hệ thống sẽ phản ứng như thế nào?",
+        "options": {
+            "A": "Tự động xóa phiếu để giấu lỗi.",
+            "B": "Hiển thị nhãn đỏ cảnh báo \"Quá hạn SLA\", tính toán số phút\/giờ trễ, đẩy lên vị trí cảnh báo khẩn trên Dashboard và trừ điểm hiệu suất ca trực.",
+            "C": "Khóa tài khoản của người gửi phiếu.",
+            "D": "Đóng phiếu ngay lập tức."
+        },
+        "answer": "B",
+        "explanation": "Khi due_at < NOW() mà phiếu chưa hoàn tất, hệ thống kích hoạt nhãn đỏ cảnh báo 'Quá hạn SLA' và ưu tiên nổi bật trên Dashboard."
+    },
+    {
+        "id": 66,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Quy trình phối hợp 4 bước liên thông giữa Sinh viên &ndash; Kỹ thuật viên &ndash; Giảng viên khi sinh viên gặp sự cố mạng không nộp được bài diễn ra như thế nào?",
+        "options": {
+            "A": "Sinh viên gửi ticket &rarr; KTV tự sửa điểm &rarr; Giảng viên ký tên &rarr; Hoàn tất.",
+            "B": "Bước 1: Sinh viên gửi ticket cứu hộ nộp bài &rarr; Bước 2: KTV kiểm tra log hệ thống và bấm xác nhận lỗi kỹ thuật (`it_verified = 1`) &rarr; Bước 3: Giảng viên phụ trách xem xét và bấm phê duyệt mở lại hạn nộp bài (`deadline_at`) &rarr; Bước 4: Sinh viên nộp bài bổ sung và đánh giá sao CSAT.",
+            "C": "Giảng viên mở bài &rarr; Sinh viên nộp bài &rarr; KTV chấm điểm.",
+            "D": "Sinh viên tự ý gia hạn bài làm trên trang cá nhân."
+        },
+        "answer": "B",
+        "explanation": "Quy trình 4 bước: SV gửi ticket -> KTV kiểm tra log xác nhận lỗi it_verified = 1 -> GV duyệt mở deadline_at -> SV nộp bổ sung và chấm CSAT."
+    },
+    {
+        "id": 67,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Tại sao kiến trúc hệ thống không cho phép Kỹ thuật viên (Agent) tự ý đổi hạn nộp bài (`deadline_at`) của buổi học?",
+        "options": {
+            "A": "Do KTV không biết thao tác máy tính.",
+            "B": "Do nguyên tắc phân chia trách nhiệm: KTV chỉ có thẩm quyền xác minh sự cố kỹ thuật khách quan, còn quyết định mở lại hạn nộp bài là quyền học thuật riêng của Giảng viên phụ trách bộ môn.",
+            "C": "Do CSDL không cho phép câu lệnh UPDATE trên bảng `course_lessons`.",
+            "D": "Do Giảng viên không cho KTV mật khẩu."
+        },
+        "answer": "B",
+        "explanation": "Hạn nộp bài là quyết định học thuật thuộc thẩm quyền của Giảng viên; KTV chỉ có vai trò xác minh yếu tố kỹ thuật khách quan."
+    },
+    {
+        "id": 68,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Điều kiện tiên quyết để Giảng viên nhìn thấy nút bấm \"Phê duyệt gia hạn nộp bài\" trong chi tiết phiếu hỗ trợ là gì?",
+        "options": {
+            "A": "Giảng viên phải là Admin cấp cao.",
+            "B": "Phiếu phải gắn đúng môn học mà Giảng viên đang phụ trách, và Kỹ thuật viên đã hoàn thành xác thực giám định có lỗi kỹ thuật (`it_verified = 1`).",
+            "C": "Sinh viên phải nộp phí phạt nộp muộn.",
+            "D": "Phiếu phải được tạo trước 12:00 đêm."
+        },
+        "answer": "B",
+        "explanation": "Nút 'Gia hạn nộp bài' chỉ xuất hiện khi phiếu thuộc môn do GV phụ trách và KTV đã bấm xác nhận lỗi kỹ thuật it_verified = 1."
+    },
+    {
+        "id": 69,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Khi Giảng viên phê duyệt gia hạn thành công một yêu cầu cứu hộ nộp bài, trường dữ liệu nào trong CSDL được cập nhật hạn mới?",
+        "options": {
+            "A": "`tickets.created_at`.",
+            "B": "`course_lessons.deadline_at` của buổi học tương ứng được cập nhật sang thời điểm mới trong tương lai.",
+            "C": "`users.locked_until`.",
+            "D": "`courses.code`."
+        },
+        "answer": "B",
+        "explanation": "Khi Giảng viên gia hạn thành công, trường course_lessons.deadline_at của buổi học được cập nhật thời điểm mới trong tương lai."
+    },
+    {
+        "id": 70,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Điểm số bài nộp của sinh viên trong bảng `student_assignment_submissions` được chuẩn hóa theo thang điểm nào?",
+        "options": {
+            "A": "Thang điểm chữ: A, B, C, D, F.",
+            "B": "Thang điểm 100.",
+            "C": "Thang điểm 10 chuẩn đại học Việt Nam (từ 0.00 đến 10.00).",
+            "D": "Thang điểm 4 của Mỹ."
+        },
+        "answer": "B",
+        "explanation": "Điểm số được chuẩn hóa theo thang 10 chuẩn đại học Việt Nam (DECIMAL 4,2 từ 0.00 đến 10.00)."
+    },
+    {
+        "id": 71,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Trường hợp sinh viên đã nộp bài tập nhưng vẫn còn trong hạn nộp và muốn nộp tệp bài làm mới thay thế, hệ thống xử lý như thế nào?",
+        "options": {
+            "A": "Chặn không cho nộp và báo lỗi vi phạm.",
+            "B": "Cho phép nộp đè: cập nhật đường dẫn tệp mới, thời gian nộp mới, đồng thời tự động xóa kết quả điểm số, nhận xét và xếp hạng sao cũ để Giảng viên chấm lại từ đầu.",
+            "C": "Tạo thêm một bản ghi mới với ID sinh viên mới.",
+            "D": "Tự động cộng thêm 1 điểm thưởng vì tinh thần tự giác."
+        },
+        "answer": "B",
+        "explanation": "Sinh viên nộp lại bài khi còn hạn sẽ ghi đè tệp mới, cập nhật thời điểm nộp và reset điểm số\/nhận xét cũ về NULL để GV chấm lại."
+    },
+    {
+        "id": 72,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Giới hạn dung lượng tệp tin tối đa khi sinh viên nộp bài tập lớn\/tiểu luận trên cổng học phần là bao nhiêu?",
+        "options": {
+            "A": "2 MB.",
+            "B": "5 MB.",
+            "C": "25 MB.",
+            "D": "Không giới hạn dung lượng."
+        },
+        "answer": "B",
+        "explanation": "Hệ thống giới hạn dung lượng tệp tin tải lên tối đa là 25 MB cho mỗi lần nộp bài tập lớn."
+    },
+    {
+        "id": 73,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Danh sách các định dạng tệp tin cho phép (Whitelist Extensions) khi sinh viên tải lên bài tập bao gồm:",
+        "options": {
+            "A": "`.exe`, `.bat`, `.sh`, `.cmd`.",
+            "B": "`.zip`, `.rar`, `.7z`, `.pdf`, `.doc`, `.docx`.",
+            "C": "Chỉ duy nhất tệp ảnh `.png`.",
+            "D": "`.mp3`, `.mp4`, `.avi`."
+        },
+        "answer": "B",
+        "explanation": "Các định dạng cho phép (Whitelist): zip, rar, 7z, pdf, doc, docx, đảm bảo an toàn cho máy chủ."
+    },
+    {
+        "id": 74,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Khi thời gian hiện tại đã vượt quá hạn chót (`NOW() > deadline_at`), biểu mẫu nộp bài tập trên giao diện sinh viên sẽ hiển thị ra sao?",
+        "options": {
+            "A": "Vẫn cho nộp bình thường không thông báo gì.",
+            "B": "Nút nộp bài bị vô hiệu hóa, hiển thị cảnh báo đỏ \"Đã hết hạn nộp bài tập\" kèm liên kết hướng dẫn gửi phiếu hỗ trợ nếu có lý do sự cố kỹ thuật chính đáng.",
+            "C": "Tự động xóa bài làm của sinh viên.",
+            "D": "Trừ 5 điểm trực tiếp vào CSDL."
+        },
+        "answer": "B",
+        "explanation": "Khi quá hạn deadline_at, nút nộp bài bị khóa và hệ thống hiển thị hướng dẫn gửi phiếu hỗ trợ nếu có sự cố kỹ thuật chính đáng."
+    },
+    {
+        "id": 75,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Khi sinh viên nộp bài thành công, hệ thống thông báo chuông (Notification) sẽ được gửi đến đối tượng nào?",
+        "options": {
+            "A": "Toàn bộ sinh viên trong trường.",
+            "B": "Giảng viên trực tiếp phụ trách lớp học phần đó để theo dõi số lượng bài nộp.",
+            "C": "Nhân viên bảo vệ trường.",
+            "D": "Chỉ gửi cho phụ huynh sinh viên."
+        },
+        "answer": "B",
+        "explanation": "Khi sinh viên nộp bài thành công, thông báo chuông được gửi tự động cho Giảng viên phụ trách để theo dõi tiến độ."
+    },
+    {
+        "id": 76,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Trong học kỳ hiện tại, mỗi lớp học phần (ví dụ lớp D24-CNTT1 môn Lập trình Web) có thể có tối đa bao nhiêu Giảng viên phụ trách?",
+        "options": {
+            "A": "Không giới hạn số lượng giảng viên.",
+            "B": "Duy nhất 1 Giảng viên phụ trách theo đúng thiết kế nghiệp vụ của bảng `course_assignments`.",
+            "C": "Tối thiểu 3 giảng viên.",
+            "D": "Luôn luôn là 2 giảng viên cùng dạy."
+        },
+        "answer": "B",
+        "explanation": "Mỗi lớp học phần trong kỳ học chỉ có duy nhất 1 Giảng viên phụ trách theo thiết kế của bảng course_assignments."
+    },
+    {
+        "id": 77,
+        "section_id": 6,
+        "section_name": "6. Quản lý học phần, Bài tập & Gia hạn Deadline",
+        "question": "Khi Giảng viên hoàn tất chấm điểm và nhận xét bài nộp, sinh viên sẽ theo dõi kết quả ở đâu?",
+        "options": {
+            "A": "Phải lên trực tiếp văn phòng khoa để hỏi.",
+            "B": "Nhận thông báo chuông tức thời trên thanh công cụ và xem chi tiết điểm số, lời phê sư phạm, số sao đánh giá ngay tại trang chi tiết môn học.",
+            "C": "Nhận tin nhắn SMS về số điện thoại cá nhân.",
+            "D": "Điểm số chỉ được công bố sau khi tốt nghiệp."
+        },
+        "answer": "B",
+        "explanation": "Sau khi GV chấm điểm, sinh viên nhận thông báo chuông realtime và xem điểm số, nhận xét, số sao ngay tại trang môn học."
+    },
+    {
+        "id": 78,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Khi tài khoản sinh viên được tạo mới hoặc vừa được Admin reset về mật khẩu mặc định, giá trị mật khẩu ban đầu và cờ trạng thái là gì?",
+        "options": {
+            "A": "Mật khẩu để trống, `is_first_login = 0`.",
+            "B": "Mật khẩu mặc định là `123456`, và cờ `is_first_login = 1`.",
+            "C": "Mật khẩu là ngày tháng năm sinh, `is_first_login = 0`.",
+            "D": "Mật khẩu là chuỗi 32 ký tự ngẫu nhiên."
+        },
+        "answer": "B",
+        "explanation": "Tài khoản mới cấp hoặc vừa reset có mật khẩu mặc định là 123456 và cờ is_first_login = 1."
+    },
+    {
+        "id": 79,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Khi người dùng đăng nhập thành công nhưng tài khoản đang có cờ `is_first_login = 1`, Middleware hệ thống sẽ có hành vi gì?",
+        "options": {
+            "A": "Cho phép người dùng truy cập mọi phân hệ bình thường.",
+            "B": "Chặn mọi đường dẫn điều hướng khác và bắt buộc chuyển hướng người dùng về trang `index.php?action=first_login` để đổi mật khẩu cá nhân mới.",
+            "C": "Tự động đăng xuất người dùng ngay lập tức.",
+            "D": "Gửi email cảnh báo tài khoản bị tấn công."
+        },
+        "answer": "B",
+        "explanation": "Middleware kiểm tra is_first_login = 1 và chuyển hướng bắt buộc người dùng về index.php?action=first_login để đổi mật khẩu mới."
+    },
+    {
+        "id": 80,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Ở màn hình đổi mật khẩu lần đầu (`first_login`), người dùng có được phép nhập lại mật khẩu `123456` không?",
+        "options": {
+            "A": "Được phép nếu người dùng muốn giữ nguyên.",
+            "B": "Tuyệt đối không; hệ thống kiểm tra và chặn cứng nếu `$newPass === '123456'`, yêu cầu đặt mật khẩu mới an toàn hơn.",
+            "C": "Được phép nếu nhập đúng 3 lần.",
+            "D": "Hệ thống không kiểm tra điều này."
+        },
+        "answer": "B",
+        "explanation": "Hệ thống chặn tuyệt đối việc người dùng nhập lại mật khẩu mặc định 123456 ở màn hình first_login."
+    },
+    {
+        "id": 81,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Ở cả hai luồng: Đổi mật khẩu lần đầu (`first_login`) và Đặt lại mật khẩu qua email (`reset_password`), hệ thống xử lý thế nào nếu người dùng nhập mật khẩu mới trùng khớp hoàn toàn với mật khẩu cũ hiện tại?",
+        "options": {
+            "A": "Vẫn chấp nhận đổi bình thường vì Bcrypt sinh salt mới.",
+            "B": "Hệ thống sử dụng hàm `password_verify($newPass, $currentPasswordHash)` đối chiếu trực tiếp với CSDL; nếu phát hiện trùng mật khẩu cũ sẽ lập tức từ chối và hiển thị thông báo lỗi yêu cầu chọn mật khẩu khác.",
+            "C": "Tự động khóa tài khoản vĩnh viễn.",
+            "D": "Hệ thống sẽ cộng thêm số `1` vào sau mật khẩu của người dùng."
+        },
+        "answer": "B",
+        "explanation": "Hệ thống sử dụng password_verify($newPass, $currentHash) đối chiếu với CSDL; nếu trùng mật khẩu hiện tại sẽ từ chối và báo lỗi."
+    },
+    {
+        "id": 82,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Trong tính năng khôi phục mật khẩu tự phục vụ qua email (SSPR), mã xác thực OTP gửi về hòm thư người dùng có định dạng như thế nào?",
+        "options": {
+            "A": "Một đường link dài 200 ký tự hex.",
+            "B": "Mã OTP gồm 6 chữ cái in hoa ngẫu nhiên (ví dụ: `GLURJH`, `NZSYZY`), dễ đọc và thuận tiện khi sao chép hoặc gõ trên điện thoại.",
+            "C": "Mã số gồm 4 chữ số bí mật.",
+            "D": "Mã QR hình ảnh."
+        },
+        "answer": "B",
+        "explanation": "Mã OTP SSPR gồm 6 chữ cái in hoa ngẫu nhiên (ví dụ GLURJH), thuận tiện sao chép và nhập liệu trên điện thoại."
+    },
+    {
+        "id": 83,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Thời gian hiệu lực tiêu chuẩn của mã OTP đặt lại mật khẩu trong bảng `password_resets` là bao lâu?",
+        "options": {
+            "A": "60 giây.",
+            "B": "Đúng 15 phút kể từ thời điểm phát hành (kiểm tra qua điều kiện `expires_at >= NOW()`).",
+            "C": "24 giờ.",
+            "D": "Không bao giờ hết hạn."
+        },
+        "answer": "B",
+        "explanation": "Mã OTP có thời hạn hiệu lực chính xác 15 phút kể từ lúc gửi (kiểm tra expires_at >= NOW())."
+    },
+    {
+        "id": 84,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Để bảo đảm an toàn thông tin khi CSDL bị lộ lọt (Data Breach), chuỗi OTP 6 chữ cái được lưu vào cột `token_hash` trong CSDL dưới dạng nào?",
+        "options": {
+            "A": "Lưu dạng văn bản rõ 6 chữ cái.",
+            "B": "Băm một chiều bằng thuật toán SHA-256 (`hash('sha256', $token)`).",
+            "C": "Băm bằng MD5.",
+            "D": "Lưu dưới dạng mã Morse."
+        },
+        "answer": "B",
+        "explanation": "Mã OTP 6 chữ cái được băm bằng SHA-256 (64 ký tự hex) trước khi lưu vào cột token_hash của bảng password_resets."
+    },
+    {
+        "id": 85,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Người dùng gửi yêu cầu tại Trạm Cứu Hộ Tài Khoản Khách (`guest_ticket`) cần lưu giữ thông tin gì để tự tra cứu tiến độ phê duyệt?",
+        "options": {
+            "A": "Bắt buộc phải nhớ cả Tên đăng nhập và Mã PIN 6 số.",
+            "B": "Chỉ cần lưu giữ duy nhất Mã đơn cứu hộ (ví dụ: `HD-2026-3110-0G04V1`), hoàn toàn không bị ép buộc phải nhớ thêm mã PIN phức tạp.",
+            "C": "Bắt buộc phải mang căn cước công dân đến trường.",
+            "D": "Phải để lại dấu vân tay."
+        },
+        "answer": "B",
+        "explanation": "Người dùng gửi phiếu tại Trạm Cứu Hộ Khách chỉ cần lưu giữ duy nhất Mã đơn cứu hộ (ticket_code), không cần mã PIN phức tạp."
+    },
+    {
+        "id": 86,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Cơ chế kiểm duyệt an toàn 2 bước đối với Đơn cứu hộ tài khoản khách gồm những bước nào?",
+        "options": {
+            "A": "Bước 1: Máy tính tự duyệt &rarr; Bước 2: Sinh viên tự duyệt.",
+            "B": "Bước 1: Kỹ thuật viên đối soát hồ sơ, minh chứng và xác thực thông tin hợp lệ (`rescue_verified = 1`) &rarr; Bước 2: Quản trị viên (Admin) xem xét và bấm \"Phê Duyệt Mở Khóa Tài Khoản\".",
+            "C": "Chỉ cần 1 bước duy nhất do KTV tự mở.",
+            "D": "Ban Giám hiệu trực tiếp gọi điện thoại phỏng vấn."
+        },
+        "answer": "B",
+        "explanation": "Quy trình cứu hộ 2 bước: KTV xác thực hồ sơ (rescue_verified = 1) -> Admin bấm phê duyệt mở khóa tài khoản."
+    },
+    {
+        "id": 87,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Sau khi Quản trị viên bấm phê duyệt thành công một hồ sơ cứu hộ tài khoản, trạng thái tài khoản của người dùng sẽ thay đổi như thế nào?",
+        "options": {
+            "A": "Bị xóa khỏi hệ thống.",
+            "B": "Kích hoạt tài khoản (`is_active = 1`), đặt lại mật khẩu về `123456`, xóa cờ khóa, đặt cờ `is_first_login = 1` để người dùng bắt buộc phải đổi mật khẩu ngay khi đăng nhập.",
+            "C": "Chuyển thành tài khoản Quản trị viên.",
+            "D": "Giữ nguyên không có gì thay đổi."
+        },
+        "answer": "B",
+        "explanation": "Khi Admin phê duyệt cứu hộ: is_active = 1, mật khẩu reset về 123456, is_first_login = 1 ép đổi mật khẩu ngay khi đăng nhập."
+    },
+    {
+        "id": 88,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Cơ chế phòng thủ chống tấn công dò quét mật khẩu Brute Force trong hệ thống được cấu hình ra sao?",
+        "options": {
+            "A": "Khóa vĩnh viễn tài khoản sau 1 lần gõ sai.",
+            "B": "Đếm số lần đăng nhập thất bại liên tiếp (`failed_attempts`); khi đạt ngưỡng 5 lần sai sẽ tạm khóa tài khoản trong 15 phút (`locked_until`) và ghi nhận lý do `lock_reason = 'brute_force'`.",
+            "C": "Không có cơ chế phòng thủ nào.",
+            "D": "Tắt máy chủ web trong 1 tiếng."
+        },
+        "answer": "B",
+        "explanation": "Cơ chế chống Brute Force: sau 5 lần nhập sai liên tiếp, tài khoản bị tạm khóa 15 phút (locked_until) với lý do brute_force."
+    },
+    {
+        "id": 89,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Nếu một tài khoản bị Admin gắn nhãn khóa do vi phạm kỷ luật học đường (`lock_reason = 'violation'` hoặc `'expelled'`), người đó có thể dùng tính năng SSPR gửi OTP để tự mở khóa tài khoản không?",
+        "options": {
+            "A": "Có thể tự mở khóa dễ dàng bất cứ lúc nào.",
+            "B": "Tuyệt đối không; dịch vụ `AuthService::requestResetToken()` kiểm tra cờ kỷ luật và lập tức ném ngoại lệ từ chối khôi phục mật khẩu.",
+            "C": "Có thể mở khóa nếu nhờ bạn bè xác nhận.",
+            "D": "Mở khóa được nếu nhập mã OTP sau 12:00 đêm."
+        },
+        "answer": "B",
+        "explanation": "Tài khoản bị khóa kỷ luật (violation hoặc expelled) bị từ chối khôi phục mật khẩu SSPR bởi AuthService::requestResetToken()."
+    },
+    {
+        "id": 90,
+        "section_id": 7,
+        "section_name": "7. Bảo mật, Xác thực, SSPR & Cứu hộ khách",
+        "question": "Các tệp tin ảnh chụp màn hình minh chứng lỗi do người dùng đính kèm vào ticket được lưu trữ ở đâu trên máy chủ?",
+        "options": {
+            "A": "Lưu lẫn lộn vào thư mục mã nguồn gốc `app\/Controllers\/`.",
+            "B": "Lưu trong thư mục `uploads\/tickets\/` với tên tệp ngẫu nhiên chống trùng lặp và ghi nhận đường dẫn vào CSDL.",
+            "C": "Tải trực tiếp lên Google Drive cá nhân của KTV.",
+            "D": "Không lưu trữ tệp tin trên máy chủ."
+        },
+        "answer": "B",
+        "explanation": "Ảnh minh chứng sự cố được lưu trữ an toàn trong thư mục uploads\/tickets\/ với tên tệp ngẫu nhiên chống trùng lặp."
+    },
+    {
+        "id": 91,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Khi Kỹ thuật viên phát hiện một sinh viên cố tình gửi nội dung tục tĩu, quấy rối hoặc spam đơn hỗ trợ, KTV có thể thực hiện nghiệp vụ gì?",
+        "options": {
+            "A": "Tự ý xóa bài tập của sinh viên đó.",
+            "B": "Bấm nút \"Báo cáo sinh viên vi phạm \/ Spam\" (`is_spam = 1`), nhập lý do lập biên bản kỹ thuật để chuyển hồ sơ lên Quản trị viên xử lý kỷ luật.",
+            "C": "Nhắn tin chửi lại sinh viên.",
+            "D": "Tắt máy tính đi về."
+        },
+        "answer": "B",
+        "explanation": "Khi phát hiện sinh viên spam\/quấy rối, KTV bấm 'Báo cáo vi phạm' (is_spam = 1) và nhập lý do lập biên bản chuyển Admin xử lý."
+    },
+    {
+        "id": 92,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Thẩm quyền quyết định khóa kỷ luật hoặc đình chỉ học tập đối với sinh viên bị báo cáo vi phạm thuộc về ai?",
+        "options": {
+            "A": "Giảng viên phụ trách môn.",
+            "B": "Kỹ thuật viên trực ca.",
+            "C": "Quản trị viên (Admin) sau khi xem xét biên bản do KTV đệ trình tại Trung tâm việc khẩn.",
+            "D": "Trưởng nhóm sinh viên."
+        },
+        "answer": "C",
+        "explanation": "Quyết định kỷ luật hoặc khóa tài khoản vi phạm thuộc thẩm quyền duy nhất của Quản trị viên (Admin)."
+    },
+    {
+        "id": 93,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Nghiệp vụ \"Đánh dấu Sự cố diện rộng\" (`is_major_incident = 1`) được sử dụng trong trường hợp nào?",
+        "options": {
+            "A": "Khi một bóng đèn trong phòng học bị cháy.",
+            "B": "Khi xảy ra sự cố kỹ thuật hạ tầng nghiêm trọng ảnh hưởng đến toàn trường (ví dụ đứt cáp quang cổng Wi-Fi chính, hệ thống LMS toàn trường bị gián đoạn diện rộng).",
+            "C": "Khi sinh viên quên mang thẻ sinh viên.",
+            "D": "Khi một chiếc máy in hết mực."
+        },
+        "answer": "B",
+        "explanation": "Tính năng Sự cố diện rộng (is_major_incident = 1) dùng khi xảy ra sự cố kỹ thuật hạ tầng quy mô lớn ảnh hưởng đến toàn trường."
+    },
+    {
+        "id": 94,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Sau khi Quản trị viên (Admin) phê duyệt thông báo sự cố diện rộng, cảnh báo sẽ được hiển thị như thế nào?",
+        "options": {
+            "A": "Gửi thư giấy về địa chỉ nhà từng sinh viên.",
+            "B": "Xuất hiện dưới dạng banner thông báo đỏ nổi bật (Broadcast Alert) ở đầu trang của tất cả mọi người dùng đăng nhập vào hệ thống.",
+            "C": "Chỉ hiển thị trong màn hình của KTV.",
+            "D": "Chỉ xuất hiện sau 3 ngày làm việc."
+        },
+        "answer": "B",
+        "explanation": "Khi Admin duyệt sự cố diện rộng, một banner cảnh báo đỏ nổi bật (Broadcast Alert) sẽ xuất hiện trên đầu trang của toàn bộ người dùng."
+    },
+    {
+        "id": 95,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Một phiếu hỗ trợ CNTT có thể được sinh viên thực hiện đánh giá mức độ hài lòng (CSAT) tối đa bao nhiêu lần?",
+        "options": {
+            "A": "Mỗi ngày đánh giá 1 lần.",
+            "B": "Tối đa 5 lần tùy theo số lượng KTV tham gia xử lý.",
+            "C": "Đúng 1 lần duy nhất, được bảo vệ bằng ràng buộc khóa ngoại duy nhất `UNIQUE KEY (ticket_id)` trong bảng `ticket_ratings`.",
+            "D": "Không giới hạn số lần đánh giá."
+        },
+        "answer": "C",
+        "explanation": "Mỗi phiếu hỗ trợ chỉ được đánh giá CSAT đúng 1 lần duy nhất nhờ ràng buộc UNIQUE KEY (ticket_id) trong ticket_ratings."
+    },
+    {
+        "id": 96,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Thang đo đánh giá chất lượng dịch vụ CSAT trong bảng `ticket_ratings` cho phép người dùng chấm trong khoảng giá trị nào?",
+        "options": {
+            "A": "Từ 1 đến 100 điểm.",
+            "B": "Từ 1 sao (Rất không hài lòng) đến 5 sao (Rất hài lòng) kèm theo nhận xét chất lượng.",
+            "C": "Chỉ có 2 mức: Thích hoặc Không thích.",
+            "D": "Đánh giá bằng chữ: Tốt hoặc Kém."
+        },
+        "answer": "B",
+        "explanation": "Thang đo CSAT cho phép người dùng đánh giá từ 1 đến 5 sao kèm bình luận góp ý chất lượng dịch vụ."
+    },
+    {
+        "id": 97,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Tính năng Nhập tài khoản hàng loạt (Bulk Import User) dành cho Quản trị viên hỗ trợ nhập dữ liệu từ những định dạng tệp nào?",
+        "options": {
+            "A": "Chỉ nhận tệp văn bản `.txt`.",
+            "B": "Tệp bảng tính Excel (`.xlsx`) và tệp phân tách dấu phẩy (`.csv`).",
+            "C": "Tệp tài liệu Word (`.docx`).",
+            "D": "Tệp trình chiếu PowerPoint (`.pptx`)."
+        },
+        "answer": "B",
+        "explanation": "Tính năng Bulk Import hỗ trợ nhập danh sách sinh viên từ tệp Excel (.xlsx) và tệp CSV (.csv)."
+    },
+    {
+        "id": 98,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Khi Admin tải lên tệp Excel danh sách 50 sinh viên khóa mới, trong đó có 2 sinh viên trùng mã sinh viên đã có trong hệ thống, dịch vụ `SpreadsheetImportService` sẽ phản ứng ra sao?",
+        "options": {
+            "A": "Hủy bỏ toàn bộ quá trình và báo lỗi trắng trang.",
+            "B": "Tạo mới thành công 48 tài khoản hợp lệ, tự động bỏ qua 2 bản ghi trùng lặp và xuất bảng thống kê chi tiết các dòng thành công cùng các dòng bị bỏ qua.",
+            "C": "Xóa 2 tài khoản cũ trong CSDL và ghi đè tài khoản mới vào.",
+            "D": "Tạo trùng cả 50 sinh viên với mã giống nhau."
+        },
+        "answer": "B",
+        "explanation": "SpreadsheetImportService tự động tạo tài khoản cho các dòng hợp lệ và bỏ qua các bản ghi trùng mã SV\/email, xuất báo cáo chi tiết."
+    },
+    {
+        "id": 99,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Tiện ích \"Ẩn bảng \/ Hiện bảng dữ liệu\" (Collapsible Data Tables) được tích hợp trên các giao diện quản trị mang lại giá trị thực tiễn gì?",
+        "options": {
+            "A": "Giúp ẩn giấu dữ liệu khi có đoàn thanh tra kiểm tra.",
+            "B": "Giúp người dùng linh hoạt thu gọn các bảng danh sách dài khi không cần xem để tập trung tối đa vào biểu mẫu nhập liệu và tác vụ đang xử lý.",
+            "C": "Làm chậm tốc độ hiển thị trang web.",
+            "D": "Chỉ là một lỗi giao diện vô tình xuất hiện."
+        },
+        "answer": "B",
+        "explanation": "Nút Ẩn\/Hiện bảng dữ liệu (Collapsible Data Tables) giúp thu gọn danh sách dài, tối ưu không gian làm việc cho KTV và Admin."
+    },
+    {
+        "id": 100,
+        "section_id": 8,
+        "section_name": "8. Tính năng nâng cao, Báo cáo vi phạm & Vận hành",
+        "question": "Trong môi trường phát triển cục bộ (Localhost) không có kết nối Internet để gửi email SMTP thật, hệ thống kiểm tra và xem trước mã OTP khôi phục mật khẩu thông qua cơ chế nào?",
+        "options": {
+            "A": "Không có cách nào xem được OTP nên tính năng không thể thử nghiệm.",
+            "B": "Hệ thống tự động ghi nhật ký nội dung thư vào tệp lưu trữ nội bộ `storage\/mailbox.json` và cung cấp giao diện Hòm thư nội bộ để người kiểm thử xem trước trực quan.",
+            "C": "Tự động in mã OTP ra máy in giấy văn phòng.",
+            "D": "Phải nạp tiền vào tài khoản để mua gói gửi tin nhắn viễn thông."
+        },
+        "answer": "B",
+        "explanation": "Trên localhost không có Internet, mã OTP email được ghi vào tệp storage\/mailbox.json và xem trước trực tiếp trên giao diện Hòm thư nội bộ."
+    }
+];
+    </script>
+
+    <!-- APP SCRIPT -->
+    <script>
+        // State
+        let currentMode = 'study'; // 'study' | 'exam'
+        let currentFilter = 0; // 0: all, 1-8: sections
+        let searchQuery = '';
+        let userAnswers = {}; // { questionId: 'A' | 'B' | 'C' | 'D' }
+        let examQuestionsList = []; // Subset of IDs during exam mode
+        let examTimer = null;
+        let examSecondsRemaining = 1800; // 30 minutes default
+        let isExamSubmitted = false;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderQuickGrid();
+            renderQuestions();
+            updateStats();
+        });
+
+        function setMode(mode) {
+            currentMode = mode;
+            const studyBtn = document.getElementById('mode-study-btn');
+            const examBtn = document.getElementById('mode-exam-btn');
+            const examSettingsBox = document.getElementById('exam-settings-box');
+            const examTimerBox = document.getElementById('exam-timer-box');
+            const examResultCard = document.getElementById('exam-result-card');
+
+            if (mode === 'study') {
+                studyBtn.className = "px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 shadow-md shadow-indigo-600/30 transition flex flex-col items-center gap-1";
+                examBtn.className = "px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 bg-slate-900/60 hover:bg-slate-700 border border-slate-700 transition flex flex-col items-center gap-1";
+                examSettingsBox.classList.add('hidden');
+                examTimerBox.classList.add('hidden');
+                if (examTimer) clearInterval(examTimer);
+                isExamSubmitted = false;
+                examQuestionsList = [];
+            } else {
+                examBtn.className = "px-3 py-2.5 rounded-xl text-xs font-bold text-white bg-indigo-600 shadow-md shadow-indigo-600/30 transition flex flex-col items-center gap-1";
+                studyBtn.className = "px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 bg-slate-900/60 hover:bg-slate-700 border border-slate-700 transition flex flex-col items-center gap-1";
+                examSettingsBox.classList.remove('hidden');
+                userAnswers = {};
+                isExamSubmitted = false;
+            }
+            renderQuickGrid();
+            renderQuestions();
+            updateStats();
+        }
+
+        function startExam() {
+            const count = parseInt(document.getElementById('exam-count').value);
+            // Shuffle and pick count
+            const shuffled = [...QUESTIONS_DATA].sort(() => 0.5 - Math.random());
+            examQuestionsList = shuffled.slice(0, count).map(q => q.id);
+            userAnswers = {};
+            isExamSubmitted = false;
+
+            // Timer
+            if (count === 20) examSecondsRemaining = 15 * 60;
+            else if (count === 50) examSecondsRemaining = 30 * 60;
+            else examSecondsRemaining = 60 * 60;
+
+            const timerBox = document.getElementById('exam-timer-box');
+            timerBox.classList.remove('hidden');
+            timerBox.classList.add('flex');
+
+            if (examTimer) clearInterval(examTimer);
+            examTimer = setInterval(updateTimerDisplay, 1000);
+            updateTimerDisplay();
+
+            document.getElementById('start-exam-btn').classList.add('hidden');
+            document.getElementById('submit-exam-btn').classList.remove('hidden');
+            document.getElementById('exam-result-card').classList.add('hidden');
+
+            renderQuickGrid();
+            renderQuestions();
+            updateStats();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateTimerDisplay() {
+            if (examSecondsRemaining <= 0) {
+                clearInterval(examTimer);
+                submitExam();
+                return;
+            }
+            examSecondsRemaining--;
+            const mins = Math.floor(examSecondsRemaining / 60);
+            const secs = examSecondsRemaining % 60;
+            document.getElementById('exam-time').innerText = 
+                (mins < 10 ? '0' : '') + mins + ':' + (secs < 10 ? '0' : '') + secs;
+        }
+
+        function submitExam() {
+            if (examTimer) clearInterval(examTimer);
+            isExamSubmitted = true;
+            document.getElementById('submit-exam-btn').classList.add('hidden');
+            document.getElementById('start-exam-btn').classList.remove('hidden');
+            document.getElementById('exam-timer-box').classList.add('hidden');
+
+            // Calculate score
+            let correct = 0;
+            const targetQuestions = examQuestionsList.map(id => QUESTIONS_DATA.find(q => q.id === id));
+            targetQuestions.forEach(q => {
+                if (userAnswers[q.id] === q.answer) correct++;
+            });
+
+            const total = targetQuestions.length;
+            const score10 = ((correct / total) * 10).toFixed(1);
+            const percent = Math.round((correct / total) * 100);
+
+            // Show Result
+            const resultCard = document.getElementById('exam-result-card');
+            resultCard.classList.remove('hidden');
+            document.getElementById('result-score-val').innerText = score10;
+            document.getElementById('result-percent-val').innerText = percent + '%';
+
+            const titleElem = document.getElementById('result-rank-title');
+            const feedbackElem = document.getElementById('result-feedback-text');
+
+            if (score10 >= 9.0) {
+                titleElem.innerText = "🏆 Xuất Sắc! Bạn Đã Làm Chủ Toàn Bộ Hệ Thống";
+                feedbackElem.innerText = "Bạn nắm cực kỳ vững kiến trúc Clean MVC, 14 bảng CSDL 3NF, thuật toán SLA giờ hành chính và phân quyền 4 Roles. Sẵn sàng đạt điểm A+ trong buổi bảo vệ!";
+            } else if (score10 >= 7.5) {
+                titleElem.innerText = "🌟 Rất Tốt! Nắm Vững Đại Đa Số Kiến Thức";
+                feedbackElem.innerText = "Bạn hiểu rất tốt luồng nghiệp vụ ITIL, các kịch bản cứu hộ và kiểm soát bảo mật. Xem lại các câu sai để tự tin 100%.";
+            } else if (score10 >= 5.0) {
+                titleElem.innerText = "👍 Đạt Yêu Cầu! Cần Ôn Tập Thêm Một Số Mô-đun";
+                feedbackElem.innerText = "Bạn đã nắm được các nét chính của hệ thống. Khuyến nghị chuyển sang chế độ Luyện tập để đọc kỹ phần giải thích của 14 bảng CSDL và SLA.";
+            } else {
+                titleElem.innerText = "📚 Cần Ôn Luyện Thêm Kiến Thức";
+                feedbackElem.innerText = "Hãy dành thời gian đọc lại tài liệu báo cáo kỹ thuật và thực hành từng câu hỏi trong Chế độ Luyện tập.";
+            }
+
+            renderQuickGrid();
+            renderQuestions();
+            updateStats();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function filterSection(secId) {
+            currentFilter = secId;
+            document.querySelectorAll('.filter-topic-btn').forEach((btn, idx) => {
+                if (idx === secId) {
+                    btn.className = "filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between font-medium bg-indigo-600/20 text-indigo-300 border border-indigo-500/30";
+                } else {
+                    btn.className = "filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50";
+                }
+            });
+
+            const labels = [
+                "Tất cả các chủ đề (100 câu)",
+                "1. Kiến trúc tổng thể & Bảo mật OWASP (12 câu)",
+                "2. Thiết kế CSDL 14 Bảng 3NF (15 câu)",
+                "3. Phân quyền RBAC & 4 Vai trò (13 câu)",
+                "4. Vòng đời Ticket & Triage Thông minh (15 câu)",
+                "5. Thuật toán SLA Giờ hành chính & Nghỉ lễ (10 câu)",
+                "6. Học phần, Bài tập & Gia hạn Deadline (12 câu)",
+                "7. Bảo mật Mật khẩu, SSPR & Cứu hộ khách (13 câu)",
+                "8. Vi phạm, Sự cố diện rộng & CSAT (10 câu)"
+            ];
+            document.getElementById('active-filter-label').innerText = labels[secId];
+
+            renderQuestions();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase().trim();
+            renderQuestions();
+        }
+
+        function chooseOption(questionId, selectedOpt) {
+            if (currentMode === 'exam' && isExamSubmitted) return; // Locked after submitting
+            userAnswers[questionId] = selectedOpt;
+
+            renderQuickGrid();
+            updateStats();
+
+            // In study mode or exam mode, update the card UI
+            renderQuestionCard(questionId);
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('questions-list');
+            container.innerHTML = '';
+
+            let list = QUESTIONS_DATA;
+
+            // In exam mode, only show active exam questions
+            if (currentMode === 'exam' && examQuestionsList.length > 0) {
+                list = list.filter(q => examQuestionsList.includes(q.id));
+            }
+
+            // Filter by topic
+            if (currentFilter > 0) {
+                list = list.filter(q => q.section_id === currentFilter);
+            }
+
+            // Filter by search
+            if (searchQuery) {
+                list = list.filter(q => {
+                    return q.question.toLowerCase().includes(searchQuery) ||
+                           Object.values(q.options).some(opt => opt.toLowerCase().includes(searchQuery)) ||
+                           q.explanation.toLowerCase().includes(searchQuery);
+                });
+            }
+
+            document.getElementById('filtered-count').innerText = list.length;
+
+            if (list.length === 0) {
+                container.innerHTML = `
+                    <div class="p-12 text-center bg-slate-800/40 rounded-2xl border border-slate-700 text-slate-400 space-y-2">
+                        <div class="text-3xl">🔍</div>
+                        <div class="font-bold text-white">Không tìm thấy câu hỏi phù hợp</div>
+                        <p class="text-xs">Vui lòng thử tìm với từ khóa khác hoặc xóa bộ lọc.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            list.forEach(q => {
+                const card = document.createElement('div');
+                card.id = `q-card-${q.id}`;
+                card.className = "p-5 rounded-2xl bg-slate-800/90 border border-slate-700/80 shadow-sm space-y-4 transition";
+                card.innerHTML = buildQuestionCardHTML(q);
+                container.appendChild(card);
+            });
+        }
+
+        function renderQuestionCard(qId) {
+            const card = document.getElementById(`q-card-${qId}`);
+            if (!card) return;
+            const q = QUESTIONS_DATA.find(item => item.id === qId);
+            if (!q) return;
+            card.innerHTML = buildQuestionCardHTML(q);
+        }
+
+        function buildQuestionCardHTML(q) {
+            const userAns = userAnswers[q.id];
+            const hasAnswered = !!userAns;
+            const showCorrection = (currentMode === 'study' && hasAnswered) || (currentMode === 'exam' && isExamSubmitted);
+            const isCorrect = userAns === q.answer;
+
+            let statusBadge = '';
+            if (showCorrection) {
+                if (isCorrect) {
+                    statusBadge = `<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold flex items-center gap-1">
+                        <span>✓</span> <span>Chính xác</span>
+                    </span>`;
+                } else {
+                    statusBadge = `<span class="px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[11px] font-bold flex items-center gap-1">
+                        <span>✕</span> <span>Chưa đúng</span>
+                    </span>`;
+                }
+            }
+
+            let optionsHTML = '';
+            ['A', 'B', 'C', 'D'].forEach(optKey => {
+                const optText = q.options[optKey];
+                const isSelected = userAns === optKey;
+                const isThisTheCorrectAnswer = optKey === q.answer;
+
+                let optClass = "flex items-start gap-3 p-3.5 rounded-xl border text-xs sm:text-sm cursor-pointer transition ";
+
+                if (!showCorrection) {
+                    // Regular interactive selection
+                    if (isSelected) {
+                        optClass += "bg-indigo-600/20 border-indigo-500 text-white font-medium";
+                    } else {
+                        optClass += "bg-slate-900/60 border-slate-700/80 text-slate-300 hover:bg-slate-700/40 hover:border-slate-600";
+                    }
+                } else {
+                    // After reveal (study or exam submitted)
+                    if (isThisTheCorrectAnswer) {
+                        optClass += "bg-emerald-950/60 border-emerald-500 text-emerald-200 font-medium shadow-sm shadow-emerald-500/10";
+                    } else if (isSelected && !isCorrect) {
+                        optClass += "bg-rose-950/60 border-rose-500 text-rose-200 font-medium";
+                    } else {
+                        optClass += "bg-slate-900/30 border-slate-800 text-slate-500 opacity-60";
+                    }
+                }
+
+                let radioIndicator = `
+                    <div class="w-5 h-5 rounded-full border flex items-center justify-center shrink-0 mt-0.5 font-mono text-[10px] font-bold 
+                        ${isSelected ? 'bg-indigo-600 border-indigo-500 text-white' : 'border-slate-600 text-slate-400'}">
+                        ${optKey}
+                    </div>
+                `;
+
+                if (showCorrection) {
+                    if (isThisTheCorrectAnswer) {
+                        radioIndicator = `<div class="w-5 h-5 rounded-full bg-emerald-500 border border-emerald-400 text-slate-950 flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">✓</div>`;
+                    } else if (isSelected && !isCorrect) {
+                        radioIndicator = `<div class="w-5 h-5 rounded-full bg-rose-500 border border-rose-400 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold text-xs">✕</div>`;
+                    }
+                }
+
+                optionsHTML += `
+                    <div onclick="chooseOption(${q.id}, '${optKey}')" class="${optClass}">
+                        ${radioIndicator}
+                        <div class="leading-relaxed flex-1">${optText}</div>
+                    </div>
+                `;
+            });
+
+            // Explanation box (only in study mode after answering, or in exam mode after submit)
+            let explanationHTML = '';
+            if (showCorrection) {
+                explanationHTML = `
+                    <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-700/90 space-y-2 mt-3 text-xs leading-relaxed">
+                        <div class="flex items-center gap-2 font-bold ${isCorrect ? 'text-emerald-400' : 'text-amber-400'}">
+                            <span>💡</span>
+                            <span>Căn Cứ Kỹ Thuật &amp; Phân Tích Đáp Án Đúng: Đáp án [${q.answer}]</span>
+                        </div>
+                        <p class="text-slate-300">${q.explanation}</p>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700/60 pb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-7 h-7 rounded-lg bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 flex items-center justify-center text-xs font-mono font-bold">
+                            #${q.id}
+                        </span>
+                        <span class="text-[11px] font-medium text-slate-400 bg-slate-900/70 px-2.5 py-1 rounded-md border border-slate-700/60">
+                            ${q.section_name}
+                        </span>
+                    </div>
+                    <div>${statusBadge}</div>
+                </div>
+
+                <div class="text-sm sm:text-base font-bold text-white leading-relaxed">
+                    ${q.question}
+                </div>
+
+                <div class="grid grid-cols-1 gap-2.5 pt-1">
+                    ${optionsHTML}
+                </div>
+
+                ${explanationHTML}
+            `;
+        }
+
+        function renderQuickGrid() {
+            const grid = document.getElementById('quick-grid');
+            grid.innerHTML = '';
+
+            const list = currentMode === 'exam' && examQuestionsList.length > 0 
+                ? examQuestionsList.map(id => QUESTIONS_DATA.find(q => q.id === id))
+                : QUESTIONS_DATA;
+
+            list.forEach(q => {
+                const btn = document.createElement('button');
+                const userAns = userAnswers[q.id];
+                const hasAnswered = !!userAns;
+                const showCorrection = (currentMode === 'study' && hasAnswered) || (currentMode === 'exam' && isExamSubmitted);
+
+                let bgClass = "bg-slate-700 text-slate-300 hover:bg-slate-600";
+                if (!showCorrection) {
+                    if (hasAnswered) bgClass = "bg-indigo-600 text-white font-bold shadow";
+                } else {
+                    if (userAns === q.answer) bgClass = "bg-emerald-600 text-white font-bold shadow";
+                    else if (hasAnswered) bgClass = "bg-rose-600 text-white font-bold shadow";
+                    else bgClass = "bg-slate-800 text-slate-500 border border-slate-700";
+                }
+
+                btn.className = `h-7 rounded flex items-center justify-center transition ${bgClass}`;
+                btn.innerText = q.id;
+                btn.onclick = () => {
+                    const card = document.getElementById(`q-card-${q.id}`);
+                    if (card) {
+                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        card.classList.add('ring-2', 'ring-indigo-500');
+                        setTimeout(() => card.classList.remove('ring-2', 'ring-indigo-500'), 1500);
+                    }
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        function updateStats() {
+            const list = currentMode === 'exam' && examQuestionsList.length > 0 
+                ? examQuestionsList.map(id => QUESTIONS_DATA.find(q => q.id === id))
+                : QUESTIONS_DATA;
+
+            let completed = 0;
+            let correct = 0;
+            let wrong = 0;
+
+            list.forEach(q => {
+                const ans = userAnswers[q.id];
+                if (ans) {
+                    completed++;
+                    if (ans === q.answer) correct++;
+                    else wrong++;
+                }
+            });
+
+            const total = list.length;
+            document.getElementById('stat-completed').innerText = `${completed}/${total}`;
+            document.getElementById('grid-summary').innerText = `${completed}/${total}`;
+            document.getElementById('stat-correct').innerText = correct;
+            document.getElementById('stat-wrong').innerText = wrong;
+
+            const percent = total > 0 ? (completed / total) * 100 : 0;
+            document.getElementById('overall-progress').style.width = percent + '%';
+        }
+
+        function resetAllProgress() {
+            if (confirm("Bạn có chắc chắn muốn làm lại từ đầu không? Toàn bộ các câu đã chọn sẽ được xóa trắng.")) {
+                userAnswers = {};
+                isExamSubmitted = false;
+                if (examTimer) clearInterval(examTimer);
+                document.getElementById('exam-result-card').classList.add('hidden');
+                document.getElementById('exam-timer-box').classList.add('hidden');
+                document.getElementById('submit-exam-btn').classList.add('hidden');
+                document.getElementById('start-exam-btn').classList.remove('hidden');
+                renderQuickGrid();
+                renderQuestions();
+                updateStats();
+            }
+        }
+    </script>
+</body>
+</html>
