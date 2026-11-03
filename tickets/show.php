@@ -463,11 +463,27 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 // KTV & ADMIN ĐÓNG PHIẾU VỚI LÝ DO TRÙNG LẶP (DUPLICATE TICKET)
 // -----------------------------------------------------------------------------
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'close_duplicate') {
-    if ($userRole === 'agent') {
+    if (in_array($userRole, ['agent', 'admin'])) {
         $dupNote = trim($_POST['duplicate_note'] ?? 'Đóng phiếu do phát hiện sự cố trùng lặp với phiếu đã gửi trước đó.');
-        db()->prepare("UPDATE tickets SET status = 'closed', closed_at = NOW(), closed_reason = 'duplicate' WHERE id = :id")->execute(['id' => $id]);
-        TicketRepository::addReply($id, (int)$currentUser['id'], "📑 [ĐÓNG DO TRÙNG LẶP]: {$dupNote}", false, 'closed');
-        set_flash('info', "Đã đóng phiếu với lý do Trùng lặp sự cố (duplicate)!");
+        $parentTicketId = !empty($_POST['parent_ticket_id']) ? (int)$_POST['parent_ticket_id'] : null;
+
+        $sql = "UPDATE tickets SET status = 'closed', closed_at = NOW(), closed_reason = 'duplicate'";
+        $params = [':id' => $id];
+        if ($parentTicketId && $parentTicketId !== $id) {
+            $sql .= ", parent_ticket_id = :parent_id";
+            $params[':parent_id'] = $parentTicketId;
+        }
+        $sql .= " WHERE id = :id";
+        db()->prepare($sql)->execute($params);
+
+        $parentMsg = "";
+        if ($parentTicketId && $parentTicketId !== $id) {
+            $parentCode = db()->query("SELECT ticket_code FROM tickets WHERE id = {$parentTicketId}")->fetchColumn() ?: "#{$parentTicketId}";
+            $parentMsg = "\n🔗 Phiếu này đã được gom nhóm vào Phiếu Sự Cố Gốc: {$parentCode}";
+        }
+
+        TicketRepository::addReply($id, (int)$currentUser['id'], "📑 [ĐÓNG DO TRÙNG LẶP]: {$dupNote}{$parentMsg}", false, 'closed');
+        set_flash('info', "Đã đóng phiếu với lý do Trùng lặp sự cố (duplicate) thành công!");
         header("Location: show.php?id={$id}&view_as={$viewAs}");
         exit;
     }
@@ -1298,6 +1314,65 @@ $flash   = get_flash();
                         <span>🗑️</span> Xóa Phiếu
                     </button>
                 </form>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <!-- LIÊN KẾT PHIẾU CHA - CON (PARENT - CHILD TICKETS) -->
+    <?php if (!empty($ticket['parent_ticket_id'])): 
+        $parentTicket = db()->query("SELECT id, ticket_code, title, status, system_affected FROM tickets WHERE id = " . (int)$ticket['parent_ticket_id'])->fetch();
+    ?>
+        <div class="p-4 bg-indigo-50 border-2 border-indigo-300 rounded-3xl flex items-center justify-between flex-wrap gap-3 text-xs text-indigo-950 shadow-sm">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl">🔗</span>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <strong class="text-indigo-950 text-xs font-black uppercase tracking-wider">Phiếu Con Đã Gom Nhóm Vào Sự Cố Gốc</strong>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-200 text-indigo-800">parent_ticket_id = #<?= $ticket['parent_ticket_id'] ?></span>
+                    </div>
+                    <?php if ($parentTicket): ?>
+                        <p class="text-indigo-800 text-[11.5px] mt-0.5">
+                            Phiếu sự cố gốc: 
+                            <a href="show.php?id=<?= $parentTicket['id'] ?>&view_as=<?= $viewAs ?>" class="font-bold underline hover:text-indigo-950">
+                                #<?= htmlspecialchars($parentTicket['ticket_code']) ?> &ndash; <?= htmlspecialchars($parentTicket['title']) ?>
+                            </a>
+                            <span class="text-indigo-600 font-semibold">(Trạng thái: <?= htmlspecialchars($parentTicket['status']) ?>)</span>
+                        </p>
+                    <?php else: ?>
+                        <p class="text-indigo-700 text-[11.5px] mt-0.5">Liên kết sự cố cha #<?= $ticket['parent_ticket_id'] ?> (Đã xóa hoặc lưu trữ).</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php if ($parentTicket): ?>
+                <a href="show.php?id=<?= $parentTicket['id'] ?>&view_as=<?= $viewAs ?>" class="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs transition shadow-xs flex items-center gap-1">
+                    <span>🔍</span> Xem Phiếu Cha &rarr;
+                </a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
+
+    <?php 
+    $childTickets = db()->query("SELECT t.id, t.ticket_code, t.title, t.status, u.name as req_name FROM tickets t LEFT JOIN users u ON t.requester_id = u.id WHERE t.parent_ticket_id = {$ticket['id']} ORDER BY t.id DESC")->fetchAll();
+    if (!empty($childTickets)): 
+    ?>
+        <div class="p-4 bg-purple-50 border-2 border-purple-300 rounded-3xl space-y-2.5 text-xs text-purple-950 shadow-sm">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-2 font-black text-purple-900 text-xs uppercase tracking-wide">
+                    <span class="text-lg">🌳</span> <span>Danh Sách Phiếu Con Đã Gom Nhóm (<?= count($childTickets) ?> phiếu trỏ tới phiếu này)</span>
+                </div>
+                <span class="text-[11px] text-purple-700 font-semibold bg-purple-100 px-2.5 py-0.5 rounded-full border border-purple-200">Quan hệ Cha &ndash; Con (parent_ticket_id)</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <?php foreach ($childTickets as $ct): ?>
+                    <a href="show.php?id=<?= $ct['id'] ?>&view_as=<?= $viewAs ?>" class="p-2.5 bg-white rounded-xl border border-purple-200 hover:border-purple-400 hover:shadow-xs transition flex items-center justify-between text-[11.5px]">
+                        <div class="truncate mr-2">
+                            <span class="font-bold text-purple-700">#<?= htmlspecialchars($ct['ticket_code']) ?></span> &ndash;
+                            <span class="text-slate-800 font-medium"><?= htmlspecialchars($ct['title']) ?></span>
+                            <span class="text-slate-400 text-[10.5px]">(<?= htmlspecialchars($ct['req_name'] ?? 'Ẩn danh') ?>)</span>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 shrink-0 uppercase"><?= $ct['status'] ?></span>
+                    </a>
+                <?php endforeach; ?>
             </div>
         </div>
     <?php endif; ?>
@@ -2608,6 +2683,22 @@ $flash   = get_flash();
 
             <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 leading-relaxed text-[11.5px]">
                 Phiếu #<strong><?php echo htmlspecialchars($ticket['ticket_code']); ?></strong> sẽ được chuyển sang trạng thái <strong>Đã hoàn tất / Đóng</strong> với lý do trùng lặp sự cố đã gửi.
+            </div>
+
+            <div>
+                <label class="block font-bold text-slate-700 mb-1">Gom nhóm vào Phiếu Sự Cố Gốc / Phiếu Cha (parent_ticket_id):</label>
+                <?php 
+                $majorTicketsList = db()->query("SELECT id, ticket_code, title FROM tickets WHERE (is_major_incident = 1 OR id = 1) AND id != {$id} ORDER BY id DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
+                ?>
+                <select name="parent_ticket_id" class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 font-medium">
+                    <option value="">-- Đóng độc lập (Không gán phiếu cha) --</option>
+                    <?php foreach ($majorTicketsList as $mt): ?>
+                        <option value="<?php echo $mt['id']; ?>" <?php echo (!empty($ticket['parent_ticket_id']) && $ticket['parent_ticket_id'] == $mt['id']) ? 'selected' : ''; ?>>
+                            #<?php echo htmlspecialchars($mt['ticket_code']); ?> &ndash; <?php echo htmlspecialchars(mb_substr($mt['title'], 0, 40)); ?>...
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <p class="text-[11px] text-slate-500 mt-1">Hệ thống sẽ lưu ID phiếu cha vào <code>parent_ticket_id</code> để gom nhóm theo chuẩn ITIL.</p>
             </div>
 
             <div>

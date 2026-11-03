@@ -716,3 +716,4 @@
    - CSAT Rating: 1 phiếu chỉ được đánh giá 1 lần duy nhất (`UNIQUE KEY ticket_id`).
    - Bulk Import Excel/CSV tự động bỏ qua các bản ghi trùng lặp và mã hóa Bcrypt tài khoản mới.
    - Hòm thư ảo `storage/mailbox.json` phục vụ kiểm thử gửi email trực quan trên môi trường Localhost.
+
