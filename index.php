@@ -508,6 +508,29 @@ if ($action === 'reset_password') {
             exit;
         }
 
+        if ($newPass === '123456') {
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => 'Không được sử dụng lại mật khẩu mặc định 123456! Vui lòng đặt mật khẩu mới an toàn hơn.'
+            ];
+            header('Location: ' . $appBase . 'index.php?action=reset_password');
+            exit;
+        }
+
+        // Kiểm tra mật khẩu mới không được trùng với mật khẩu cũ hiện tại
+        $userCheckStmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = :id");
+        $userCheckStmt->execute([':id' => $userId]);
+        $currentPasswordHash = $userCheckStmt->fetchColumn();
+
+        if ($currentPasswordHash && password_verify($newPass, $currentPasswordHash)) {
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => 'Mật khẩu mới không được trùng với mật khẩu cũ hiện tại! Vui lòng chọn một mật khẩu mới khác.'
+            ];
+            header('Location: ' . $appBase . 'index.php?action=reset_password');
+            exit;
+        }
+
         try {
             $hash = password_hash($newPass, PASSWORD_BCRYPT);
             // Đặt is_first_login = 0 để người dùng sau khi đổi mật khẩu đăng nhập lại BÌNH THƯỜNG
@@ -652,6 +675,20 @@ if ($action === 'first_login') {
             $_SESSION['flash'] = [
                 'type'    => 'danger',
                 'message' => 'Mật khẩu xác nhận không trùng khớp với mật khẩu mới!'
+            ];
+            header('Location: ' . $appBase . 'index.php?action=first_login');
+            exit;
+        }
+
+        // Kiểm tra mật khẩu mới không được trùng với mật khẩu cũ hiện tại
+        $userCheckStmt = $pdo->prepare("SELECT password_hash FROM users WHERE id = :id");
+        $userCheckStmt->execute([':id' => $firstUser['id']]);
+        $currentPasswordHash = $userCheckStmt->fetchColumn() ?: ($firstUser['password_hash'] ?? '');
+
+        if ($currentPasswordHash && password_verify($newPass, $currentPasswordHash)) {
+            $_SESSION['flash'] = [
+                'type'    => 'danger',
+                'message' => 'Mật khẩu mới không được trùng với mật khẩu cũ hiện tại! Vui lòng chọn một mật khẩu mới khác.'
             ];
             header('Location: ' . $appBase . 'index.php?action=first_login');
             exit;

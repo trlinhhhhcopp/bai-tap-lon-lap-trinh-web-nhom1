@@ -393,15 +393,15 @@
                     DATABASE SCHEMA &amp; ERD
                 </span>
                 <h2 class="text-2xl sm:text-4xl font-black text-white">
-                    Kiến Trúc Cơ Sở Dữ Liệu 12 Bảng Chuẩn Hóa
+                    Kiến Trúc Cơ Sở Dữ Liệu 14 Bảng Chuẩn Hóa 3NF
                 </h2>
                 <p class="text-xs sm:text-sm text-slate-300">
-                    Cơ sở dữ liệu <code>helpdesk_thudo</code> được thiết kế theo chuẩn 3NF, ràng buộc khóa ngoại chặt chẽ.
+                    Cơ sở dữ liệu <code>helpdesk_thudo</code> được thiết kế theo chuẩn 3NF, loại bỏ bảng trung gian dư thừa, khóa ngoại chặt chẽ.
                 </p>
             </div>
 
-            <!-- Danh sách 12 bảng -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
+            <!-- Danh sách 14 bảng -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 text-xs">
                 <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
                     <span class="font-mono text-indigo-400 font-bold block">1. users</span>
                     <span class="text-[10.5px] text-slate-400">Tài khoản &amp; RBAC</span>
@@ -435,20 +435,28 @@
                     <span class="text-[10.5px] text-slate-400">Lớp sinh hoạt</span>
                 </div>
                 <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
-                    <span class="font-mono text-indigo-400 font-bold block">9. class_students</span>
-                    <span class="text-[10.5px] text-slate-400">Danh sách SV lớp</span>
-                </div>
-                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
-                    <span class="font-mono text-indigo-400 font-bold block">10. courses</span>
+                    <span class="font-mono text-indigo-400 font-bold block">9. courses</span>
                     <span class="text-[10.5px] text-slate-400">Học phần môn học</span>
                 </div>
                 <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
-                    <span class="font-mono text-indigo-400 font-bold block">11. course_assignments</span>
+                    <span class="font-mono text-indigo-400 font-bold block">10. course_assignments</span>
                     <span class="text-[10.5px] text-slate-400">Phân công giảng dạy</span>
                 </div>
                 <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
-                    <span class="font-mono text-indigo-400 font-bold block">12. holidays</span>
-                    <span class="text-[10.5px] text-slate-400">Lịch nghỉ &amp; lễ</span>
+                    <span class="font-mono text-indigo-400 font-bold block">11. course_lessons</span>
+                    <span class="text-[10.5px] text-slate-400">Buổi học &amp; Hạn nộp</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">12. student_assignment_submissions</span>
+                    <span class="text-[10.5px] text-slate-400">Bài nộp &amp; Điểm 10</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">13. holidays</span>
+                    <span class="text-[10.5px] text-slate-400">Lịch nghỉ lễ trường</span>
+                </div>
+                <div class="p-3.5 bg-slate-800 rounded-2xl border border-slate-700 text-center space-y-1">
+                    <span class="font-mono text-indigo-400 font-bold block">14. notifications</span>
+                    <span class="text-[10.5px] text-slate-400">Thông báo realtime</span>
                 </div>
             </div>
 
@@ -456,7 +464,7 @@
             <div class="p-6 rounded-3xl bg-indigo-950/60 border border-indigo-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div class="space-y-1 text-center sm:text-left">
                     <div class="text-sm font-bold text-white">📦 Bản sao lưu CSDL chuẩn: database_full_nhom1.sql</div>
-                    <div class="text-xs text-indigo-200">Bao gồm toàn bộ cấu trúc 12 bảng và dữ liệu mẫu kiểm thử của tất cả thành viên.</div>
+                    <div class="text-xs text-indigo-200">Bao gồm toàn bộ cấu trúc 14 bảng và dữ liệu mẫu kiểm thử của tất cả thành viên.</div>
                 </div>
                 <a href="https://raw.githubusercontent.com/trlinhhhhcopp/bai-tap-lon-lap-trinh-web-nhom1/main/database/database_full_nhom1.sql" target="_blank"
                    class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-xs transition shadow-md flex items-center gap-2 shrink-0">

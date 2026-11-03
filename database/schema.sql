@@ -20,7 +20,6 @@ DROP TABLE IF EXISTS `ticket_replies`;
 DROP TABLE IF EXISTS `tickets`;
 DROP TABLE IF EXISTS `password_resets`;
 DROP TABLE IF EXISTS `course_assignments`;
-DROP TABLE IF EXISTS `class_students`;
 DROP TABLE IF EXISTS `courses`;
 DROP TABLE IF EXISTS `classes`;
 DROP TABLE IF EXISTS `holidays`;
@@ -129,21 +128,6 @@ CREATE TABLE `users` (
     INDEX `idx_agent_dispatch` (`role`, `is_active`, `is_on_duty`, `specialty_category_id`, `active_tickets_count`),
     INDEX `idx_user_lookup` (`user_code`, `user_type`, `academic_status`),
     INDEX `idx_cohort_filter` (`cohort`, `academic_status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ==============================================================================
--- 6. BẢNG SINH VIÊN THUỘC LỚP (CLASS_STUDENTS - 1 LỚP CÓ NHIỀU SINH VIÊN)
--- ==============================================================================
-CREATE TABLE `class_students` (
-    `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    `class_id` INT UNSIGNED NOT NULL,
-    `student_id` INT UNSIGNED NOT NULL, -- user_id có user_type = 'student'
-    `enrolled_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT `uq_class_student` UNIQUE (`class_id`, `student_id`),
-    CONSTRAINT `fk_class_students_class` FOREIGN KEY (`class_id`) 
-        REFERENCES `classes` (`id`) ON DELETE CASCADE,
-    CONSTRAINT `fk_class_students_student` FOREIGN KEY (`student_id`) 
-        REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ==============================================================================

@@ -42,15 +42,12 @@ class CourseLesson
                 LEFT JOIN users u ON u.id = ca.lecturer_id
                 WHERE ca.class_id IN (
                     SELECT class_id FROM users WHERE id = :user_class_sid AND class_id IS NOT NULL
-                    UNION
-                    SELECT class_id FROM class_students WHERE student_id = :enrollment_sid
                 )
                 ORDER BY c.id ASC";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             ':user_class_sid' => $studentId,
-            ':enrollment_sid' => $studentId,
         ]);
         $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -88,14 +85,11 @@ class CourseLesson
             WHERE ca.course_id = :course_id
               AND ca.class_id IN (
                   SELECT class_id FROM users WHERE id = :user_class_sid AND class_id IS NOT NULL
-                  UNION
-                  SELECT class_id FROM class_students WHERE student_id = :enrollment_sid
               )
         ");
         $stmt->execute([
             ':course_id' => $courseId,
             ':user_class_sid' => $studentId,
-            ':enrollment_sid' => $studentId,
         ]);
 
         return (int)$stmt->fetchColumn() > 0;

@@ -99,6 +99,11 @@ class AuthService {
             throw new InvalidArgumentException("Không được sử dụng lại mật khẩu mặc định 123456 vì lý do an toàn bảo mật!");
         }
 
+        $user = User::findById($userId);
+        if ($user && !empty($user['password_hash']) && password_verify($newPassword, $user['password_hash'])) {
+            throw new InvalidArgumentException("Mật khẩu mới không được trùng với mật khẩu cũ hiện tại! Vui lòng chọn một mật khẩu mới khác.");
+        }
+
         $hash = password_hash($newPassword, PASSWORD_BCRYPT);
         User::updatePassword($userId, $hash, true);
 
@@ -138,10 +143,18 @@ class AuthService {
         if ($newPassword !== $confirmPassword) {
             throw new InvalidArgumentException("Mật khẩu xác nhận không trùng khớp!");
         }
+        if ($newPassword === '123456') {
+            throw new InvalidArgumentException("Không được đặt lại mật khẩu về mật khẩu mặc định 123456 vì lý do an toàn bảo mật!");
+        }
 
         $record = PasswordReset::verifyToken($token);
         if (!$record) {
             throw new RuntimeException("Mã OTP khôi phục không hợp lệ hoặc đã hết hạn (quá 15 phút)!");
+        }
+
+        $user = User::findById($record['user_id']);
+        if ($user && !empty($user['password_hash']) && password_verify($newPassword, $user['password_hash'])) {
+            throw new InvalidArgumentException("Mật khẩu mới không được trùng với mật khẩu cũ hiện tại! Vui lòng chọn một mật khẩu mới khác.");
         }
 
         $hash = password_hash($newPassword, PASSWORD_BCRYPT);

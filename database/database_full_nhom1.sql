@@ -55,36 +55,6 @@ INSERT INTO `categories` VALUES (1,'CAT_SSO','Tài khoản & Xác thực SSO','C
 UNLOCK TABLES;
 
 --
--- Table structure for table `class_students`
---
-
-DROP TABLE IF EXISTS `class_students`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `class_students` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `class_id` int(10) unsigned NOT NULL,
-  `student_id` int(10) unsigned NOT NULL,
-  `enrolled_at` datetime NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_class_student` (`class_id`,`student_id`),
-  KEY `fk_class_students_student` (`student_id`),
-  CONSTRAINT `fk_class_students_class` FOREIGN KEY (`class_id`) REFERENCES `classes` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `fk_class_students_student` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `class_students`
---
-
-LOCK TABLES `class_students` WRITE;
-/*!40000 ALTER TABLE `class_students` DISABLE KEYS */;
-INSERT INTO `class_students` VALUES (1,1,13,'2026-10-23 16:01:57'),(2,1,14,'2026-10-23 16:01:57'),(3,1,15,'2026-10-23 16:01:57'),(4,1,16,'2026-10-23 16:01:57'),(5,1,17,'2026-10-23 16:01:57'),(6,1,19,'2026-10-23 16:01:57'),(7,3,18,'2026-10-23 16:01:57');
-/*!40000 ALTER TABLE `class_students` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `classes`
 --
 

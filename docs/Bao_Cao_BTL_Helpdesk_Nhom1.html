@@ -350,7 +350,7 @@
                 (HELPDESK ONLINE ITIL v4 SERVICE DESK)
             </div>
             <div class="cover-subtitle">
-                Kiến trúc Clean MVC Phân tầng Thuần PHP 8 · Hệ Quản Trị MySQL 8 InnoDB 3NF (15 Bảng Chuẩn Hóa)<br>
+                Kiến trúc Clean MVC Phân tầng Thuần PHP 8 · Hệ Quản Trị MySQL 8 InnoDB 3NF (14 Bảng Chuẩn Hóa)<br>
                 Phân quyền RBAC 4 Roles · Tính SLA Giờ Hành Chính &amp; Lịch Nghỉ Lễ · Trạm Cứu Hộ Tài Khoản Khách (Chỉ Cần Mã Đơn)<br>
                 Quên Mật Khẩu Tự Phục Vụ Qua Email SSPR · Nhập Tài Khoản Hàng Loạt Excel/CSV Cho Admin
             </div>
@@ -424,7 +424,8 @@
         <li><strong>Liên kết đa vai trò chặt chẽ:</strong> Thiết lập cơ chế phối hợp giữa <strong>Sinh viên &ndash; Kỹ thuật viên &ndash; Giảng viên &ndash; Quản trị viên</strong>: KTV chịu trách nhiệm giám định log kỹ thuật, Giảng viên nắm thẩm quyền học thuật mở lại hạn nộp Deadline, Quản trị viên điều phối cấp cao.</li>
         <li><strong>Trạm Cứu Hộ Tài Khoản Khách (Chỉ cần Mã Đơn Cứu Hộ):</strong> Cung cấp cổng tiếp nhận độc lập cho người dùng mất quyền truy cập. <em>Người dùng chỉ cần lưu giữ duy nhất Mã đơn cứu hộ để tra cứu tiến độ, hoàn toàn không bắt buộc phải nhớ thêm mã PIN phức tạp</em>. Quy trình phê duyệt 2 bước bảo mật: KTV xác thực hồ sơ bước 1 &rarr; Admin phê duyệt mở khóa bước 2.</li>
         <li><strong>Khôi phục mật khẩu tự phục vụ qua Email (SSPR):</strong> Cho phép người dùng tự cấp lại mật khẩu qua email trường cấp <code>@daihocthudo.edu.vn</code> với token mã hóa SHA-256 hiệu lực đúng 15 phút kèm đồng hồ đếm ngược trực quan.</li>
-        <li><strong>Nhập tài khoản hàng loạt cho Admin (Bulk Import Excel/CSV):</strong> Hỗ trợ nhập danh sách sinh viên đầu năm học từ file Excel/CSV, tự động tạo tài khoản Bcrypt, gán lớp học và bảng liên kết `class_students`.</li>
+        <li><strong>Nhập tài khoản hàng loạt cho Admin (Bulk Import Excel/CSV):</strong> Hỗ trợ nhập danh sách sinh viên đầu năm học từ file Excel/CSV, tự động tạo tài khoản Bcrypt, gán lớp học sinh hoạt trực tiếp qua khóa ngoại <code>users.class_id</code> (loại bỏ bảng trung gian <code>class_students</code> dư thừa để tối ưu 3NF).</li>
+        <li><strong>Chính sách Bảo mật Mật khẩu Nghiêm ngặt:</strong> Tuyệt đối không cho phép đặt lại mật khẩu về mật khẩu mặc định (<code>123456</code>) và ngăn chặn việc đặt mật khẩu mới trùng với mật khẩu cũ hiện tại ở cả hai luồng (Đổi mật khẩu lần đầu <code>first_login</code> và Khôi phục qua Email SSPR) bằng hàm băm an toàn <code>password_verify()</code> đối chiếu trực tiếp với CSDL.</li>
         <li><strong>An toàn thông tin OWASP Top 10:</strong> Ngăn chặn 100% SQL Injection qua PDO Prepared Statements, chống CSRF Token, chống XSS, kiểm tra tải lên tệp an toàn ngoài Webroot.</li>
     </ol>
 
@@ -435,7 +436,7 @@
     <ul>
         <li><strong>Tầng Controller (<code>app/Controllers/</code>):</strong> Phân chia độc lập theo vai trò người dùng (<code>Admin/</code>, <code>Lecturer/</code>, <code>Student/</code>) và Controller dùng chung (<code>TicketController</code>, <code>AuthController</code>, <code>GuestTicketController</code>).</li>
         <li><strong>Tầng Service (<code>app/Services/</code>):</strong> Chứa logic nghiệp vụ lõi: <code>SlaService.php</code> (thuật toán SLA), <code>TicketService.php</code> (điều phối vé, cảnh báo trùng lặp), <code>UploadService.php</code> (kiểm soát file tải lên an toàn), <code>NotificationService.php</code> (phát thông báo realtime), <code>SpreadsheetImportService.php</code> (nhập file Excel/CSV).</li>
-        <li><strong>Tầng Model (<code>app/Models/</code>):</strong> Đại diện cho 15 bảng CSDL, đóng gói truy vấn bằng PDO Prepared Statements, ngăn ngừa rò rỉ câu truy vấn SQL ra ngoài View.</li>
+        <li><strong>Tầng Model (<code>app/Models/</code>):</strong> Đại diện cho 14 bảng CSDL, đóng gói truy vấn bằng PDO Prepared Statements, ngăn ngừa rò rỉ câu truy vấn SQL ra ngoài View.</li>
     </ul>
 
     <div class="page-break"></div>
@@ -726,7 +727,7 @@
                 <li><em>Trải nghiệm trên giao diện Web:</em> Màn hình web hiển thị thông báo đã gửi email thành công kèm <strong>đồng hồ đếm ngược 15:00</strong> và nút bấm <em>"📬 Mở tab Gmail của bạn ➔"</em>. Đồng hồ đếm ngược và nút mở Gmail này là tiện ích UX hỗ trợ trên trình duyệt web, không phải là nội dung gửi thêm qua email.</li>
             </ul>
         </li>
-        <li><strong>Bước 3 &ndash; Thiết lập mật khẩu mới:</strong> Sinh viên bấm trực tiếp vào đường link trong email (hoặc nhập mã token 6 chữ cái vào form) để mở màn hình <code>reset_password</code>. Sau khi nhập mật khẩu mới thỏa mãn tối thiểu 6 ký tự, hệ thống mã hóa Bcrypt vào bảng <code>users</code>, hủy token và đặt lại cờ <code>is_first_login = 0</code>.</li>
+        <li><strong>Bước 3 &ndash; Thiết lập mật khẩu mới:</strong> Sinh viên bấm trực tiếp vào đường link trong email (hoặc nhập mã token 6 chữ cái vào form) để mở màn hình <code>reset_password</code>. Hệ thống kiểm tra nghiêm ngặt: độ dài tối thiểu 6 ký tự, không được đặt lại mật khẩu về mặc định <code>123456</code>, và bắt buộc mật khẩu mới phải khác hoàn toàn mật khẩu cũ hiện tại qua <code>password_verify()</code>. Sau khi hợp lệ, mật khẩu mới được băm Bcrypt lưu vào <code>users</code>, hủy token bảo mật và đặt lại cờ <code>is_first_login = 0</code>.</li>
     </ul>
 
     <h2 class="sub-title">3.3. Kịch bản 3: Cơ Chế Chống Gửi Trùng: Sinh Viên Chỉ Được Gửi Duy Nhất 1 Phiếu Cho 1 Vấn Đề Nếu Chưa Hoàn Tất</h2>
@@ -820,7 +821,7 @@
     <ul>
         <li>Admin truy cập <code>admin/import_excel.php</code>, tải lên tệp danh sách sinh viên định dạng <code>.xlsx</code> hoặc <code>.csv</code>.</li>
         <li>Dịch vụ <code>SpreadsheetImportService</code> tự động chuẩn hóa tiếng Việt không dấu, nhận diện các cột dữ liệu: Mã sinh viên (<code>user_code</code>), Họ tên (<code>name</code>), Email (<code>email</code>), Mã lớp (<code>class_code</code>)...</li>
-        <li>Hệ thống tự động khởi tạo tài khoản Bcrypt (mật khẩu mặc định <code>123456</code>), tự liên kết bảng <code>classes</code> và <code>class_students</code>, gán trạng thái <code>studying</code>, khóa <code>D24</code> và bật cờ <code>is_first_login = 1</code> ép đổi mật khẩu khi đăng nhập lần đầu.</li>
+        <li>Hệ thống tự động khởi tạo tài khoản Bcrypt (mật khẩu mặc định <code>123456</code>), tự liên kết bảng <code>classes</code> thông qua <code>users.class_id</code>, gán trạng thái <code>studying</code>, khóa <code>D24</code> và bật cờ <code>is_first_login = 1</code> ép đổi mật khẩu khi đăng nhập lần đầu.</li>
         <li>Hiển thị bảng thống kê chi tiết: số bản ghi tạo mới thành công, số bản ghi bỏ qua do trùng lặp mã SV/email.</li>
     </ul>
 
@@ -849,7 +850,7 @@
     </ul>
 
     <h2 class="sub-title">3.12. Kịch bản 12: Đổi Mật Khẩu Lần Đầu Bắt Buộc (First Login Force Reset)</h2>
-    <p>Khi người dùng đăng nhập thành công nhưng tài khoản mang cờ <code>is_first_login = 1</code> (xảy ra khi tài khoản mới cấp hoặc vừa được Admin reset về <code>123456</code>). Middleware hệ thống lập tức chặn mọi đường dẫn điều hướng và chuyển hướng bắt buộc về <code>index.php?action=first_login</code>. Người dùng bắt buộc phải thiết lập mật khẩu cá nhân mới thỏa mãn độ dài tối thiểu trước khi được phép truy cập vào các phân hệ học phần hoặc bảng điều khiển.</p>
+    <p>Khi người dùng đăng nhập thành công nhưng tài khoản mang cờ <code>is_first_login = 1</code> (xảy ra khi tài khoản mới cấp hoặc vừa được Admin reset về <code>123456</code>). Middleware hệ thống lập tức chặn mọi đường dẫn điều hướng và chuyển hướng bắt buộc về <code>index.php?action=first_login</code>. Người dùng bắt buộc phải thiết lập mật khẩu cá nhân mới thỏa mãn độ dài tối thiểu (>= 6 ký tự), không được dùng lại mật khẩu mặc định <code>123456</code>, và không được đặt trùng với mật khẩu cũ hiện tại (kiểm tra qua <code>password_verify()</code>) trước khi được phép truy cập vào các phân hệ học phần hoặc bảng điều khiển.</p>
 
     <h2 class="sub-title">3.13. Kịch bản 13: Các Tính Năng Nền Tảng Và Tiện Ích Người Dùng (Một Số Tính Năng Đơn Giản)</h2>
     <p>Hệ thống hoàn thiện đầy đủ các tính năng nền tảng nâng cao trải nghiệm người dùng:</p>
@@ -1581,7 +1582,7 @@
                 <td><strong>Gửi / nộp lại bài tập</strong><br>Sinh viên</td>
                 <td>ID môn/buổi, ghi chú, tệp bài làm.</td>
                 <td>Yêu cầu phiên/CSRF, đúng lớp đăng ký và môn/buổi khớp nhau; còn hạn; tệp không quá 25 MB và thuộc danh sách đuôi cho phép.</td>
-                <td>Đọc <code>users</code>, <code>class_students</code>, <code>course_assignments</code>, <code>course_lessons</code>; ghi <code>student_assignment_submissions</code>. File trong <code>uploads/assignments</code>.</td>
+                <td>Đọc <code>users</code>, <code>classes</code>, <code>course_assignments</code>, <code>course_lessons</code>; ghi <code>student_assignment_submissions</code>. File trong <code>uploads/assignments</code>.</td>
                 <td>Gửi thông báo cho giảng viên phụ trách. Nộp lại cập nhật file/thời điểm và xóa trạng thái điểm, sao, nhận xét, người chấm/ngày chấm cũ.</td>
                 <td>Sai quyền/ID, quá hạn, tệp không đạt hoặc lỗi ghi DB thì không xác nhận nộp; file mới được dọn nếu ghi DB thất bại. Nộp lại chỉ hợp lệ trước hạn hiện hành.</td>
             </tr>
@@ -1638,8 +1639,8 @@
     <div class="page-break"></div>
 
     <!-- MỤC 5: THIẾT KẾ CƠ SỞ DỮ LIỆU CHI TIẾT (TỪ ĐIỂN DỮ LIỆU ĐẦY ĐỦ CÁC BẢNG) -->
-    <h1 class="section-title"><span>💾</span> 5. THIẾT KẾ CƠ SỞ DỮ LIỆU CHI TIẾT (TỪ ĐIỂN DỮ LIỆU 15 BẢNG INNODB 3NF)</h1>
-    <p>Cơ sở dữ liệu <code>helpdesk_thudo</code> được thiết kế theo chuẩn hóa dạng 3 (3NF), bộ máy lưu trữ MySQL 8 InnoDB hỗ trợ toàn vẹn ràng buộc khóa ngoại (Foreign Keys), bảng mã <code>utf8mb4_unicode_ci</code> hỗ trợ tiếng Việt nguyên vẹn không lỗi font. Dưới đây là từ điển dữ liệu chi tiết của toàn bộ các bảng:</p>
+    <h1 class="section-title"><span>💾</span> 5. THIẾT KẾ CƠ SỞ DỮ LIỆU CHI TIẾT (TỪ ĐIỂN DỮ LIỆU 14 BẢNG INNODB 3NF)</h1>
+    <p>Cơ sở dữ liệu <code>helpdesk_thudo</code> được thiết kế và chuẩn hóa dạng 3 (3NF), bộ máy lưu trữ MySQL 8 InnoDB hỗ trợ toàn vẹn ràng buộc khóa ngoại (Foreign Keys), bảng mã <code>utf8mb4_unicode_ci</code> hỗ trợ tiếng Việt nguyên vẹn không lỗi font. Đặc biệt, cấu trúc quan hệ sinh viên &ndash; lớp học được thiết kế trực tiếp và tối ưu qua khóa ngoại <code>users.class_id &rarr; classes(id)</code> (1 sinh viên chính quy gắn liền 1 lớp sinh hoạt cố định), loại bỏ hoàn toàn bảng trung gian <code>class_students</code> dư thừa để tối ưu hiệu năng truy vấn và đảm bảo chuẩn 3NF tuyệt đối. Dưới đây là từ điển dữ liệu chi tiết của toàn bộ 14 bảng trong hệ thống:</p>
 
     <!-- BẢNG 1 -->
     <h2 class="sub-title">5.1. Bảng <code>categories</code> &ndash; Danh mục Dịch vụ CNTT</h2>
@@ -1731,19 +1732,7 @@
     <div class="page-break"></div>
 
     <!-- BẢNG 6 -->
-    <h2 class="sub-title">5.6. Bảng <code>class_students</code> &ndash; Quan hệ Lớp &ndash; Sinh viên</h2>
-    <table class="report-table">
-        <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
-        <tbody>
-            <tr><td><code>id</code></td><td>INT UNSIGNED</td><td>PRIMARY KEY, AUTO_INCREMENT</td><td>NULL</td><td>Định danh bản ghi liên kết</td></tr>
-            <tr><td><code>class_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; classes(id)</td><td>NULL</td><td>Lớp sinh hoạt</td></tr>
-            <tr><td><code>student_id</code></td><td>INT UNSIGNED</td><td>NOT NULL, FK &rarr; users(id)</td><td>NULL</td><td>Sinh viên thuộc lớp sinh hoạt</td></tr>
-            <tr><td><code>enrolled_at</code></td><td>DATETIME</td><td>NOT NULL</td><td>CURRENT_TIMESTAMP</td><td>Thời điểm gia nhập lớp</td></tr>
-        </tbody>
-    </table>
-
-    <!-- BẢNG 7 -->
-    <h2 class="sub-title">5.7. Bảng <code>course_assignments</code> &ndash; Phân công Giảng dạy Lớp học phần</h2>
+    <h2 class="sub-title">5.6. Bảng <code>course_assignments</code> &ndash; Phân công Giảng dạy Lớp học phần</h2>
     <table class="report-table">
         <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
         <tbody>
@@ -1756,8 +1745,8 @@
         </tbody>
     </table>
 
-    <!-- BẢNG 8 -->
-    <h2 class="sub-title">5.8. Bảng <code>course_lessons</code> &ndash; Buổi học &amp; Hạn nộp Bài tập</h2>
+    <!-- BẢNG 7 -->
+    <h2 class="sub-title">5.7. Bảng <code>course_lessons</code> &ndash; Buổi học &amp; Hạn nộp Bài tập</h2>
     <table class="report-table">
         <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
         <tbody>
@@ -1773,8 +1762,8 @@
         </tbody>
     </table>
 
-    <!-- BẢNG 9 -->
-    <h2 class="sub-title">5.9. Bảng <code>student_assignment_submissions</code> &ndash; Bài nộp &amp; Chấm điểm Thang 10</h2>
+    <!-- BẢNG 8 -->
+    <h2 class="sub-title">5.8. Bảng <code>student_assignment_submissions</code> &ndash; Bài nộp &amp; Chấm điểm Thang 10</h2>
     <table class="report-table">
         <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
         <tbody>
@@ -1794,8 +1783,8 @@
         </tbody>
     </table>
 
-    <!-- BẢNG 10 -->
-    <h2 class="sub-title">5.10. Bảng <code>holidays</code> &ndash; Danh mục Ngày Nghỉ Lễ Toàn Trường</h2>
+    <!-- BẢNG 9 -->
+    <h2 class="sub-title">5.9. Bảng <code>holidays</code> &ndash; Danh mục Ngày Nghỉ Lễ Toàn Trường</h2>
     <table class="report-table">
         <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
         <tbody>
@@ -1810,8 +1799,8 @@
 
     <div class="page-break"></div>
 
-    <!-- BẢNG 11 -->
-    <h2 class="sub-title">5.11. Bảng <code>password_resets</code> &ndash; Khôi phục Mật khẩu Tự phục vụ SSPR</h2>
+    <!-- BẢNG 10 -->
+    <h2 class="sub-title">5.10. Bảng <code>password_resets</code> &ndash; Khôi phục Mật khẩu Tự phục vụ SSPR</h2>
     <table class="report-table">
         <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
         <tbody>
@@ -1823,8 +1812,8 @@
         </tbody>
     </table>
 
-    <!-- BẢNG 12 -->
-    <h2 class="sub-title">5.12. Bảng <code>tickets</code> &ndash; Quản lý Toàn diện Phiếu Hỗ Trợ CNTT</h2>
+    <!-- BẢNG 11 -->
+    <h2 class="sub-title">5.11. Bảng <code>tickets</code> &ndash; Quản lý Toàn diện Phiếu Hỗ Trợ CNTT</h2>
     <table class="report-table">
         <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
         <tbody>
@@ -1860,8 +1849,8 @@
         </tbody>
     </table>
 
-    <!-- BẢNG 13 -->
-    <h2 class="sub-title">5.13. Bảng <code>ticket_replies</code> &ndash; Lịch sử Trao đổi &amp; Ghi chú Nội bộ</h2>
+    <!-- BẢNG 12 -->
+    <h2 class="sub-title">5.12. Bảng <code>ticket_replies</code> &ndash; Lịch sử Trao đổi &amp; Ghi chú Nội bộ</h2>
     <table class="report-table">
         <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
         <tbody>
@@ -1875,8 +1864,8 @@
         </tbody>
     </table>
 
-    <!-- BẢNG 14 -->
-    <h2 class="sub-title">5.14. Bảng <code>ticket_ratings</code> &ndash; Đánh giá Chất lượng CSAT</h2>
+    <!-- BẢNG 13 -->
+    <h2 class="sub-title">5.13. Bảng <code>ticket_ratings</code> &ndash; Đánh giá Chất lượng CSAT</h2>
     <table class="report-table">
         <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
         <tbody>
@@ -1889,8 +1878,8 @@
         </tbody>
     </table>
 
-    <!-- BẢNG 15 -->
-    <h2 class="sub-title">5.15. Bảng <code>notifications</code> &ndash; Thông báo Thời gian thực Đa vai trò</h2>
+    <!-- BẢNG 14 -->
+    <h2 class="sub-title">5.14. Bảng <code>notifications</code> &ndash; Thông báo Thời gian thực Đa vai trò</h2>
     <table class="report-table">
         <thead><tr><th>Tên Cột</th><th>Kiểu Dữ Liệu</th><th>Ràng Buộc</th><th>Giá Trị Mặc Định</th><th>Mô Tả Ý Nghĩa Nghiệp Vụ</th></tr></thead>
         <tbody>
@@ -2022,7 +2011,7 @@
                 <td style="text-align: center; font-weight: 700; color: #0284c7;">R</td>
             </tr>
             <tr>
-                <td>Chuẩn hóa CSDL 15 bảng 3NF &amp; Script đồng bộ 1-click UTF-8 sạch</td>
+                <td>Chuẩn hóa CSDL 14 bảng 3NF &amp; Script đồng bộ 1-click UTF-8 sạch</td>
                 <td style="text-align: center; font-weight: 700;">R</td>
                 <td style="text-align: center;">C</td>
                 <td style="text-align: center;">C</td>
@@ -2045,7 +2034,7 @@
         <li><strong>Trạm Cứu Hộ Tài Khoản Khách (Guest Rescue Station) tiện lợi:</strong> Cho phép sinh viên bị mất quyền truy cập gửi yêu cầu và tra cứu tiến độ chỉ với Mã đơn duy nhất (không cần mã PIN); cơ chế xét duyệt 2 bước bảo đảm an toàn.</li>
         <li><strong>Khôi phục mật khẩu tự phục vụ SSPR qua Email:</strong> Tích hợp cấp lại mật khẩu qua Gmail trường học với token SHA-256 hiệu lực 15 phút kèm đồng hồ đếm ngược trực quan.</li>
         <li><strong>Công cụ Nhập dữ liệu tài khoản hàng loạt (Excel/CSV Bulk Import):</strong> Hỗ trợ Admin nạp dữ liệu tân sinh viên đầu kỳ nhanh chóng, tự động khởi tạo mật khẩu Bcrypt và liên kết lớp học.</li>
-        <li><strong>Cơ sở dữ liệu chuẩn hóa và Đồng bộ 1-click UTF-8 sạch:</strong> 15 bảng CSDL chuẩn 3NF, ràng buộc toàn vẹn khóa ngoại; script <code>dong_bo_database.bat</code> tự động nhận diện cổng MySQL (3306/3307), tạo mới và nạp dữ liệu UTF-8 chuẩn xác, không bị lỗi font tiếng Việt.</li>
+        <li><strong>Cơ sở dữ liệu chuẩn hóa và Đồng bộ 1-click UTF-8 sạch:</strong> 14 bảng CSDL chuẩn 3NF, ràng buộc toàn vẹn khóa ngoại; script <code>dong_bo_database.bat</code> tự động nhận diện cổng MySQL (3306/3307), tạo mới và nạp dữ liệu UTF-8 chuẩn xác, không bị lỗi font tiếng Việt.</li>
     </ul>
 
     <h2 class="sub-title">7.2. Các Điểm Chưa Được (Hạn chế &amp; Hướng phát triển trong tương lai)</h2>

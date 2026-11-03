@@ -20,7 +20,6 @@ DELETE FROM `ticket_replies`;
 DELETE FROM `tickets`;
 DELETE FROM `password_resets`;
 DELETE FROM `course_assignments`;
-DELETE FROM `class_students`;
 DELETE FROM `courses`;
 DELETE FROM `classes`;
 DELETE FROM `holidays`;
@@ -172,44 +171,6 @@ INSERT INTO `users` (
  '$2y$10$ZjTmLmtE3Al3TL2y28Pnouxpc4hmVlUi00QI/lqChzmlbFDpa6K8m', 'requester', 'student', 
  'Khoa CNTT', '0999888777', 1, 'D24', 'expelled', NULL, 5, 0, 1, 0, 'expelled', 0);
 
--- ==============================================================================
--- 7. SEED BẢNG SINH VIÊN THUỘC LỚP (CLASS_STUDENTS: 1 LỚP CÓ NHIỀU SINH VIÊN)
--- ==============================================================================
-INSERT INTO `class_students` (`class_id`, `student_id`) VALUES
-(1, 13), -- Phạm Thị Thanh Ngân thuộc lớp D24-CNTT1
-(1, 14), -- Trần Thục Linh thuộc lớp D24-CNTT1
-(1, 15), -- Lê Hà My thuộc lớp D24-CNTT1
-(1, 16), -- Nguyễn Ánh Nhi thuộc lớp D24-CNTT1
-(1, 17), -- Phan Công Thành thuộc lớp D24-CNTT1
-(1, 19), -- Hoàng Văn Kỷ Luật thuộc lớp D24-CNTT1
-(3, 18); -- Cựu sinh viên D20 thuộc lớp D20-CNTT1
-
--- ==============================================================================
--- 8. SEED PHÂN CÔNG GIẢNG DẠY LỚP HỌC PHẦN (COURSE_ASSIGNMENTS)
--- Quy tắc: Mỗi lớp học phần CHỈ CÓ DUY NHẤT 1 GIÁO VIÊN PHỤ TRÁCH.
--- Lớp D24-CNTT1 trong kỳ 2026_1 học 6 môn -> Có 6 giảng viên quản lý 6 lớp học phần tương ứng
--- ==============================================================================
-INSERT INTO `course_assignments` (`class_id`, `course_id`, `lecturer_id`, `semester`, `academic_year`) VALUES
--- 1. Môn Lập trình Web & Ứng dụng (WEB101) -> TS. Nguyễn Văn Giảng phụ trách duy nhất
-(1, 1, 7, '2026_1', '2026-2027'),
-
--- 2. Môn Quản trị Mạng & An toàn Hệ thống (NET201) -> ThS. Trần Thị Hạnh phụ trách duy nhất
-(1, 2, 8, '2026_1', '2026-2027'),
-
--- 3. Môn Hệ Quản trị Cơ sở Dữ liệu (DB102) -> TS. Lê Văn Tuấn phụ trách duy nhất
-(1, 3, 9, '2026_1', '2026-2027'),
-
--- 4. Môn Hệ điều hành & Mã nguồn mở (OS101) -> ThS. Phạm Mai Lan phụ trách duy nhất
-(1, 4, 10, '2026_1', '2026-2027'),
-
--- 5. Môn Kỹ nghệ Phần mềm (SE201) -> TS. Hoàng Quốc Bảo phụ trách duy nhất
-(1, 5, 11, '2026_1', '2026-2027'),
-
--- 6. Môn Hệ thống E-Learning & LMS (LMS301) -> ThS. Vũ Thị Ngọc phụ trách duy nhất
-(1, 6, 12, '2026_1', '2026-2027'),
-
--- Lớp D24-CNTT2 cũng học môn Lập trình Web -> Do TS. Nguyễn Văn Giảng phụ trách lớp học phần này
-(2, 1, 7, '2026_1', '2026-2027');
 
 -- ==============================================================================
 -- 9. SEED CÁC PHIẾU YÊU CẦU MẪU (TICKETS - GẮN LỚP HỌC PHẦN & MÔN HỌC)
