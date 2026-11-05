@@ -404,7 +404,6 @@
 
         let currentDatasetKey = 'system';
         let QUESTIONS_DATA = DATASETS[currentDatasetKey];
-        let QUESTIONS_DATA = DATASETS.system;
     </script>
 
     <!-- APP SCRIPT -->
@@ -427,7 +426,6 @@
             updateStats();
         });
 
-        
         function renderSectionButtons() {
             const container = document.getElementById('topic-filters-container');
             if (!container) return;
@@ -442,29 +440,51 @@
             });
 
             let html = `
-                <button onclick="filterSection(0)" id="filter-btn-0" class="filter-topic-btn ${currentFilter === 0 ? 'active bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-700/50'} w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between font-medium">
+                <button onclick="filterSection(0)" id="filter-btn-0" data-sec-id="0" class="filter-topic-btn ${currentFilter === 0 ? 'bg-indigo-600 text-white font-semibold shadow' : 'text-slate-300 hover:bg-slate-700/50'} w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between font-medium">
                     <span>Tất cả các chủ đề</span>
-                    <span class="px-1.5 py-0.5 rounded-full bg-slate-800 text-[10px] font-mono">${QUESTIONS_DATA.length}</span>
+                    <span class="px-1.5 py-0.5 rounded-full ${currentFilter === 0 ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-400'} text-[10px] font-mono">${QUESTIONS_DATA.length}</span>
                 </button>
             `;
 
             for (const [sId, info] of Object.entries(sectionMap)) {
                 const sIdNum = parseInt(sId);
                 const isActive = currentFilter === sIdNum;
+                let shortName = info.name.replace(/^[0-9]+\.\s*/, '');
+                if (shortName.length > 32) shortName = shortName.substring(0, 30) + '...';
+
                 html += `
-                    <button onclick="filterSection(${sIdNum})" id="filter-btn-${sIdNum}" class="filter-topic-btn ${isActive ? 'active bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-300 hover:bg-slate-700/50'} w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between">
-                        <span class="truncate pr-1">${info.name}</span>
-                        <span class="px-1.5 py-0.5 rounded-full bg-slate-900 text-[10px] font-mono text-slate-400 shrink-0">${info.count}</span>
+                    <button onclick="filterSection(${sIdNum})" id="filter-btn-${sIdNum}" data-sec-id="${sIdNum}" class="filter-topic-btn ${isActive ? 'bg-indigo-600 text-white font-semibold shadow' : 'text-slate-300 hover:bg-slate-700/50'} w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between">
+                        <span class="truncate pr-1" title="${info.name}">${sIdNum}. ${shortName}</span>
+                        <span class="px-1.5 py-0.5 rounded-full ${isActive ? 'bg-white/20 text-white' : 'bg-slate-900 text-slate-400'} text-[10px] font-mono shrink-0">${info.count}</span>
                     </button>
                 `;
             }
             container.innerHTML = html;
         }
 
-                        function switchDataset(key) {
+        function switchDataset(key) {
             if (!DATASETS[key]) return;
             currentDatasetKey = key;
             QUESTIONS_DATA = DATASETS[key];
+
+            // Reset state
+            currentFilter = 0;
+            userAnswers = {};
+            searchQuery = '';
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = '';
+            isExamSubmitted = false;
+            examQuestionsList = [];
+            if (examTimer) clearInterval(examTimer);
+
+            const resultCard = document.getElementById('exam-result-card');
+            if (resultCard) resultCard.classList.add('hidden');
+            const timerBox = document.getElementById('exam-timer-box');
+            if (timerBox) timerBox.classList.add('hidden');
+            const submitBtn = document.getElementById('submit-exam-btn');
+            if (submitBtn) submitBtn.classList.add('hidden');
+            const startBtn = document.getElementById('start-exam-btn');
+            if (startBtn) startBtn.classList.remove('hidden');
 
             // Update Header Meta
             const meta = DATASET_META[key];
@@ -492,41 +512,12 @@
                 }
             });
 
-            // Rebuild Topic List & Reset Filters
-            buildTopicFilters();
-            resetExam();
-        }
-
-        function buildTopicFilters() {
-            const container = document.getElementById('topic-filters-container');
-            if (!container) return;
-
-            // Extract unique sections
-            const secMap = new Map();
-            QUESTIONS_DATA.forEach(q => {
-                if (!secMap.has(q.section_id)) {
-                    secMap.set(q.section_id, { id: q.section_id, name: q.section_name, count: 0 });
-                }
-                secMap.get(q.section_id).count++;
-            });
-
-            let html = `<button onclick="filterSection(0)" id="sec-btn-0" class="sec-filter-btn w-full text-left px-3 py-2 rounded-xl transition flex items-center justify-between bg-indigo-600 text-white font-semibold">
-                <span>Tất cả câu hỏi</span>
-                <span class="px-1.5 py-0.5 rounded-md bg-white/20 text-[10px] font-mono">${QUESTIONS_DATA.length}</span>
-            </button>`;
-
-            secMap.forEach(sec => {
-                // Shorten name if too long
-                let shortName = sec.name.replace(/^[0-9]+\.\s*/, '');
-                if (shortName.length > 36) shortName = shortName.substring(0, 34) + '...';
-
-                html += `<button onclick="filterSection(${sec.id})" id="sec-btn-${sec.id}" class="sec-filter-btn w-full text-left px-3 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700">
-                    <span class="truncate" title="${sec.name}">${sec.id}. ${shortName}</span>
-                    <span class="px-1.5 py-0.5 rounded-md bg-slate-900 text-[10px] font-mono text-slate-400">${sec.count}</span>
-                </button>`;
-            });
-
-            container.innerHTML = html;
+            // Rebuild Topic List & Render UI
+            renderSectionButtons();
+            renderQuickGrid();
+            renderQuestions();
+            updateStats();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function setMode(mode) {
             currentMode = mode;
@@ -653,20 +644,27 @@
 
         function filterSection(secId) {
             currentFilter = secId;
-            document.querySelectorAll('.filter-topic-btn').forEach((btn, idx) => {
-                if (idx === secId) {
-                    btn.className = "filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between font-medium bg-indigo-600/20 text-indigo-300 border border-indigo-500/30";
+            document.querySelectorAll('.filter-topic-btn').forEach((btn) => {
+                const bSecId = parseInt(btn.getAttribute('data-sec-id') || '0');
+                const span = btn.querySelector('span.font-mono');
+                if (bSecId === secId) {
+                    btn.className = "filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between font-semibold bg-indigo-600 text-white shadow";
+                    if (span) span.className = "px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-mono shrink-0";
                 } else {
                     btn.className = "filter-topic-btn w-full text-left px-2.5 py-2 rounded-xl transition flex items-center justify-between text-slate-300 hover:bg-slate-700/50";
+                    if (span) span.className = "px-1.5 py-0.5 rounded-full bg-slate-900 text-slate-400 text-[10px] font-mono shrink-0";
                 }
             });
 
-            if (secId === 0) {
-                document.getElementById('active-filter-label').innerText = "Tất cả các chủ đề (" + QUESTIONS_DATA.length + " câu)";
-            } else {
-                const found = QUESTIONS_DATA.find(q => q.section_id === secId);
-                const count = QUESTIONS_DATA.filter(q => q.section_id === secId).length;
-                document.getElementById('active-filter-label').innerText = found ? (found.section_name + " (" + count + " câu)") : "Chuyên đề " + secId;
+            const filterLabel = document.getElementById('active-filter-label');
+            if (filterLabel) {
+                if (secId === 0) {
+                    filterLabel.innerText = "Tất cả các chủ đề (" + QUESTIONS_DATA.length + " câu)";
+                } else {
+                    const found = QUESTIONS_DATA.find(q => q.section_id === secId);
+                    const count = QUESTIONS_DATA.filter(q => q.section_id === secId).length;
+                    filterLabel.innerText = found ? (found.section_name + " (" + count + " câu)") : "Chuyên đề " + secId;
+                }
             }
 
             renderQuestions();
