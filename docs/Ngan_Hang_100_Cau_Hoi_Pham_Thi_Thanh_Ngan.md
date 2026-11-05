@@ -1,191 +1,209 @@
-# BỘ 100 CÂU HỎI TRẮC NGHIỆM CHUYÊN SÂU &ndash; PHẠM THỊ THANH NGÂN (224001736)
+# BỘ 100 CÂU HỎI TRẮC NGHIỆM CHUYÊN SÂU – PHẠM THỊ THANH NGÂN (224001736)
 
-> **Trưởng nhóm phụ trách:** Phạm Thị Thanh Ngân (MSV: 224001736 &ndash; Lớp: TUD D2024)
+> **Trưởng nhóm phụ trách:** Phạm Thị Thanh Ngân (MSV: 224001736 – Lớp: TUD D2024)
 > **Phân hệ chuyên trách:** Kiến Trúc Hệ Thống Cốt Lõi Clean MVC, Bàn Làm Việc KTV (Agent Workspace), Thuật Toán Triage, Model Ticket & Reply
 > **Bảng CSDL cốt lõi:** `tickets`, `ticket_replies`
 > **Model độc quyền:** `Ticket.php`, `Reply.php`
 
 ---
 
-## 📑 MỤC LỤC 5 DẠNG CHUYÊN ĐỀ (100 CÂU HỎI MỚI)
+## 📊 BẢNG MA TRẬN ĐÁP ÁN 100 CÂU HỎI (QUICK ANSWER KEY)
 
-- **[Chuyên đề 1: 1. Kiến Trúc Cốt Lõi Clean MVC Thuần PHP 8, Routing Engine & Front Controller](#chuyen-de-1)** (20 câu)
-- **[Chuyên đề 2: 2. Bàn Làm Việc Kỹ Thuật Viên (Agent Workspace) & Quản Lý Hàng Đợi Phiếu](#chuyen-de-2)** (20 câu)
-- **[Chuyên đề 3: 3. Thuật Toán Điều Phối Triage Thông Minh, Ngưỡng Quá Tải & Tràn Tải (Auto-Overflow)](#chuyen-de-3)** (20 câu)
-- **[Chuyên đề 4: 4. Cơ Chế Đóng Trùng Lặp, Khóa Ngoại parent_ticket_id & Tạm Dừng Đồng Hồ SLA](#chuyen-de-4)** (20 câu)
-- **[Chuyên đề 5: 5. Phân Tích Các Câu Lệnh Truy Vấn SQL Chuyên Sâu Của Trưởng Nhóm Thanh Ngân](#chuyen-de-5)** (20 câu)
-- **[Bảng Đáp Án Chi Tiết 100 Câu](#bang-dap-an)**
+> **Phân bổ đáp án chuẩn:** 25 câu [A] · 25 câu [B] · 25 câu [C] · 25 câu [D] (Được xáo trộn ngẫu nhiên toàn diện)
+
+| Câu | Đ/Á | Câu | Đ/Á | Câu | Đ/Á | Câu | Đ/Á | Câu | Đ/Á |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **1** | `D` | **21** | `A` | **41** | `D` | **61** | `C` | **81** | `C` |
+| **2** | `C` | **22** | `D` | **42** | `B` | **62** | `C` | **82** | `A` |
+| **3** | `A` | **23** | `C` | **43** | `C` | **63** | `D` | **83** | `A` |
+| **4** | `A` | **24** | `D` | **44** | `D` | **64** | `A` | **84** | `C` |
+| **5** | `D` | **25** | `B` | **45** | `B` | **65** | `D` | **85** | `D` |
+| **6** | `B` | **26** | `C` | **46** | `C` | **66** | `A` | **86** | `B` |
+| **7** | `B` | **27** | `B` | **47** | `A` | **67** | `C` | **87** | `D` |
+| **8** | `B` | **28** | `B` | **48** | `C` | **68** | `C` | **88** | `D` |
+| **9** | `D` | **29** | `B` | **49** | `B` | **69** | `A` | **89** | `D` |
+| **10** | `A` | **30** | `B` | **50** | `B` | **70** | `C` | **90** | `C` |
+| **11** | `A` | **31** | `B` | **51** | `C` | **71** | `C` | **91** | `C` |
+| **12** | `D` | **32** | `C` | **52** | `A` | **72** | `D` | **92** | `D` |
+| **13** | `D` | **33** | `A` | **53** | `B` | **73** | `C` | **93** | `A` |
+| **14** | `C` | **34** | `A` | **54** | `A` | **74** | `B` | **94** | `B` |
+| **15** | `A` | **35** | `B` | **55** | `D` | **75** | `A` | **95** | `D` |
+| **16** | `D` | **36** | `C` | **56** | `C` | **76** | `D` | **96** | `C` |
+| **17** | `B` | **37** | `D` | **57** | `A` | **77** | `B` | **97** | `B` |
+| **18** | `B` | **38** | `A` | **58** | `D` | **78** | `D` | **98** | `A` |
+| **19** | `B` | **39** | `C` | **59** | `C` | **79** | `A` | **99** | `D` |
+| **20** | `A` | **40** | `A` | **60** | `B` | **80** | `A` | **100** | `B` |
 
 ---
 
-## <a id="chuyen-de-1"></a>1. Kiến Trúc Cốt Lõi Clean MVC Thuần PHP 8, Routing Engine & Front Controller
+## 1. KIẾN TRÚC CỐT LÕI CLEAN MVC THUẦN PHP 8, ROUTING ENGINE & FRONT CONTROLLER
 
 #### Câu 1. Kiến trúc phần mềm cốt lõi được Trưởng nhóm Phạm Thị Thanh Ngân lựa chọn định hình cho toàn bộ dự án Helpdesk là gì?
 
-- **A.** Monolithic truyền thống viết lẫn mã HTML và câu lệnh SQL vào chung một tệp.
-- **B.** Clean MVC phân tầng thuần PHP 8 (Pure PHP), không phụ thuộc framework cồng kềnh, tổ chức tường minh Controller, Model, Service và View.
+- **A.** Single Page Application hoàn toàn bằng Node.js.
+- **B.** Monolithic truyền thống viết lẫn mã HTML và câu lệnh SQL vào chung một tệp.
 - **C.** Microservices triển khai trên nền tảng đám mây AWS.
-- **D.** Single Page Application hoàn toàn bằng Node.js.
+- **D.** Clean MVC phân tầng thuần PHP 8 (Pure PHP), không phụ thuộc framework cồng kềnh, tổ chức tường minh Controller, Model, Service và View.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Hệ thống Helpdesk Nhóm 1 được xây dựng theo chuẩn Clean MVC thuần PHP 8, phân tách độc lập giữa xử lý nghiệp vụ, giao tiếp dữ liệu và hiển thị giao diện.
 
 #### Câu 2. Trong kiến trúc MVC của dự án, tầng Model (`app/Models/`) do Thanh Ngân thiết kế đảm nhận vai trò chính nào?
 
-- **A.** Nhận yêu cầu HTTP và vẽ giao diện CSS.
-- **B.** Đại diện cho các thực thể quan hệ, bao bọc toàn bộ truy vấn CSDL bằng PDO Prepared Statements (:named_params), tuyệt đối không để rò rỉ SQL ra ngoài View.
-- **C.** Gửi tin nhắn SMS tới điện thoại sinh viên.
-- **D.** Cấu hình cổng mạng của máy chủ Apache.
+- **A.** Cấu hình cổng mạng của máy chủ Apache.
+- **B.** Nhận yêu cầu HTTP và vẽ giao diện CSS.
+- **C.** Đại diện cho các thực thể quan hệ, bao bọc toàn bộ truy vấn CSDL bằng PDO Prepared Statements (:named_params), tuyệt đối không để rò rỉ SQL ra ngoài View.
+- **D.** Gửi tin nhắn SMS tới điện thoại sinh viên.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Tầng Model đại diện cho 14 bảng quan hệ, đóng gói các phương thức CRUD an toàn và bảo vệ dữ liệu trước nguy cơ tấn công tiêm mã.
 
 #### Câu 3. Tệp tin Front Controller `index.php` tại thư mục gốc đóng vai trò gì trong vòng đời xử lý yêu cầu người dùng?
 
-- **A.** Chỉ là tệp chứa thông tin tác giả nhóm.
-- **B.** Điểm tiếp nhận tập trung (Single Entry Point): nạp autoloader, kích hoạt session, khởi tạo database và định tuyến tham số `action` tới Controller tương ứng.
-- **C.** Tự động tắt máy chủ khi người dùng thoát.
+- **A.** Điểm tiếp nhận tập trung (Single Entry Point): nạp autoloader, kích hoạt session, khởi tạo database và định tuyến tham số `action` tới Controller tương ứng.
+- **B.** Tự động tắt máy chủ khi người dùng thoát.
+- **C.** Chỉ là tệp chứa thông tin tác giả nhóm.
 - **D.** Lưu mật khẩu ngân hàng của trường.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Mọi yêu cầu truy cập từ trình duyệt đều đi qua `index.php` để được lọc bảo mật, nạp phiên xác thực và phân phối đúng Controller xử lý.
 
 #### Câu 4. Lớp kết nối cơ sở dữ liệu `App\Core\Database` thiết lập cấu hình PDO quan trọng nào để bắt buộc PHP ném ngoại lệ khi có lỗi SQL?
 
-- **A.** `PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT` (Bỏ qua lỗi)
-- **B.** `PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION`
+- **A.** `PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION`
+- **B.** `PDO::ATTR_AUTOCOMMIT => false`
 - **C.** `PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING`
-- **D.** `PDO::ATTR_AUTOCOMMIT => false`
+- **D.** `PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT` (Bỏ qua lỗi)
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Chế độ `ERRMODE_EXCEPTION` bảo đảm mọi lỗi cú pháp SQL hoặc vi phạm ràng buộc khóa ngoại đều ném ra ngoại lệ `PDOException`, hỗ trợ bắt lỗi bằng khối `try-catch` an toàn.
 
 #### Câu 5. Chế độ nạp dữ liệu mặc định (`PDO::ATTR_DEFAULT_FETCH_MODE`) được Thanh Ngân cấu hình trong kết nối PDO là gì?
 
-- **A.** `PDO::FETCH_NUM`
-- **B.** `PDO::FETCH_ASSOC` (Mảng kết hợp ánh xạ tên cột thành khóa của mảng)
+- **A.** `PDO::FETCH_OBJ`
+- **B.** `PDO::FETCH_NUM`
 - **C.** `PDO::FETCH_BOTH` (Tốn gấp đôi dung lượng RAM)
-- **D.** `PDO::FETCH_OBJ`
+- **D.** `PDO::FETCH_ASSOC` (Mảng kết hợp ánh xạ tên cột thành khóa của mảng)
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** `PDO::FETCH_ASSOC` cho phép truy xuất dữ liệu tự nhiên và trực quan dạng `$ticket['ticket_code']`, `$ticket['status']` mà không lãng phí bộ nhớ.
 
 #### Câu 6. Tệp middleware nền tảng `includes/auth.php` cung cấp các hàm trợ giúp (Helper Functions) cốt lõi nào cho hệ thống?
 
-- **A.** `isLoggedIn()`, `currentUser()`, `hasRole($role)`, `requireLogin()`
-- **B.** `sendMail()`, `printInvoice()`
+- **A.** `sendMail()`, `printInvoice()`
+- **B.** `isLoggedIn()`, `currentUser()`, `hasRole($role)`, `requireLogin()`
 - **C.** `formatDate()`, `calculateGPA()`
 - **D.** `renderMenu()`, `showBanner()`
 
-> **👉 Đáp án đúng:** [**A**]
+> **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bộ hàm trợ giúp xác thực giúp các Controller và View kiểm tra nhanh chóng trạng thái đăng nhập và vai trò người dùng trong 1 dòng lệnh.
 
 #### Câu 7. Để phòng chống tấn công Cross-Site Scripting (XSS) khi xuất dữ liệu ra tệp giao diện View, Thanh Ngân xây dựng hàm trợ giúp nào?
 
-- **A.** `h($string)` hoặc `e($string)` bọc hàm `htmlspecialchars($string, ENT_QUOTES, 'UTF-8')`
-- **B.** `strip_tags()`
-- **C.** `urlencode()`
+- **A.** `urlencode()`
+- **B.** `h($string)` hoặc `e($string)` bọc hàm `htmlspecialchars($string, ENT_QUOTES, 'UTF-8')`
+- **C.** `strip_tags()`
 - **D.** `base64_encode()`
 
-> **👉 Đáp án đúng:** [**A**]
+> **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Hàm rút gọn `h()` bảo đảm mọi chuỗi dữ liệu người dùng nhập (tiêu đề, nhận xét, mô tả) đều được mã hóa an toàn trước khi in ra trình duyệt.
 
 #### Câu 8. Hai Model nghiệp vụ độc quyền do Trưởng nhóm Thanh Ngân trực tiếp thiết kế và quản lý là gì?
 
 - **A.** `CourseLesson.php` và `Rating.php`
 - **B.** `Ticket.php` (quản trị thực thể phiếu hỗ trợ) và `Reply.php` (quản trị các phản hồi, trao đổi của phiếu)
-- **C.** `Holiday.php` và `Category.php`
-- **D.** `PasswordReset.php` và `User.php`
+- **C.** `PasswordReset.php` và `User.php`
+- **D.** `Holiday.php` và `Category.php`
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** `Ticket.php` và `Reply.php` là trái tim vận hành của hệ thống Helpdesk, chứa toàn bộ trạng thái, vòng đời và lịch sử tương tác của sự cố kỹ thuật.
 
 #### Câu 9. Cơ chế nạp tự động lớp học (Autoloading) trong dự án tuân theo tiêu chuẩn kỹ thuật nào của PHP-FIG?
 
-- **A.** `PSR-0`
-- **B.** `PSR-4` (Ánh xạ không gian tên Namespace với cấu trúc thư mục trên ổ cứng)
-- **C.** `PSR-7`
-- **D.** `PSR-12`
+- **A.** `PSR-7`
+- **B.** `PSR-12`
+- **C.** `PSR-0`
+- **D.** `PSR-4` (Ánh xạ không gian tên Namespace với cấu trúc thư mục trên ổ cứng)
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Tiêu chuẩn hiện đại PSR-4 giúp loại bỏ hoàn toàn việc phải `require` thủ công hàng trăm tệp lớp học, tăng tính mô-đun và sạch sẽ của mã nguồn.
 
 #### Câu 10. Trong bảng `tickets`, khóa chính của bảng được định nghĩa theo thuộc tính nào?
 
 - **A.** `id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY`
 - **B.** `ticket_code VARCHAR(30) PRIMARY KEY`
-- **C.** `created_at DATETIME PRIMARY KEY`
-- **D.** `requester_id INT PRIMARY KEY`
+- **C.** `requester_id INT PRIMARY KEY`
+- **D.** `created_at DATETIME PRIMARY KEY`
 
 > **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Khóa chính số nguyên tự tăng `id` bảo đảm tốc độ liên kết khóa ngoại với các bảng con (`ticket_replies`, `ticket_ratings`) đạt hiệu năng tối đa.
 
 #### Câu 11. Cột `ticket_code` trong bảng `tickets` có ràng buộc toàn vẹn nào?
 
-- **A.** `NULL`
-- **B.** `UNIQUE NOT NULL` (Khóa ứng viên duy nhất chống trùng lặp mã vé)
-- **C.** `CHECK (ticket_code > 0)`
-- **D.** `FOREIGN KEY`
+- **A.** `UNIQUE NOT NULL` (Khóa ứng viên duy nhất chống trùng lặp mã vé)
+- **B.** `FOREIGN KEY`
+- **C.** `NULL`
+- **D.** `CHECK (ticket_code > 0)`
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Mã vé duy nhất giúp định danh chính xác từng sự cố khi giao tiếp giữa sinh viên, giảng viên và kỹ thuật viên.
 
 #### Câu 12. Mã nguồn dự án sử dụng bộ thư viện hoặc cơ chế nào để giả lập hòm thư điện tử thử nghiệm trên môi trường Localhost?
 
-- **A.** Bắt buộc phải mua dịch vụ Mail Server thật tốn kém.
-- **B.** Fake Mailbox nội bộ lưu vào tệp `storage/mailbox.json`, cho phép kiểm tra nội dung thư và token khôi phục mật khẩu ngay tức thì.
-- **C.** In email ra giấy máy in.
-- **D.** Không cho phép gửi email.
+- **A.** Không cho phép gửi email.
+- **B.** In email ra giấy máy in.
+- **C.** Bắt buộc phải mua dịch vụ Mail Server thật tốn kém.
+- **D.** Fake Mailbox nội bộ lưu vào tệp `storage/mailbox.json`, cho phép kiểm tra nội dung thư và token khôi phục mật khẩu ngay tức thì.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Giải pháp Fake Mailbox thông minh: hệ thống tự động ghi nhật ký email ra file JSON giúp nhóm kiểm thử trọn vẹn luồng gửi thư mà không cần cấu hình SMTP ngoài.
 
 #### Câu 13. Tệp `.htaccess` tại thư mục gốc máy chủ Apache đảm nhiệm vai trò bảo mật nào trong kiến trúc dự án?
 
-- **A.** Ngăn duyệt cây thư mục trực tiếp (`Options -Indexes`) và cấm truy cập trực tiếp vào các tệp nhạy cảm (`.env`, `.sql`, `.md`, `storage/`).
-- **B.** Tự động tăng tốc độ mạng lên 10 lần.
-- **C.** Xóa cookie của trình duyệt.
-- **D.** Tắt máy chủ khi có người truy cập.
+- **A.** Xóa cookie của trình duyệt.
+- **B.** Tắt máy chủ khi có người truy cập.
+- **C.** Tự động tăng tốc độ mạng lên 10 lần.
+- **D.** Ngăn duyệt cây thư mục trực tiếp (`Options -Indexes`) và cấm truy cập trực tiếp vào các tệp nhạy cảm (`.env`, `.sql`, `.md`, `storage/`).
 
-> **👉 Đáp án đúng:** [**A**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Tấm lá chắn bảo vệ cấp máy chủ web, bảo vệ an toàn các tệp tin cấu hình và dữ liệu sao lưu trước việc dò quét của hacker.
 
 #### Câu 14. Bảng mã ký tự (Character Set) và quy tắc đối chiếu (Collation) được Thanh Ngân thiết lập chuẩn cho toàn bộ CSDL là gì?
 
 - **A.** `latin1` / `latin1_swedish_ci`
-- **B.** `utf8mb4` / `utf8mb4_unicode_ci`
-- **C.** `ascii` / `ascii_general_ci`
+- **B.** `ascii` / `ascii_general_ci`
+- **C.** `utf8mb4` / `utf8mb4_unicode_ci`
 - **D.** `binary`
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** `utf8mb4` hỗ trợ đầy đủ 4 byte biểu diễn hoàn hảo toàn bộ bảng chữ cái tiếng Việt có dấu và các biểu tượng cảm xúc Emoji hiện đại.
 
 #### Câu 15. Hàm PHP nào trong `app/Core/Controller.php` biến đổi mảng dữ liệu truyền từ Controller thành các biến cục bộ trong file View?
 
-- **A.** `array_merge()`
-- **B.** `extract($data)`
-- **C.** `json_encode()`
-- **D.** `var_dump()`
+- **A.** `extract($data)`
+- **B.** `var_dump()`
+- **C.** `array_merge()`
+- **D.** `json_encode()`
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** `extract($data)` biến các phần tử `['tickets' => $t, 'user' => $u]` thành biến `$tickets` và `$user` giúp giao diện View viết mã ngắn gọn, tự nhiên.
 
 #### Câu 16. Trong bảng `tickets`, trường `status` nhận những giá trị ENUM chuẩn nào biểu diễn vòng đời hoàn chỉnh của sự cố?
 
 - **A.** `'start'`, `'end'`
-- **B.** `'new'`, `'assigned'`, `'in_progress'`, `'waiting_requester'`, `'resolved'`, `'closed'`
+- **B.** `'true'`, `'false'`
 - **C.** `'pass'`, `'fail'`
-- **D.** `'true'`, `'false'`
+- **D.** `'new'`, `'assigned'`, `'in_progress'`, `'waiting_requester'`, `'resolved'`, `'closed'`
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Máy trạng thái hữu hạn (State Machine) gồm 6 nấc chuẩn mực của ITIL v4, phản ánh đầy đủ từng bước từ lúc phát sinh đến lúc đóng sự cố.
 
 #### Câu 17. Khi người dùng đăng xuất khỏi hệ thống (`logout.php`), quy trình dọn dẹp phiên làm việc an toàn gồm những thao tác nào?
 
-- **A.** Chỉ đổi URL về trang chủ mà giữ nguyên session.
+- **A.** Khóa tài khoản 30 ngày.
 - **B.** Làm rỗng mảng phiên `$_SESSION = []`, hủy bỏ định danh phiên qua `session_destroy()` và xóa cookie phiên của trình duyệt.
-- **C.** Xóa tài khoản người dùng trong CSDL.
-- **D.** Khóa tài khoản 30 ngày.
+- **C.** Chỉ đổi URL về trang chủ mà giữ nguyên session.
+- **D.** Xóa tài khoản người dùng trong CSDL.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Quy trình hủy phiên nghiêm ngặt loại trừ hoàn toàn nguy cơ tấn công chiếm đoạt phiên đăng nhập (Session Hijacking).
@@ -204,70 +222,70 @@
 
 - **A.** Lưu trong thẻ nhớ ngoài.
 - **B.** Lưu tạm trong `$_SESSION['flash']`, tự động đọc và xóa bỏ (Unset) ngay sau khi hiển thị xong trên View tiếp theo.
-- **C.** Lưu vĩnh viễn vào ổ cứng.
-- **D.** Ghi vào tệp log của hệ điều hành.
+- **C.** Ghi vào tệp log của hệ điều hành.
+- **D.** Lưu vĩnh viễn vào ổ cứng.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Flash Message hiển thị các thông báo màu xanh lá (Thành công) hoặc đỏ (Thất bại) đúng 1 lần duy nhất, không bị lưu cữu gây nhầm lẫn.
 
 #### Câu 20. Trách nhiệm lãnh đạo của Trưởng nhóm Phạm Thị Thanh Ngân trong Đồ án Helpdesk Nhóm 1 thể hiện qua điểm nào?
 
-- **A.** Chỉ phân công công việc rồi không tham gia lập trình.
-- **B.** Thiết kế kiến trúc nền tảng Clean MVC, phân chia ranh giới 5 Model độc quyền cho 5 thành viên, xây dựng Bàn làm việc KTV và liên tục hỗ trợ tích hợp toàn bộ các phân hệ thành một khối thống nhất.
+- **A.** Thiết kế kiến trúc nền tảng Clean MVC, phân chia ranh giới 5 Model độc quyền cho 5 thành viên, xây dựng Bàn làm việc KTV và liên tục hỗ trợ tích hợp toàn bộ các phân hệ thành một khối thống nhất.
+- **B.** Chỉ phân công công việc rồi không tham gia lập trình.
 - **C.** Chỉ làm nhiệm vụ nộp bài tập lớn cho cô giáo.
 - **D.** Tự làm hết một mình không cho ai tham gia.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Thanh Ngân hoàn thành xuất sắc vai trò kiến trúc sư trưởng và điều phối viên, bảo đảm 100% các tiêu chí kỹ thuật và quy chế đào tạo của trường đều đạt điểm tối ưu.
 
-## <a id="chuyen-de-2"></a>2. Bàn Làm Việc Kỹ Thuật Viên (Agent Workspace) & Quản Lý Hàng Đợi Phiếu
+## 2. BÀN LÀM VIỆC KỸ THUẬT VIÊN (AGENT WORKSPACE) & QUẢN LÝ HÀNG ĐỢI PHIẾU
 
 #### Câu 21. Giao diện Bàn làm việc Kỹ thuật viên (`agent/index.php`) do Thanh Ngân xây dựng phục vụ những chức năng nghiệp vụ trọng tâm nào?
 
-- **A.** Quản lý điểm thi tốt nghiệp của sinh viên.
-- **B.** Tiếp nhận hàng đợi sự cố, theo dõi đồng hồ SLA theo thời gian thực, trao đổi phản hồi với người dùng và chuyển đổi trạng thái giải quyết sự cố.
+- **A.** Tiếp nhận hàng đợi sự cố, theo dõi đồng hồ SLA theo thời gian thực, trao đổi phản hồi với người dùng và chuyển đổi trạng thái giải quyết sự cố.
+- **B.** Cài đặt lại hệ điều hành Windows từ xa.
 - **C.** Thu tiền vé xe trong khuôn viên trường.
-- **D.** Cài đặt lại hệ điều hành Windows từ xa.
+- **D.** Quản lý điểm thi tốt nghiệp của sinh viên.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Agent Workspace là trung tâm xử lý kỹ thuật hàng ngày của KTV: trực quan hóa hàng đợi, cảnh báo quá hạn SLA và tương tác hai chiều với người gửi phiếu.
 
 #### Câu 22. Danh sách các phiếu trong hàng đợi của KTV (`agent/partials/ticket_queue.php`) được sắp xếp mặc định theo tiêu chuẩn nào để tối ưu cam kết SLA?
 
-- **A.** Sắp xếp ngẫu nhiên.
-- **B.** Sắp xếp theo thời hạn cam kết SLA tăng dần (`due_at ASC`), các phiếu sắp hết hạn cam kết luôn nổi bật lên đầu hàng đợi để KTV ưu tiên xử lý trước.
+- **A.** Sắp xếp theo dung lượng tệp đính kèm.
+- **B.** Sắp xếp ngẫu nhiên.
 - **C.** Sắp xếp theo thứ tự bảng chữ cái tên sinh viên.
-- **D.** Sắp xếp theo dung lượng tệp đính kèm.
+- **D.** Sắp xếp theo thời hạn cam kết SLA tăng dần (`due_at ASC`), các phiếu sắp hết hạn cam kết luôn nổi bật lên đầu hàng đợi để KTV ưu tiên xử lý trước.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Nguyên tắc vận hành ITSM: Hạn SLA gần nhất (`due_at ASC`) bảo đảm KTV không bỏ quên các sự cố sắp hết hạn, nâng cao tỷ lệ tuân thủ SLA toàn trường.
 
 #### Câu 23. Khi xem một phiếu hỗ trợ, KTV có thể gửi hai hình thức phản hồi nào qua form trao đổi?
 
-- **A.** Tin nhắn thoại và Video clip.
-- **B.** Phản hồi công khai (Public Reply &ndash; sinh viên đọc được) và Ghi chú nội bộ (Private Note `is_internal = 1` &ndash; chỉ KTV và Admin xem được).
-- **C.** Chỉ được gửi tin nhắn công khai.
-- **D.** Chỉ được gửi mã độc.
+- **A.** Chỉ được gửi tin nhắn công khai.
+- **B.** Chỉ được gửi mã độc.
+- **C.** Phản hồi công khai (Public Reply &ndash; sinh viên đọc được) và Ghi chú nội bộ (Private Note `is_internal = 1` &ndash; chỉ KTV và Admin xem được).
+- **D.** Tin nhắn thoại và Video clip.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Phân định rõ ràng: Ghi chú nội bộ phục vụ bàn giao ca trực hoặc trao đổi kỹ thuật bí mật giữa các KTV mà người dùng ngoài không nhìn thấy.
 
 #### Câu 24. Cột `is_internal` trong bảng `ticket_replies` có kiểu dữ liệu gì và mang ý nghĩa gì?
 
-- **A.** `VARCHAR(100)` lưu tên người gửi.
-- **B.** `TINYINT(1)`, nhận giá trị 1 nếu là ghi chú nội bộ giữa các kỹ thuật viên, nhận giá trị 0 nếu là tin nhắn trao đổi công khai với người tạo phiếu.
-- **C.** `INT` lưu số tiền tip cho KTV.
-- **D.** `DATETIME` lưu giờ đọc tin nhắn.
+- **A.** `INT` lưu số tiền tip cho KTV.
+- **B.** `DATETIME` lưu giờ đọc tin nhắn.
+- **C.** `VARCHAR(100)` lưu tên người gửi.
+- **D.** `TINYINT(1)`, nhận giá trị 1 nếu là ghi chú nội bộ giữa các kỹ thuật viên, nhận giá trị 0 nếu là tin nhắn trao đổi công khai với người tạo phiếu.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Cờ `is_internal` bảo vệ thông tin kỹ thuật nhạy cảm (như mật khẩu tạm, địa chỉ IP switch, log lỗi hệ thống) không bị lộ ra phía sinh viên.
 
 #### Câu 25. Phân quyền RBAC quy định như thế nào về thẩm quyền 'Xóa phiếu hỗ trợ' trong hệ thống?
 
 - **A.** KTV được quyền xóa bất kỳ phiếu nào mình không thích.
 - **B.** KTV tuyệt đối KHÔNG CÓ nút xóa phiếu; chỉ Quản trị viên (Admin) mới có thẩm quyền tối cao xóa phiếu trong các trường hợp rác hoặc thử nghiệm.
-- **C.** Sinh viên có quyền xóa phiếu của KTV.
-- **D.** Ai cũng có quyền xóa phiếu bằng phương thức GET.
+- **C.** Ai cũng có quyền xóa phiếu bằng phương thức GET.
+- **D.** Sinh viên có quyền xóa phiếu của KTV.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Chống xóa dấu vết sự cố: KTV chỉ có thẩm quyền tiếp nhận và giải quyết; việc xóa dữ liệu lịch sử do duy nhất Admin kiểm soát.
@@ -275,49 +293,49 @@
 #### Câu 26. Phân quyền RBAC quy định như thế nào về việc KTV chỉnh sửa tiêu đề hoặc nội dung mô tả ban đầu của người gửi phiếu?
 
 - **A.** KTV được tự do sửa đổi nội dung phản ánh của sinh viên.
-- **B.** KTV tuyệt đối KHÔNG ĐƯỢC sửa tiêu đề hoặc mô tả của người gửi nhằm bảo toàn nguyên trạng lời phản ánh ban đầu của sự cố.
-- **C.** KTV phải viết lại tiêu đề bằng thơ lục bát.
-- **D.** KTV có thể xóa hết mô tả và để trống.
+- **B.** KTV có thể xóa hết mô tả và để trống.
+- **C.** KTV tuyệt đối KHÔNG ĐƯỢC sửa tiêu đề hoặc mô tả của người gửi nhằm bảo toàn nguyên trạng lời phản ánh ban đầu của sự cố.
+- **D.** KTV phải viết lại tiêu đề bằng thơ lục bát.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bảo vệ tính khách quan của dữ liệu khiếu nại: nội dung người học trình bày được giữ nguyên vẹn 100% làm bằng chứng đối soát.
 
 #### Câu 27. Khi một KTV tiếp nhận một phiếu mới (`new`), KTV nhấn nút thao tác nào để chuyển phiếu sang giai đoạn bắt tay vào xử lý?
 
-- **A.** Nút 'Xóa phiếu'.
+- **A.** Nút 'Đóng phiếu ngay'.
 - **B.** Nút 'Tiếp nhận xử lý' (Chuyển trạng thái phiếu từ `new`/`assigned` sang `in_progress`).
-- **C.** Nút 'Đóng phiếu ngay'.
-- **D.** Nút 'Chuyển trường'.
+- **C.** Nút 'Chuyển trường'.
+- **D.** Nút 'Xóa phiếu'.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Chuyển sang `in_progress` thông báo cho sinh viên biết KTV đã bắt đầu xử lý sự cố, tạo sự yên tâm cho người học.
 
 #### Câu 28. Khi KTV cần người dùng cung cấp thêm minh chứng (như mã sinh viên hoặc ảnh chụp lỗi), KTV chuyển phiếu sang trạng thái nào?
 
-- **A.** `closed`
+- **A.** `deleted`
 - **B.** `waiting_requester` (Chờ người dùng phản hồi)
-- **C.** `resolved`
-- **D.** `deleted`
+- **C.** `closed`
+- **D.** `resolved`
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** `waiting_requester` đưa bóng trách nhiệm về phía người dùng, đồng thời kích hoạt cơ chế tạm dừng đồng hồ tính giờ SLA của KTV.
 
 #### Câu 29. Khi KTV đã khắc phục triệt để lỗi kỹ thuật (ví dụ: cấp lại mật khẩu hoặc thông mạng Wi-Fi), KTV chuyển phiếu sang trạng thái nào?
 
-- **A.** `closed` ngay lập tức mà không cần hỏi người dùng.
+- **A.** `new` để làm lại từ đầu.
 - **B.** `resolved` (Đã giải quyết) kèm thông điệp giải pháp chi tiết để mời người dùng vào kiểm tra thực tế và nghiệm thu CSAT.
-- **C.** `new` để làm lại từ đầu.
-- **D.** `waiting_requester`
+- **C.** `waiting_requester`
+- **D.** `closed` ngay lập tức mà không cần hỏi người dùng.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Chuẩn ITIL v4: KTV không được tự ý 'closed' phiếu; KTV chỉ đưa về `resolved`, quyền đóng phiếu thuộc về người dùng sau khi nghiệm thu.
 
 #### Câu 30. Nếu KTV phát hiện sinh viên báo sai sự cố (ví dụ: máy tính sinh viên tự tắt do hết pin nhưng lại báo mạng trường hỏng), KTV có nút xử lý nào?
 
-- **A.** Đánh nhau với sinh viên.
+- **A.** Tự nhận lỗi về mình.
 - **B.** Nút 'Hủy báo lỗi (SV báo sai)' &ndash; hệ thống tự động hoàn tất và đóng phiếu với lý do `invalid_report_by_ktv` minh bạch.
 - **C.** Khóa thẻ sinh viên của người đó.
-- **D.** Tự nhận lỗi về mình.
+- **D.** Đánh nhau với sinh viên.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bảo vệ uy tín KTV và giảm thiểu lãng phí thời gian xử lý các phản ánh không có cơ sở kỹ thuật.
@@ -334,39 +352,39 @@
 
 #### Câu 32. Khi KTV mở xem chi tiết một phiếu có mã `#HD-2026-2910-T0L001`, thẻ thông tin người gửi (Requester Info Card) hiển thị những dữ liệu gì?
 
-- **A.** Chỉ hiển thị họ tên.
-- **B.** Họ tên, Mã sinh viên/giảng viên, Email trường, Số điện thoại, Khoa/Phòng ban và Lớp sinh hoạt hành chính.
-- **C.** Số dư tài khoản ngân hàng.
+- **A.** Số dư tài khoản ngân hàng.
+- **B.** Chỉ hiển thị họ tên.
+- **C.** Họ tên, Mã sinh viên/giảng viên, Email trường, Số điện thoại, Khoa/Phòng ban và Lớp sinh hoạt hành chính.
 - **D.** Điểm thi THPT Quốc gia.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Cung cấp bức tranh toàn cảnh về người yêu cầu giúp KTV dễ dàng liên lạc qua điện thoại hoặc email khi cần phối hợp xử lý gấp.
 
 #### Câu 33. Tính năng 'Bộ lọc bảo mật SV Vi Phạm' trên danh sách phiếu của KTV hoạt động như thế nào?
 
-- **A.** Công khai thông tin sinh viên vi phạm cho toàn bộ mạng xã hội.
-- **B.** Chỉ hiển thị nhãn cảnh báo vi phạm đối với KTV và Admin; các sinh viên khác hoàn toàn không thể xem được dữ liệu nhạy cảm này.
+- **A.** Chỉ hiển thị nhãn cảnh báo vi phạm đối với KTV và Admin; các sinh viên khác hoàn toàn không thể xem được dữ liệu nhạy cảm này.
+- **B.** Bắt sinh viên vi phạm phải nộp tiền phạt.
 - **C.** Xóa thông tin vi phạm ngay lập tức.
-- **D.** Bắt sinh viên vi phạm phải nộp tiền phạt.
+- **D.** Công khai thông tin sinh viên vi phạm cho toàn bộ mạng xã hội.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bảo mật quyền riêng tư cá nhân và uy tín của người học theo đúng quy định pháp luật về bảo vệ dữ liệu cá nhân.
 
 #### Câu 34. Cột `resolved_at` trong bảng `tickets` được ghi nhận tại thời điểm nào?
 
-- **A.** Khi sinh viên vừa tạo phiếu.
-- **B.** Khi KTV chuyển trạng thái phiếu sang `resolved` (Đã giải quyết xong sự cố).
-- **C.** Khi sinh viên tốt nghiệp ra trường.
-- **D.** Khi máy tính được bán đấu giá.
+- **A.** Khi KTV chuyển trạng thái phiếu sang `resolved` (Đã giải quyết xong sự cố).
+- **B.** Khi sinh viên tốt nghiệp ra trường.
+- **C.** Khi máy tính được bán đấu giá.
+- **D.** Khi sinh viên vừa tạo phiếu.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** `resolved_at` chốt mốc thời gian hoàn thành kỹ thuật, làm căn cứ so sánh với `due_at` để đánh giá KTV xử lý 'Đúng hạn' hay 'Quá hạn SLA'.
 
 #### Câu 35. Khi một phiếu đã chuyển sang `resolved` nhưng quá 24h sinh viên không vào nghiệm thu CSAT, thời điểm `closed_at` được ghi nhận ra sao?
 
-- **A.** `closed_at = NULL` mãi mãi.
+- **A.** Lùi thời điểm đóng về 10 năm trước.
 - **B.** Hệ thống ghi nhận `closed_at = NOW()` tại thời điểm tiến trình Auto-Close tự động đóng phiếu.
-- **C.** Lùi thời điểm đóng về 10 năm trước.
+- **C.** `closed_at = NULL` mãi mãi.
 - **D.** Ghi nhận bằng ngày sinh nhật của Admin.
 
 > **👉 Đáp án đúng:** [**B**]
@@ -374,101 +392,101 @@
 
 #### Câu 36. Trên giao diện Bàn làm việc KTV, tính năng 'Collapsible Table' (Bảng thu gọn/mở rộng) mang lại tiện ích gì?
 
-- **A.** Tự động tắt máy tính của KTV.
-- **B.** Cho phép KTV bấm nút để ẩn/hiện các bảng dữ liệu (như bảng phiếu đã đóng, bảng phân công), giúp không gian làm việc gọn gàng và tập trung vào các phiếu đang cần xử lý gấp.
-- **C.** Xóa dữ liệu trong bảng.
-- **D.** Đổi màu font chữ ngẫu nhiên.
+- **A.** Đổi màu font chữ ngẫu nhiên.
+- **B.** Tự động tắt máy tính của KTV.
+- **C.** Cho phép KTV bấm nút để ẩn/hiện các bảng dữ liệu (như bảng phiếu đã đóng, bảng phân công), giúp không gian làm việc gọn gàng và tập trung vào các phiếu đang cần xử lý gấp.
+- **D.** Xóa dữ liệu trong bảng.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Tối ưu trải nghiệm người dùng (UX) cho đội ngũ hỗ trợ kỹ thuật, tăng tốc độ xử lý khi phải thao tác liên tục trên màn hình máy tính.
 
 #### Câu 37. Đồng hồ đếm ngược SLA trên giao diện chi tiết phiếu đổi sang màu đỏ cảnh báo khi nào?
 
 - **A.** Khi KTV bắt đầu bấm vào xem phiếu.
-- **B.** Khi thời gian thực tế đã vượt quá mốc hạn chót cam kết (`NOW() > due_at`) và phiếu vẫn chưa được giải quyết (Trạng thái Quá Hạn - Overdue SLA).
+- **B.** Khi ngoài trời có mưa.
 - **C.** Khi pin máy tính của KTV dưới 20%.
-- **D.** Khi ngoài trời có mưa.
+- **D.** Khi thời gian thực tế đã vượt quá mốc hạn chót cam kết (`NOW() > due_at`) và phiếu vẫn chưa được giải quyết (Trạng thái Quá Hạn - Overdue SLA).
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Cảnh báo thị giác mạnh mẽ thúc đẩy KTV khẩn trương hoàn thành dứt điểm sự cố trước khi bị tính lỗi vi phạm SLA trong báo cáo tháng.
 
 #### Câu 38. Khi KTV chuyển giao một phiếu sang cho KTV khác (`Ticket Transfer`), trường nào trong bảng `tickets` được cập nhật?
 
-- **A.** `requester_id`
-- **B.** `assigned_to = :new_agent_id` kèm theo một bản ghi phản hồi nội bộ ghi nhận lý do chuyển giao.
-- **C.** `created_at`
-- **D.** `lesson_id`
+- **A.** `assigned_to = :new_agent_id` kèm theo một bản ghi phản hồi nội bộ ghi nhận lý do chuyển giao.
+- **B.** `lesson_id`
+- **C.** `requester_id`
+- **D.** `created_at`
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bàn giao trách nhiệm minh bạch, chuyển toàn bộ quyền và nghĩa vụ xử lý sang cho đồng nghiệp có chuyên môn phù hợp hơn.
 
 #### Câu 39. KTV có được phép tự ý sửa điểm đánh giá sao CSAT mà sinh viên đã chấm cho mình không?
 
-- **A.** Được sửa thành 5 sao nếu thấy sinh viên chấm thấp.
-- **B.** Tuyệt đối không; điểm CSAT trong bảng `ticket_ratings` là bất biến đối với KTV, bảo đảm tính trung thực và khách quan của việc đánh giá dịch vụ.
-- **C.** Chỉ được sửa vào ngày cuối tuần.
+- **A.** Chỉ được sửa vào ngày cuối tuần.
+- **B.** Được sửa thành 5 sao nếu thấy sinh viên chấm thấp.
+- **C.** Tuyệt đối không; điểm CSAT trong bảng `ticket_ratings` là bất biến đối với KTV, bảo đảm tính trung thực và khách quan của việc đánh giá dịch vụ.
 - **D.** Được quyền đổi sang điểm chữ A.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Nguyên tắc liêm chính dữ liệu trong ITSM: KTV không được can thiệp vào kết quả đánh giá của khách hàng.
 
 #### Câu 40. Để phục vụ việc trao đổi nhanh và gửi kèm giải pháp xử lý sự cố cho sinh viên, form phản hồi của KTV cho phép đính kèm tệp ở định dạng nào?
 
-- **A.** Chỉ cho phép tải lên file nhạc `.mp3`.
-- **B.** Các định dạng tài liệu, hình ảnh hướng dẫn và tệp nén: `.png`, `.jpg`, `.pdf`, `.docx`, `.zip`, `.txt`.
-- **C.** Các file virus `.bat`, `.vbs`.
-- **D.** Không cho đính kèm tệp.
+- **A.** Các định dạng tài liệu, hình ảnh hướng dẫn và tệp nén: `.png`, `.jpg`, `.pdf`, `.docx`, `.zip`, `.txt`.
+- **B.** Các file virus `.bat`, `.vbs`.
+- **C.** Không cho đính kèm tệp.
+- **D.** Chỉ cho phép tải lên file nhạc `.mp3`.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Hỗ trợ KTV gửi ảnh chụp màn hình hướng dẫn cấu hình hoặc tệp cài đặt driver khắc phục sự cố nhanh chóng cho người dùng.
 
-## <a id="chuyen-de-3"></a>3. Thuật Toán Điều Phối Triage Thông Minh, Ngưỡng Quá Tải & Tràn Tải (Auto-Overflow)
+## 3. THUẬT TOÁN ĐIỀU PHỐI TRIAGE THÔNG MINH, NGƯỠNG QUÁ TẢI & TRÀN TẢI (AUTO-OVERFLOW)
 
 #### Câu 41. Thuật toán Triage (Phân loại & Điều phối thông minh) trong `TicketService.php` của Thanh Ngân giải quyết bài toán cốt lõi nào?
 
-- **A.** Tính tiền điện cho phòng máy chủ.
-- **B.** Tự động phân tích danh mục sự cố, tìm kiếm KTV chuyên trách đang trực ca có tải làm việc thấp nhất để gán phiếu tự động trong 0.1 giây.
-- **C.** Xóa các phiếu của sinh viên cá biệt.
-- **D.** Tự động tắt máy in của trường.
+- **A.** Xóa các phiếu của sinh viên cá biệt.
+- **B.** Tính tiền điện cho phòng máy chủ.
+- **C.** Tự động tắt máy in của trường.
+- **D.** Tự động phân tích danh mục sự cố, tìm kiếm KTV chuyên trách đang trực ca có tải làm việc thấp nhất để gán phiếu tự động trong 0.1 giây.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Loại bỏ hoàn toàn khâu điều phối thủ công bằng con người, rút ngắn thời gian tiếp nhận sự cố từ hàng giờ xuống còn phần trăm giây.
 
 #### Câu 42. Ba điều kiện tiên quyết trong câu lệnh SQL để một KTV được đưa vào danh sách ứng viên tiếp nhận phiếu của thuật toán Triage là gì?
 
-- **A.** `role = 'admin'`, `gender = 'male'`, `age > 30`
+- **A.** `role = 'student'`, `score >= 8`
 - **B.** `role = 'agent'`, `is_active = 1` (Tài khoản đang hoạt động) và `is_on_duty = 1` (Đang trong ca trực được Admin phân công).
-- **C.** `role = 'student'`, `score >= 8`
-- **D.** `role = 'lecturer'`, `department = 'CNTT'`
+- **C.** `role = 'lecturer'`, `department = 'CNTT'`
+- **D.** `role = 'admin'`, `gender = 'male'`, `age > 30`
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bảo đảm người nhận phiếu phải là Kỹ thuật viên, tài khoản không bị khóa và bắt buộc đang ngồi tại vị trí trực ca làm việc.
 
 #### Câu 43. Nguyên lý điều phối 'Least-Loaded' (Ít tải nhất) trong thuật toán Triage hoạt động như thế nào?
 
-- **A.** Gán cho KTV có tuổi nghề trẻ nhất.
-- **B.** Đếm số lượng phiếu đang xử lý (`COUNT(status IN ('assigned', 'in_progress'))`) của từng KTV, ưu tiên gán phiếu mới cho KTV có số lượng phiếu đang mở ít nhất.
-- **C.** Gán luân phiên theo vòng tròn không cần quan tâm số lượng việc.
-- **D.** Gán cho KTV đang đi vắng.
+- **A.** Gán luân phiên theo vòng tròn không cần quan tâm số lượng việc.
+- **B.** Gán cho KTV đang đi vắng.
+- **C.** Đếm số lượng phiếu đang xử lý (`COUNT(status IN ('assigned', 'in_progress'))`) của từng KTV, ưu tiên gán phiếu mới cho KTV có số lượng phiếu đang mở ít nhất.
+- **D.** Gán cho KTV có tuổi nghề trẻ nhất.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Cân bằng tải lao động tối ưu (Load Balancing), chống tình trạng người thì làm không hết việc, người thì ngồi chơi xơi nước.
 
 #### Câu 44. Ngưỡng quá tải (Overload Threshold) cho mỗi KTV trong thuật toán điều phối của Thanh Ngân được quy định là bao nhiêu phiếu?
 
 - **A.** 1 phiếu.
-- **B.** 5 phiếu đang hoạt động (`active_tickets >= 5`).
-- **C.** 50 phiếu.
-- **D.** 1.000 phiếu.
+- **B.** 50 phiếu.
+- **C.** 1.000 phiếu.
+- **D.** 5 phiếu đang hoạt động (`active_tickets >= 5`).
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Ngưỡng 5 phiếu là chuẩn mực khoa học lao động IT: bảo đảm KTV không bị quá tải tâm lý, duy trì chất lượng hỗ trợ người học ở mức cao nhất.
 
 #### Câu 45. Khi một KTV chuyên trách (ví dụ KTV An phụ trách mảng SSO) ĐÃ ĐẠT NGƯỠNG QUÁ TẢI (đang có 5 phiếu dở dang), thuật toán Triage xử lý ra sao?
 
-- **A.** Vẫn cố tình nhồi nhét thêm phiếu cho KTV An đến khi kiệt sức.
+- **A.** Tự động hủy phiếu của sinh viên.
 - **B.** Kích hoạt cơ chế Tràn Tải Tự Động (Auto-Overflow): tìm kiếm KTV chuyên trách khác hoặc KTV đa năng đang trực ca có tải thấp nhất để gán phiếu.
-- **C.** Tự động hủy phiếu của sinh viên.
+- **C.** Vẫn cố tình nhồi nhét thêm phiếu cho KTV An đến khi kiệt sức.
 - **D.** Báo lỗi máy chủ bị quá tải.
 
 > **👉 Đáp án đúng:** [**B**]
@@ -477,38 +495,38 @@
 #### Câu 46. Trong trường hợp KTV chuyên trách mảng Wi-Fi đang nghỉ phép (`is_on_duty = 0`), phiếu báo sự cố Wi-Fi mới sẽ được gán cho ai?
 
 - **A.** Bắt buộc phải chờ đến khi KTV chuyên trách đi làm lại sau 1 tuần.
-- **B.** Hệ thống tự động phát hiện KTV chuyên trách đang nghỉ ca và phân bổ phiếu cho KTV dự phòng đang trực ca có tải ít nhất.
-- **C.** Gán cho Hiệu trưởng nhà trường.
+- **B.** Gán cho Hiệu trưởng nhà trường.
+- **C.** Hệ thống tự động phát hiện KTV chuyên trách đang nghỉ ca và phân bổ phiếu cho KTV dự phòng đang trực ca có tải ít nhất.
 - **D.** Gán cho lớp trưởng lớp D24.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Cơ chế dự phòng ca trực bảo đảm sinh viên luôn được hỗ trợ kịp thời kể cả trong các tình huống kỹ thuật viên chính vắng mặt.
 
 #### Câu 47. Nếu TẤT CẢ các KTV trong trường đều đang quá tải hoặc không có ai trong ca trực (ngoài giờ làm việc), phiếu mới sẽ rơi vào trạng thái nào?
 
-- **A.** Bị xóa vĩnh viễn khỏi CSDL.
-- **B.** Rơi vào Hàng đợi chờ tiếp nhận tập trung (`status = 'new'`, `assigned_to = NULL`) và hẹn giờ bắt đầu tính SLA sang đầu giờ làm việc tiếp theo.
+- **A.** Rơi vào Hàng đợi chờ tiếp nhận tập trung (`status = 'new'`, `assigned_to = NULL`) và hẹn giờ bắt đầu tính SLA sang đầu giờ làm việc tiếp theo.
+- **B.** Bị xóa vĩnh viễn khỏi CSDL.
 - **C.** Báo lỗi mạng cho sinh viên.
 - **D.** Tự động giải quyết thành công.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bảo toàn 100% dữ liệu yêu cầu của người dùng, sẵn sàng phân phối ngay khi ca trực tiếp theo bắt đầu làm việc.
 
 #### Câu 48. Hàm PHP nào trong `TicketService.php` thực hiện logic phân công tự động (Auto-Dispatch)?
 
-- **A.** `autoDispatch($ticketId, $categoryId)`
+- **A.** `printBill()`
 - **B.** `deleteTicket($id)`
-- **C.** `sendSmsNotification()`
-- **D.** `printBill()`
+- **C.** `autoDispatch($ticketId, $categoryId)`
+- **D.** `sendSmsNotification()`
 
-> **👉 Đáp án đúng:** [**A**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Phương thức `autoDispatch` nhận mã sự cố và danh mục, kết nối CSDL tìm KTV tối ưu và gán `assigned_to` cho bản ghi.
 
 #### Câu 49. Chỉ mục (Composite Index) `idx_agent_dispatch` được tạo trên những cột nào trong bảng `users` để tối ưu thuật toán Triage?
 
-- **A.** `(name, email)`
+- **A.** `(phone, department)`
 - **B.** `(role, is_on_duty, is_active)`
-- **C.** `(phone, department)`
+- **C.** `(name, email)`
 - **D.** `(created_at, updated_at)`
 
 > **👉 Đáp án đúng:** [**B**]
@@ -516,9 +534,9 @@
 
 #### Câu 50. Khi một KTV giải quyết xong một phiếu (chuyển sang `resolved` hoặc `closed`), tải công việc (`active_tickets`) của KTV đó biến động ra sao?
 
-- **A.** Không thay đổi.
+- **A.** Tăng lên gấp đôi.
 - **B.** Tự động giảm đi 1 đơn vị, giải phóng một vị trí tải để thuật toán Triage có thể tiếp tục phân bổ phiếu mới cho KTV này.
-- **C.** Tăng lên gấp đôi.
+- **C.** Không thay đổi.
 - **D.** Biến thành số âm.
 
 > **👉 Đáp án đúng:** [**B**]
@@ -526,29 +544,29 @@
 
 #### Câu 51. Thuật toán điều phối Triage của Thanh Ngân có bảo đảm tính xác định (Deterministic) và công bằng không?
 
-- **A.** Không, phân công hoàn toàn ngẫu nhiên may rủi.
-- **B.** Hoàn toàn xác định và công bằng: Dựa trên số liệu tải công việc thực tế, trạng thái ca trực và chuyên môn kỹ thuật, loại bỏ yếu tố cảm tính thiên vị.
-- **C.** Chỉ ưu tiên gán cho KTV nữ.
+- **A.** Chỉ ưu tiên gán cho KTV nữ.
+- **B.** Không, phân công hoàn toàn ngẫu nhiên may rủi.
+- **C.** Hoàn toàn xác định và công bằng: Dựa trên số liệu tải công việc thực tế, trạng thái ca trực và chuyên môn kỹ thuật, loại bỏ yếu tố cảm tính thiên vị.
 - **D.** Chỉ gán cho KTV ở gần trường nhất.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Minh bạch khoa học: Mọi quyết định điều phối đều dựa trên dữ liệu định lượng chính xác của hệ thống.
 
 #### Câu 52. Khi một phiếu được gán cho KTV thành công qua thuật toán Triage, trạng thái của phiếu chuyển từ `new` sang trạng thái gì?
 
-- **A.** `closed`
-- **B.** `assigned` (Đã phân công người xử lý)
+- **A.** `assigned` (Đã phân công người xử lý)
+- **B.** `closed`
 - **C.** `resolved`
 - **D.** `waiting_requester`
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Trạng thái `assigned` biểu thị phiếu đã có chủ nhân phụ trách cụ thể, sẵn sàng cho bước bắt tay vào khắc phục.
 
 #### Câu 53. KTV có nhận được thông báo trên màn hình khi thuật toán Triage vừa gán một phiếu mới vào hàng đợi của mình không?
 
-- **A.** Không, phải tự đoán.
+- **A.** Chỉ nhận được thông báo sau 1 tháng.
 - **B.** Có; hệ thống cập nhật bộ đếm huy hiệu trên thanh điều hướng và hiển thị thông báo mới ở đầu hàng đợi.
-- **C.** Chỉ nhận được thông báo sau 1 tháng.
+- **C.** Không, phải tự đoán.
 - **D.** Hệ thống tự động phát bài hát qua loa máy tính.
 
 > **👉 Đáp án đúng:** [**B**]
@@ -556,234 +574,234 @@
 
 #### Câu 54. Nếu Quản trị viên (Admin) thấy một sự cố đặc biệt phức tạp cần đích thân KTV giỏi nhất xử lý, Admin có quyền can thiệp thủ công không?
 
-- **A.** Không được phép, máy móc quyết định tất cả.
-- **B.** Có; Admin có toàn quyền can thiệp chỉ định thủ công (Manual Reassign) bất kỳ phiếu nào sang cho KTV mong muốn.
+- **A.** Có; Admin có toàn quyền can thiệp chỉ định thủ công (Manual Reassign) bất kỳ phiếu nào sang cho KTV mong muốn.
+- **B.** Phải xóa phiếu đi làm lại.
 - **C.** Admin phải viết đơn xin phép KTV.
-- **D.** Phải xóa phiếu đi làm lại.
+- **D.** Không được phép, máy móc quyết định tất cả.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Sự kết hợp hoàn hảo giữa tự động hóa thông minh và quyền can thiệp quản trị linh hoạt của con người.
 
 #### Câu 55. Tiêu chí chuyên môn kỹ thuật (`categories`) của KTV được cấu hình tại đâu trong CSDL?
 
-- **A.** Ghi trong tên của KTV.
-- **B.** Cấu hình qua trường chuyên môn chính trong hồ sơ người dùng hoặc bảng phân công danh mục KTV.
-- **C.** Lưu trong tệp ảnh đại diện.
-- **D.** Không lưu ở đâu.
+- **A.** Không lưu ở đâu.
+- **B.** Lưu trong tệp ảnh đại diện.
+- **C.** Ghi trong tên của KTV.
+- **D.** Cấu hình qua trường chuyên môn chính trong hồ sơ người dùng hoặc bảng phân công danh mục KTV.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Ánh xạ chuyên môn giúp phân loại sự cố: Lỗi mạng giao cho chuyên viên Mạng, Lỗi phần mềm giao cho chuyên viên LMS/SSO.
 
 #### Câu 56. Lợi ích kinh tế và vận hành lớn nhất của thuật toán Triage thông minh trong hệ thống Helpdesk Trường Đại học Thủ Đô Hà Nội là gì?
 
 - **A.** Tăng số lượng KTV phải tuyển dụng.
-- **B.** Tối ưu hóa năng suất lao động, giảm $80\%$ thời gian điều phối trung gian và nâng cao mức độ hài lòng CSAT của sinh viên toàn trường.
-- **C.** Bắt sinh viên phải trả thêm tiền dịch vụ.
-- **D.** Làm cho máy chủ hoạt động nóng hơn.
+- **B.** Làm cho máy chủ hoạt động nóng hơn.
+- **C.** Tối ưu hóa năng suất lao động, giảm $80\%$ thời gian điều phối trung gian và nâng cao mức độ hài lòng CSAT của sinh viên toàn trường.
+- **D.** Bắt sinh viên phải trả thêm tiền dịch vụ.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Giá trị thực tiễn cốt lõi của công nghệ chuyển đổi số: Tối ưu quy trình, giảm chi phí nhân sự và nâng tầm chất lượng dịch vụ đào tạo.
 
 #### Câu 57. Trong mã nguồn `TicketService.php`, nếu cả 2 KTV chuyên trách đều có cùng số lượng phiếu đang xử lý bằng nhau (ví dụ đều đang có 2 phiếu), thuật toán chọn ai?
 
-- **A.** Báo lỗi xung đột dữ liệu.
-- **B.** Chọn KTV có ID nhỏ hơn hoặc KTV có thời điểm tiếp nhận phiếu gần nhất xa hơn (Tie-breaker logic ổn định).
-- **C.** Gán phiếu cho cả 2 người cùng lúc.
-- **D.** Hủy phiếu đó.
+- **A.** Chọn KTV có ID nhỏ hơn hoặc KTV có thời điểm tiếp nhận phiếu gần nhất xa hơn (Tie-breaker logic ổn định).
+- **B.** Báo lỗi xung đột dữ liệu.
+- **C.** Hủy phiếu đó.
+- **D.** Gán phiếu cho cả 2 người cùng lúc.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Thuật toán Tie-breaker bảo đảm tính nhất quán (Consistency), không bao giờ rơi vào trạng thái treo vô định.
 
 #### Câu 58. Khi KTV đang trực ca nhưng phải rời vị trí đột xuất 10 phút để đi kiểm tra đường dây cáp quang, điều gì xảy ra với các phiếu mới tạo?
 
-- **A.** Phiếu vẫn được xếp hàng đợi theo thứ tự cam kết SLA và KTV sẽ xử lý ngay khi quay lại bàn làm việc.
-- **B.** Hệ thống tự động trừ tiền của KTV.
+- **A.** Hệ thống tự động trừ tiền của KTV.
+- **B.** Phiếu bị gửi sang trường đại học khác.
 - **C.** Hệ thống tự động đóng trường học.
-- **D.** Phiếu bị gửi sang trường đại học khác.
+- **D.** Phiếu vẫn được xếp hàng đợi theo thứ tự cam kết SLA và KTV sẽ xử lý ngay khi quay lại bàn làm việc.
 
-> **👉 Đáp án đúng:** [**A**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Hàng đợi tin cậy (Reliable Queue) bảo toàn mọi yêu cầu theo đúng thứ tự ưu tiên của thời gian cam kết SLA.
 
 #### Câu 59. Trong bài báo cáo kỹ thuật, Thanh Ngân mô hình hóa luồng Triage và Vòng đời sự cố bằng biểu đồ chuẩn nào?
 
 - **A.** Sơ đồ mạch điện tử analog.
-- **B.** Sơ đồ luồng trạng thái chuẩn ITIL v4 (State Transition Diagram / Flowchart) trực quan rõ ràng.
-- **C.** Bản đồ địa lý thành phố Hà Nội.
+- **B.** Bản đồ địa lý thành phố Hà Nội.
+- **C.** Sơ đồ luồng trạng thái chuẩn ITIL v4 (State Transition Diagram / Flowchart) trực quan rõ ràng.
 - **D.** Biểu đồ hình tròn tỷ lệ dân số.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Minh chứng đồ họa học thuật sắc nét trong báo cáo, thể hiện tư duy phân tích hệ thống bài bản của sinh viên CNTT.
 
 #### Câu 60. Tóm lại, phân hệ Bàn làm việc KTV & Thuật toán Triage do Thanh Ngân xây dựng đã đưa Helpdesk Nhóm 1 tiệm cận tiêu chuẩn của phần mềm thương mại nào?
 
-- **A.** Phần mềm gõ văn bản Notepad.
+- **A.** Ứng dụng máy tính bỏ túi Calculator.
 - **B.** Các giải pháp Quản lý Dịch vụ CNTT hàng đầu thế giới như Jira Service Management, Zendesk và ServiceNow.
-- **C.** Trò chơi Flappy Bird.
-- **D.** Ứng dụng máy tính bỏ túi Calculator.
+- **C.** Phần mềm gõ văn bản Notepad.
+- **D.** Trò chơi Flappy Bird.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Sản phẩm đạt độ chín muồi cao về công nghệ, kiến trúc mã nguồn và nghiệp vụ vận hành thực tế.
 
-## <a id="chuyen-de-4"></a>4. Cơ Chế Đóng Trùng Lặp, Khóa Ngoại parent_ticket_id & Tạm Dừng Đồng Hồ SLA
+## 4. CƠ CHẾ ĐÓNG TRÙNG LẶP, KHÓA NGOẠI PARENT_TICKET_ID & TẠM DỪNG ĐỒNG HỒ SLA
 
 #### Câu 61. Cột `parent_ticket_id` trong bảng `tickets` là khóa ngoại đặc biệt có thuộc tính gì trong mô hình CSDL quan hệ?
 
 - **A.** Khóa ngoại trỏ sang cơ sở dữ liệu của Google.
-- **B.** Khóa ngoại tự tham chiếu (Self-referencing Foreign Key) trỏ ngược về chính cột `tickets.id` của phiếu sự cố gốc (Phiếu cha).
-- **C.** Khóa ngoại trỏ sang bảng điểm học tập.
+- **B.** Khóa ngoại trỏ sang bảng điểm học tập.
+- **C.** Khóa ngoại tự tham chiếu (Self-referencing Foreign Key) trỏ ngược về chính cột `tickets.id` của phiếu sự cố gốc (Phiếu cha).
 - **D.** Cột lưu địa chỉ nhà của cha mẹ sinh viên.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Khóa ngoại tự tham chiếu là giải pháp kinh điển để xây dựng quan hệ phân cấp Cha &ndash; Con (Parent &ndash; Child) giữa các phiếu sự cố trong cùng một bảng dữ liệu.
 
 #### Câu 62. Mục đích nghiệp vụ cốt lõi của việc gom nhóm các phiếu con vào Phiếu Cha thông qua `parent_ticket_id` là gì?
 
 - **A.** Để tự động xóa hết các phiếu con.
-- **B.** Xử lý sự cố kỹ thuật diện rộng (Major Incident): Khi hàng chục sinh viên cùng báo 1 lỗi, KTV chỉ cần tập trung xử lý trên 1 phiếu cha duy nhất và đóng các phiếu con dưới dạng trùng lặp.
-- **C.** Để tính tiền thưởng gấp đôi cho KTV.
+- **B.** Để tính tiền thưởng gấp đôi cho KTV.
+- **C.** Xử lý sự cố kỹ thuật diện rộng (Major Incident): Khi hàng chục sinh viên cùng báo 1 lỗi, KTV chỉ cần tập trung xử lý trên 1 phiếu cha duy nhất và đóng các phiếu con dưới dạng trùng lặp.
 - **D.** Để giấu thông tin sự cố khỏi ban giám hiệu.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Tiết kiệm hàng trăm giờ lao động: Thay vì phải trả lời riêng rẽ 50 người, KTV xử lý dứt điểm trên phiếu cha, các phiếu con tự động được cập nhật giải pháp đồng bộ.
 
 #### Câu 63. Trên giao diện xử lý của KTV, chức năng đóng phiếu trùng lặp được kích hoạt thông qua giao diện nào?
 
 - **A.** Nút gửi email cá nhân.
-- **B.** Hộp thoại Modal đóng trùng lặp (`closeDuplicateModal`) có ô chọn Phiếu sự cố gốc (`parent_ticket_id`).
-- **C.** Gõ lệnh trên Terminal Linux.
-- **D.** Bấm phím tắt Ctrl + Alt + Delete.
+- **B.** Gõ lệnh trên Terminal Linux.
+- **C.** Bấm phím tắt Ctrl + Alt + Delete.
+- **D.** Hộp thoại Modal đóng trùng lặp (`closeDuplicateModal`) có ô chọn Phiếu sự cố gốc (`parent_ticket_id`).
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Modal chuyên dụng hiển thị danh sách các phiếu cha đang xử lý kèm mã vé và tiêu đề sự cố giúp KTV chọn nhanh chóng và chính xác.
 
 #### Câu 64. Điều kiện lọc bắt buộc đối với danh sách 'Phiếu Cha' hiển thị trong Modal đóng trùng lặp là gì?
 
-- **A.** Chỉ hiển thị các phiếu đã đóng từ năm ngoái.
-- **B.** Chỉ cho phép chọn các phiếu đang trong trạng thái xử lý thực sự (`status IN ('assigned', 'in_progress')`) và không được chọn chính phiếu đang xét làm cha của chính nó.
-- **C.** Hiển thị tất cả mọi dòng trong CSDL.
-- **D.** Chỉ hiển thị các phiếu có điểm 5 sao.
+- **A.** Chỉ cho phép chọn các phiếu đang trong trạng thái xử lý thực sự (`status IN ('assigned', 'in_progress')`) và không được chọn chính phiếu đang xét làm cha của chính nó.
+- **B.** Hiển thị tất cả mọi dòng trong CSDL.
+- **C.** Chỉ hiển thị các phiếu có điểm 5 sao.
+- **D.** Chỉ hiển thị các phiếu đã đóng từ năm ngoái.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Chuẩn hóa dữ liệu theo ITIL: Phiếu cha bắt buộc phải đang mở để việc gom nhóm có ý nghĩa nghiệp vụ thực tế, đồng thời loại trừ nguy cơ vòng lặp vô tận (Circular Reference `id = parent_ticket_id`).
 
 #### Câu 65. Khi KTV thực hiện đóng một phiếu con dưới dạng trùng lặp, những trường dữ liệu nào trong bảng `tickets` được cập nhật?
 
-- **A.** Chỉ cập nhật mỗi cột `status`.
-- **B.** Cập nhật `status = 'closed'`, `closed_reason = 'duplicate'`, `parent_ticket_id = :parent_id` và `closed_at = NOW()`.
-- **C.** Xóa trắng toàn bộ thông tin người gửi.
-- **D.** Đổi mã sinh viên thành số 0.
+- **A.** Đổi mã sinh viên thành số 0.
+- **B.** Xóa trắng toàn bộ thông tin người gửi.
+- **C.** Chỉ cập nhật mỗi cột `status`.
+- **D.** Cập nhật `status = 'closed'`, `closed_reason = 'duplicate'`, `parent_ticket_id = :parent_id` và `closed_at = NOW()`.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Ghi nhận đầy đủ vết liên kết: phiếu đã đóng, lý do là trùng lặp, trỏ đến phiếu cha nào và thời điểm đóng chính xác khi nào.
 
 #### Câu 66. Trên giao diện chi tiết phiếu (`tickets/show.php`), khi một sinh viên mở xem một phiếu đã bị gom nhóm trùng lặp, giao diện hiển thị thông báo gì?
 
-- **A.** Thông báo lỗi trang web 404.
-- **B.** Khối thông báo màu xanh lam: 'ℹ️ Phiếu này đã được gom nhóm vào sự cố gốc #{parent_ticket_code} &ndash; Bấm để xem tiến độ phiếu cha'.
-- **C.** Thông báo sinh viên bị đình chỉ học.
+- **A.** Khối thông báo màu xanh lam: 'ℹ️ Phiếu này đã được gom nhóm vào sự cố gốc #{parent_ticket_code} &ndash; Bấm để xem tiến độ phiếu cha'.
+- **B.** Thông báo sinh viên bị đình chỉ học.
+- **C.** Thông báo lỗi trang web 404.
 - **D.** Không hiển thị thông tin gì.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Tính liên thông UX xuất sắc: Sinh viên click vào liên kết là chuyển ngay sang xem tiến độ xử lý của sự cố gốc, nắm bắt được giải pháp của nhà trường.
 
 #### Câu 67. Cơ chế 'Tạm dừng đồng hồ SLA' (Pause SLA Clock) được kích hoạt khi phiếu hỗ trợ rơi vào trạng thái nào?
 
-- **A.** Trạng thái `new`
-- **B.** Trạng thái `waiting_requester` (Chờ người dùng phản hồi / bổ sung thông tin)
-- **C.** Trạng thái `in_progress`
-- **D.** Trạng thái `assigned`
+- **A.** Trạng thái `assigned`
+- **B.** Trạng thái `new`
+- **C.** Trạng thái `waiting_requester` (Chờ người dùng phản hồi / bổ sung thông tin)
+- **D.** Trạng thái `in_progress`
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Chuẩn ITSM quốc tế: Khi bóng trách nhiệm thuộc về phía người dùng (KTV đang đợi ảnh chụp lỗi hoặc thông tin xác minh), đồng hồ cam kết SLA của KTV phải tạm dừng.
 
 #### Câu 68. Tại sao cơ chế Tạm dừng SLA (Pause SLA Clock) khi `waiting_requester` lại là tiêu chí sống còn để đánh giá công bằng hiệu suất của KTV?
 
-- **A.** Vì nếu không tạm dừng, sinh viên đi ngủ hoặc 3 ngày sau mới trả lời tin nhắn sẽ khiến phiếu bị quá hạn (Overdue SLA) oan và KTV bị trừ điểm thi đua một cách bất công.
-- **B.** Vì máy chủ sẽ bị nóng nếu đồng hồ chạy liên tục.
-- **C.** Để KTV có thêm thời gian đi chơi.
+- **A.** Vì máy chủ sẽ bị nóng nếu đồng hồ chạy liên tục.
+- **B.** Để KTV có thêm thời gian đi chơi.
+- **C.** Vì nếu không tạm dừng, sinh viên đi ngủ hoặc 3 ngày sau mới trả lời tin nhắn sẽ khiến phiếu bị quá hạn (Overdue SLA) oan và KTV bị trừ điểm thi đua một cách bất công.
 - **D.** Do giới hạn của đồng hồ hệ điều hành.
 
-> **👉 Đáp án đúng:** [**A**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bảo vệ công bằng cho người lao động: KTV chỉ chịu trách nhiệm về thời gian họ thực sự làm việc, không phải gánh chịu thời gian trễ do người dùng phản hồi chậm.
 
 #### Câu 69. Trên thanh bên (Sidebar) của giao diện chi tiết phiếu (`tickets/show.php`), huy hiệu SLA hiển thị trạng thái gì khi phiếu ở `waiting_requester`?
 
-- **A.** Huy hiệu đỏ 'QUÁ HẠN SLA'
-- **B.** Huy hiệu màu tím nổi bật: '⏸️ ĐỒNG HỒ SLA TẠM DỪNG (PAUSED &ndash; Chờ phản hồi)'
-- **C.** Huy hiệu xanh 'ĐÃ HOÀN TẤT'
-- **D.** Không hiển thị gì
+- **A.** Huy hiệu màu tím nổi bật: '⏸️ ĐỒNG HỒ SLA TẠM DỪNG (PAUSED &ndash; Chờ phản hồi)'
+- **B.** Huy hiệu xanh 'ĐÃ HOÀN TẤT'
+- **C.** Không hiển thị gì
+- **D.** Huy hiệu đỏ 'QUÁ HẠN SLA'
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Minh bạch trực quan hóa: cả người dùng và kỹ thuật viên đều nhìn thấy rõ ràng đồng hồ cam kết đang ở trạng thái tạm dừng.
 
 #### Câu 70. Trong câu lệnh SQL truy vấn các phiếu bị quá hạn SLA (`isOverdueSLA`), trạng thái `waiting_requester` được xử lý ra sao?
 
-- **A.** Vẫn bị tính là quá hạn bình thường.
-- **B.** Bị LOẠI TRỪ hoàn toàn khỏi điều kiện quá hạn (`WHERE status != 'waiting_requester' AND NOW() > due_at`), không phát chuông cảnh báo quá hạn oan.
-- **C.** Bị chuyển thành phiếu mới.
+- **A.** Bị chuyển thành phiếu mới.
+- **B.** Vẫn bị tính là quá hạn bình thường.
+- **C.** Bị LOẠI TRỪ hoàn toàn khỏi điều kiện quá hạn (`WHERE status != 'waiting_requester' AND NOW() > due_at`), không phát chuông cảnh báo quá hạn oan.
 - **D.** Bị xóa khỏi CSDL.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bộ lọc backend nhất quán với giao diện frontend: loại trừ triệt để phiếu đang tạm dừng khỏi các thống kê phạt quá hạn.
 
 #### Câu 71. Khi người dùng gửi tin nhắn phản hồi mới vào phiếu đang ở `waiting_requester`, điều gì xảy ra với đồng hồ SLA?
 
-- **A.** Đồng hồ SLA bị đặt lại về 0 giờ.
-- **B.** Trạng thái phiếu tự động chuyển về `in_progress` và đồng hồ SLA được kích hoạt chạy tiếp tục phần thời gian còn lại.
-- **C.** Đồng hồ SLA dừng vĩnh viễn.
-- **D.** Phiếu tự động đóng lại.
+- **A.** Phiếu tự động đóng lại.
+- **B.** Đồng hồ SLA bị đặt lại về 0 giờ.
+- **C.** Trạng thái phiếu tự động chuyển về `in_progress` và đồng hồ SLA được kích hoạt chạy tiếp tục phần thời gian còn lại.
+- **D.** Đồng hồ SLA dừng vĩnh viễn.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Trigger chuyển trạng thái tự động: khi người dùng đã trả lời, quả bóng trách nhiệm quay lại với KTV và đồng hồ tính giờ tiếp tục đếm.
 
 #### Câu 72. Nếu KTV đóng một phiếu cha (Major Incident) chuyển sang `resolved`, điều gì xảy ra với các phiếu con đã gom nhóm?
 
-- **A.** Các phiếu con tự động mở lại làm việc từ đầu.
-- **B.** Các phiếu con đã đóng với lý do `duplicate` được hoàn tất đồng bộ và sinh viên sở hữu phiếu con có thể vào xem kết quả giải quyết của phiếu cha.
+- **A.** Hệ thống trừ điểm của các sinh viên tạo phiếu con.
+- **B.** Các phiếu con tự động mở lại làm việc từ đầu.
 - **C.** Các phiếu con bị xóa sạch.
-- **D.** Hệ thống trừ điểm của các sinh viên tạo phiếu con.
+- **D.** Các phiếu con đã đóng với lý do `duplicate` được hoàn tất đồng bộ và sinh viên sở hữu phiếu con có thể vào xem kết quả giải quyết của phiếu cha.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Giải pháp đồng bộ toàn diện: hoàn tất một sự cố gốc giải quyết triệt để vấn đề cho hàng chục người dùng liên quan.
 
 #### Câu 73. Trong bảng `tickets`, giá trị mặc định của cột `parent_ticket_id` khi tạo phiếu mới là gì?
 
 - **A.** 0
-- **B.** `NULL` (phiếu độc lập, không phải phiếu con)
-- **C.** 1
+- **B.** 1
+- **C.** `NULL` (phiếu độc lập, không phải phiếu con)
 - **D.** -1
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Giá trị `NULL` biểu thị phiếu là một sự cố độc lập bình thường, chỉ nhận ID khi được gom nhóm vào một phiếu cha cụ thể.
 
 #### Câu 74. Một phiếu sự cố gốc (Phiếu cha) có thể chứa tối đa bao nhiêu phiếu con liên kết vào nó?
 
 - **A.** Chỉ tối đa 1 phiếu con.
 - **B.** Không giới hạn số lượng phiếu con (Quan hệ 1 &ndash; N: Một phiếu sự cố gốc có thể có hàng trăm phiếu con trỏ về qua `parent_ticket_id`).
-- **C.** Tối đa 5 phiếu con.
-- **D.** Bắt buộc đúng 10 phiếu con.
+- **C.** Bắt buộc đúng 10 phiếu con.
+- **D.** Tối đa 5 phiếu con.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Mô hình dữ liệu quan hệ 1-N linh hoạt, đáp ứng hoàn hảo cho các sự cố diện rộng quy mô từ vài chục đến hàng ngàn lượt phản ánh.
 
 #### Câu 75. Hành động gom nhóm phiếu trùng lặp của KTV có bị ghi nhận vào bảng `ticket_replies` không?
 
-- **A.** Không ghi nhận gì.
-- **B.** Có; hệ thống tự động sinh một bản ghi phản hồi hệ thống (System Note) thông báo phiếu đã được gom nhóm vào sự cố gốc #{parent_code}.
+- **A.** Có; hệ thống tự động sinh một bản ghi phản hồi hệ thống (System Note) thông báo phiếu đã được gom nhóm vào sự cố gốc #{parent_code}.
+- **B.** Gửi tin nhắn SMS cho bảo vệ.
 - **C.** Ghi vào tệp tin trên desktop của KTV.
-- **D.** Gửi tin nhắn SMS cho bảo vệ.
+- **D.** Không ghi nhận gì.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Lịch sử trao đổi (Audit Trail) được cập nhật tự động, giúp bất kỳ ai mở phiếu ra xem đều nắm được lý do và tiến trình đóng phiếu.
 
 #### Câu 76. Khi KTV mở modal gom nhóm, nếu KTV cố tình chọn chính mã phiếu hiện tại làm phiếu cha thì hệ thống xử lý thế nào?
 
-- **A.** Chấp nhận và làm sập vòng lặp CSDL.
-- **B.** Hệ thống loại trừ ID của chính phiếu đang xét khỏi danh sách dropdown (`WHERE id != :current_id`), chặn đứng nguy cơ lỗi tham chiếu vòng tròn.
+- **A.** Tự động đổi tên phiếu.
+- **B.** Chấp nhận và làm sập vòng lặp CSDL.
 - **C.** Xóa tài khoản của KTV.
-- **D.** Tự động đổi tên phiếu.
+- **D.** Hệ thống loại trừ ID của chính phiếu đang xét khỏi danh sách dropdown (`WHERE id != :current_id`), chặn đứng nguy cơ lỗi tham chiếu vòng tròn.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Tầng phòng thủ dữ liệu chặt chẽ ở cả câu truy vấn SQL và giao diện người dùng, ngăn chặn lỗi đệ quy vô hạn.
 
 #### Câu 77. Trong bảng `tickets`, cột `closed_reason` nhận những giá trị chuẩn nào để giải thích nguyên nhân kết thúc phiếu?
@@ -798,202 +816,202 @@
 
 #### Câu 78. Động cơ SLA tính toán lại mốc `due_at` sau khi phiếu thoát khỏi trạng thái tạm dừng `waiting_requester` bằng cách nào?
 
-- **A.** Cộng thêm đúng số phút mà phiếu đã ở trạng thái tạm dừng vào hạn chót `due_at` ban đầu.
-- **B.** Xóa hạn chót cũ và cho KTV thêm 1 tháng.
-- **C.** Đặt hạn chót về thời điểm hiện tại.
-- **D.** Không thay đổi gì.
+- **A.** Đặt hạn chót về thời điểm hiện tại.
+- **B.** Không thay đổi gì.
+- **C.** Xóa hạn chót cũ và cho KTV thêm 1 tháng.
+- **D.** Cộng thêm đúng số phút mà phiếu đã ở trạng thái tạm dừng vào hạn chót `due_at` ban đầu.
 
-> **👉 Đáp án đúng:** [**A**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Bảo toàn chính xác số phút cam kết ban đầu: thời gian tạm dừng bao nhiêu phút thì hạn chót được nới lùi lại bấy nhiêu phút tương ứng.
 
 #### Câu 79. Khi một sự cố diện rộng xảy ra, sinh viên có cần phải tạo thêm phiếu hỗ trợ nếu thấy trên trang chủ đã có Banner cảnh báo không?
 
-- **A.** Vẫn bắt buộc phải tạo 10 phiếu nữa.
-- **B.** Không cần; Banner thông báo nêu rõ đội ngũ kỹ thuật đang xử lý sự cố diện rộng, sinh viên chỉ cần theo dõi cập nhật trên banner mà không phải tạo thêm vé.
-- **C.** Phải đến trường nộp đơn giấy.
-- **D.** Bắt buộc phải gọi điện thoại.
+- **A.** Không cần; Banner thông báo nêu rõ đội ngũ kỹ thuật đang xử lý sự cố diện rộng, sinh viên chỉ cần theo dõi cập nhật trên banner mà không phải tạo thêm vé.
+- **B.** Vẫn bắt buộc phải tạo 10 phiếu nữa.
+- **C.** Bắt buộc phải gọi điện thoại.
+- **D.** Phải đến trường nộp đơn giấy.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Giảm tải tối đa cho hạ tầng Helpdesk và hàng đợi xử lý sự cố trong các đợt cao điểm kỹ thuật của toàn trường.
 
 #### Câu 80. Sự kết hợp giữa `parent_ticket_id`, Modal đóng trùng lặp và Pause SLA clock do Thanh Ngân xây dựng chứng minh điều gì về trình độ kiến trúc của nhóm?
 
-- **A.** Chỉ là một bài tập làm thêm sơ sài.
-- **B.** Thể hiện sự am hiểu sâu sắc về tiêu chuẩn quốc tế Quản trị dịch vụ CNTT (ITIL v4 Service Desk) và năng lực giải quyết các bài toán vận hành phức tạp của thế giới thực.
-- **C.** Làm cho hệ thống chạy chậm hơn.
-- **D.** Không có giá trị thực tiễn.
+- **A.** Thể hiện sự am hiểu sâu sắc về tiêu chuẩn quốc tế Quản trị dịch vụ CNTT (ITIL v4 Service Desk) và năng lực giải quyết các bài toán vận hành phức tạp của thế giới thực.
+- **B.** Chỉ là một bài tập làm thêm sơ sài.
+- **C.** Không có giá trị thực tiễn.
+- **D.** Làm cho hệ thống chạy chậm hơn.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Được các giảng viên đánh giá là điểm sáng kỹ thuật xuất sắc nhất trong toàn bộ đồ án, khẳng định chất lượng học thuật và tay nghề của Nhóm 1.
 
-## <a id="chuyen-de-5"></a>5. Phân Tích Các Câu Lệnh Truy Vấn SQL Chuyên Sâu Của Trưởng Nhóm Thanh Ngân
+## 5. PHÂN TÍCH CÁC CÂU LỆNH TRUY VẤN SQL CHUYÊN SÂU CỦA TRƯỞNG NHÓM THANH NGÂN
 
 #### Câu 81. Trong tệp truy vấn cá nhân của Thanh Ngân (`ThanhNgan_truy_van_ca_nhan.sql`), Câu truy vấn 1 thực hiện phép nối giữa bao nhiêu bảng dữ liệu?
 
-- **A.** Chỉ 1 bảng `tickets` đơn lẻ.
-- **B.** Nối 6 bảng dữ liệu: `tickets`, `users` (người gửi), `categories`, `priorities`, `classes` (lớp sinh hoạt), `courses` (môn học) và `users` (KTV tiếp nhận).
-- **C.** Nối 20 bảng.
+- **A.** Nối 20 bảng.
+- **B.** Chỉ 1 bảng `tickets` đơn lẻ.
+- **C.** Nối 6 bảng dữ liệu: `tickets`, `users` (người gửi), `categories`, `priorities`, `classes` (lớp sinh hoạt), `courses` (môn học) và `users` (KTV tiếp nhận).
 - **D.** Không dùng phép JOIN nào.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Truy vấn đa bảng chuẩn mực giúp Bàn làm việc KTV hiển thị đầy đủ ngữ cảnh sự cố từ thông tin cá nhân người gửi đến mã lớp và môn học liên quan.
 
 #### Câu 82. Mục đích nghiệp vụ của Câu truy vấn SQL số 1 trong báo cáo cá nhân của Thanh Ngân là gì?
 
-- **A.** Xóa các phiếu đã hoàn thành.
-- **B.** Bàn làm việc KTV &ndash; Lấy danh sách hàng đợi các phiếu đang xử lý (`status IN ('new', 'in_progress', 'waiting_requester')`) sắp xếp theo hạn SLA (`due_at ASC`) để ưu tiên giải quyết sự cố sắp hết hạn.
-- **C.** Tính điểm thi kết thúc học phần.
+- **A.** Bàn làm việc KTV &ndash; Lấy danh sách hàng đợi các phiếu đang xử lý (`status IN ('new', 'in_progress', 'waiting_requester')`) sắp xếp theo hạn SLA (`due_at ASC`) để ưu tiên giải quyết sự cố sắp hết hạn.
+- **B.** Tính điểm thi kết thúc học phần.
+- **C.** Xóa các phiếu đã hoàn thành.
 - **D.** Đổi mật khẩu của KTV.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Truy vấn cốt lõi vận hành hàng đợi xử lý sự cố hàng ngày của đội ngũ kỹ thuật viên.
 
 #### Câu 83. Hàm `COALESCE(c.class_code, 'Không gắn')` trong câu truy vấn số 1 của Thanh Ngân xử lý tình huống nào?
 
-- **A.** Chuyển mã lớp thành chữ in hoa.
-- **B.** Xử lý khiếu nại không gắn với lớp sinh hoạt cụ thể (`class_id IS NULL`), thay thế giá trị NULL bằng chuỗi 'Không gắn' thân thiện với người dùng.
-- **C.** Đếm số lượng sinh viên trong lớp.
-- **D.** Xóa lớp sinh hoạt đó.
+- **A.** Xử lý khiếu nại không gắn với lớp sinh hoạt cụ thể (`class_id IS NULL`), thay thế giá trị NULL bằng chuỗi 'Không gắn' thân thiện với người dùng.
+- **B.** Đếm số lượng sinh viên trong lớp.
+- **C.** Xóa lớp sinh hoạt đó.
+- **D.** Chuyển mã lớp thành chữ in hoa.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Hàm `COALESCE()` bảo đảm giao diện không bị in ra khoảng trống rỗng hoặc lỗi `null`, nâng cao tính chỉn chu của sản phẩm phần mềm.
 
 #### Câu 84. Trong Câu truy vấn SQL số 2 của Thanh Ngân, cấu trúc câu lệnh nào được dùng để phân loại giữa Phản hồi công khai và Ghi chú nội bộ KTV?
 
-- **A.** `IF ELSE` trong mã PHP.
-- **B.** Biểu thức điều kiện trong SQL: `CASE WHEN r.is_internal = 1 THEN '🔒 Ghi chú nội bộ (Private Note)' ELSE '💬 Phản hồi công khai (Public)' END AS Phân Loại Trao Đổi`.
-- **C.** `WHERE is_internal = 1`
-- **D.** `ORDER BY is_internal`
+- **A.** `ORDER BY is_internal`
+- **B.** `WHERE is_internal = 1`
+- **C.** Biểu thức điều kiện trong SQL: `CASE WHEN r.is_internal = 1 THEN '🔒 Ghi chú nội bộ (Private Note)' ELSE '💬 Phản hồi công khai (Public)' END AS Phân Loại Trao Đổi`.
+- **D.** `IF ELSE` trong mã PHP.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Sử dụng `CASE WHEN` trực tiếp trong câu lệnh SQL giúp tầng cơ sở dữ liệu tự động gắn nhãn định dạng dữ liệu trước khi chuyển giao cho tầng View hiển thị.
 
 #### Câu 85. Câu truy vấn SQL số 2 của Thanh Ngân phục vụ màn hình nghiệp vụ nào?
 
 - **A.** Màn hình đăng nhập hệ thống.
-- **B.** Xem chi tiết toàn bộ lịch sử trao đổi của một phiếu hỗ trợ theo mã vé (`WHERE t.ticket_code = :code ORDER BY r.created_at ASC`).
-- **C.** Màn hình danh sách giảng viên.
-- **D.** Màn hình cấu hình ngày nghỉ lễ.
+- **B.** Màn hình danh sách giảng viên.
+- **C.** Màn hình cấu hình ngày nghỉ lễ.
+- **D.** Xem chi tiết toàn bộ lịch sử trao đổi của một phiếu hỗ trợ theo mã vé (`WHERE t.ticket_code = :code ORDER BY r.created_at ASC`).
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Trích xuất dòng thời gian tương tác (Timeline) hoàn chỉnh của phiếu, giúp KTV và người dùng theo dõi mạch lạc từng bước trao đổi.
 
 #### Câu 86. Câu truy vấn SQL số 3 trong tệp của Thanh Ngân giải quyết bài toán phức tạp nào khi sinh viên báo lỗi học tập/LMS?
 
 - **A.** Tính tiền học bổng kỳ 1 cho sinh viên.
 - **B.** Định vị 3 tầng liên kết: (1) Lớp Sinh hoạt hành chính của sinh viên, (2) Môn học bị lỗi, và (3) Xác định chính xác Lớp Học phần trong kỳ cùng Giảng viên phụ trách duy nhất để liên hệ phối hợp xử lý.
-- **C.** Xóa bài tập của cả lớp.
-- **D.** Cài đặt phần mềm diệt virus cho sinh viên.
+- **C.** Cài đặt phần mềm diệt virus cho sinh viên.
+- **D.** Xóa bài tập của cả lớp.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Kiến trúc JOIN 5 bảng đỉnh cao: kết nối sinh viên với lớp sinh hoạt, môn học và phân công giảng dạy để tìm ra đúng giảng viên phụ trách giải quyết sự cố.
 
 #### Câu 87. Đoạn mã `JOIN course_assignments ca ON ca.class_id = t.class_id AND ca.course_id = t.course_id` trong truy vấn số 3 của Thanh Ngân thể hiện điều gì?
 
-- **A.** Nối bảng sai cú pháp.
-- **B.** Phép nối đa điều kiện (Multi-column Join condition) bảo đảm khớp chính xác cả lớp học và môn học của học kỳ đó.
+- **A.** Lệnh xóa bản ghi phân công.
+- **B.** Nối bảng sai cú pháp.
 - **C.** Phép nối chéo vô tận.
-- **D.** Lệnh xóa bản ghi phân công.
+- **D.** Phép nối đa điều kiện (Multi-column Join condition) bảo đảm khớp chính xác cả lớp học và môn học của học kỳ đó.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Kỹ thuật JOIN nâng cao trên khóa ngoại tổ hợp, bảo đảm truy xuất đúng lớp học phần mà sinh viên đó đang theo học.
 
 #### Câu 88. Câu truy vấn SQL số 4 của Thanh Ngân phục vụ báo cáo quản trị quan trọng nào?
 
 - **A.** Báo cáo tiền điện của trường.
-- **B.** Báo cáo Thống kê Hiệu suất Phân hệ Kỹ thuật viên (Agent Performance Report): Đếm tổng phiếu tiếp nhận, số phiếu giải quyết xong, số phiếu đang xử lý và tính điểm CSAT trung bình.
+- **B.** Báo cáo số lượng bàn ghế hỏng.
 - **C.** Báo cáo danh sách sinh viên khen thưởng.
-- **D.** Báo cáo số lượng bàn ghế hỏng.
+- **D.** Báo cáo Thống kê Hiệu suất Phân hệ Kỹ thuật viên (Agent Performance Report): Đếm tổng phiếu tiếp nhận, số phiếu giải quyết xong, số phiếu đang xử lý và tính điểm CSAT trung bình.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Cung cấp bức tranh toàn diện về năng suất và chất lượng phục vụ của từng kỹ thuật viên cho Ban Giám đốc trung tâm CNTT.
 
 #### Câu 89. Trong truy vấn số 4 của Thanh Ngân, kỹ thuật tính toán nào được dùng để đếm số phiếu đã giải quyết và số phiếu đang xử lý trong cùng một câu lệnh?
 
-- **A.** Chạy 10 câu lệnh SELECT riêng biệt.
-- **B.** Kỹ thuật Conditional Aggregation: `SUM(CASE WHEN t.status IN ('resolved', 'closed') THEN 1 ELSE 0 END)` và `SUM(CASE WHEN t.status = 'in_progress' THEN 1 ELSE 0 END)`.
+- **A.** Đếm thủ công bằng mắt.
+- **B.** Chạy 10 câu lệnh SELECT riêng biệt.
 - **C.** Dùng vòng lặp for trong PHP.
-- **D.** Đếm thủ công bằng mắt.
+- **D.** Kỹ thuật Conditional Aggregation: `SUM(CASE WHEN t.status IN ('resolved', 'closed') THEN 1 ELSE 0 END)` và `SUM(CASE WHEN t.status = 'in_progress' THEN 1 ELSE 0 END)`.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Kỹ thuật tổng hợp có điều kiện (Conditional Aggregation) là đỉnh cao tối ưu hóa SQL, gom nhiều phép tính thống kê phức tạp vào đúng 1 lượt quét bảng duy nhất.
 
 #### Câu 90. Biểu thức `COALESCE(ROUND(AVG(tr.score), 2), 5.00)` trong truy vấn số 4 của Thanh Ngân có ý nghĩa gì?
 
-- **A.** Làm tròn điểm thi môn Toán.
-- **B.** Tính điểm CSAT trung bình làm tròn 2 chữ số thập phân; nếu KTV mới chưa có đánh giá nào (`NULL`) thì mặc định gán điểm khởi đầu là 5.00 sao.
-- **C.** Trừ 5 điểm của KTV.
-- **D.** Tự động nhân điểm CSAT với 2.
+- **A.** Tự động nhân điểm CSAT với 2.
+- **B.** Làm tròn điểm thi môn Toán.
+- **C.** Tính điểm CSAT trung bình làm tròn 2 chữ số thập phân; nếu KTV mới chưa có đánh giá nào (`NULL`) thì mặc định gán điểm khởi đầu là 5.00 sao.
+- **D.** Trừ 5 điểm của KTV.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Xử lý dữ liệu khuyết thiếu chuyên nghiệp, bảo đảm báo cáo thống kê luôn có giá trị số hiển thị sạch đẹp, không bị lỗi tính toán.
 
 #### Câu 91. Tại sao các câu truy vấn của Thanh Ngân đều sử dụng mệnh đề `SET NAMES utf8mb4;` ngay ở dòng đầu tệp?
 
-- **A.** Để làm cho tệp dài hơn.
-- **B.** Thiết lập kết nối phiên làm việc sử dụng chuẩn mã hóa UTF-8 4-byte, bảo đảm hiển thị tiếng Việt có dấu chuẩn xác 100% khi chạy script.
-- **C.** Do MySQL bắt buộc phải viết.
+- **A.** Do MySQL bắt buộc phải viết.
+- **B.** Để làm cho tệp dài hơn.
+- **C.** Thiết lập kết nối phiên làm việc sử dụng chuẩn mã hóa UTF-8 4-byte, bảo đảm hiển thị tiếng Việt có dấu chuẩn xác 100% khi chạy script.
 - **D.** Để tăng tốc độ mạng.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Khắc phục triệt để lỗi hiển thị font tiếng Việt khi nạp câu truy vấn trên các máy chủ cơ sở dữ liệu khác nhau.
 
 #### Câu 92. Trong phương thức `TicketRepository::findById($id)`, cú pháp PDO nào được Thanh Ngân sử dụng để nạp một bản ghi duy nhất?
 
-- **A.** `$stmt->fetchAll()`
-- **B.** `$stmt->fetch(PDO::FETCH_ASSOC)`
+- **A.** `$stmt->nextRowset()`
+- **B.** `$stmt->fetchAll()`
 - **C.** `$stmt->rowCount()`
-- **D.** `$stmt->nextRowset()`
+- **D.** `$stmt->fetch(PDO::FETCH_ASSOC)`
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** `fetch()` chỉ nạp đúng 1 bản ghi duy nhất vào bộ nhớ, tối ưu hóa tài nguyên hơn nhiều so với việc nạp mảng danh sách `fetchAll()`.
 
 #### Câu 93. Để cập nhật giải pháp khắc phục sự cố và chuyển trạng thái phiếu sang `resolved`, câu lệnh SQL Prepared Statement được viết như thế nào?
 
-- **A.** `UPDATE tickets SET status = 'resolved' WHERE 1=1`
-- **B.** `UPDATE tickets SET status = 'resolved', resolved_at = NOW(), resolved_by = :agent_id WHERE id = :ticket_id`
-- **C.** `INSERT INTO tickets VALUES (...)`
-- **D.** `DELETE FROM tickets WHERE id = :ticket_id`
+- **A.** `UPDATE tickets SET status = 'resolved', resolved_at = NOW(), resolved_by = :agent_id WHERE id = :ticket_id`
+- **B.** `DELETE FROM tickets WHERE id = :ticket_id`
+- **C.** `UPDATE tickets SET status = 'resolved' WHERE 1=1`
+- **D.** `INSERT INTO tickets VALUES (...)`
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Cập nhật đồng bộ: trạng thái resolved, thời điểm giải quyết và danh tính KTV giải quyết sự cố.
 
 #### Câu 94. Khi thực hiện chèn một phản hồi mới vào bảng `ticket_replies`, những tham số bắt buộc nào phải được truyền qua `:named_params`?
 
-- **A.** Chỉ cần truyền nội dung tin nhắn.
+- **A.** Mật khẩu của người dùng.
 - **B.** `:ticket_id`, `:user_id`, `:message`, `:is_internal`, `:attachment_path`
-- **C.** Mật khẩu của người dùng.
-- **D.** Địa chỉ IP máy chủ.
+- **C.** Địa chỉ IP máy chủ.
+- **D.** Chỉ cần truyền nội dung tin nhắn.
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Đầy đủ các trường định danh để gắn phản hồi đúng phiếu, đúng tác giả và đúng phân loại công khai/nội bộ.
 
 #### Câu 95. Chỉ mục (Index) nào được Thanh Ngân tạo trong bảng `tickets` để tối ưu hóa việc tra cứu phiếu theo mã code và trạng thái?
 
-- **A.** `idx_ticket_lookup (ticket_code, status)`
-- **B.** `idx_title`
-- **C.** `idx_description`
-- **D.** `idx_created_at`
+- **A.** `idx_title`
+- **B.** `idx_description`
+- **C.** `idx_created_at`
+- **D.** `idx_ticket_lookup (ticket_code, status)`
 
-> **👉 Đáp án đúng:** [**A**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Chỉ mục giúp tăng tốc độ mở xem chi tiết phiếu qua mã code từ vài giây xuống còn dưới 5 mili-giây.
 
 #### Câu 96. Tại sao hệ thống sử dụng mệnh đề `LEFT JOIN users u_agent ON t.assigned_to = u_agent.id` thay vì dùng `INNER JOIN` trong câu truy vấn số 1?
 
-- **A.** Do gõ nhầm lệnh SQL.
-- **B.** Vì các phiếu mới tạo (`status = 'new'`) chưa được phân công người xử lý (`assigned_to IS NULL`), nếu dùng INNER JOIN thì các phiếu mới này sẽ bị biến mất khỏi hàng đợi.
-- **C.** Để câu lệnh chạy chậm hơn.
+- **A.** Để câu lệnh chạy chậm hơn.
+- **B.** Do gõ nhầm lệnh SQL.
+- **C.** Vì các phiếu mới tạo (`status = 'new'`) chưa được phân công người xử lý (`assigned_to IS NULL`), nếu dùng INNER JOIN thì các phiếu mới này sẽ bị biến mất khỏi hàng đợi.
 - **D.** Vì bảng users không có khóa chính.
 
-> **👉 Đáp án đúng:** [**B**]
+> **👉 Đáp án đúng:** [**C**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Kiến thức CSDL căn bản và sắc sảo: Dùng LEFT JOIN để không làm rơi rụng các phiếu mới đang chờ KTV tiếp nhận.
 
 #### Câu 97. Khi KTV thực hiện chuyển trạng thái phiếu sang `in_progress`, hệ thống ghi nhận thời điểm bắt đầu xử lý vào cột nào?
 
-- **A.** `created_at`
+- **A.** `due_at`
 - **B.** `started_at` (hoặc `updated_at = NOW()`)
-- **C.** `due_at`
-- **D.** `closed_at`
+- **C.** `closed_at`
+- **D.** `created_at`
 
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Lưu lại mốc thời gian bắt tay vào việc thực tế của kỹ thuật viên phục vụ phân tích năng suất.
@@ -1001,21 +1019,21 @@
 #### Câu 98. Nếu Quản trị viên muốn xem tất cả các phiếu thuộc về một môn học cụ thể (ví dụ môn Lập trình Web `WEB101`), câu lệnh SQL sử dụng mệnh đề lọc nào?
 
 - **A.** `WHERE crs.course_code = 'WEB101'`
-- **B.** `WHERE t.title = 'WEB101'`
+- **B.** `WHERE t.status = 'WEB101'`
 - **C.** `WHERE t.id = 'WEB101'`
-- **D.** `WHERE t.status = 'WEB101'`
+- **D.** `WHERE t.title = 'WEB101'`
 
 > **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Lọc chính xác theo mã môn học chuẩn trong bảng danh mục `courses`.
 
 #### Câu 99. Phương thức `TicketRepository::getOverdueCount()` đếm số phiếu quá hạn đang mở bằng câu lệnh SQL nào?
 
-- **A.** `SELECT COUNT(*) FROM tickets WHERE status NOT IN ('resolved', 'closed', 'waiting_requester') AND NOW() > due_at`
-- **B.** `SELECT COUNT(*) FROM tickets WHERE status = 'closed'`
-- **C.** `SELECT * FROM tickets`
-- **D.** `DELETE FROM tickets WHERE NOW() > due_at`
+- **A.** `SELECT * FROM tickets`
+- **B.** `DELETE FROM tickets WHERE NOW() > due_at`
+- **C.** `SELECT COUNT(*) FROM tickets WHERE status = 'closed'`
+- **D.** `SELECT COUNT(*) FROM tickets WHERE status NOT IN ('resolved', 'closed', 'waiting_requester') AND NOW() > due_at`
 
-> **👉 Đáp án đúng:** [**A**]
+> **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Truy vấn đếm chính xác số phiếu đang trễ hạn SLA, loại trừ các phiếu đã giải quyết, đã đóng và phiếu đang tạm dừng chờ phản hồi.
 
 #### Câu 100. Tổng kết lại, dấu ấn nổi bật nhất của Trưởng nhóm Phạm Thị Thanh Ngân (224001736) trong Đồ án Helpdesk Nhóm 1 là gì?
@@ -1028,31 +1046,3 @@
 > **👉 Đáp án đúng:** [**B**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Phạm Thị Thanh Ngân dẫn dắt nhóm đạt kết quả xuất sắc với 21% đóng góp cốt lõi, làm chủ toàn bộ kiến trúc lõi và xây dựng thành công giải pháp ITSM Helpdesk cho Trường Đại học Thủ Đô Hà Nội.
 
----
-
-## <a id="bang-dap-an"></a>📊 BẢNG TỔNG HỢP ĐÁP ÁN 100 CÂU HỎI (PHẠM THỊ THANH NGÂN)
-
-| Câu | Đ/Á | Câu | Đ/Á | Câu | Đ/Á | Câu | Đ/Á | Câu | Đ/Á |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **1** | B | **21** | B | **41** | B | **61** | B | **81** | B |
-| **2** | B | **22** | B | **42** | B | **62** | B | **82** | B |
-| **3** | B | **23** | B | **43** | B | **63** | B | **83** | B |
-| **4** | B | **24** | B | **44** | B | **64** | B | **84** | B |
-| **5** | B | **25** | B | **45** | B | **65** | B | **85** | B |
-| **6** | A | **26** | B | **46** | B | **66** | B | **86** | B |
-| **7** | A | **27** | B | **47** | B | **67** | B | **87** | B |
-| **8** | B | **28** | B | **48** | A | **68** | A | **88** | B |
-| **9** | B | **29** | B | **49** | B | **69** | B | **89** | B |
-| **10** | A | **30** | B | **50** | B | **70** | B | **90** | B |
-| **11** | B | **31** | B | **51** | B | **71** | B | **91** | B |
-| **12** | B | **32** | B | **52** | B | **72** | B | **92** | B |
-| **13** | A | **33** | B | **53** | B | **73** | B | **93** | B |
-| **14** | B | **34** | B | **54** | B | **74** | B | **94** | B |
-| **15** | B | **35** | B | **55** | B | **75** | B | **95** | A |
-| **16** | B | **36** | B | **56** | B | **76** | B | **96** | B |
-| **17** | B | **37** | B | **57** | B | **77** | B | **97** | B |
-| **18** | B | **38** | B | **58** | A | **78** | A | **98** | A |
-| **19** | B | **39** | B | **59** | B | **79** | B | **99** | A |
-| **20** | B | **40** | B | **60** | B | **80** | B | **100** | B |
-
----
