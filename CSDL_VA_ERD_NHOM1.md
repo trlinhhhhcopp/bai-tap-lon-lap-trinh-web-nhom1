@@ -151,7 +151,7 @@ erDiagram
         enum academic_status "studying, graduated, expelled"
         int class_id FK "Lớp sinh hoạt"
         int specialty_category_id FK "Chuyên môn KTV (1-5)"
-        tinyint max_capacity "Tối đa 5 phiếu"
+        tinyint max_capacity "Tối đa 15 phiếu"
         tinyint active_tickets_count "Biến đếm nguyên tử"
         tinyint is_on_duty "Ca trực 1/0"
         tinyint is_active "1: Mở, 0: Khóa cứng"
@@ -283,7 +283,7 @@ erDiagram
 | `cohort` | `VARCHAR(20)` | `NULL, DEFAULT 'D24'` | Khóa tuyển sinh: `D24` (sinh viên TUD), `D20` (Admin lọc hết khóa) |
 | `academic_status`| `ENUM(...)` | `NOT NULL, DEFAULT 'studying'` | Trạng thái: `studying` (đang học), `graduated` (tốt nghiệp), `expelled` (đuổi học) |
 | `specialty_category_id`| `INT UNSIGNED`| `NULL, FK -> categories(id)` | Nhóm sự cố chuyên sâu KTV (1 đến 5) |
-| `max_capacity`| `TINYINT UNSIGNED`| `NOT NULL, DEFAULT 5` | Ngưỡng tải tối đa của KTV |
+| `max_capacity`| `TINYINT UNSIGNED`| `NOT NULL, DEFAULT 15` | Ngưỡng tải tối đa của KTV (15 phiếu kích hoạt tràn tải) |
 | `active_tickets_count`| `TINYINT UNSIGNED`| `NOT NULL, DEFAULT 0` | Bộ đếm nguyên tử số phiếu đang xử lý |
 | `is_on_duty` | `TINYINT(1)` | `NOT NULL, DEFAULT 1` | 1: Đang trực, 0: Nghỉ ca |
 | `is_active` | `TINYINT(1)` | `NOT NULL, DEFAULT 1` | 1: Hoạt động, 0: Khóa cứng |

@@ -639,8 +639,8 @@
     </p>
     <ul>
         <li><strong>Cấp 1 (Ưu tiên chuyên môn):</strong> Hệ thống xác định danh mục lỗi &rarr; Tìm KTV có <code>specialty_category_id = category_id</code>. Nếu KTV đó đang trực ca (<code>is_on_duty = 1</code>) và chưa đầy tải (<code>active_tickets_count &lt; 5</code>), phiếu được gán thẳng cho KTV này.</li>
-        <li><strong>Cấp 2 (Cơ chế tràn tải - Overflow Fallback):</strong> Nếu KTV chuyên trách đang nghỉ trực hoặc đã nhận đủ 5 phiếu đồng thời &rarr; Quét 4 KTV khác đang trực có tải thấp nhất (<em>Least Connections</em>) để phân phối phiếu, đảm bảo cân bằng khối lượng công việc.</li>
-        <li><strong>Cấp 3 (Nghẽn toàn hệ thống):</strong> Nếu cả 5 KTV đều đã nhận đủ 5/5 phiếu (tổng tải 25 sự cố phức tạp cùng lúc) &rarr; Phiếu lưu ở hàng đợi <code>new</code>, còi báo động tải đỏ hiển thị trên Admin Dashboard để Admin điều động nhân sự dự phòng hoặc gộp phiếu sự cố diện rộng thành <code>parent_ticket_id</code>.</li>
+        <li><strong>Cấp 2 (Cơ chế tràn tải - Overflow Fallback):</strong> Nếu KTV chuyên trách đang nghỉ trực hoặc đã nhận đủ 15 phiếu đồng thời &rarr; Quét 4 KTV khác đang trực có tải thấp nhất (<em>Least Connections</em>) để phân phối phiếu, đảm bảo cân bằng khối lượng công việc.</li>
+        <li><strong>Cấp 3 (Nghẽn toàn hệ thống):</strong> Nếu cả 5 KTV đều đã nhận đủ 15/15 phiếu (tổng tải 75 sự cố phức tạp cùng lúc) &rarr; Phiếu lưu ở hàng đợi <code>new</code>, còi báo động tải đỏ hiển thị trên Admin Dashboard để Admin điều động nhân sự dự phòng hoặc gộp phiếu sự cố diện rộng thành <code>parent_ticket_id</code>.</li>
     </ul>
 
     <h3>C. Các chức năng Quản trị khác của Admin</h3>
@@ -939,7 +939,7 @@ CREATE TABLE users (
     
     -- Cờ Chuyên môn & Tải xử lý của KTV (Phân công thông minh & Tràn tải)
     specialty_category_id INT UNSIGNED NULL, -- 1 đến 5 (CAT_SSO, CAT_MAIL...)
-    max_capacity TINYINT UNSIGNED NOT NULL DEFAULT 5, -- Tối đa 5 phiếu đồng thời
+    max_capacity TINYINT UNSIGNED NOT NULL DEFAULT 15, -- Tối đa 15 phiếu đồng thời
     active_tickets_count TINYINT UNSIGNED NOT NULL DEFAULT 0, -- Bộ đếm nguyên tử
     is_on_duty TINYINT(1) NOT NULL DEFAULT 1, -- Ca trực: 1 (Đang trực), 0 (Nghỉ trực)
     

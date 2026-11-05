@@ -477,12 +477,12 @@
 - **A.** 1 phiếu.
 - **B.** 50 phiếu.
 - **C.** 1.000 phiếu.
-- **D.** 5 phiếu đang hoạt động (`active_tickets >= 5`).
+- **D.** 15 phiếu đang hoạt động (`active_tickets >= 15` hoặc chạm `max_capacity`).
 
 > **👉 Đáp án đúng:** [**D**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Ngưỡng 5 phiếu là chuẩn mực khoa học lao động IT: bảo đảm KTV không bị quá tải tâm lý, duy trì chất lượng hỗ trợ người học ở mức cao nhất.
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hệ thống Helpdesk CNTT Nhóm 1 cấu hình ngưỡng an toàn `max_capacity = 15` phiếu/KTV: bảo đảm KTV không bị quá tải tâm lý, duy trì chất lượng hỗ trợ người học ở mức cao nhất và kích hoạt cơ chế tràn tải khi chạm ngưỡng 15 phiếu.
 
-#### Câu 45. Khi một KTV chuyên trách (ví dụ KTV An phụ trách mảng SSO) ĐÃ ĐẠT NGƯỠNG QUÁ TẢI (đang có 5 phiếu dở dang), thuật toán Triage xử lý ra sao?
+#### Câu 45. Khi một KTV chuyên trách (ví dụ KTV An phụ trách mảng SSO) ĐÃ ĐẠT NGƯỠNG QUÁ TẢI (đang có 15 phiếu dở dang), thuật toán Triage xử lý ra sao?
 
 - **A.** Tự động hủy phiếu của sinh viên.
 - **B.** Kích hoạt cơ chế Tràn Tải Tự Động (Auto-Overflow): tìm kiếm KTV chuyên trách khác hoặc KTV đa năng đang trực ca có tải thấp nhất để gán phiếu.
@@ -490,7 +490,7 @@
 - **D.** Báo lỗi máy chủ bị quá tải.
 
 > **👉 Đáp án đúng:** [**B**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Cơ chế Tràn tải (Overflow Mechanism) bảo đảm hàng đợi không bị tắc nghẽn cục bộ tại một cá nhân kỹ thuật viên.
+> **💡 Căn cứ kỹ thuật & Giải thích:** Cơ chế Tràn tải (Auto-Overflow) bảo đảm khi KTV chuyên trách chạm ngưỡng kịch tải 15 phiếu dở dang hoặc nghỉ ca, hệ thống tự động điều phối sang KTV khác đang trực có tải thấp nhất, không làm tắc nghẽn hàng đợi.
 
 #### Câu 46. Trong trường hợp KTV chuyên trách mảng Wi-Fi đang nghỉ phép (`is_on_duty = 0`), phiếu báo sự cố Wi-Fi mới sẽ được gán cho ai?
 

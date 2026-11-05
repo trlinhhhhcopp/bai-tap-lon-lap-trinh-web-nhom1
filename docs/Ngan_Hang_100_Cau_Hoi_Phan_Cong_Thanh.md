@@ -729,10 +729,10 @@
 - **A.** 1 phiếu.
 - **B.** Không giới hạn số lượng.
 - **C.** 100 phiếu.
-- **D.** 5 phiếu đang hoạt động (`active_tickets >= 5`).
+- **D.** 15 phiếu đang hoạt động (`active_tickets >= 15` hoặc chạm `max_capacity`).
 
 > **👉 Đáp án đúng:** [**D**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Ngưỡng 5 phiếu đang xử lý giúp KTV không bị 'ngập lụt' công việc, tập trung giải quyết dứt điểm từng sự cố đạt chất lượng cao.
+> **💡 Căn cứ kỹ thuật & Giải thích:** Hệ thống cấu hình ngưỡng kịch tải mặc định `max_capacity = 15` phiếu đang xử lý nhằm giúp KTV duy trì năng suất cao nhất và tự động kích hoạt cơ chế tràn tải khi chạm ngưỡng này.
 
 #### Câu 70. Chỉ mục (Index) tối ưu nào được tạo trong bảng `users` để hỗ trợ truy vấn tìm kiếm KTV trực ca có tải thấp nhất diễn ra với độ phức tạp O(1)?
 

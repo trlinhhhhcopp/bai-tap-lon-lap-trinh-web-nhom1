@@ -79,7 +79,7 @@ CREATE TABLE `users` (
     
     -- Thuộc tính phân bổ Chuyên môn & Định mức tải cho Kỹ thuật viên (KTV)
     `specialty_category_id` INT UNSIGNED NULL COMMENT 'Chuyên môn chính của KTV (1 đến 5)',
-    `max_capacity` TINYINT UNSIGNED NOT NULL DEFAULT 5 COMMENT 'Định mức tiếp nhận tối đa cùng lúc',
+    `max_capacity` TINYINT UNSIGNED NOT NULL DEFAULT 15 COMMENT 'Định mức tiếp nhận tối đa cùng lúc',
     `active_tickets_count` TINYINT UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Số phiếu thực tế đang xử lý',
     `is_on_duty` TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Trạng thái ca trực: 1 (Đang trực), 0 (Nghỉ ca)',
     

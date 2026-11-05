@@ -147,7 +147,7 @@ class Database {
                 cohort TEXT DEFAULT 'D24',
                 academic_status TEXT NOT NULL DEFAULT 'studying',
                 specialty_category_id INTEGER,
-                max_capacity INTEGER NOT NULL DEFAULT 5,
+                max_capacity INTEGER NOT NULL DEFAULT 15,
                 active_tickets_count INTEGER NOT NULL DEFAULT 0,
                 is_on_duty INTEGER NOT NULL DEFAULT 1,
                 failed_attempts INTEGER NOT NULL DEFAULT 0,

@@ -38,7 +38,7 @@ erDiagram
         varchar cohort "Khóa đào tạo: D2024, D2020..."
         enum academic_status "studying, graduated, expelled"
         int specialty_category_id FK "Chuyên môn KTV trỏ categories(id)"
-        tinyint max_capacity "Định mức tối đa (mặc định: 5)"
+        tinyint max_capacity "Định mức tối đa (mặc định: 15)"
         tinyint active_tickets_count "Số phiếu đang xử lý"
         tinyint is_on_duty "Ca trực: 1 (Đang trực), 0 (Nghỉ)"
         tinyint failed_attempts "Số lần nhập sai pass liên tiếp"
@@ -101,7 +101,7 @@ erDiagram
 | **`classes` (1) &rarr; `users` (N)** | $1 - N$ | Một lớp sinh hoạt (ví dụ: `TUD-D2024` - Lớp Toán Ứng Dụng D2024) gồm nhiều sinh viên. Người dùng là cán bộ/giảng viên/admin có thể có `class_id = NULL`. | `FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE SET NULL`. |
 | **`categories` (1) &rarr; `users` (N)** | $1 - N$ | Một chuyên môn dịch vụ CNTT (CAT_SSO, CAT_MAIL, CAT_CANVAS...) có nhiều KTV phụ trách theo kỹ năng. | `FOREIGN KEY (specialty_category_id) REFERENCES categories(id) ON DELETE SET NULL`. |
 | **`users` (1) &rarr; `tickets` (N) [requester]** | $1 - N$ | Một sinh viên hoặc giảng viên có thể tạo nhiều phiếu yêu cầu hỗ trợ kỹ thuật khác nhau theo thời gian. | `FOREIGN KEY (requester_id) REFERENCES users(id) ON DELETE CASCADE`. |
-| **`users` (1) &rarr; `tickets` (N) [assigned_to]** | $1 - N$ | Một KTV tiếp nhận và xử lý nhiều phiếu, nhưng bị giới hạn bởi định mức tối đa `active_tickets_count <= max_capacity` (5 phiếu). | `FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL`. |
+| **`users` (1) &rarr; `tickets` (N) [assigned_to]** | $1 - N$ | Một KTV tiếp nhận và xử lý nhiều phiếu, nhưng bị giới hạn bởi định mức tối đa `active_tickets_count <= max_capacity` (15 phiếu). | `FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL`. |
 
 ---
 
@@ -126,7 +126,7 @@ erDiagram
 | `cohort` | `VARCHAR(20)` | `NULL` | `'D2024'` | Khóa tuyển sinh: `D2024` (sinh viên TUD), `D2020` (Admin lọc chuyển tốt nghiệp) |
 | `academic_status` | `ENUM('studying','graduated','expelled','suspended')` | `NOT NULL` | `'studying'` | Trạng thái học thuật: Đang học, Đã tốt nghiệp, hoặc Bị kỷ luật buộc thôi học |
 | `specialty_category_id` | `INT UNSIGNED` | `NULL, FK -> categories(id)` | `NULL` | Nhóm sự cố chuyên sâu của KTV (1 đến 5) |
-| `max_capacity` | `TINYINT UNSIGNED` | `NOT NULL` | `5` | Định mức tiếp nhận tối đa số phiếu cùng một lúc |
+| `max_capacity` | `TINYINT UNSIGNED` | `NOT NULL` | `15` | Định mức tiếp nhận tối đa số phiếu cùng một lúc |
 | `active_tickets_count` | `TINYINT UNSIGNED` | `NOT NULL` | `0` | Bộ đếm nguyên tử số phiếu đang xử lý phục vụ cân bằng tải |
 | `is_on_duty` | `TINYINT(1)` | `NOT NULL` | `1` | Ca trực KTV: 1 (Đang trong ca trực), 0 (Nghỉ ca) |
 | `failed_attempts` | `TINYINT UNSIGNED` | `NOT NULL` | `0` | Số lần gõ sai mật khẩu liên tiếp (chống dò Brute-force) |

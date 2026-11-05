@@ -517,7 +517,7 @@ CREATE TABLE `users` (
   `cohort` varchar(20) DEFAULT 'D24',
   `academic_status` enum('studying','graduated','expelled','suspended') NOT NULL DEFAULT 'studying',
   `specialty_category_id` int(10) unsigned DEFAULT NULL,
-  `max_capacity` tinyint(3) unsigned NOT NULL DEFAULT 5,
+  `max_capacity` tinyint(3) unsigned NOT NULL DEFAULT 15,
   `active_tickets_count` tinyint(3) unsigned NOT NULL DEFAULT 0,
   `is_on_duty` tinyint(1) NOT NULL DEFAULT 1,
   `failed_attempts` tinyint(3) unsigned NOT NULL DEFAULT 0,

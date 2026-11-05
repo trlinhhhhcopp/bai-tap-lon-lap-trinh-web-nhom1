@@ -2034,7 +2034,7 @@
             <tr><td><code>cohort</code></td><td>VARCHAR(20)</td><td>NULL</td><td>'D24'</td><td>Khóa tuyển sinh sinh viên</td></tr>
             <tr><td><code>academic_status</code></td><td>ENUM('studying','graduated','expelled','suspended')</td><td>NOT NULL</td><td>'studying'</td><td>Tình trạng học tập (Đang học, Tốt nghiệp, Đuổi học)</td></tr>
             <tr><td><code>specialty_category_id</code></td><td>INT UNSIGNED</td><td>NULL, FK &rarr; categories(id)</td><td>NULL</td><td>Nhóm dịch vụ chuyên môn của KTV (1 đến 5)</td></tr>
-            <tr><td><code>max_capacity</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>5</td><td>Hạn mức tối đa số vé KTV có thể gánh cùng lúc</td></tr>
+            <tr><td><code>max_capacity</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>15</td><td>Hạn mức tối đa số vé KTV có thể gánh cùng lúc (ngưỡng kịch tải kích hoạt tràn tải)</td></tr>
             <tr><td><code>active_tickets_count</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>0</td><td>Bộ đếm số vé đang xử lý của KTV</td></tr>
             <tr><td><code>is_on_duty</code></td><td>TINYINT(1)</td><td>NOT NULL</td><td>1</td><td>Trạng thái ca trực (1: Đang trực, 0: Nghỉ ca)</td></tr>
             <tr><td><code>failed_attempts</code></td><td>TINYINT UNSIGNED</td><td>NOT NULL</td><td>0</td><td>Số lần đăng nhập sai liên tiếp (quá 5 lần &rarr; khóa)</td></tr>

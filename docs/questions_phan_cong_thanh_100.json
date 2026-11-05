@@ -960,10 +960,10 @@
             "A": "1 phiếu.",
             "B": "Không giới hạn số lượng.",
             "C": "100 phiếu.",
-            "D": "5 phiếu đang hoạt động (`active_tickets >= 5`)."
+            "D": "15 phiếu đang hoạt động (`active_tickets >= 15` hoặc chạm `max_capacity`)."
         },
         "answer": "D",
-        "explanation": "Ngưỡng 5 phiếu đang xử lý giúp KTV không bị 'ngập lụt' công việc, tập trung giải quyết dứt điểm từng sự cố đạt chất lượng cao."
+        "explanation": "Hệ thống cấu hình ngưỡng kịch tải mặc định `max_capacity = 15` phiếu đang xử lý nhằm giúp KTV duy trì năng suất cao nhất và tự động kích hoạt cơ chế tràn tải khi chạm ngưỡng này."
     },
     {
         "id": 70,
