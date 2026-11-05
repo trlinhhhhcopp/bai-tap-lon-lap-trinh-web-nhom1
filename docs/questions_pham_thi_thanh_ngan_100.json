@@ -899,7 +899,7 @@
         "id": 65,
         "section_id": 4,
         "section_name": "4. Cơ Chế Đóng Trùng Lặp, Khóa Ngoại parent_ticket_id & Tạm Dừng Đồng Hồ SLA",
-        "question": "Khi KTV thực hiện đóng một phiếu con dưới dạng trùng lặp, những trường dữ liệu nào trong bảng `tickets` được cập nhật?",
+        "question": "Khi KTV thực hiện đóng một phiếu con dưới dạng trùng lặp và chọn gom nhóm vào Phiếu sự cố gốc (Phiếu cha), những trường dữ liệu nào trong bảng `tickets` được cập nhật?",
         "options": {
             "A": "Đổi mã sinh viên thành số 0.",
             "B": "Xóa trắng toàn bộ thông tin người gửi.",
@@ -907,7 +907,7 @@
             "D": "Cập nhật `status = 'closed'`, `closed_reason = 'duplicate'`, `parent_ticket_id = :parent_id` và `closed_at = NOW()`."
         },
         "answer": "D",
-        "explanation": "Ghi nhận đầy đủ vết liên kết: phiếu đã đóng, lý do là trùng lặp, trỏ đến phiếu cha nào và thời điểm đóng chính xác khi nào."
+        "explanation": "Trong Modal Đóng trùng lặp, KTV có thể chọn: đóng độc lập (không gán cha, `parent_ticket_id = NULL`) hoặc gom nhóm vào Phiếu sự cố gốc đang mở; khi chọn gom nhóm, hệ thống cập nhật đầy đủ `status = 'closed'`, `closed_reason = 'duplicate'`, `parent_ticket_id = :parent_id` và `closed_at = NOW()`."
     },
     {
         "id": 66,

@@ -684,7 +684,7 @@
 > **👉 Đáp án đúng:** [**A**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Chuẩn hóa dữ liệu theo ITIL: Phiếu cha bắt buộc phải đang mở để việc gom nhóm có ý nghĩa nghiệp vụ thực tế, đồng thời loại trừ nguy cơ vòng lặp vô tận (Circular Reference `id = parent_ticket_id`).
 
-#### Câu 65. Khi KTV thực hiện đóng một phiếu con dưới dạng trùng lặp, những trường dữ liệu nào trong bảng `tickets` được cập nhật?
+#### Câu 65. Khi KTV thực hiện đóng một phiếu con dưới dạng trùng lặp và chọn gom nhóm vào Phiếu sự cố gốc (Phiếu cha), những trường dữ liệu nào trong bảng `tickets` được cập nhật?
 
 - **A.** Đổi mã sinh viên thành số 0.
 - **B.** Xóa trắng toàn bộ thông tin người gửi.
@@ -692,7 +692,7 @@
 - **D.** Cập nhật `status = 'closed'`, `closed_reason = 'duplicate'`, `parent_ticket_id = :parent_id` và `closed_at = NOW()`.
 
 > **👉 Đáp án đúng:** [**D**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Ghi nhận đầy đủ vết liên kết: phiếu đã đóng, lý do là trùng lặp, trỏ đến phiếu cha nào và thời điểm đóng chính xác khi nào.
+> **💡 Căn cứ kỹ thuật & Giải thích:** Trong Modal Đóng trùng lặp, KTV có thể chọn: đóng độc lập (không gán cha, `parent_ticket_id = NULL`) hoặc gom nhóm vào Phiếu sự cố gốc đang mở; khi chọn gom nhóm, hệ thống cập nhật đầy đủ `status = 'closed'`, `closed_reason = 'duplicate'`, `parent_ticket_id = :parent_id` và `closed_at = NOW()`.
 
 #### Câu 66. Trên giao diện chi tiết phiếu (`tickets/show.php`), khi một sinh viên mở xem một phiếu đã bị gom nhóm trùng lặp, giao diện hiển thị thông báo gì?
 
