@@ -9,14 +9,6 @@ function holidayFormEscape($value): string
 $isEdit = is_array($holiday);
 $pageTitle = $isEdit ? 'Chỉnh Sửa Ngày Nghỉ Lễ' : 'Thêm Mới Ngày Nghỉ Lễ';
 
-require_once __DIR__ . '/../../../config/database.php';
-if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
-    session_start();
-}
-if (empty($_SESSION['user'])) {
-    header('Location: ../../index.php');
-    exit;
-}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -32,7 +24,6 @@ if (empty($_SESSION['user'])) {
 <main class="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-4">
 
     <!-- THÔNG BÁO FLASH MESSAGE -->
-    <?php $flash = get_flash(); ?>
     <?php if ($flash): ?>
         <div data-auto-dismiss="4500" class="p-3.5 rounded-2xl text-xs font-semibold flex items-center justify-between <?= $flash['type'] === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800'; ?>">
             <div class="flex items-center gap-2">

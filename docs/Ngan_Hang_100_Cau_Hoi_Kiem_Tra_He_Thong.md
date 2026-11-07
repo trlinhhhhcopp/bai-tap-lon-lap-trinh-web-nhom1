@@ -35,127 +35,127 @@
 
 ---
 
-## 1. KIẾN TRÚC MÃ NGUỒN, CẤU TRÚC THƯ MỤC & LUỒNG ĐIỀU HƯỚNG
+## 1. KIẾN TRÚC MÃ NGUỒN, CẤU TRÚC THƯ MỤC & LUỒNG ĐIỀU HƯỚNG (VỊ TRÍ & CHỨC NĂNG TỪNG FILE CODE)
 
-#### Câu 1. Trong kiến trúc tầng Controller, phương thức `TicketController::index()` tiếp nhận các tham số lọc trạng thái (`status`), chuyên mục (`category_id`) và từ khóa tìm kiếm thông qua mảng siêu toàn cục nào của PHP?
+#### Câu 1. Trong kiến trúc Luồng 2 (Router MVC thuần OOP), tệp mã nguồn 'index.php' nằm tại thư mục gốc của dự án đảm nhận vị trí và chức năng cốt lõi nào?
 
-- **A.** \$_SESSION.
-- **B.** \$_ENV.
-- **C.** \$_GET.
-- **D.** \$_POST.
-
-> **👉 Đáp án đúng:** [**C**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Phương thức TicketController::index() dùng HTTP GET để nhận các tham số lọc như ?status=...&category_id=...&keyword=... qua mảng siêu toàn cục $_GET, giúp người dùng có thể bookmark hoặc chia sẻ liên kết tìm kiếm một cách thuận tiện.
-
-#### Câu 2. Tệp tin `includes/auth.php` đóng vai trò trung tâm nào trong vòng đời xử lý mỗi HTTP Request của ứng dụng Helpdesk?
-
-- **A.** Chỉ dùng để kết nối CSDL MySQL.
-- **B.** Tự động gửi email thông báo cho sinh viên.
-- **C.** Khởi động phiên làm việc `session_start()`, kiểm tra trạng thái xác thực `$_SESSION['user']`, nạp thông tin người dùng hiện tại và cung cấp các hàm trợ giúp phân quyền.
-- **D.** Xóa toàn bộ cookie của trình duyệt khi tải trang.
+- **A.** Chứa toàn bộ giao diện HTML và trực tiếp thực thi hơn 2.500 dòng mã lệnh SQL.
+- **B.** Là tệp phụ chỉ dùng để kiểm tra kết nối CSDL MySQL khi bảo trì hệ thống.
+- **C.** Đóng vai trò là Front Controller duy nhất (tinh gọn 26 dòng), nạp cấu hình hệ thống từ 'app/bootstrap.php' và ủy quyền toàn bộ điều phối request cho 'App\Core\Router->dispatch()'.
+- **D.** Là tệp cấu hình máy chủ Apache để ngăn chặn tấn công DDoS.
 
 > **👉 Đáp án đúng:** [**C**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Tệp `includes/auth.php` là middleware xác thực nền tảng, chịu trách nhiệm gọi `session_start()`, kiểm tra đăng nhập qua biến `$_SESSION['user']`, khởi tạo biến toàn cục người dùng hiện tại và cung cấp các hàm kiểm tra vai trò.
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'index.php' tại gốc đóng vai trò là Front Controller duy nhất tiếp nhận mọi HTTP request, nạp bootstrap và chuyển giao cho Router điều phối theo mô hình Clean MVC.
 
-#### Câu 3. Tại sao các Controller phục vụ chức năng quản trị cấp cao lại được đặt trong namespace chuyên biệt `PhanCongThanh_Admin\Controllers\Admin` thay vì đặt chung thư mục với Controller người dùng?
+#### Câu 2. Tệp mã nguồn 'app/bootstrap.php' nằm ở vị trí nào trong cấu trúc hệ sinh thái và chịu trách nhiệm thực thi các chức năng khởi tạo trọng yếu nào?
 
-- **A.** Do ngôn ngữ PHP bắt buộc mỗi thư mục chỉ được chứa tối đa 3 file.
-- **B.** Để tránh việc CSDL MySQL tự động xóa bảng dữ liệu.
-- **C.** Tuân thủ quy chuẩn nạp tự động PSR-4, phân tách rõ ràng trách nhiệm nghiệp vụ (Separation of Concerns) và cô lập hoàn toàn mã nguồn quản trị viên chống xung đột lớp.
-- **D.** Để hệ điều hành Windows không bị tràn dung lượng ổ cứng.
+- **A.** Nằm trong thư mục public và chỉ dùng để hiển thị thông báo lỗi 404 Not Found.
+- **B.** Nằm ở thư mục gốc và chịu trách nhiệm sao lưu định kỳ cơ sở dữ liệu MySQL.
+- **C.** Nằm tại 'app/bootstrap.php', chịu trách nhiệm đăng ký PSR-4 Autoloader tự động nạp class, nạp kết nối PDO CSDL, thiết lập class alias tương thích và khai báo đăng ký toàn bộ 48 route endpoints của hệ thống.
+- **D.** Nằm trong thư mục views để chứa các thẻ điều hướng chung (navbar, footer).
 
 > **👉 Đáp án đúng:** [**C**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Việc phân chia namespace chuẩn PSR-4 giúp phân định ranh giới kiến trúc rõ ràng giữa phân hệ quản trị (Admin) và phân hệ dùng chung, ngăn chặn nguy cơ gọi nhầm lớp và tăng tính mô-đun hóa dự án.
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'app/bootstrap.php' là trung tâm khởi động hệ thống, tự động nạp thư viện/class chuẩn PSR-4, thiết lập kết nối CSDL và nạp bảng định tuyến 48 routes.
 
-#### Câu 4. Khi người dùng chưa đăng nhập bấm vào liên kết 'Quên mật khẩu' (`index.php?action=forgot_password`), bộ điều hướng (Action Dispatcher) ở `index.php` sẽ thực thi khối logic nào?
+#### Câu 3. Tệp 'app/Core/Router.php' nằm tại vị trí nào trong cấu trúc thư mục và đảm nhận chức năng điều hướng như thế nào?
 
-- **A.** Hiển thị biểu mẫu nhập địa chỉ email trường cấp (`@daihocthudo.edu.vn`) và kích hoạt quy trình sinh mã khôi phục tự phục vụ SSPR.
-- **B.** Lập tức xóa tài khoản của người dùng khỏi cơ sở dữ liệu.
-- **C.** Tự động đặt lại mật khẩu về `123456` mà không cần kiểm tra danh tính.
-- **D.** Chuyển hướng người dùng sang trang Facebook nhà trường.
+- **A.** Nằm trong thư mục assets để điều hướng các tệp ảnh CSS/JavaScript.
+- **B.** Nằm trong thư mục config để lưu trữ mật khẩu kết nối CSDL.
+- **C.** Nằm tại 'app/Core/Router.php', chịu trách nhiệm bóc tách và chuẩn hóa URI (loại bỏ tiền tố thư mục XAMPP), hỗ trợ cả clean URL và query legacy ('?action=...'), thực thi chuỗi Middleware bảo vệ và gọi Controller/Action tương ứng.
+- **D.** Nằm trong thư mục storage để ghi lại nhật ký truy cập hàng ngày của sinh viên.
+
+> **👉 Đáp án đúng:** [**C**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'Router.php' là bộ định tuyến trung tâm bóc tách URI request, xử lý tương thích query legacy (?action=guest_ticket, ?action=forgot_password), chạy Middlewares và kích hoạt Action.
+
+#### Câu 4. Lớp cơ sở 'app/Core/Controller.php' nằm ở đâu và cung cấp các phương thức dùng chung trọng yếu nào cho toàn bộ các Controller con trong hệ thống?
+
+- **A.** Nằm tại 'app/Core/Controller.php', cung cấp các phương thức dùng chung gồm: 'view()' (render giao diện), 'json()' (trả về JSON API), 'redirect()' (chuyển hướng an toàn), 'flash()' (quản lý thông báo phiên) và 'user()' (lấy thông tin người dùng hiện tại).
+- **B.** Nằm tại 'public/Controller.php', chỉ dùng để tạo bảng CSDL mới.
+- **C.** Nằm tại 'views/Controller.php', chỉ dùng để nhúng các đoạn mã JavaScript.
+- **D.** Nằm tại 'storage/Controller.php', dùng để nén tệp tải lên thành file zip.
 
 > **👉 Đáp án đúng:** [**A**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Action `forgot_password` trong `index.php` hiển thị giao diện khôi phục mật khẩu tự phục vụ SSPR, yêu cầu người dùng nhập email trường học để hệ thống kiểm tra và phát hành token bảo mật 15 phút.
+> **💡 Căn cứ kỹ thuật & Giải thích:** Base Controller 'app/Core/Controller.php' là lớp trừu tượng nền tảng đóng gói các tiện ích dùng chung chuẩn MVC giúp code gọn gàng, tránh trùng lặp.
 
-#### Câu 5. Hai hàm trợ giúp `set_flash($type, $message)` và `get_flash()` trong hệ thống sử dụng cơ chế kỹ thuật nào để hiển thị thông báo một lần duy nhất (Flash Message) sau khi chuyển hướng trang (`header('Location: ...')`)?
+#### Câu 5. Các tệp tin Middleware như 'AuthMiddleware.php', 'AdminMiddleware.php', 'AgentMiddleware.php' nằm tại thư mục nào và có chức năng gì?
 
-- **A.** Lưu vĩnh viễn thông báo vào bảng `users` trong CSDL MySQL.
-- **B.** Lưu thông báo vào biến phiên `$_SESSION['flash']` và tự động hủy (`unset`) ngay sau khi đọc ra giao diện.
-- **C.** Sử dụng LocalStorage của trình duyệt phía Client.
-- **D.** Ghi thông báo vào tệp văn bản tĩnh trên ổ cứng máy chủ.
+- **A.** Nằm tại thư mục 'views/middlewares/' để tạo hiệu ứng chuyển động CSS cho các nút bấm.
+- **B.** Nằm tại thư mục 'app/Middlewares/', đóng vai trò là tầng lọc trung gian kiểm soát truy cập (RBAC): xác thực trạng thái đăng nhập và kiểm tra nghiêm ngặt quyền hạn người dùng (Role) trước khi cho phép Controller xử lý yêu cầu.
+- **C.** Nằm tại thư mục 'config/' để kiểm tra phiên bản PHP máy chủ.
+- **D.** Nằm tại thư mục 'storage/' để dọn dẹp các tệp rác quá hạn 30 ngày.
 
 > **👉 Đáp án đúng:** [**B**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Flash Message hoạt động bằng cách lưu mảng gồm `type` và `message` vào `$_SESSION['flash']`, và trong hàm `get_flash()`, dữ liệu này được đọc ra đồng thời `unset($_SESSION['flash'])` để thông báo chỉ hiển thị đúng một lần.
+> **💡 Căn cứ kỹ thuật & Giải thích:** Tầng Middleware tại 'app/Middlewares/' thực thi kiểm soát phân quyền (RBAC) độc lập, bảo vệ các route nhạy cảm trước khi request tới được Controller.
 
-#### Câu 6. Trong tệp `config/database.php`, mẫu thiết kế (Design Pattern) nào được áp dụng để đảm bảo chỉ có duy nhất một kết nối PDO tới MySQL trong suốt vòng đời của một Request?
+#### Câu 6. Tệp mã nguồn 'app/Controllers/GuestTicketController.php' nằm ở vị trí nào và giải quyết bài toán nghiệp vụ gì của hệ thống?
 
-- **A.** Observer Pattern.
-- **B.** Factory Pattern.
-- **C.** Singleton Pattern.
-- **D.** Decorator Pattern.
+- **A.** Nằm tại 'app/Models/' để tính toán số tiền phạt khi sinh viên trả sách thư viện muộn.
+- **B.** Nằm tại 'includes/' để hiển thị danh sách các bài viết tin tức của trường.
+- **C.** Nằm tại 'app/Controllers/GuestTicketController.php', điều khiển Trạm cứu hộ tài khoản khách: tiếp nhận ảnh chụp CCCD/thẻ SV từ Webcam hoặc tệp tải lên, sinh mã cứu hộ duy nhất '#HD-...', phối hợp KTV xác minh và hỗ trợ tra cứu tiến độ không cần đăng nhập.
+- **D.** Nằm tại 'views/guest/' để in thẻ sinh viên bằng máy in nhiệt.
 
 > **👉 Đáp án đúng:** [**C**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Hàm `db()` hoặc lớp `Database` sử dụng mẫu Singleton (lưu biến static connection `$instance`), chỉ khởi tạo kết nối PDO khi biến bằng `null`, tái sử dụng kết nối cho toàn bộ các truy vấn trong cùng một request.
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'GuestTicketController.php' xử lý toàn bộ luồng cứu hộ tài khoản cho người dùng bị khóa/quên mật khẩu, tích hợp module chụp ảnh Webcam trực tiếp.
 
-#### Câu 7. Tham số `view_as` trên URL (ví dụ: `tickets/show.php?id=10&view_as=agent`) phục vụ mục đích kỹ thuật nào trong hệ thống?
+#### Câu 7. Tệp 'app/Controllers/Admin/AdminDashboardController.php' nằm tại vị trí nào và chịu trách nhiệm quản lý những khối nghiệp vụ nào?
 
-- **A.** Cho phép Quản trị viên (Admin) hoặc người kiểm thử giả lập góc nhìn giao diện theo vai trò cụ thể mà không cần phải đăng xuất và đăng nhập lại nhiều tài khoản.
-- **B.** Bắt buộc người dùng phải tải lại toàn bộ trang web.
-- **C.** Dùng để mã hóa dữ liệu đường truyền SSL.
-- **D.** Dùng để tấn công leo thang đặc quyền trái phép.
-
-> **👉 Đáp án đúng:** [**A**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Tham số `view_as` là tiện ích đóng vai người dùng (Impersonation / Role Preview) được bảo vệ, giúp Admin kiểm thử trực quan giao diện của Agent, Requester hoặc Lecturer một cách nhanh chóng.
-
-#### Câu 8. Thư mục `storage/` trong cấu trúc dự án chứa tệp tin đặc thù `storage/mailbox.json` phục vụ cho mục đích kỹ thuật nào?
-
-- **A.** Đóng vai trò hòm thư ảo (Virtual Mailbox) mô phỏng việc gửi email trên môi trường phát triển Localhost khi chưa có máy chủ SMTP Internet.
-- **B.** Dùng để lưu trữ các bản sao lưu video bài giảng.
-- **C.** Chứa toàn bộ mã nguồn của hệ điều hành Linux.
-- **D.** Chứa mật khẩu gốc của tất cả giảng viên trong trường.
+- **A.** Nằm tại 'app/Controllers/Admin/AdminDashboardController.php', điều hành Bảng điều khiển Quản trị: giám sát tải thời gian thực của 5 KTV (ngưỡng 15 phiếu), bật/tắt công tắc trực ca ('is_on_duty'), phát/thu hồi cảnh báo sự cố diện rộng và đếm số phiếu cứu hộ chờ duyệt.
+- **B.** Nằm tại 'config/AdminDashboardController.php' để đổi mật khẩu tài khoản root của máy chủ MySQL.
+- **C.** Nằm tại 'storage/AdminDashboardController.php' để xuất hóa đơn điện tử cho nhà trường.
+- **D.** Nằm tại 'views/admin/' để lưu ảnh đại diện của Ban Giám hiệu.
 
 > **👉 Đáp án đúng:** [**A**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Tệp `storage/mailbox.json` đóng vai trò là Fake Mailbox: các hàm gửi email ghi trực tiếp nội dung thư (gồm người nhận, tiêu đề, mã token) vào đây để lập trình viên kiểm thử luồng quên mật khẩu ngay trên Localhost.
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'AdminDashboardController.php' điều phối trung tâm chỉ huy của Admin, theo dõi tải 5 KTV theo thời gian thực và quản lý cảnh báo khẩn cấp toàn trường.
 
-#### Câu 9. Khi phương thức `TicketRepository::findById($id)` thực thi, kết quả trả về từ PDO Statement được cấu hình theo chế độ nạp nào?
+#### Câu 8. Tệp 'app/Controllers/Agent/AgentDashboardController.php' nằm ở đâu và đảm nhận chức năng nghiệp vụ gì trên Bàn làm việc Kỹ thuật viên ('/agent/workbench')?
 
-- **A.** `PDO::FETCH_LAZY`.
-- **B.** `PDO::FETCH_ASSOC` (mảng kết hợp ánh xạ tên cột thành khóa mảng).
-- **C.** `PDO::FETCH_NUM` (mảng chỉ mục số nguyên).
-- **D.** `PDO::FETCH_BOTH` (kết hợp cả số và chữ gây tốn gấp đôi bộ nhớ).
+- **A.** Nằm tại 'app/Controllers/Agent/AgentDashboardController.php', quản lý hàng đợi phiếu theo ca trực, hỗ trợ trao đổi phản hồi kỹ thuật, mở modal đóng phiếu trùng lặp ('parent_ticket_id') và gửi biên bản đề xuất Giảng viên mở lại hạn nộp bài.
+- **B.** Nằm tại 'app/Core/' để xóa toàn bộ dữ liệu phiếu của sinh viên vi phạm.
+- **C.** Nằm tại 'views/agent/' để cài đặt hệ điều hành Windows cho phòng máy.
+- **D.** Nằm tại 'public/' để cho phép khách bên ngoài xem thông tin nội bộ của các KTV.
+
+> **👉 Đáp án đúng:** [**A**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'AgentDashboardController.php' là bộ điều khiển phân hệ kỹ thuật viên, quản lý hàng đợi xử lý phiếu, đóng trùng lặp và xác nhận lỗi học thuật.
+
+#### Câu 9. Tệp 'app/Services/TicketService.php' nằm tại vị trí nào và chứa đựng những thuật toán cốt lõi nào của dự án?
+
+- **A.** Nằm tại 'views/' để hiển thị giao diện các biểu mẫu tạo phiếu.
+- **B.** Nằm tại 'app/Services/TicketService.php', chứa thuật toán điều phối thông minh Triage (Least-Loaded kết hợp Tie-breaker phân ca), kiểm tra 3 lớp chống gửi trùng lặp trong 24h và tự động phát hiện nguy cơ sự cố diện rộng (Major Incident).
+- **C.** Nằm tại 'config/' để kết nối API mạng xã hội Facebook.
+- **D.** Nằm tại 'includes/' để phát âm thanh chuông báo khi có phiếu mới.
 
 > **👉 Đáp án đúng:** [**B**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Hệ thống thiết lập mặc định `PDO::FETCH_ASSOC` để các trường dữ liệu như `ticket_code`, `status`, `title` có thể truy cập trực tiếp qua khóa mảng dạng `$ticket['ticket_code']` rõ ràng và tối ưu bộ nhớ.
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'TicketService.php' là trái tim nghiệp vụ của hệ thống Helpdesk, chứa thuật toán phân bổ tải lao động tối ưu và kiểm soát chống spam.
 
-#### Câu 10. Khi người dùng bấm 'Đăng xuất' qua tệp `logout.php`, hệ thống thực hiện chuỗi thao tác nào để hủy phiên làm việc an toàn?
+#### Câu 10. Tệp 'app/Services/SlaService.php' nằm tại vị trí nào và đảm nhận chức năng gì trong hệ thống Helpdesk?
 
-- **A.** Chỉ đổi URL về trang đăng nhập mà giữ nguyên biến `$_SESSION`.
-- **B.** Xóa toàn bộ bản ghi người dùng trong CSDL.
-- **C.** Gán `$_SESSION = []`, xóa cookie phiên `session_destroy()` và điều hướng người dùng về trang chủ `index.php`.
-- **D.** Khóa tài khoản người dùng trong 30 phút.
+- **A.** Nằm tại 'storage/' để sao lưu nhật ký hệ thống ra ổ cứng ngoài.
+- **B.** Nằm tại 'public/' để hiển thị đồng hồ xem giờ cho sinh viên.
+- **C.** Nằm tại 'app/Services/SlaService.php', là động cơ tính toán thời hạn SLA theo giờ hành chính (8h00-11h30, 13h30-17h30), tự động loại trừ giờ nghỉ trưa, ngoài giờ (sau 17h30), Thứ Bảy, Chủ Nhật và các ngày nghỉ lễ cấu hình trong CSDL.
+- **D.** Nằm tại 'app/Core/' để khởi động lại máy chủ khi bị quá tải.
 
 > **👉 Đáp án đúng:** [**C**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Quy trình đăng xuất an toàn bắt buộc phải làm sạch mảng phiên `$_SESSION = []`, hủy bỏ định danh phiên qua `session_destroy()` và xóa cookie phiên để chống tấn công chiếm đoạt phiên (Session Hijacking).
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'SlaService.php' thực hiện nghiệp vụ tính toán cam kết chất lượng dịch vụ SLA, tuân thủ đúng khung giờ làm việc hành chính học đường.
 
-#### Câu 11. Trong các Controller hướng đối tượng kế thừa từ `App\Core\Controller`, phương thức `$this->view($template, $data)` sử dụng hàm PHP nào để chuyển mảng dữ liệu thành các biến cục bộ trong view?
+#### Câu 11. Tệp 'app/Services/UploadService.php' nằm tại vị trí nào và đảm bảo an toàn cho tệp đính kèm và ảnh chụp Webcam như thế nào?
 
-- **A.** `json_encode()`.
-- **B.** `array_push()`.
-- **C.** `serialize()`.
-- **D.** `extract($data)`.
-
-> **👉 Đáp án đúng:** [**D**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Hàm `extract($data)` trong PHP duyệt qua mảng kết hợp và biến đổi mỗi phần tử thành một biến cục bộ tương ứng (ví dụ `['ticket' => $t]` trở thành biến `$ticket`), cho phép tệp giao diện sử dụng tự nhiên.
-
-#### Câu 12. Tệp cấu hình `.htaccess` đặt tại thư mục gốc của dự án trên máy chủ Apache đảm nhận vai trò bảo mật nào sau đây?
-
-- **A.** Thay thế toàn bộ mã nguồn PHP bằng ngôn ngữ Java.
-- **B.** Tự động tăng tốc độ mạng Internet lên gấp 2 lần.
-- **C.** Tự động tạo tài khoản Admin mới mỗi khi khởi động lại máy chủ.
-- **D.** Ngăn chặn việc duyệt thư mục trực tiếp (`Options -Indexes`) và cấm truy cập trực tiếp vào các tệp nhạy cảm như `.sql`, `.env`, `.md`.
+- **A.** Nằm tại 'config/' để nén video bài giảng của giảng viên.
+- **B.** Nằm tại 'views/' để hiển thị thanh tiến trình phần trăm tải file.
+- **C.** Nằm tại 'storage/' để xóa toàn bộ các tệp ảnh sau khi xem xong.
+- **D.** Nằm tại 'app/Services/UploadService.php', kiểm duyệt tệp theo whitelist MIME và phần mở rộng, giới hạn 5MB, khử trùng tên tệp bằng chuỗi băm ngẫu nhiên và giải mã ảnh chụp Webcam Base64 lưu an toàn vào 'storage/uploads/'.
 
 > **👉 Đáp án đúng:** [**D**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Tệp `.htaccess` cấu hình bảo mật máy chủ web Apache, thiết lập chặn duyệt thư mục (`Options -Indexes`), điều hướng URL tĩnh và ngăn chặn người ngoài tải về các tệp cơ sở dữ liệu (`.sql`) hoặc cấu hình nhạy cảm.
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'UploadService.php' ngăn chặn mã độc thực thi (RCE) qua tệp tải lên và xử lý an toàn dữ liệu ảnh truyền từ Webcam HTML5.
+
+#### Câu 12. Tệp 'app/Repositories/TicketRepository.php' (hoặc 'TicketRepository.php') nằm tại đâu và phân định vai trò kiến trúc như thế nào so với Model 'app/Models/Ticket.php'?
+
+- **A.** Cả hai file đều là view dùng để tạo bảng hiển thị danh sách phiếu trên trình duyệt.
+- **B.** 'TicketRepository' dùng để lưu file tạm, còn 'Ticket.php' dùng để lưu mật khẩu người dùng.
+- **C.** 'Ticket.php' thực hiện toàn bộ câu lệnh SQL phức tạp, còn 'TicketRepository' không chứa code PHP nào.
+- **D.** 'TicketRepository.php' đóng gói toàn bộ các truy vấn SQL phức tạp (JOIN nhiều bảng, đếm số liệu Dashboard, lọc theo vai trò) bằng PDO Prepared Statements, trong khi Model 'Ticket.php' đóng vai trò là thực thể dữ liệu (Data Entity).
+
+> **👉 Đáp án đúng:** [**D**]
+> **💡 Căn cứ kỹ thuật & Giải thích:** Phân tách rõ ràng giữa Model (thực thể dữ liệu) và Repository (truy xuất CSDL nâng cao) theo đúng nguyên lý SOLID và Clean Architecture.
 
 ## 2. THIẾT KẾ CSDL CHUYÊN SÂU, KHÓA NGOẠI & TỐI ƯU INDEX
 

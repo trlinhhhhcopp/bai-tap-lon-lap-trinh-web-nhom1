@@ -12,7 +12,7 @@ namespace App\Core;
 class View {
     public static function render(string $viewPath, array $data = []): void {
         extract($data);
-        $flash = Session::getFlash();
+        $flash = array_key_exists('flash', $data) ? $data['flash'] : Session::getFlash();
         $currentUser = Session::user();
 
         $viewFile = __DIR__ . '/../../views/' . str_replace('.', '/', $viewPath) . '.php';
@@ -24,4 +24,3 @@ class View {
         require $viewFile;
     }
 }
-

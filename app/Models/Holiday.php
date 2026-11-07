@@ -1,12 +1,15 @@
 <?php
+namespace App\Models;
+
+use App\Core\Database;
+use PDO;
+
 /**
  * Model Holiday
  * Bảng: holidays
  * Phần của: Phan Công Thành (Admin)
  * Chức năng: Danh sách, tìm kiếm, thêm, sửa, xóa ngày nghỉ lễ.
  */
-require_once __DIR__ . '/../../config/database.php';
-
 class Holiday
 {
     // Đếm số ngày nghỉ lễ, có hỗ trợ tìm kiếm và lọc loại (hàng năm / đột xuất)
@@ -25,7 +28,7 @@ class Holiday
             $params['is_recurring'] = $isRecurring;
         }
 
-        $stmt = db()->prepare($sql);
+        $stmt = Database::getConnection()->prepare($sql);
         $stmt->execute($params);
 
         return (int) $stmt->fetch()['total'];
@@ -61,7 +64,7 @@ class Holiday
         $sql .= " ORDER BY start_date DESC
                   LIMIT :limit OFFSET :offset";
 
-        $stmt = db()->prepare($sql);
+        $stmt = Database::getConnection()->prepare($sql);
 
         foreach ($params as $key => $value) {
             if ($key === 'is_recurring') {
@@ -81,7 +84,7 @@ class Holiday
     // Tìm một ngày nghỉ lễ theo ID
     public static function findById(int $id): ?array
     {
-        $stmt = db()->prepare(
+        $stmt = Database::getConnection()->prepare(
             "SELECT * FROM holidays WHERE id = :id LIMIT 1"
         );
         $stmt->execute(['id' => $id]);
@@ -99,7 +102,8 @@ class Holiday
                 VALUES
                     (:name, :start_date, :end_date, :is_recurring)";
 
-        $stmt = db()->prepare($sql);
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare($sql);
         $stmt->execute([
             'name'         => trim($data['name']),
             'start_date'   => $data['start_date'],
@@ -107,7 +111,7 @@ class Holiday
             'is_recurring' => (int) $data['is_recurring'],
         ]);
 
-        return (int) db()->lastInsertId();
+        return (int) $pdo->lastInsertId();
     }
 
     // Cập nhật ngày nghỉ lễ
@@ -120,7 +124,7 @@ class Holiday
                     is_recurring = :is_recurring
                 WHERE id = :id";
 
-        $stmt = db()->prepare($sql);
+        $stmt = Database::getConnection()->prepare($sql);
 
         return $stmt->execute([
             'name'         => trim($data['name']),
@@ -134,7 +138,7 @@ class Holiday
     // Xóa ngày nghỉ lễ theo ID
     public static function delete(int $id): bool
     {
-        $stmt = db()->prepare(
+        $stmt = Database::getConnection()->prepare(
             "DELETE FROM holidays WHERE id = :id"
         );
 

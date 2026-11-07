@@ -88,15 +88,15 @@
 > **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** `PDO::FETCH_ASSOC` cho phép truy xuất dữ liệu tự nhiên và trực quan dạng `$ticket['ticket_code']`, `$ticket['status']` mà không lãng phí bộ nhớ.
 
-#### Câu 6. Tệp middleware nền tảng `includes/auth.php` cung cấp các hàm trợ giúp (Helper Functions) cốt lõi nào cho hệ thống?
+#### Câu 6. Tệp mã nguồn 'app/bootstrap.php' nằm ở vị trí nào và đảm nhận chức năng khởi tạo trọng yếu nào trong kiến trúc do Trưởng nhóm Thanh Ngân quy hoạch?
 
-- **A.** `sendMail()`, `printInvoice()`
-- **B.** `isLoggedIn()`, `currentUser()`, `hasRole($role)`, `requireLogin()`
-- **C.** `formatDate()`, `calculateGPA()`
-- **D.** `renderMenu()`, `showBanner()`
+- **A.** Nằm trong thư mục views để định dạng CSS cho hệ thống.
+- **B.** Nằm tại 'app/bootstrap.php', thực hiện đăng ký PSR-4 Autoloader, nạp kết nối PDO MySQL, tạo class alias tương thích và đăng ký toàn bộ 48 route endpoints của hệ thống.
+- **C.** Nằm trong thư mục storage để ghi nhật ký giao dịch của người dùng.
+- **D.** Nằm trong thư mục config để lưu mật khẩu quản trị viên.
 
 > **👉 Đáp án đúng:** [**B**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Bộ hàm trợ giúp xác thực giúp các Controller và View kiểm tra nhanh chóng trạng thái đăng nhập và vai trò người dùng trong 1 dòng lệnh.
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'app/bootstrap.php' là trung tâm khởi động toàn diện, tự động nạp PSR-4, kết nối CSDL và đăng ký route theo chuẩn Clean MVC.
 
 #### Câu 7. Để phòng chống tấn công Cross-Site Scripting (XSS) khi xuất dữ liệu ra tệp giao diện View, Thanh Ngân xây dựng hàm trợ giúp nào?
 
@@ -198,15 +198,15 @@
 > **👉 Đáp án đúng:** [**D**]
 > **💡 Căn cứ kỹ thuật & Giải thích:** Máy trạng thái hữu hạn (State Machine) gồm 6 nấc chuẩn mực của ITIL v4, phản ánh đầy đủ từng bước từ lúc phát sinh đến lúc đóng sự cố.
 
-#### Câu 17. Khi người dùng đăng xuất khỏi hệ thống (`logout.php`), quy trình dọn dẹp phiên làm việc an toàn gồm những thao tác nào?
+#### Câu 17. Tệp 'app/Core/Router.php' nằm tại vị trí nào và chịu trách nhiệm xử lý luồng điều hướng như thế nào?
 
-- **A.** Khóa tài khoản 30 ngày.
-- **B.** Làm rỗng mảng phiên `$_SESSION = []`, hủy bỏ định danh phiên qua `session_destroy()` và xóa cookie phiên của trình duyệt.
-- **C.** Chỉ đổi URL về trang chủ mà giữ nguyên session.
-- **D.** Xóa tài khoản người dùng trong CSDL.
+- **A.** Nằm tại thư mục public để nén tệp hình ảnh người dùng.
+- **B.** Nằm tại 'app/Core/Router.php', bóc tách URI request loại bỏ tiền tố thư mục XAMPP, hỗ trợ cả clean URL và query legacy ('?action=...'), thực thi Middleware bảo vệ và gọi Controller/Action đích.
+- **C.** Nằm tại thư mục storage để dọn dẹp các tệp tạm.
+- **D.** Nằm tại thư mục config để phân phối tải sang máy chủ dự phòng.
 
 > **👉 Đáp án đúng:** [**B**]
-> **💡 Căn cứ kỹ thuật & Giải thích:** Quy trình hủy phiên nghiêm ngặt loại trừ hoàn toàn nguy cơ tấn công chiếm đoạt phiên đăng nhập (Session Hijacking).
+> **💡 Căn cứ kỹ thuật & Giải thích:** 'Router.php' là lõi định tuyến trung tâm bảo đảm mọi request đều được phân giải chính xác và chạy qua tầng Middleware kiểm soát.
 
 #### Câu 18. Kỹ thuật POST-Redirect-GET (PRG Pattern) được áp dụng tại các Controller nhằm mục đích gì?
 

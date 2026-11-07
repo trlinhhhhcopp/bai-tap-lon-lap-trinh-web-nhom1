@@ -211,13 +211,13 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>assignments/index.php" <?php echo $navAttributes(['assignments/index.php'], ['', 'index', 'create', 'edit', 'delete', 'export_csv', 'toggle_lock', 'import_assignments']); ?>>
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Phân Công Giảng Dạy</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>admin/holidays.php" <?php echo $navAttributes(['admin/holidays.php']); ?>>
+                    <a href="<?php echo $appBase; ?>admin/holidays.php" <?php echo $navAttributes(['admin/holidays.php', 'admin/holidays', 'admin/holidays/create', 'admin/holidays/edit']); ?>>
                         <span aria-hidden="true">📅</span><span class="sidebar-label">Lịch Nghỉ Lễ & SLA</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
+                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/list', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span aria-hidden="true">🎫</span><span class="sidebar-label">Triage & Phân Công Phiếu</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>agent/index.php" <?php echo $navAttributes(['agent/index.php']); ?>>
+                    <a href="<?php echo $appBase; ?>agent/index.php" <?php echo $navAttributes(['agent/index.php', 'agent/workbench', 'agent/dashboard']); ?>>
                         <span aria-hidden="true">👨‍💻</span><span class="sidebar-label">Bàn Làm Việc KTV</span>
                     </a>
                     <a href="<?php echo $appBase; ?>agent/ratings.php" <?php echo $navAttributes(['agent/ratings.php']); ?>>
@@ -226,13 +226,13 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
 
                 <?php elseif ($userRole === 'agent'): ?>
                     <!-- Menu Kỹ thuật viên (Agent) -->
-                    <a href="<?php echo $appBase; ?>agent/index.php" <?php echo $navAttributes(['agent/index.php']); ?>>
+                    <a href="<?php echo $appBase; ?>agent/index.php" <?php echo $navAttributes(['agent/index.php', 'agent/workbench', 'agent/dashboard']); ?>>
                         <span aria-hidden="true">👨‍💻</span><span class="sidebar-label">Bàn Làm Việc KTV</span>
                     </a>
                     <a href="<?php echo $appBase; ?>agent/ratings.php" <?php echo $navAttributes(['agent/ratings.php']); ?>>
                         <span aria-hidden="true">⭐</span><span class="sidebar-label">Đánh Giá & Nhận Xét CSAT</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
+                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/list', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span aria-hidden="true">🎫</span><span class="sidebar-label">Nhiệm Vụ Được Giao</span>
                     </a>
 
@@ -247,13 +247,13 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>assignments/index.php" <?php echo $navAttributes(['assignments/index.php'], ['', 'index', 'create', 'edit', 'delete', 'export_csv', 'toggle_lock', 'import_assignments']); ?>>
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Lớp Học Phần Phụ Trách</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>lecturer/lessons.php" <?php echo $navAttributes(['lecturer/lessons.php']); ?>>
+                    <a href="<?php echo $appBase; ?>lecturer/lessons.php" <?php echo $navAttributes(['lecturer/lessons.php', 'lecturer/lessons', 'lecturer/lessons/create', 'lecturer/lessons/update', 'lecturer/lessons/grade', 'lecturer/lessons/preview']); ?>>
                         <span aria-hidden="true">📝</span><span class="sidebar-label">Giao Bài Tập Từng Buổi</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
+                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/list', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span aria-hidden="true">📋</span><span class="sidebar-label">Phiếu Của Tôi</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/index.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
+                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/ratings', 'student/ratings/create', 'student/ratings/edit', 'student/index.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
                         <span aria-hidden="true">⭐</span><span class="sidebar-label">Đánh Giá Dịch Vụ (CSAT)</span>
                     </a>
 
@@ -262,16 +262,16 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>index.php" <?php echo $navAttributes(['index.php'], ['']); ?>>
                         <span aria-hidden="true">🏠</span><span class="sidebar-label">Cổng Sinh Viên</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>student/index.php?action=courses" <?php echo $navAttributes(['student/index.php', 'student/courses.php'], ['courses', 'course_detail', '']); ?>>
+                    <a href="<?php echo $appBase; ?>student/index.php?action=courses" <?php echo $navAttributes(['student/index.php', 'student/courses.php', 'student/courses', 'student/courses/detail'], ['courses', 'course_detail', '']); ?>>
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Học Phần & Bài Tập</span>
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/create.php" <?php echo $navAttributes(['tickets/create.php']); ?>>
                         <span aria-hidden="true">➕</span><span class="sidebar-label">Gửi Yêu Cầu Hỗ Trợ</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/show.php', 'tickets/edit.php']); ?>>
+                    <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/list', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span aria-hidden="true">📋</span><span class="sidebar-label">Phiếu Của Tôi</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/index.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
+                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/ratings', 'student/ratings/create', 'student/ratings/edit', 'student/index.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
                         <span aria-hidden="true">⭐</span><span class="sidebar-label">Đánh Giá Dịch Vụ (CSAT)</span>
                     </a>
                 <?php endif; ?>

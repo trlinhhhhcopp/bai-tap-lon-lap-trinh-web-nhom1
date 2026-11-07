@@ -25,15 +25,11 @@ spl_autoload_register(function ($class) {
 require_once __DIR__ . '/../config/database.php';
 
 // Nạp các Controller thành viên và tạo alias namespace chuẩn mực
-require_once __DIR__ . '/Controllers/Admin/HolidayController.php';
 require_once __DIR__ . '/Controllers/Lecturer/CourseAssignmentController.php';
 require_once __DIR__ . '/Controllers/Lecturer/LecturerLessonController.php';
 require_once __DIR__ . '/Controllers/Student/CourseController.php';
 require_once __DIR__ . '/Controllers/Student/RatingController.php';
 
-if (!class_exists('App\Controllers\Admin\HolidayController')) {
-    class_alias('HolidayController', 'App\Controllers\Admin\HolidayController');
-}
 if (!class_exists('App\Controllers\Lecturer\CourseAssignmentController')) {
     class_alias('CourseAssignmentController', 'App\Controllers\Lecturer\CourseAssignmentController');
 }
@@ -106,23 +102,28 @@ function bootstrapRouter(): Router {
     $router->get('/tickets/attachment', [StudentDashboardController::class, 'downloadAttachment']);
 
     // Môn học & Bài tập sinh viên (Nguyễn Ánh Nhi)
-    $router->get('/student/courses', [CourseController::class, 'index']);
-    $router->get('/student/courses/detail', [CourseController::class, 'detail']);
-    $router->post('/student/courses/submit', [CourseController::class, 'submitAssignment']);
+    $router->get('/student/courses', [CourseController::class, 'index'], [AuthMiddleware::class]);
+    $router->get('/student/courses/detail', [CourseController::class, 'detail'], [AuthMiddleware::class]);
+    $router->post('/student/courses/submit', [CourseController::class, 'submitAssignment'], [AuthMiddleware::class]);
+    $router->get('/student/courses/delete-submission', [CourseController::class, 'deleteSubmission'], [AuthMiddleware::class]);
+    $router->post('/student/courses/delete-submission', [CourseController::class, 'deleteSubmission'], [AuthMiddleware::class]);
+    $router->get('/student/courses/lessons', [CourseController::class, 'apiLessons'], [AuthMiddleware::class]);
 
     // Đánh giá CSAT 5 sao (Nguyễn Ánh Nhi)
-    $router->get('/student/ratings', [RatingController::class, 'index']);
-    $router->get('/student/ratings/create', [RatingController::class, 'create']);
-    $router->post('/student/ratings/create', [RatingController::class, 'create']);
-    $router->get('/student/ratings/edit', [RatingController::class, 'edit']);
-    $router->post('/student/ratings/edit', [RatingController::class, 'edit']);
+    $router->get('/student/ratings', [RatingController::class, 'index'], [AuthMiddleware::class]);
+    $router->get('/student/ratings/create', [RatingController::class, 'create'], [AuthMiddleware::class]);
+    $router->post('/student/ratings/create', [RatingController::class, 'create'], [AuthMiddleware::class]);
+    $router->get('/student/ratings/edit', [RatingController::class, 'edit'], [AuthMiddleware::class]);
+    $router->post('/student/ratings/edit', [RatingController::class, 'edit'], [AuthMiddleware::class]);
+    $router->get('/student/ratings/delete', [RatingController::class, 'delete'], [AuthMiddleware::class]);
+    $router->post('/student/ratings/delete', [RatingController::class, 'delete'], [AuthMiddleware::class]);
 
     // =========================================================================
     // 4. BÀN LÀM VIỆC KỸ THUẬT VIÊN (PHẠM THỊ THANH NGÂN PHỤ TRÁCH)
     // =========================================================================
-    $router->get('/agent/workbench', [AgentDashboardController::class, 'index']);
-    $router->get('/agent/dashboard', [AgentDashboardController::class, 'index']);
-    $router->post('/agent/workbench', [AgentDashboardController::class, 'index']);
+    $router->get('/agent/workbench', [AgentDashboardController::class, 'index'], [AuthMiddleware::class]);
+    $router->get('/agent/dashboard', [AgentDashboardController::class, 'index'], [AuthMiddleware::class]);
+    $router->post('/agent/workbench', [AgentDashboardController::class, 'index'], [AuthMiddleware::class]);
 
     // =========================================================================
     // 5. QUẢN LÝ PHIẾU HỖ TRỢ ITIL (TOÀN NHÓM PHỐI HỢP)
@@ -131,7 +132,9 @@ function bootstrapRouter(): Router {
     $router->post('/tickets/show', [TicketController::class, 'show']);
     $router->get('/tickets/create', [TicketController::class, 'create']);
     $router->post('/tickets/create', [TicketController::class, 'create']);
-    $router->get('/tickets', [TicketController::class, 'index']);
+    $router->get('/tickets', [TicketController::class, 'index'], [AuthMiddleware::class]);
+    $router->get('/tickets/list', [TicketController::class, 'index'], [AuthMiddleware::class]);
+    $router->post('/tickets/list', [TicketController::class, 'index'], [AuthMiddleware::class]);
 
     // =========================================================================
     // 6. TRUNG TÂM ĐIỀU HÀNH ADMIN (PHAN CÔNG THÀNH & TRẦN THỤC LINH)
@@ -163,8 +166,11 @@ function bootstrapRouter(): Router {
     $router->post('/lecturer/assignments/create', [CourseAssignmentController::class, 'create']);
     $router->get('/lecturer/assignments/edit', [CourseAssignmentController::class, 'edit']);
     $router->post('/lecturer/assignments/edit', [CourseAssignmentController::class, 'edit']);
-    $router->get('/lecturer/lessons', [LecturerLessonController::class, 'index']);
-    $router->post('/lecturer/lessons/grade', [LecturerLessonController::class, 'grade']);
+    $router->get('/lecturer/lessons', [LecturerLessonController::class, 'index'], [AuthMiddleware::class]);
+    $router->post('/lecturer/lessons/create', [LecturerLessonController::class, 'create'], [AuthMiddleware::class]);
+    $router->post('/lecturer/lessons/update', [LecturerLessonController::class, 'update'], [AuthMiddleware::class]);
+    $router->post('/lecturer/lessons/grade', [LecturerLessonController::class, 'grade'], [AuthMiddleware::class]);
+    $router->get('/lecturer/lessons/preview', [LecturerLessonController::class, 'preview'], [AuthMiddleware::class]);
 
     return $router;
 }

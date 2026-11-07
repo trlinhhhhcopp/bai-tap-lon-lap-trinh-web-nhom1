@@ -625,8 +625,18 @@
                 </tr>
                 <tr class="toc-l2">
                     <td class="col-num">3.1</td>
-                    <td class="col-title"><a href="#muc-3-1">3.1. Kiến trúc tổng quát</a></td>
+                    <td class="col-title"><a href="#muc-3-1">3.1. Kiến trúc tổng quát (Luồng 2 - Clean Router MVC)</a></td>
                     <td class="col-page">9</td>
+                </tr>
+                <tr class="toc-l3">
+                    <td class="col-num">3.1.1</td>
+                    <td class="col-title"><a href="#muc-3-1-1">3.1.1. Sơ đồ cây thư mục mã nguồn tổng thể của dự án</a></td>
+                    <td class="col-page">9</td>
+                </tr>
+                <tr class="toc-l3">
+                    <td class="col-num">3.1.2</td>
+                    <td class="col-title"><a href="#muc-3-1-2">3.1.2. Bảng tổng hợp vị trí file code và chức năng chi tiết từng file</a></td>
+                    <td class="col-page">10</td>
                 </tr>
                 <tr class="toc-l2">
                     <td class="col-num">3.2</td>
@@ -816,7 +826,7 @@
                 <li><em>Cổng Học Phần (<code>student/courses.php</code>):</em> Xem danh sách 6 môn học trong học kỳ, xem các buổi học, bài tập được giao, hạn nộp bài, điểm số thang điểm 10 và lời nhận xét của Giảng viên.</li>
                 <li><em>Nộp bài tập buổi học:</em> Đính kèm tệp tin bài làm (Zip, PDF, Word) lên hệ thống an toàn; có khả năng nộp lại bài nếu bài học còn hạn hoặc đã được Giảng viên mở lại hạn.</li>
                 <li><em>Tạo phiếu hỗ trợ (<code>tickets/create.php</code>):</em> Chọn 1 trong 5 dịch vụ CNTT (Tài khoản, Wi-Fi, QLĐT, Canvas LMS, Microsoft 365). Nếu gặp sự cố nộp bài, sinh viên chọn đích danh Buổi học và Lớp học phần liên quan để tự động thiết lập liên kết học thuật.</li>
-                <li><em>Chi tiết phiếu hỗ trợ (<code>tickets/show.php</code>):</em> Trao đổi hai chiều qua khung thảo luận với KTV, theo dõi tiến độ cam kết SLA.</li>
+                <li><em>Chi tiết phiếu hỗ trợ (<code>/tickets/show</code> (hoặc <code>TicketController</code>)):</em> Trao đổi hai chiều qua khung thảo luận với KTV, theo dõi tiến độ cam kết SLA.</li>
                 <li><em>Nghiệm thu và Đánh giá CSAT (<code>student/ratings.php</code>):</em> Khi KTV giải quyết xong (<code>resolved</code>), sinh viên chấm điểm từ 1 đến 5 sao và gửi góp ý dịch vụ.</li>
                 <li><em>Khôi phục mật khẩu tự phục vụ (<code>/forgot-password</code>):</em> Nhập email hoặc mã sinh viên để nhận liên kết đổi mật khẩu về Gmail cá nhân/trường cấp.</li>
                 <li><em>Quản lý hồ sơ cá nhân:</em> Cập nhật số điện thoại, đổi mật khẩu chủ động, tải lên ảnh đại diện cá nhân.</li>
@@ -1075,36 +1085,451 @@
     <!-- ===================================================================== -->
     <h1 class="part-heading" id="phan-3">3. PHẦN 3: THIẾT KẾ KIẾN TRÚC VÀ LUỒNG HỆ THỐNG</h1>
 
-    <h2 class="section-heading" id="muc-3-1">3.1. Kiến trúc tổng quát</h2>
+    <h2 class="section-heading" id="muc-3-1">3.1. Kiến trúc tổng quát (Luồng 2 - Clean Router MVC Thuần OOP)</h2>
     <p>
-        Hệ thống được phát triển theo mô hình <strong>MVC phân tầng</strong> trên nền tảng PHP 8, tách biệt giữa tầng điều hướng, tầng nghiệp vụ, tầng truy xuất dữ liệu và tầng hiển thị giao diện:
+        Toàn bộ hệ thống Cổng Hỗ trợ Kỹ thuật CNTT (Helpdesk Online) được chuẩn hóa và tái cấu trúc hoàn toàn theo <strong>Luồng 2: Clean MVC Router Thuần OOP</strong> trên nền tảng PHP 8.2+, tuân thủ tiêu chuẩn mã nguồn mở quốc tế PSR-4 và chuẩn khung vận hành ITIL v4. Kiến trúc phân tách rõ ràng trách nhiệm giữa 7 tầng độc lập:
     </p>
     <ul>
-        <li><strong>Tầng Controller (<code>app/Controllers/</code>):</strong> Phân chia độc lập theo vai trò người dùng (<code>Admin/</code>, <code>Lecturer/</code>, <code>Student/</code>) và Controller dùng chung (<code>TicketController</code>, <code>AuthController</code>, <code>GuestTicketController</code>).</li>
-        <li><strong>Tầng Service (<code>app/Services/</code>):</strong> Chứa logic nghiệp vụ lõi: <code>SlaService.php</code> (thuật toán SLA), <code>TicketService.php</code> (điều phối vé, cảnh báo trùng lặp), <code>UploadService.php</code> (kiểm soát file tải lên an toàn), <code>NotificationService.php</code> (phát thông báo realtime), <code>SpreadsheetImportService.php</code> (nhập file Excel/CSV).</li>
-        <li><strong>Tầng Model và Repository (<code>app/Models/</code>, <code>TicketRepository</code>):</strong> Đại diện cho 14 bảng CSDL, đóng gói truy vấn bằng PDO Prepared Statements, ngăn ngừa rò rỉ câu truy vấn SQL ra ngoài View.</li>
+        <li><strong>Tầng Front Controller (<code>index.php</code>):</strong> Điểm tiếp nhận duy nhất (Single Point of Entry) với độ dài siêu tinh gọn chỉ 26 dòng lệnh, khởi tạo môi trường thông qua <code>app/bootstrap.php</code> và chuyển giao toàn quyền điều phối cho bộ định tuyến trung tâm <code>App\Core\Router->dispatch()</code>.</li>
+        <li><strong>Tầng Khởi tạo & Định tuyến (<code>app/bootstrap.php</code>, <code>app/Core/Router.php</code>):</strong> Tự động nạp mã nguồn (PSR-4 Autoloading), thiết lập kết nối CSDL PDO Singleton, bóc tách URI chuẩn hóa (loại bỏ tiền tố thư mục trên máy chủ XAMPP), hỗ trợ cả Clean URL RESTful lẫn ánh xạ tương thích ngược các query parameter truyền thống (<code>?action=...</code>).</li>
+        <li><strong>Tầng Kiểm soát Truy cập & Middleware (<code>app/Middlewares/</code>):</strong> Tầng lọc bảo vệ trung gian thực thi kiểm tra tính hợp lệ của phiên làm việc, chống giả mạo yêu cầu (CSRF Protection) và kiểm soát phân quyền dựa trên vai trò nghiêm ngặt (RBAC - Role-Based Access Control).</li>
+        <li><strong>Tầng Điều khiển (<code>app/Controllers/</code>):</strong> Tiếp nhận yêu cầu HTTP, kiểm tra dữ liệu đầu vào (Input Validation), điều phối luồng nghiệp vụ thông qua Tầng Dịch vụ và kết xuất dữ liệu ra View hoặc định dạng JSON API. Tách thành các namespace chuyên biệt: <code>Admin/</code>, <code>Agent/</code>, <code>Student/</code>, <code>Lecturer/</code>.</li>
+        <li><strong>Tầng Xử lý Nghiệp vụ Lõi (<code>app/Services/</code>):</strong> Đóng gói các quy tắc logic nghiệp vụ chuyên sâu độc lập với giao diện: Thuật toán Triage điều phối phiếu thông minh, Động cơ tính hạn vi phạm SLA giờ hành chính, Kiểm duyệt an toàn tệp tải lên & giải mã ảnh chụp Webcam Base64, Phát thông báo thời gian thực và Nhập dữ liệu hàng loạt từ Excel/CSV.</li>
+        <li><strong>Tầng Truy xuất Dữ liệu & Thực thể (<code>app/Models/</code>, <code>app/Repositories/TicketRepository.php</code>):</strong> Sử dụng Repository Pattern kết hợp Active Record Models, đóng gói 100% câu lệnh truy vấn bằng PDO Prepared Statements, tham số hóa chặt chẽ ngăn ngừa triệt để lỗ hổng SQL Injection.</li>
+        <li><strong>Tầng Trình diễn Giao diện (<code>views/</code>, <code>includes/</code>):</strong> Kết xuất HTML5 ngữ nghĩa kết hợp Tailwind CSS utility engine, tích hợp JavaScript chụp ảnh Webcam trực tiếp (HTML5 Canvas), bộ đếm thời gian ngược Flash Message và cơ chế thu gọn/mở rộng bảng dữ liệu linh hoạt.</li>
     </ul>
 
     <div class="diagram-frame">
         <div class="wf-row">
-            <div class="wf-box wf-box-highlight"><strong>Người dùng / trình duyệt</strong><br>Sinh viên · Giảng viên · KTV · Quản trị viên · Khách cứu hộ</div>
+            <div class="wf-box wf-box-highlight"><strong>Khách / Người dùng (Client Trình duyệt Web)</strong><br>Sinh viên · Giảng viên bộ môn · Kỹ thuật viên CNTT · Quản trị viên · Khách cứu hộ</div>
         </div>
-        <div class="stage-arrow">&darr;</div>
+        <div class="stage-arrow">&darr; <em>Gửi HTTP Request (GET / POST)</em></div>
         <div class="wf-row">
-            <div class="wf-box"><strong>Điều phối yêu cầu</strong><br><code>index.php</code> · <code>tickets/*</code> · <code>student/*</code> · <code>lecturer/*</code> · <code>agent/*</code> · <code>admin/*</code><br><em>(Kiểm tra phiên đăng nhập, CSRF Token, yêu cầu đổi mật khẩu lần đầu và RBAC)</em></div>
+            <div class="wf-box" style="background:#fef3c7; border-color:#d97706;"><strong>Front Controller (<code>index.php</code>)</strong> &amp; <strong>Rewrite Engine (<code>.htaccess</code>)</strong><br>Điểm tiếp nhận duy nhất (26 dòng) &rarr; Nạp <code>app/bootstrap.php</code> &rarr; Gọi <code>Router->dispatch()</code></div>
         </div>
-        <div class="stage-arrow">&darr;</div>
+        <div class="stage-arrow">&darr; <em>Phân giải URI &amp; Chạy Middleware</em></div>
         <div class="wf-row">
-            <div class="wf-box"><strong>Tầng điều khiển</strong><br><code>AuthController</code><br><code>GuestTicketController</code><br><code>CourseController</code></div>
-            <div class="wf-box"><strong>Tầng xử lý nghiệp vụ</strong><br><code>TicketService</code> · <code>SlaService</code><br><code>UploadService</code> · <code>NotificationService</code><br><code>SpreadsheetImportService</code></div>
-            <div class="wf-box"><strong>Tầng dữ liệu</strong><br><code>TicketRepository</code> · <code>User</code><br><code>CourseLesson</code> · <code>Rating</code><br><code>Holiday</code> · <code>PasswordReset</code></div>
+            <div class="wf-box" style="background:#e0f2fe; border-color:#0284c7;"><strong>Tầng Bộ Định Tuyến (<code>app/Core/Router.php</code>) &amp; Tầng Middleware (<code>app/Middlewares/</code>)</strong><br><code>AuthMiddleware</code> · <code>AdminMiddleware</code> · <code>AgentMiddleware</code> · <code>StudentMiddleware</code> · <code>LecturerMiddleware</code><br><em>(Bóc tách tiền tố XAMPP, kiểm tra phiên Session, xác thực CSRF Token &amp; kiểm tra vai trò RBAC)</em></div>
         </div>
-        <div class="stage-arrow">&darr;</div>
+        <div class="stage-arrow">&darr; <em>Điều hướng đến Controller / Action đích</em></div>
         <div class="wf-row">
-            <div class="wf-box wf-box-success"><strong>Hệ Quản Trị Cơ Sở Dữ Liệu MySQL 8 InnoDB (<code>helpdesk_thudo</code>)</strong><br>14 Bảng Chuẩn Hóa 3NF · Bảng mã <code>utf8mb4_unicode_ci</code> · Ràng buộc Khóa ngoại Toàn vẹn</div>
+            <div class="wf-box"><strong>Tầng Điều Khiển (Controllers)</strong><br><code>AuthController</code><br><code>GuestTicketController</code><br><code>TicketController</code><br><code>RatingController</code><br><code>CourseController</code><br><code>AdminDashboardController</code><br><code>AgentDashboardController</code><br><code>StudentDashboardController</code><br><code>CourseAssignmentController</code></div>
+            <div class="wf-box"><strong>Tầng Nghiệp Vụ Lõi (Services)</strong><br><code>TicketService</code> (Triage &amp; Chống spam)<br><code>SlaService</code> (Tính SLA trừ lễ &amp; ngoài giờ)<br><code>UploadService</code> (Kiểm duyệt &amp; Webcam Base64)<br><code>NotificationService</code> (Chuông thông báo)<br><code>SpreadsheetImportService</code> (Nhập Excel/CSV)</div>
+            <div class="wf-box"><strong>Tầng Dữ Liệu (Models &amp; Repositories)</strong><br><code>TicketRepository</code> (Đóng gói PDO Statement)<br><code>User</code> · <code>Ticket</code> · <code>Course</code><br><code>CourseLesson</code> · <code>Rating</code><br><code>Holiday</code> · <code>PasswordReset</code></div>
+        </div>
+        <div class="stage-arrow">&darr; <em>Kết xuất View hoặc Truy vấn CSDL</em></div>
+        <div class="wf-row">
+            <div class="wf-box" style="background:#f3e8ff; border-color:#9333ea;"><strong>Tầng Giao Diện (<code>views/</code>, <code>app/Core/View.php</code>)</strong><br>Views Tailwind CSS theo vai trò: <code>auth/</code> · <code>guest/</code> · <code>student/</code> · <code>agent/</code> · <code>admin/</code> · <code>lecturer/</code> · Partials <code>includes/</code></div>
+            <div class="wf-box wf-box-success"><strong>Hệ Quản Trị Cơ Sở Dữ Liệu MySQL 8 InnoDB (<code>helpdesk_thudo</code>)</strong><br>14 Bảng Chuẩn Hóa 3NF · Bảng mã <code>utf8mb4_unicode_ci</code> · Ràng buộc Khóa ngoại Toàn vẹn (Foreign Keys)</div>
         </div>
     </div>
-    <div class="figure-caption">Hình 1: Sơ đồ kiến trúc MVC phân tầng của hệ thống hỗ trợ CNTT</div>
+    <div class="figure-caption">Hình 1: Sơ đồ kiến trúc MVC phân tầng của hệ thống hỗ trợ CNTT theo Luồng 2 (Router MVC thuần OOP)</div>
+
+    <!-- TIỂU MỤC 3.1.1: SƠ ĐỒ CÂY THƯ MỤC MÃ NGUỒN TỔNG THỂ -->
+    <h3 class="subsection-heading" id="muc-3-1-1">3.1.1. Sơ đồ cây thư mục mã nguồn tổng thể của dự án (Luồng 2)</h3>
+    <p>
+        Cấu trúc thư mục được thiết kế mạch lạc, tường minh theo mô hình Clean Architecture, loại bỏ hoàn toàn các file script độc lập nguyên khối, gom nhóm các thành phần theo đúng phân tầng kiến trúc:
+    </p>
+
+    <div style="background:#0f172a; color:#f8fafc; padding:12px 16px; border-radius:6px; font-family:Consolas, 'Courier New', monospace; font-size:8.5pt; line-height:1.45; overflow-x:auto; margin:8px 0 14px 0; border:1px solid #334155;">
+<span style="color:#38bdf8; font-weight:bold;">bai-tap-lon-lap-trinh-web-nhom1/</span>
+├── <span style="color:#fbbf24; font-weight:bold;">index.php</span>                          <span style="color:#94a3b8;"># Front Controller duy nhất tại root (26 dòng), nạp bootstrap &amp; dispatch Router</span>
+├── <span style="color:#fbbf24; font-weight:bold;">.htaccess</span>                          <span style="color:#94a3b8;"># Cấu hình Apache Rewrite engine chuyển hướng mọi request về index.php</span>
+├── <span style="color:#38bdf8;">public/</span>
+│   └── <span style="color:#fbbf24;">index.php</span>                      <span style="color:#94a3b8;"># Front Controller dự phòng cho môi trường máy chủ cấu hình public docroot</span>
+├── <span style="color:#38bdf8; font-weight:bold;">app/</span>
+│   ├── <span style="color:#4ade80; font-weight:bold;">bootstrap.php</span>                  <span style="color:#94a3b8;"># Khởi tạo môi trường, PSR-4 Autoload, nạp CSDL PDO, class alias, đăng ký 48 routes</span>
+│   ├── <span style="color:#38bdf8;">Core/</span>                          <span style="color:#94a3b8;"># Nhân khung làm việc MVC thuần OOP</span>
+│   │   ├── <span style="color:#f472b6;">Router.php</span>                 <span style="color:#94a3b8;"># Bộ định tuyến URL, URL dispatcher, query action mapper (?action=...)</span>
+│   │   ├── <span style="color:#f472b6;">Controller.php</span>             <span style="color:#94a3b8;"># Lớp cơ sở Base Controller (cung cấp view, json, redirect, flash, user)</span>
+│   │   ├── <span style="color:#f472b6;">View.php</span>                   <span style="color:#94a3b8;"># Trình kết xuất giao diện View renderer an toàn</span>
+│   │   ├── <span style="color:#f472b6;">Session.php</span>                <span style="color:#94a3b8;"># Quản lý phiên làm việc an toàn, chống session hijacking &amp; lưu flash message</span>
+│   │   └── <span style="color:#f472b6;">Csrf.php</span>                   <span style="color:#94a3b8;"># Bộ sinh và kiểm tra token CSRF bảo vệ toàn bộ biểu mẫu POST</span>
+│   ├── <span style="color:#38bdf8;">Middlewares/</span>                   <span style="color:#94a3b8;"># Tầng trung gian kiểm soát truy cập (RBAC)</span>
+│   │   ├── <span style="color:#a78bfa;">AuthMiddleware.php</span>         <span style="color:#94a3b8;"># Kiểm tra trạng thái phiên đăng nhập bắt buộc</span>
+│   │   ├── <span style="color:#a78bfa;">AdminMiddleware.php</span>        <span style="color:#94a3b8;"># Phân quyền Quản trị viên hệ thống (role = admin)</span>
+│   │   ├── <span style="color:#a78bfa;">AgentMiddleware.php</span>        <span style="color:#94a3b8;"># Phân quyền Kỹ thuật viên CNTT (role = agent)</span>
+│   │   ├── <span style="color:#a78bfa;">StudentMiddleware.php</span>      <span style="color:#94a3b8;"># Phân quyền Sinh viên (role = student)</span>
+│   │   └── <span style="color:#a78bfa;">LecturerMiddleware.php</span>     <span style="color:#94a3b8;"># Phân quyền Giảng viên bộ môn (role = lecturer)</span>
+│   ├── <span style="color:#38bdf8;">Controllers/</span>                   <span style="color:#94a3b8;"># Tầng điều khiển nghiệp vụ phân hệ</span>
+│   │   ├── <span style="color:#34d399;">AuthController.php</span>         <span style="color:#94a3b8;"># Đăng nhập, đăng xuất, đổi MK lần đầu, SSPR quên MK, quick-login</span>
+│   │   ├── <span style="color:#34d399;">GuestTicketController.php</span>  <span style="color:#94a3b8;"># Trạm cứu hộ tài khoản khách (chụp webcam CCCD/thẻ SV, cấp mã #HD-...)</span>
+│   │   ├── <span style="color:#34d399;">TicketController.php</span>       <span style="color:#94a3b8;"># Quản lý xem chi tiết phiếu hỗ trợ, tạo vé và hủy vé</span>
+│   │   ├── <span style="color:#34d399;">RatingController.php</span>       <span style="color:#94a3b8;"># Tiếp nhận và tổng hợp đánh giá chất lượng CSAT 1-5 sao</span>
+│   │   ├── <span style="color:#34d399;">CourseController.php</span>       <span style="color:#94a3b8;"># Xem danh sách học phần và tiến độ nộp bài của sinh viên</span>
+│   │   ├── <span style="color:#38bdf8;">Admin/</span>                     <span style="color:#94a3b8;"># Phân hệ Quản trị viên</span>
+│   │   │   ├── <span style="color:#34d399;">AdminDashboardController.php</span> <span style="color:#94a3b8;"># Bảng điều hành Admin, giám sát tải 5 KTV, cảnh báo diện rộng</span>
+│   │   │   ├── <span style="color:#34d399;">UserController.php</span>           <span style="color:#94a3b8;"># Quản lý tài khoản người dùng, phân quyền, khóa nick vi phạm</span>
+│   │   │   └── <span style="color:#34d399;">HolidayController.php</span>        <span style="color:#94a3b8;"># Quản lý danh mục ngày nghỉ lễ phục vụ tính giờ SLA</span>
+│   │   ├── <span style="color:#38bdf8;">Agent/</span>                     <span style="color:#94a3b8;"># Phân hệ Kỹ thuật viên</span>
+│   │   │   └── <span style="color:#34d399;">AgentDashboardController.php</span> <span style="color:#94a3b8;"># Bàn làm việc KTV (/agent/workbench), đóng trùng lặp, mở deadline</span>
+│   │   ├── <span style="color:#38bdf8;">Student/</span>                   <span style="color:#94a3b8;"># Phân hệ Sinh viên</span>
+│   │   │   └── <span style="color:#34d399;">StudentDashboardController.php</span> <span style="color:#94a3b8;"># Cổng sinh viên, tạo phiếu (Webcam/File), chống spam 24h</span>
+│   │   └── <span style="color:#38bdf8;">Lecturer/</span>                  <span style="color:#94a3b8;"># Phân hệ Giảng viên</span>
+│   │       ├── <span style="color:#34d399;">CourseAssignmentController.php</span> <span style="color:#94a3b8;"># Quản lý lớp học phần, duyệt đơn gia hạn bài tập từ KTV</span>
+│   │       └── <span style="color:#34d399;">LecturerLessonController.php</span>   <span style="color:#94a3b8;"># Quản lý buổi học, ban hành đề bài và tài liệu học tập</span>
+│   ├── <span style="color:#38bdf8;">Services/</span>                      <span style="color:#94a3b8;"># Tầng xử lý nghiệp vụ lõi (Business Logic Layer)</span>
+│   │   ├── <span style="color:#f59e0b;">TicketService.php</span>          <span style="color:#94a3b8;"># Thuật toán Triage điều phối Least-Loaded, Tie-breaker, chống gửi trùng 24h</span>
+│   │   ├── <span style="color:#f59e0b;">SlaService.php</span>             <span style="color:#94a3b8;"># Động cơ tính SLA trừ ngoài giờ (sau 17h30), nghỉ trưa, T7, CN, ngày lễ</span>
+│   │   ├── <span style="color:#f59e0b;">UploadService.php</span>          <span style="color:#94a3b8;"># Kiểm duyệt file an toàn, giới hạn 5MB, khử trùng tên, giải mã Base64 Webcam</span>
+│   │   ├── <span style="color:#f59e0b;">NotificationService.php</span>    <span style="color:#94a3b8;"># Quản lý phát và thu hồi chuông thông báo hệ thống thời gian thực</span>
+│   │   └── <span style="color:#f59e0b;">SpreadsheetImportService.php</span> <span style="color:#94a3b8;"># Nhập danh sách tài khoản hàng loạt bằng Excel/CSV</span>
+│   ├── <span style="color:#38bdf8;">Models/</span>                        <span style="color:#94a3b8;"># Tầng thực thể dữ liệu (Active Record Domain Models)</span>
+│   │   ├── <span style="color:#38bdf8;">User.php</span>                   <span style="color:#94a3b8;"># Thực thể người dùng, quản lý active_tickets_count và khóa tài khoản</span>
+│   │   ├── <span style="color:#38bdf8;">Ticket.php</span>                 <span style="color:#94a3b8;"># Thực thể phiếu hỗ trợ CNTT</span>
+│   │   ├── <span style="color:#38bdf8;">Course.php</span>                 <span style="color:#94a3b8;"># Thực thể học phần</span>
+│   │   ├── <span style="color:#38bdf8;">CourseLesson.php</span>           <span style="color:#94a3b8;"># Thực thể buổi học, tài liệu và hạn nộp bài tập</span>
+│   │   ├── <span style="color:#38bdf8;">Rating.php</span>                 <span style="color:#94a3b8;"># Thực thể đánh giá chất lượng CSAT</span>
+│   │   ├── <span style="color:#38bdf8;">Holiday.php</span>                <span style="color:#94a3b8;"># Thực thể ngày nghỉ lễ chính thức</span>
+│   │   └── <span style="color:#38bdf8;">PasswordReset.php</span>          <span style="color:#94a3b8;"># Thực thể token khôi phục mật khẩu SSPR</span>
+│   └── <span style="color:#38bdf8;">Repositories/</span>                  <span style="color:#94a3b8;"># Tầng truy xuất CSDL chuyên biệt</span>
+│       └── <span style="color:#f87171;">TicketRepository.php</span>       <span style="color:#94a3b8;"># Đóng gói truy vấn phức tạp của bảng tickets bằng PDO Prepared Statements</span>
+├── <span style="color:#38bdf8; font-weight:bold;">views/</span>                             <span style="color:#94a3b8;"># Tầng giao diện hiển thị (Views)</span>
+│   ├── <span style="color:#38bdf8;">auth/</span>                          <span style="color:#94a3b8;"># Giao diện xác thực (login, first_login, forgot_password, reset_password)</span>
+│   ├── <span style="color:#38bdf8;">guest/</span>                         <span style="color:#94a3b8;"># Giao diện cứu hộ tài khoản khách (create_ticket với Webcam, lookup tra cứu)</span>
+│   ├── <span style="color:#38bdf8;">student/</span>                       <span style="color:#94a3b8;"># Giao diện sinh viên (dashboard với Webcam/File, courses, ratings)</span>
+│   ├── <span style="color:#38bdf8;">agent/</span>                         <span style="color:#94a3b8;"># Giao diện kỹ thuật viên (workbench, modal đóng trùng lặp, mở lại deadline)</span>
+│   ├── <span style="color:#38bdf8;">admin/</span>                         <span style="color:#94a3b8;"># Giao diện quản trị (dashboard giám sát 5 KTV, users, holidays)</span>
+│   └── <span style="color:#38bdf8;">lecturer/</span>                      <span style="color:#94a3b8;"># Giao diện giảng viên (dashboard lớp học phần, lessons)</span>
+├── <span style="color:#38bdf8; font-weight:bold;">includes/</span>                          <span style="color:#94a3b8;"># Thành phần giao diện dùng chung (Partials)</span>
+│   ├── <span style="color:#e2e8f0;">navbar.php</span>                     <span style="color:#94a3b8;"># Thanh điều hướng đa quyền tự động thích ứng theo vai trò phiên</span>
+│   ├── <span style="color:#e2e8f0;">footer.php</span>                     <span style="color:#94a3b8;"># Chân trang chuẩn nhận diện ĐH Thủ Đô Hà Nội</span>
+│   └── <span style="color:#e2e8f0;">notification_banner.php</span>        <span style="color:#94a3b8;"># Thanh thông báo cảnh báo sự cố diện rộng khẩn cấp toàn trường</span>
+├── <span style="color:#38bdf8; font-weight:bold;">config/</span>
+│   └── <span style="color:#e2e8f0;">database.php</span>                   <span style="color:#94a3b8;"># Cấu hình kết nối CSDL PDO Singleton với bảng mã utf8mb4</span>
+├── <span style="color:#38bdf8; font-weight:bold;">storage/</span>
+│   ├── <span style="color:#94a3b8;">uploads/</span>                       <span style="color:#94a3b8;"># Thư mục lưu trữ tệp đính kèm và ảnh chụp Webcam được khử trùng an toàn</span>
+│   └── <span style="color:#94a3b8;">mailbox.json</span>                   <span style="color:#94a3b8;"># Hòm thư nội bộ giả lập gửi email SSPR phục vụ môi trường demo nội bộ</span>
+└── <span style="color:#38bdf8; font-weight:bold;">docs/</span>                              <span style="color:#94a3b8;"># Báo cáo kỹ thuật, sơ đồ kiến trúc, ngân hàng 600 câu hỏi và giao diện trắc nghiệm</span>
+    </div>
+
+    <!-- TIỂU MỤC 3.1.2: BẢNG TỔNG HỢP VỊ TRÍ FILE CODE VÀ CHỨC NĂNG TỪNG FILE -->
+    <h3 class="subsection-heading" id="muc-3-1-2">3.1.2. Bảng tổng hợp vị trí file code và chức năng chi tiết từng file</h3>
+    <p>
+        Bảng dưới đây tổng hợp chi tiết toàn bộ vị trí tệp tin mã nguồn (File Path), phân tầng kiến trúc, lớp/hàm chủ đạo và nhiệm vụ nghiệp vụ cụ thể của từng tệp trong dự án:
+    </p>
+
+    <div class="table-caption">Bảng 1B: Danh mục vị trí và chức năng chi tiết các tệp mã nguồn trong hệ thống Helpdesk</div>
+    <table class="academic-table" style="font-size: 8pt;">
+        <thead>
+            <tr>
+                <th style="width: 4%; text-align: center;">STT</th>
+                <th style="width: 25%;">Vị Trí Tệp Mã Nguồn (File Path)</th>
+                <th style="width: 11%;">Phân Tầng Kiến Trúc</th>
+                <th style="width: 18%;">Lớp / Hàm Chủ Đạo</th>
+                <th style="width: 42%;">Chức Năng &amp; Nhiệm Vụ Nghiệp Vụ Cụ Thể</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr style="background-color: #f8fafc; font-weight: bold;"><td colspan="5">I. TẦNG KHỞI TẠO, ĐIỀU HƯỚNG &amp; NHÂN KHUNG LÀM VIỆC (CORE &amp; ENTRY)</td></tr>
+            <tr>
+                <td style="text-align: center;">1</td>
+                <td><code>index.php</code></td>
+                <td>Front Controller</td>
+                <td><code>App\bootstrapRouter()</code>, <code>dispatch()</code></td>
+                <td>Điểm tiếp nhận HTTP Request duy nhất tại thư mục gốc (26 dòng), nạp file <code>app/bootstrap.php</code> và giao quyền xử lý toàn bộ cho Router.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">2</td>
+                <td><code>.htaccess</code></td>
+                <td>Server Config</td>
+                <td><code>RewriteEngine On</code>, <code>RewriteRule</code></td>
+                <td>Cấu hình máy chủ Apache chuyển hướng mọi yêu cầu URL không phải tệp tĩnh thực tế về <code>index.php</code>, bảo vệ các tệp ẩn và thư mục nội bộ.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">3</td>
+                <td><code>public/index.php</code></td>
+                <td>Front Controller</td>
+                <td><code>App\bootstrapRouter()</code></td>
+                <td>Điểm tiếp nhận dự phòng khi triển khai dự án trong môi trường máy chủ quy định document root trỏ vào thư mục <code>public/</code>.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">4</td>
+                <td><code>app/bootstrap.php</code></td>
+                <td>Bootstrap Engine</td>
+                <td><code>spl_autoload_register()</code>, <code>bootstrapRouter()</code></td>
+                <td>Khởi tạo môi trường ứng dụng: đăng ký PSR-4 Autoloader nạp tự động class, kết nối CSDL PDO, tạo class alias tương thích và đăng ký 48 routes hệ thống.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">5</td>
+                <td><code>app/Core/Router.php</code></td>
+                <td>Core Routing</td>
+                <td><code>Router::get()</code>, <code>post()</code>, <code>dispatch()</code></td>
+                <td>Bộ định tuyến URL trung tâm: bóc tách và chuẩn hóa URI (loại bỏ subfolder XAMPP), ánh xạ query legacy (<code>?action=...</code>), chạy Middleware và gọi Controller/Action.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">6</td>
+                <td><code>app/Core/Controller.php</code></td>
+                <td>Core Base Controller</td>
+                <td><code>view()</code>, <code>json()</code>, <code>redirect()</code>, <code>flash()</code>, <code>user()</code></td>
+                <td>Lớp trừu tượng cơ sở cung cấp các phương thức dùng chung cho toàn bộ các Controller con: kết xuất view, chuyển hướng chuẩn hóa URL, quản lý flash message.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">7</td>
+                <td><code>app/Core/View.php</code></td>
+                <td>Core View Renderer</td>
+                <td><code>View::render()</code></td>
+                <td>Bộ kết xuất giao diện an toàn: giải nén mảng dữ liệu (extract) thành biến view, nạp flash message và phiên người dùng hiện tại vào scope hiển thị.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">8</td>
+                <td><code>app/Core/Session.php</code></td>
+                <td>Core Session Manager</td>
+                <td><code>start()</code>, <code>user()</code>, <code>setFlash()</code>, <code>getFlash()</code></td>
+                <td>Quản lý phiên làm việc tập trung: khởi động session an toàn, chống session fixation, lưu trữ và tự động xóa thông báo flash sau 1 lần hiển thị.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">9</td>
+                <td><code>app/Core/Csrf.php</code></td>
+                <td>Core Security</td>
+                <td><code>generateToken()</code>, <code>validateToken()</code></td>
+                <td>Bộ sinh mã ngẫu nhiên bảo mật cao và xác thực token CSRF trên tất cả các biểu mẫu gửi bằng phương thức POST để ngăn chặn tấn công giả mạo yêu cầu.</td>
+            </tr>
+            <tr style="background-color: #f8fafc; font-weight: bold;"><td colspan="5">II. TẦNG KIỂM SOÁT PHÂN QUYỀN TRUNG GIAN (MIDDLEWARES)</td></tr>
+            <tr>
+                <td style="text-align: center;">10</td>
+                <td><code>app/Middlewares/AuthMiddleware.php</code></td>
+                <td>Middleware RBAC</td>
+                <td><code>handle()</code></td>
+                <td>Kiểm tra xem người dùng đã đăng nhập hay chưa; nếu chưa đăng nhập sẽ lưu thông báo cảnh báo và chuyển hướng ngay về trang đăng nhập <code>/login</code>.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">11</td>
+                <td><code>app/Middlewares/AdminMiddleware.php</code></td>
+                <td>Middleware RBAC</td>
+                <td><code>handle()</code></td>
+                <td>Kiểm tra bắt buộc vai trò người dùng phải là Quản trị viên (<code>role = 'admin'</code>); từ chối và chặn truy cập nếu người dùng không đủ đặc quyền.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">12</td>
+                <td><code>app/Middlewares/AgentMiddleware.php</code></td>
+                <td>Middleware RBAC</td>
+                <td><code>handle()</code></td>
+                <td>Kiểm tra bắt buộc vai trò là Kỹ thuật viên CNTT (<code>role = 'agent'</code>) để bảo vệ không gian Bàn làm việc KTV và các thao tác xử lý phiếu hỗ trợ.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">13</td>
+                <td><code>app/Middlewares/StudentMiddleware.php</code></td>
+                <td>Middleware RBAC</td>
+                <td><code>handle()</code></td>
+                <td>Kiểm tra bắt buộc vai trò là Sinh viên (<code>role = 'student'</code>) để truy cập cổng sinh viên tạo phiếu, nộp bài học phần và đánh giá chất lượng CSAT.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">14</td>
+                <td><code>app/Middlewares/LecturerMiddleware.php</code></td>
+                <td>Middleware RBAC</td>
+                <td><code>handle()</code></td>
+                <td>Kiểm tra bắt buộc vai trò là Giảng viên bộ môn (<code>role = 'lecturer'</code>) để quản lý danh sách lớp học phần phụ trách, buổi học và duyệt mở lại hạn nộp.</td>
+            </tr>
+            <tr style="background-color: #f8fafc; font-weight: bold;"><td colspan="5">III. TẦNG BỘ ĐIỀU KHIỂN NGHIỆP VỤ (CONTROLLERS)</td></tr>
+            <tr>
+                <td style="text-align: center;">15</td>
+                <td><code>app/Controllers/AuthController.php</code></td>
+                <td>Controller Xác Thực</td>
+                <td><code>showLogin()</code>, <code>login()</code>, <code>logout()</code>, <code>quickLogin()</code>, <code>firstLogin()</code></td>
+                <td>Điều khiển quy trình xác thực người dùng: xác minh mật khẩu Bcrypt, cưỡng chế đổi mật khẩu lần đầu, quy trình khôi phục mật khẩu SSPR và đăng nhập nhanh 1-click.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">16</td>
+                <td><code>app/Controllers/GuestTicketController.php</code></td>
+                <td>Controller Cứu Hộ</td>
+                <td><code>showForm()</code>, <code>submit()</code>, <code>showLookup()</code>, <code>lookup()</code></td>
+                <td>Quản lý Trạm cứu hộ tài khoản khách bị khóa: nhận ảnh thẻ SV/CCCD từ Webcam hoặc upload, kiểm tra tài khoản, cấp mã phiếu cứu hộ <code>#HD-...</code> và hỗ trợ tra cứu.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">17</td>
+                <td><code>app/Controllers/TicketController.php</code></td>
+                <td>Controller Phiếu</td>
+                <td><code>index()</code>, <code>show()</code>, <code>reply()</code>, <code>cancel()</code></td>
+                <td>Quản lý vòng đời phiếu hỗ trợ chung: hiển thị chi tiết tiến trình xử lý, trao đổi phản hồi hai chiều, hủy phiếu hỗ trợ và tải tệp đính kèm.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">18</td>
+                <td><code>app/Controllers/RatingController.php</code></td>
+                <td>Controller Đánh Giá</td>
+                <td><code>index()</code>, <code>store()</code></td>
+                <td>Tiếp nhận phiếu đánh giá chất lượng dịch vụ (CSAT 1 - 5 sao kèm nhận xét), kiểm tra tính hợp lệ và cập nhật điểm hài lòng trung bình vào hồ sơ KTV.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">19</td>
+                <td><code>app/Controllers/CourseController.php</code></td>
+                <td>Controller Học Phần</td>
+                <td><code>index()</code></td>
+                <td>Hiển thị danh sách các lớp học phần sinh viên đang theo học, buổi học chi tiết, trạng thái nộp bài và thời hạn deadline bài tập.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">20</td>
+                <td><code>app/Controllers/Admin/AdminDashboardController.php</code></td>
+                <td>Admin Controller</td>
+                <td><code>index()</code>, <code>toggleDuty()</code>, <code>setBanner()</code></td>
+                <td>Bảng điều khiển trung tâm quản trị: theo dõi tải thời gian thực của 5 KTV, phát/thu hồi cảnh báo sự cố diện rộng, bật/tắt ca trực và đếm phiếu cứu hộ chờ duyệt.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">21</td>
+                <td><code>app/Controllers/Admin/UserController.php</code></td>
+                <td>Admin Controller</td>
+                <td><code>index()</code>, <code>create()</code>, <code>edit()</code>, <code>toggleStatus()</code>, <code>import()</code></td>
+                <td>Quản lý danh sách người dùng toàn trường, phân quyền tài khoản, mở/khóa tài khoản vi phạm spam và gọi dịch vụ nạp tài khoản hàng loạt từ Excel/CSV.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">22</td>
+                <td><code>app/Controllers/Admin/HolidayController.php</code></td>
+                <td>Admin Controller</td>
+                <td><code>index()</code>, <code>create()</code>, <code>delete()</code></td>
+                <td>Quản lý danh mục ngày nghỉ lễ chính thức của Trường ĐH Thủ Đô Hà Nội, làm cơ sở dữ liệu đầu vào cho thuật toán SLA loại trừ ngày nghỉ khi tính hạn xử lý.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">23</td>
+                <td><code>app/Controllers/Agent/AgentDashboardController.php</code></td>
+                <td>Agent Controller</td>
+                <td><code>index()</code>, <code>closeDuplicate()</code>, <code>reportDeadline()</code></td>
+                <td>Bàn làm việc KTV (<code>/agent/workbench</code>): tiếp nhận phiếu theo ca trực, lọc danh sách theo danh mục chuyên trách, mở modal đóng trùng lặp và gửi biên bản cho GV.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">24</td>
+                <td><code>app/Controllers/Student/StudentDashboardController.php</code></td>
+                <td>Student Controller</td>
+                <td><code>index()</code>, <code>createTicket()</code>, <code>cancelTicket()</code></td>
+                <td>Cổng sinh viên: tạo phiếu hỗ trợ đính kèm tệp hoặc ảnh chụp Webcam, kiểm tra 3 lớp chống gửi trùng 24h, theo dõi tiến độ SLA và phản hồi kết quả giải pháp.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">25</td>
+                <td><code>app/Controllers/Lecturer/CourseAssignmentController.php</code></td>
+                <td>Lecturer Controller</td>
+                <td><code>index()</code>, <code>approveExtension()</code></td>
+                <td>Cổng giảng viên: hiển thị danh sách lớp học phần được phân công, xem xét biên bản xác nhận lỗi từ KTV và bấm phê duyệt mở lại hạn nộp bài tập cho sinh viên.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">26</td>
+                <td><code>app/Controllers/Lecturer/LecturerLessonController.php</code></td>
+                <td>Lecturer Controller</td>
+                <td><code>index()</code>, <code>store()</code>, <code>grade()</code></td>
+                <td>Quản lý buổi học của lớp học phần: ban hành đề bài tập, đính kèm file tài liệu học tập, tải bài làm của sinh viên và chấm điểm theo thang điểm 10.</td>
+            </tr>
+            <tr style="background-color: #f8fafc; font-weight: bold;"><td colspan="5">IV. TẦNG NGHIỆP VỤ LÕI CHUYÊN SÂU (SERVICES)</td></tr>
+            <tr>
+                <td style="text-align: center;">27</td>
+                <td><code>app/Services/TicketService.php</code></td>
+                <td>Core Service</td>
+                <td><code>assignTicket()</code>, <code>checkDuplicate()</code>, <code>detectMajorIncident()</code></td>
+                <td>Trái tim điều phối: thuật toán Triage Least-Loaded (gán KTV ít việc nhất), Tie-breaker phân ca, chống gửi trùng 3 lớp trong 24h và tự động phát hiện nguy cơ sự cố diện rộng.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">28</td>
+                <td><code>app/Services/SlaService.php</code></td>
+                <td>Core Service</td>
+                <td><code>calculateDueTime()</code>, <code>isWorkingTime()</code>, <code>moveToNextWorkingTime()</code></td>
+                <td>Động cơ tính toán thời hạn SLA theo giờ hành chính (8h00-11h30, 13h30-17h30), tự động dời mốc qua đêm sau 17h30, trừ giờ nghỉ trưa, ngày Thứ Bảy, Chủ Nhật và ngày lễ.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">29</td>
+                <td><code>app/Services/UploadService.php</code></td>
+                <td>Core Service</td>
+                <td><code>handleUpload()</code>, <code>handleBase64Snapshot()</code></td>
+                <td>Kiểm soát an toàn tệp tải lên: kiểm tra whitelist MIME và đuôi mở rộng, giới hạn 5MB, khử trùng tên file bằng chuỗi băm ngẫu nhiên và giải mã ảnh chụp Webcam Base64.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">30</td>
+                <td><code>app/Services/NotificationService.php</code></td>
+                <td>Core Service</td>
+                <td><code>send()</code>, <code>markAsRead()</code>, <code>broadcast()</code></td>
+                <td>Hệ thống phát chuông thông báo: thông báo gán phiếu cho KTV, thông báo giải pháp cho sinh viên và phát cảnh báo sự cố khẩn cấp toàn trường từ Admin.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">31</td>
+                <td><code>app/Services/SpreadsheetImportService.php</code></td>
+                <td>Core Service</td>
+                <td><code>importUsersFromExcel()</code></td>
+                <td>Đọc và bóc tách dữ liệu danh sách tài khoản sinh viên/cán bộ từ tệp Excel (<code>.xlsx</code>) hoặc <code>.csv</code>, mã hóa mật khẩu Bcrypt và chèn an toàn hàng loạt vào bảng <code>users</code>.</td>
+            </tr>
+            <tr style="background-color: #f8fafc; font-weight: bold;"><td colspan="5">V. TẦNG DỮ LIỆU &amp; TRUY XUẤT CƠ SỞ DỮ LIỆU (MODELS &amp; REPOSITORIES)</td></tr>
+            <tr>
+                <td style="text-align: center;">32</td>
+                <td><code>app/Models/User.php</code></td>
+                <td>Data Model</td>
+                <td><code>findByEmailOrCode()</code>, <code>updateActiveTickets()</code></td>
+                <td>Mô hình thực thể tài khoản người dùng: lưu trữ thông tin cá nhân, vai trò RBAC, trạng thái khóa tài khoản và đồng bộ biến đếm tải <code>active_tickets_count</code>.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">33</td>
+                <td><code>app/Models/Ticket.php</code></td>
+                <td>Data Model</td>
+                <td><code>find()</code>, <code>save()</code>, <code>updateStatus()</code></td>
+                <td>Mô hình thực thể phiếu hỗ trợ CNTT: chứa các thuộc tính mã phiếu, người gửi, KTV xử lý, mức ưu tiên SLA, trạng thái vòng đời và lý do đóng.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">34</td>
+                <td><code>app/Repositories/TicketRepository.php</code></td>
+                <td>Data Repository</td>
+                <td><code>getAll()</code>, <code>findById()</code>, <code>getByAssignee()</code>, <code>getStats()</code></td>
+                <td>Đóng gói toàn bộ các câu truy vấn SQL phức tạp của bảng <code>tickets</code> (JOIN bảng, đếm số liệu Dashboard, lọc theo vai trò) bằng PDO Prepared Statements.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">35</td>
+                <td><code>app/Models/Course.php</code>, <code>CourseLesson.php</code></td>
+                <td>Data Models</td>
+                <td><code>getByStudent()</code>, <code>getByLecturer()</code></td>
+                <td>Mô hình dữ liệu quản lý thông tin lớp học phần, lịch học theo buổi, tài liệu đính kèm và danh sách bài nộp của sinh viên.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">36</td>
+                <td><code>app/Models/Holiday.php</code>, <code>Rating.php</code></td>
+                <td>Data Models</td>
+                <td><code>getAllHolidays()</code>, <code>saveRating()</code></td>
+                <td>Mô hình lưu trữ ngày nghỉ lễ phục vụ động cơ SLA và lưu trữ đánh giá sao CSAT chất lượng phục vụ của sinh viên.</td>
+            </tr>
+            <tr style="background-color: #f8fafc; font-weight: bold;"><td colspan="5">VI. TẦNG CẤU HÌNH, THÀNH PHẦN GIAO DIỆN &amp; LƯU TRỮ (CONFIG, VIEWS &amp; STORAGE)</td></tr>
+            <tr>
+                <td style="text-align: center;">37</td>
+                <td><code>config/database.php</code></td>
+                <td>Config Singleton</td>
+                <td><code>get_db_connection()</code></td>
+                <td>Khởi tạo và trả về đối tượng kết nối PDO duy nhất (Singleton Pattern) tới CSDL MySQL <code>helpdesk_thudo</code> với bảng mã chuẩn <code>utf8mb4_unicode_ci</code>.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">38</td>
+                <td><code>views/guest/create_ticket.php</code></td>
+                <td>View Template</td>
+                <td>HTML5, Tailwind, JS Webcam</td>
+                <td>Giao diện biểu mẫu Trạm cứu hộ tài khoản khách: tích hợp khung chụp ảnh Webcam trực tiếp (CCCD/Thẻ SV) và biểu mẫu gửi yêu cầu hỗ trợ khẩn cấp.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">39</td>
+                <td><code>views/student/dashboard.php</code></td>
+                <td>View Template</td>
+                <td>HTML5, Tailwind, JS Webcam</td>
+                <td>Giao diện Cổng sinh viên: tích hợp module tạo phiếu kèm chụp ảnh Webcam màn hình sự cố, danh sách phiếu cá nhân và trạng thái vi phạm hạn chót SLA.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">40</td>
+                <td><code>views/agent/workbench.php</code></td>
+                <td>View Template</td>
+                <td>HTML5, Tailwind, Modal Duplication</td>
+                <td>Giao diện Bàn làm việc KTV: bảng hàng đợi phiếu, đồng hồ đếm ngược SLA, modal đóng phiếu do trùng lặp sự cố cha và nút báo lỗi nộp bài sang Giảng viên.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">41</td>
+                <td><code>views/admin/dashboard.php</code></td>
+                <td>View Template</td>
+                <td>HTML5, Tailwind, Realtime Bar</td>
+                <td>Giao diện Trung tâm quản trị Admin: thanh biểu đồ tải làm việc của 5 KTV theo ngưỡng kịch tải 15 phiếu, công tắc trực ca và bảng phát sự cố diện rộng.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">42</td>
+                <td><code>includes/navbar.php</code>, <code>notification_banner.php</code></td>
+                <td>Partials Template</td>
+                <td>HTML5, Tailwind Responsive</td>
+                <td>Thanh điều hướng thông minh tự động thay đổi menu theo quyền đăng nhập và banner nổi màu đỏ/vàng cảnh báo sự cố khẩn cấp trên toàn hệ thống.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center;">43</td>
+                <td><code>storage/mailbox.json</code></td>
+                <td>Mock Mailbox Storage</td>
+                <td>JSON Storage</td>
+                <td>Tệp JSON lưu trữ nhật ký email gửi link khôi phục mật khẩu SSPR trong môi trường mạng nội bộ, hỗ trợ người dùng xem và lấy link đặt lại mật khẩu tức thì.</td>
+            </tr>
+        </tbody>
+    </table>
 
     <h2 class="section-heading" id="muc-3-2">3.2. Các luồng nghiệp vụ và Sơ đồ phân luồng hệ thống</h2>
     <p>Quy trình xử lý yêu cầu hỗ trợ CNTT gồm 4 giai đoạn, tham khảo hướng dẫn ITIL v4:</p>
@@ -1515,11 +1940,11 @@
             <tr style="background-color: #e2e8f0; font-weight: bold;"><td colspan="8">NHÓM 4: BÀN LÀM VIỆC KỸ THUẬT VIÊN</td></tr>
             <tr>
                 <td style="text-align: center;">20</td>
-                <td><code>agent/index.php</code></td>
+                <td><code>/agent/workbench</code></td>
                 <td style="text-align: center;">GET/POST</td>
-                <td><code>agent/index.php</code></td>
+                <td><code>/agent/workbench</code></td>
                 <td>Bàn làm việc KTV</td>
-                <td><code>agent/index.php</code></td>
+                <td><code>/agent/workbench</code></td>
                 <td style="text-align: center;">KTV, quản trị viên</td>
                 <td>Bàn làm việc KTV, thống kê KPI, điểm CSAT, hàng đợi SLA</td>
             </tr>
@@ -1567,11 +1992,11 @@
             </tr>
             <tr>
                 <td style="text-align: center;">25</td>
-                <td><code>tickets/show.php?id=...</code></td>
+                <td><code>/tickets/show?id=...</code></td>
                 <td style="text-align: center;">GET</td>
                 <td><code>TicketRepository</code></td>
                 <td><code>find()</code></td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td style="text-align: center;">Tất cả vai trò</td>
                 <td>Chi tiết phiếu: thảo luận 2 chiều, timeline SLA, biên bản</td>
             </tr>
@@ -1587,9 +2012,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">27</td>
-                <td><code>tickets/show.php (requester_delete_ticket)</code></td>
+                <td><code>/tickets/show</code> (Hành động: requester_delete_ticket)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Người gửi thu hồi phiếu</td>
                 <td>Redirect <code>index.php</code></td>
                 <td style="text-align: center;">Người gửi &le; 15p</td>
@@ -1597,9 +2022,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">28</td>
-                <td><code>tickets/show.php (admin_delete_ticket)</code></td>
+                <td><code>/tickets/show</code> (Hành động: admin_delete_ticket)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Quản trị viên xóa phiếu</td>
                 <td>Redirect <code>index.php</code></td>
                 <td style="text-align: center;">Quản trị viên</td>
@@ -1607,7 +2032,7 @@
             </tr>
             <tr>
                 <td style="text-align: center;">29</td>
-                <td><code>tickets/show.php (quick_resolve)</code></td>
+                <td><code>/tickets/show</code> (Hành động: quick_resolve)</td>
                 <td style="text-align: center;">POST</td>
                 <td><code>TicketRepository</code></td>
                 <td><code>updateStatus()</code></td>
@@ -1617,7 +2042,7 @@
             </tr>
             <tr>
                 <td style="text-align: center;">30</td>
-                <td><code>tickets/show.php (close_duplicate)</code></td>
+                <td><code>/tickets/show</code> (Hành động: close_duplicate)</td>
                 <td style="text-align: center;">POST</td>
                 <td><code>TicketRepository</code></td>
                 <td>Đóng phiếu trùng lặp</td>
@@ -1627,9 +2052,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">31</td>
-                <td><code>tickets/show.php (report_spam)</code></td>
+                <td><code>/tickets/show</code> (Hành động: report_spam)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Báo cáo vi phạm</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">KTV, quản trị viên</td>
@@ -1637,9 +2062,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">32</td>
-                <td><code>tickets/show.php (unmark_spam)</code></td>
+                <td><code>/tickets/show</code> (Hành động: unmark_spam)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Hủy báo cáo vi phạm</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">KTV, quản trị viên</td>
@@ -1647,9 +2072,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">33</td>
-                <td><code>tickets/show.php (it_confirm_issue)</code></td>
+                <td><code>/tickets/show</code> (Hành động: it_confirm_issue)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Xác nhận sự cố</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">Agent</td>
@@ -1657,9 +2082,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">34</td>
-                <td><code>tickets/show.php (it_reject_issue)</code></td>
+                <td><code>/tickets/show</code> (Hành động: it_reject_issue)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Hủy báo lỗi</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">Agent</td>
@@ -1667,9 +2092,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">35</td>
-                <td><code>tickets/show.php (lecturer_decide)</code></td>
+                <td><code>/tickets/show</code> (Hành động: lecturer_decide)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Quyết định học thuật</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">Giảng viên</td>
@@ -1677,9 +2102,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">36</td>
-                <td><code>tickets/show.php (ktv_report_major_incident)</code></td>
+                <td><code>/tickets/show</code> (Hành động: ktv_report_major_incident)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Sự cố diện rộng</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">Agent</td>
@@ -1687,9 +2112,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">37</td>
-                <td><code>tickets/show.php (admin_broadcast_major_incident)</code></td>
+                <td><code>/tickets/show</code> (Hành động: admin_broadcast_major_incident)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Phát cảnh báo</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">Quản trị viên</td>
@@ -1697,9 +2122,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">38</td>
-                <td><code>tickets/show.php (admin_revoke_major_incident)</code></td>
+                <td><code>/tickets/show</code> (Hành động: admin_revoke_major_incident)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Thu hồi cảnh báo</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">Quản trị viên</td>
@@ -1707,9 +2132,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">39</td>
-                <td><code>tickets/show.php (verify_rescue)</code></td>
+                <td><code>/tickets/show</code> (Hành động: verify_rescue)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Xác minh cứu hộ</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">Agent</td>
@@ -1717,9 +2142,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">40</td>
-                <td><code>tickets/show.php (approve_rescue)</code></td>
+                <td><code>/tickets/show</code> (Hành động: approve_rescue)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Phê duyệt cứu hộ</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">Quản trị viên</td>
@@ -1727,9 +2152,9 @@
             </tr>
             <tr>
                 <td style="text-align: center;">41</td>
-                <td><code>tickets/show.php (reassign)</code></td>
+                <td><code>/tickets/show</code> (Hành động: reassign)</td>
                 <td style="text-align: center;">POST</td>
-                <td><code>tickets/show.php</code></td>
+                <td><code>/tickets/show</code> (hoặc <code>TicketController</code>)</td>
                 <td>Điều chuyển KTV</td>
                 <td>Tải lại chi tiết phiếu</td>
                 <td style="text-align: center;">KTV, quản trị viên</td>
@@ -1737,7 +2162,7 @@
             </tr>
             <tr>
                 <td style="text-align: center;">42</td>
-                <td><code>tickets/show.php (add_reply)</code></td>
+                <td><code>/tickets/show</code> (Hành động: add_reply)</td>
                 <td style="text-align: center;">POST</td>
                 <td><code>TicketRepository</code></td>
                 <td><code>addReply()</code></td>
@@ -2306,7 +2731,7 @@
     <ul>
         <li><strong>KTV đóng phiếu trùng lặp (<code>action = 'close_duplicate'</code>):</strong>
             <ul>
-                <li>Trên trang chi tiết phiếu (<code>tickets/show.php</code>), KTV được trang bị nút <strong>"Đóng Trùng Lặp"</strong> (chỉ xuất hiện khi phiếu chưa ở trạng thái <code>closed</code>).</li>
+                <li>Trên trang chi tiết phiếu (<code>/tickets/show</code> (hoặc <code>TicketController</code>)), KTV được trang bị nút <strong>"Đóng Trùng Lặp"</strong> (chỉ xuất hiện khi phiếu chưa ở trạng thái <code>closed</code>).</li>
                 <li>KTV bấm nút mở hộp thoại để nhập <em>Mã phiếu sự cố gốc</em> và <em>Lý do đóng trùng lặp</em>.</li>
                 <li>Hệ thống tự động cập nhật trạng thái phiếu thành <code>closed</code>, thời điểm <code>closed_at = NOW()</code>, ghi nhận lịch sử vào bảng <code>ticket_replies</code> và gửi thông báo giải thích đến người gửi.</li>
             </ul>

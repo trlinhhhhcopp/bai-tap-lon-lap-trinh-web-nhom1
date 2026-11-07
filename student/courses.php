@@ -1,4 +1,5 @@
 <?php
-$_GET['action'] = 'courses';
-require_once __DIR__ . '/index.php';
 
+require_once __DIR__ . '/../app/LegacyRoute.php';
+
+dispatchLegacyRoute('/student/courses');
