@@ -1162,36 +1162,7 @@ $flash   = get_flash();
                     <span class="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/60">
                         <?php echo htmlspecialchars($ticket['category_name']); ?>
                     </span>
-                    <?php
-                    $statusColors = [
-                        'new'               => 'bg-blue-50 text-blue-700 border-blue-200',
-                        'in_progress'       => 'bg-amber-50 text-amber-700 border-amber-200',
-                        'waiting_requester' => 'bg-purple-50 text-purple-700 border-purple-200',
-                        'resolved'          => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                        'closed'            => 'bg-slate-100 text-slate-700 border-slate-300',
-                    ];
-                    $dotColors = [
-                        'new'               => 'bg-blue-500',
-                        'in_progress'       => 'bg-amber-500',
-                        'waiting_requester' => 'bg-purple-500',
-                        'resolved'          => 'bg-emerald-500',
-                        'closed'            => 'bg-slate-500',
-                    ];
-                    $statusLabels = [
-                        'new'               => 'Mới tiếp nhận',
-                        'in_progress'       => 'Đang xử lý',
-                        'waiting_requester' => 'Chờ người gửi phản hồi',
-                        'resolved'          => 'Đã có giải pháp',
-                        'closed'            => 'Đã hoàn tất & đóng',
-                    ];
-                    $sColor = $statusColors[$ticket['status']] ?? 'bg-slate-100 text-slate-700 border-slate-200';
-                    $dColor = $dotColors[$ticket['status']] ?? 'bg-slate-400';
-                    $sLabel = $statusLabels[$ticket['status']] ?? $ticket['status'];
-                    ?>
-                    <span class="px-3 py-1 rounded-full text-xs font-bold border <?php echo $sColor; ?> flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full <?php echo $dColor; ?>"></span>
-                        <span><?php echo $sLabel; ?></span>
-                    </span>
+                    <?= render_status_badge($ticket['status']); ?>
                     <?php if ($ticket['reopen_count'] > 0): ?>
                         <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
                             🔄 Mở lại: <?php echo $ticket['reopen_count']; ?> lần

@@ -98,23 +98,7 @@ if (empty($ticket) && !empty($code)) {
                             </h3>
                         </div>
                         <div>
-                            <?php if ($ticket['status'] === 'resolved'): ?>
-                                <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 inline-flex items-center gap-1">
-                                    ✓ ĐÃ MỞ KHÓA THÀNH CÔNG
-                                </span>
-                            <?php elseif ($ticket['status'] === 'in_progress'): ?>
-                                <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200 inline-flex items-center gap-1">
-                                    ⏳ KTV ĐANG XỬ LÝ
-                                </span>
-                            <?php elseif ($ticket['status'] === 'closed'): ?>
-                                <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-slate-100 text-slate-600 border border-slate-200 inline-flex items-center gap-1">
-                                    🔒 ĐÃ ĐÓNG
-                                </span>
-                            <?php else: ?>
-                                <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-sky-50 text-sky-700 border border-sky-200 inline-flex items-center gap-1">
-                                    ● MỚI TIẾP NHẬN
-                                </span>
-                            <?php endif; ?>
+                            <?= render_status_badge($ticket['status']); ?>
                         </div>
                     </div>
 

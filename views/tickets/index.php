@@ -378,9 +378,7 @@ $appRoot = dirname(__DIR__, 2);
                                         <?php endif; ?>
                                     </td>
                                     <td class="py-3.5 px-4 text-center whitespace-nowrap">
-                                        <span class="inline-flex items-center justify-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold border whitespace-nowrap <?php echo $statusBadge; ?>">
-                                            ● <?php echo $statusLabel; ?>
-                                        </span>
+                                        <?= render_status_badge($t['status']); ?>
                                     </td>
                                     <td class="py-3.5 px-4 text-center space-x-1 whitespace-nowrap">
                                         <a href="show.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition inline-block">

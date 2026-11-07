@@ -4,40 +4,103 @@ namespace App\Controllers\Student;
 use App\Core\Controller;
 use App\Models\User;
 use App\Models\Ticket;
-use App\Models\MasterData;
 use App\Services\UploadService;
 use Exception;
+use PDO;
 
 class StudentDashboardController extends Controller {
     public function index(): void {
-        $user = $this->user();
-        $fullUser = User::findById($user['id']);
-        $myTickets = Ticket::findByRequester($user['id']);
-        $categories = MasterData::getCategories();
+        $currentUser = $this->user();
+        if (!$currentUser) {
+            $this->redirect('/login');
+            return;
+        }
+
+        $userId = (int)$currentUser['id'];
+        $pdo = db();
+
+        // 1. Truy vấn chi tiết hồ sơ sinh viên kèm lớp học & học thuật
+        $studentStmt = $pdo->prepare("
+            SELECT u.*, COALESCE(c.name, 'Chưa phân lớp') AS class_name, COALESCE(c.class_code, 'N/A') AS class_code
+            FROM users u
+            LEFT JOIN classes c ON u.class_id = c.id
+            WHERE u.id = :id
+        ");
+        $studentStmt->execute([':id' => $userId]);
+        $studentProfile = $studentStmt->fetch() ?: $currentUser;
+
+        // 2. Thống kê số lượng phiếu của riêng sinh viên này
+        $myTicketsCount  = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId}")->fetchColumn();
+        $myActiveCount   = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId} AND status IN ('new', 'in_progress', 'waiting_requester')")->fetchColumn();
+        $myResolvedCount = (int)$pdo->query("SELECT COUNT(*) FROM tickets WHERE requester_id = {$userId} AND status IN ('resolved', 'closed')")->fetchColumn();
+
+        // 3. Thống kê học phần & bài tập
+        require_once dirname(__DIR__, 2) . '/Models/CourseLesson.php';
+        $courseModel = new \CourseLesson();
+        $myStudentCourses = $courseModel->getStudentCourses($userId);
+        $myCoursesCount = count($myStudentCourses);
+        $totalLessonsCount = 0;
+        $completedLessonsCount = 0;
+        foreach ($myStudentCourses as $mc) {
+            $totalLessonsCount += (int)($mc['total_lessons'] ?? 0);
+            $completedLessonsCount += (int)($mc['completed_lessons'] ?? 0);
+        }
+
+        // 4. Lấy danh sách phiếu của riêng sinh viên này (đầy đủ thông tin chi tiết)
+        $myTickets = $pdo->query("
+            SELECT t.*, c.name AS category_name, p.name AS priority_name, p.code AS priority_code,
+                   ag.name AS agent_name, r.score AS rating_score
+            FROM tickets t
+            JOIN categories c ON t.category_id = c.id
+            JOIN priorities p ON t.priority_id = p.id
+            LEFT JOIN users ag ON t.assigned_to = ag.id
+            LEFT JOIN ticket_ratings r ON r.ticket_id = t.id
+            WHERE t.requester_id = {$userId}
+            ORDER BY t.id DESC
+        ")->fetchAll();
+
+        // 5. Danh mục sự cố và mức ưu tiên phục vụ form tạo phiếu
+        $categories = $pdo->query("SELECT * FROM categories ORDER BY id ASC")->fetchAll();
+        $priorities = $pdo->query("SELECT * FROM priorities ORDER BY id ASC")->fetchAll();
 
         $this->view('student/dashboard', [
-            'user'       => $fullUser,
-            'myTickets'  => $myTickets,
-            'categories' => $categories,
-            'title'      => 'Cổng Sinh Viên - Bàn Làm Việc Hỗ Trợ Kỹ Thuật',
+            'currentUser'           => $currentUser,
+            'studentProfile'        => $studentProfile,
+            'myTicketsCount'        => $myTicketsCount,
+            'myActiveCount'         => $myActiveCount,
+            'myResolvedCount'       => $myResolvedCount,
+            'myStudentCourses'      => $myStudentCourses,
+            'myCoursesCount'        => $myCoursesCount,
+            'totalLessonsCount'     => $totalLessonsCount,
+            'completedLessonsCount' => $completedLessonsCount,
+            'myTickets'             => $myTickets,
+            'categories'            => $categories,
+            'priorities'            => $priorities,
+            'title'                 => 'Cổng Sinh Viên - Helpdesk Đại Học Thủ Đô Hà Nội',
         ]);
     }
 
     public function createTicket(): void {
         $user = $this->user();
+        if (!$user) {
+            $this->redirect('/login');
+            return;
+        }
+
         $title          = trim($_POST['title'] ?? '');
         $categoryId     = (int)($_POST['category_id'] ?? 1);
-        $systemAffected = trim($_POST['system_affected'] ?? 'Chung');
+        $priorityId     = (int)($_POST['priority_id'] ?? 3);
         $description    = trim($_POST['description'] ?? '');
 
         if (empty($title) || empty($description)) {
-            $this->flash('danger', 'Vui lòng nhập đầy đủ tiêu đề và mô tả sự cố!');
+            $this->flash('danger', 'Vui lòng nhập đầy đủ tiêu đề và mô tả sự cố kỹ thuật!');
             $this->redirect('/student/dashboard');
+            return;
         }
 
         try {
             $attachmentPath = null;
-            // 1. Kiểm tra ảnh chụp trực tiếp từ webcam/camera
+            // 1. Kiểm tra ảnh chụp trực tiếp từ webcam HTML5
             $capturedImage = trim($_POST['captured_image'] ?? '');
             if (!empty($capturedImage)) {
                 $attachmentPath = UploadService::handleBase64Snapshot($capturedImage);
@@ -46,65 +109,58 @@ class StudentDashboardController extends Controller {
                 $attachmentPath = UploadService::handleUploadedFile($_FILES['attachment']);
             }
 
-            $ticketId = Ticket::create([
-                'requester_id'    => $user['id'],
-                'requester_name'  => $user['name'] ?? null,
-                'category_id'     => $categoryId,
-                'priority_id'     => 3, // MED
-                'class_id'        => $user['class_id'] ?? null,
-                'title'           => $title,
-                'description'     => $description,
-                'system_affected' => $systemAffected,
-                'attachment_path' => $attachmentPath,
+            // Gọi TicketService để phân bổ Triage + tính SLA tự động
+            require_once dirname(__DIR__, 2) . '/Services/TicketService.php';
+            require_once dirname(__DIR__, 2) . '/Services/SlaService.php';
+
+            $pdo = db();
+            $ticketCode = 'TK-' . date('Ymd') . '-' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 5));
+
+            // Tính hạn SLA
+            $catStmt = $pdo->prepare("SELECT * FROM categories WHERE id = :id");
+            $catStmt->execute([':id' => $categoryId]);
+            $category = $catStmt->fetch();
+            $slaHours = (float)($category['sla_hours'] ?? 4.0);
+
+            $prioStmt = $pdo->prepare("SELECT * FROM priorities WHERE id = :id");
+            $prioStmt->execute([':id' => $priorityId]);
+            $priority = $prioStmt->fetch();
+            $slaFactor = (float)($priority['sla_factor'] ?? 1.0);
+
+            $effectiveHours = $slaHours * $slaFactor;
+            $dueAt = \App\Services\SlaService::calculateDueTime(date('Y-m-d H:i:s'), $effectiveHours);
+
+            // Điều phối Triage gán KTV
+            $assignedTo = \App\Services\TicketService::assignAgent($categoryId);
+
+            $insertStmt = $pdo->prepare("
+                INSERT INTO tickets (ticket_code, requester_id, category_id, priority_id, assigned_to, title, description, attachment_path, status, due_at, created_at, updated_at)
+                VALUES (:ticket_code, :requester_id, :category_id, :priority_id, :assigned_to, :title, :description, :attachment_path, 'new', :due_at, NOW(), NOW())
+            ");
+            $insertStmt->execute([
+                ':ticket_code'     => $ticketCode,
+                ':requester_id'    => $user['id'],
+                ':category_id'     => $categoryId,
+                ':priority_id'     => $priorityId,
+                ':assigned_to'     => $assignedTo,
+                ':title'           => $title,
+                ':description'     => $description,
+                ':attachment_path' => $attachmentPath,
+                ':due_at'          => $dueAt,
             ]);
 
-            $ticket = Ticket::findById($ticketId);
-            $category = MasterData::getCategoryById($categoryId);
-            $slaHours = $category ? rtrim(rtrim((string)$category['sla_hours'], '0'), '.') : '2';
+            // Cập nhật active_tickets_count cho KTV nếu được gán
+            if ($assignedTo) {
+                $pdo->exec("UPDATE users SET active_tickets_count = (SELECT COUNT(*) FROM tickets WHERE assigned_to = {$assignedTo} AND status IN ('new', 'in_progress', 'waiting_requester')) WHERE id = {$assignedTo}");
+            }
 
             $this->flash(
-                'success', 
-                "Gửi phiếu báo sự cố thành công! Mã phiếu của bạn: <strong>{$ticket['ticket_code']}</strong>. " .
-                "Theo quy định hỗ trợ, sự cố này dự kiến sẽ được Kỹ thuật viên tiếp nhận và xử lý trong vòng <strong>{$slaHours} giờ làm việc</strong>. " .
-                "Bạn có thể theo dõi tiến độ giải quyết ngay tại bảng bên dưới!"
+                'success',
+                "Gửi phiếu báo sự cố thành công! Mã phiếu của bạn: <strong>{$ticketCode}</strong>. " .
+                "Kỹ thuật viên đã tiếp nhận yêu cầu và sẽ xử lý trước hạn chót SLA: <strong>{$dueAt}</strong>."
             );
         } catch (Exception $e) {
-            $this->flash('danger', 'Lỗi: ' . $e->getMessage());
-        }
-
-        $this->redirect('/student/dashboard');
-    }
-
-    public function updateAvatar(): void {
-        $user = $this->user();
-        if (!$user) {
-            $this->redirect('/login');
-        }
-
-        try {
-            $avatarPath = null;
-            // 1. Kiểm tra ảnh chụp từ webcam/camera
-            $capturedImage = trim($_POST['captured_avatar'] ?? '');
-            if (!empty($capturedImage)) {
-                $avatarPath = UploadService::handleBase64Snapshot($capturedImage);
-            } elseif (!empty($_FILES['avatar']['tmp_name'])) {
-                // 2. Kiểm tra file tải lên từ thiết bị
-                $avatarPath = UploadService::handleUploadedFile($_FILES['avatar']);
-            }
-
-            if (!$avatarPath) {
-                $this->flash('warning', 'Vui lòng chọn tệp ảnh từ máy tính hoặc chụp ảnh từ Camera trước khi lưu!');
-                $this->redirect('/student/dashboard');
-            }
-
-            User::updateAvatar((int)$user['id'], $avatarPath);
-
-            // Cập nhật session người dùng hiện tại
-            $_SESSION['user']['avatar_path'] = $avatarPath;
-
-            $this->flash('success', 'Cập nhật ảnh đại diện (Avatar) thành công!');
-        } catch (Exception $e) {
-            $this->flash('danger', 'Lỗi cập nhật ảnh đại diện: ' . $e->getMessage());
+            $this->flash('danger', 'Lỗi khi gửi phiếu hỗ trợ: ' . $e->getMessage());
         }
 
         $this->redirect('/student/dashboard');
@@ -112,61 +168,41 @@ class StudentDashboardController extends Controller {
 
     public function cancelTicket(): void {
         $user = $this->user();
-        if (!$user) {
-            $this->redirect('/login');
-        }
-
         $ticketId = (int)($_POST['ticket_id'] ?? 0);
-        $ticket = Ticket::findById($ticketId);
 
-        if (!$ticket || $ticket['requester_id'] != $user['id']) {
-            $this->flash('danger', 'Không tìm thấy phiếu hỗ trợ hoặc bạn không có quyền thao tác trên phiếu này!');
+        if ($ticketId <= 0) {
+            $this->flash('danger', 'Mã phiếu không hợp lệ!');
             $this->redirect('/student/dashboard');
+            return;
         }
 
-        // 1. Kiểm tra trạng thái: chỉ cho phép hủy khi phiếu còn ở trạng thái "new" (KTV chưa tiếp nhận)
-        if ($ticket['status'] !== 'new') {
-            $this->flash('danger', 'Không thể hủy phiếu! Kỹ thuật viên đã tiếp nhận xử lý hoặc phiếu đã hoàn tất.');
+        $pdo = db();
+        $checkStmt = $pdo->prepare("SELECT * FROM tickets WHERE id = :id AND requester_id = :uid");
+        $checkStmt->execute([':id' => $ticketId, ':uid' => $user['id']]);
+        $ticket = $checkStmt->fetch();
+
+        if (!$ticket) {
+            $this->flash('danger', 'Bạn không có quyền hủy phiếu này hoặc phiếu không tồn tại!');
             $this->redirect('/student/dashboard');
+            return;
         }
 
-        // 2. Kiểm tra thời gian: chỉ cho phép hủy trong vòng 1 giờ (3600 giây) sau khi nộp
-        $createdTime = strtotime($ticket['created_at']);
-        $elapsedSeconds = time() - $createdTime;
-        if ($elapsedSeconds > 3600) {
-            $minutesPassed = round($elapsedSeconds / 60);
-            $this->flash('danger', "Đã quá thời hạn hủy phiếu cho phép (đã qua {$minutesPassed} phút, quy định tối đa 60 phút)! Vui lòng liên hệ trực tiếp Kỹ thuật viên phụ trách.");
+        if (in_array($ticket['status'], ['resolved', 'closed', 'cancelled'])) {
+            $this->flash('danger', 'Phiếu này đã hoàn thành hoặc đã đóng, không thể hủy!');
             $this->redirect('/student/dashboard');
+            return;
         }
 
-        Ticket::cancelTicket($ticketId);
+        $updateStmt = $pdo->prepare("UPDATE tickets SET status = 'cancelled', closed_at = NOW(), updated_at = NOW() WHERE id = :id");
+        $updateStmt->execute([':id' => $ticketId]);
 
-        $this->flash('success', "Đã hủy phiếu hỗ trợ <strong>{$ticket['ticket_code']}</strong> thành công theo yêu cầu của bạn!");
+        // Cập nhật lại tải KTV
+        if (!empty($ticket['assigned_to'])) {
+            $aid = (int)$ticket['assigned_to'];
+            $pdo->exec("UPDATE users SET active_tickets_count = (SELECT COUNT(*) FROM tickets WHERE assigned_to = {$aid} AND status IN ('new', 'in_progress', 'waiting_requester')) WHERE id = {$aid}");
+        }
+
+        $this->flash('success', "Đã hủy thành công phiếu hỗ trợ #{$ticket['ticket_code']}!");
         $this->redirect('/student/dashboard');
     }
-
-    public function downloadAttachment(): void {
-        $file = basename($_GET['file'] ?? '');
-        if (empty($file)) {
-            http_response_code(404);
-            die("Không tìm thấy tệp đính kèm!");
-        }
-
-        $filePath = __DIR__ . '/../../../storage/uploads/' . $file;
-        if (!file_exists($filePath)) {
-            http_response_code(404);
-            die("Tệp đính kèm không tồn tại trên hệ thống lưu trữ!");
-        }
-
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = finfo_file($finfo, $filePath);
-        finfo_close($finfo);
-
-        header("Content-Type: " . ($mime ?: 'application/octet-stream'));
-        header("Content-Length: " . filesize($filePath));
-        header("Content-Disposition: inline; filename=\"" . $file . "\"");
-        readfile($filePath);
-        exit;
-    }
 }
-

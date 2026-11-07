@@ -118,10 +118,8 @@
                                 ● <?php echo htmlspecialchars($t['priority_name'] ?? ''); ?> (<?php echo htmlspecialchars($t['priority_code'] ?? ''); ?>)
                             </span>
 
-                            <!-- Trạng thái -->
-                            <span class="px-2.5 py-0.5 rounded-lg text-[10.5px] font-bold border <?php echo $statusBadgeAgent; ?>">
-                                <?php echo $statusLabelAgent; ?>
-                            </span>
+                            <!-- Trạng thái chuẩn Pill có dot ● theo mẫu -->
+                            <?= render_status_badge($t['status']); ?>
 
                             <!-- Badge có tệp minh chứng đính kèm -->
                             <?php if (!empty($t['attachment_path'])): ?>

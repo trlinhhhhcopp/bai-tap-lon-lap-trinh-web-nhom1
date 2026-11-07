@@ -253,7 +253,7 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/list', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span aria-hidden="true">📋</span><span class="sidebar-label">Phiếu Của Tôi</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/ratings', 'student/ratings/create', 'student/ratings/edit', 'student/index.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
+                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/ratings', 'student/ratings/create', 'student/ratings/edit']); ?>>
                         <span aria-hidden="true">⭐</span><span class="sidebar-label">Đánh Giá Dịch Vụ (CSAT)</span>
                     </a>
 
@@ -262,7 +262,7 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>index.php" <?php echo $navAttributes(['index.php'], ['']); ?>>
                         <span aria-hidden="true">🏠</span><span class="sidebar-label">Cổng Sinh Viên</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>student/index.php?action=courses" <?php echo $navAttributes(['student/index.php', 'student/courses.php', 'student/courses', 'student/courses/detail'], ['courses', 'course_detail', '']); ?>>
+                    <a href="<?php echo $appBase; ?>student/index.php?action=courses" <?php echo $navAttributes(['student/index.php', 'student/courses.php', 'student/courses', 'student/courses/detail']); ?>>
                         <span aria-hidden="true">📚</span><span class="sidebar-label">Học Phần & Bài Tập</span>
                     </a>
                     <a href="<?php echo $appBase; ?>tickets/create.php" <?php echo $navAttributes(['tickets/create.php']); ?>>
@@ -271,14 +271,14 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>tickets/index.php" <?php echo $navAttributes(['tickets/index.php', 'tickets/list', 'tickets/show.php', 'tickets/edit.php']); ?>>
                         <span aria-hidden="true">📋</span><span class="sidebar-label">Phiếu Của Tôi</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/ratings', 'student/ratings/create', 'student/ratings/edit', 'student/index.php'], ['ratings', 'rating_create', 'rating_edit']); ?>>
+                    <a href="<?php echo $appBase; ?>student/ratings.php" <?php echo $navAttributes(['student/ratings.php', 'student/ratings', 'student/ratings/create', 'student/ratings/edit']); ?>>
                         <span aria-hidden="true">⭐</span><span class="sidebar-label">Đánh Giá Dịch Vụ (CSAT)</span>
                     </a>
                 <?php endif; ?>
                 <?php if ($hasFixedSidebar): ?>
                     <div class="sidebar-user-copy mt-auto border-t border-slate-700/80 pt-4 text-xs text-slate-200">
                         <div class="truncate font-semibold"><?php echo htmlspecialchars($currentUser['name']); ?></div>
-                        <div class="mt-1 text-slate-400"><?php echo htmlspecialchars($currentUser['user_code']); ?></div>
+                        <div class="mt-1 text-slate-400"><?php echo htmlspecialchars($currentUser['user_code'] ?? $currentUser['username'] ?? ''); ?></div>
                     </div>
                 <?php endif; ?>
             </nav>
@@ -374,7 +374,7 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <div class="hidden sm:flex items-center gap-2 bg-slate-800/80 border border-slate-700/80 px-3 py-1 rounded-xl text-xs">
                         <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                         <span class="font-semibold text-white"><?php echo htmlspecialchars($currentUser['name']); ?></span>
-                        <span class="text-slate-400 font-mono text-[11px]">(<?php echo htmlspecialchars($currentUser['user_code']); ?>)</span>
+                        <span class="text-slate-400 font-mono text-[11px]">(<?php echo htmlspecialchars($currentUser['user_code'] ?? $currentUser['username'] ?? ''); ?>)</span>
                         <span class="px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-bold uppercase">
                             <?php 
                             if ($userRole === 'admin') echo 'Admin';

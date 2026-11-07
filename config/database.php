@@ -122,6 +122,56 @@ if (!function_exists('get_app_base_url')) {
     }
 }
 
+/**
+ * Helper xuất nhãn trạng thái chuẩn Pill bo tròn kèm chấm tròn ● (đồng bộ tất cả các role)
+ */
+if (!function_exists('render_status_badge')) {
+    function render_status_badge(string $status, ?string $customLabel = null): string {
+        $statusKey = strtolower(trim($status));
+        $map = [
+            'new' => [
+                'label' => 'Chờ tiếp nhận',
+                'class' => 'bg-sky-50 text-sky-700 border-sky-300',
+                'dot'   => 'text-sky-500'
+            ],
+            'in_progress' => [
+                'label' => 'Đang xử lý',
+                'class' => 'bg-amber-50 text-amber-700 border-amber-300',
+                'dot'   => 'text-amber-500'
+            ],
+            'waiting_requester' => [
+                'label' => 'Chờ phản hồi',
+                'class' => 'bg-purple-50 text-purple-700 border-purple-300',
+                'dot'   => 'text-purple-500'
+            ],
+            'resolved' => [
+                'label' => 'Đã giải quyết',
+                'class' => 'bg-emerald-50 text-emerald-700 border-emerald-300',
+                'dot'   => 'text-emerald-500'
+            ],
+            'closed' => [
+                'label' => 'Đã đóng',
+                'class' => 'bg-slate-100 text-slate-600 border-slate-300',
+                'dot'   => 'text-slate-400'
+            ],
+            'cancelled' => [
+                'label' => 'Đã hủy',
+                'class' => 'bg-rose-50 text-rose-700 border-rose-300',
+                'dot'   => 'text-rose-500'
+            ],
+        ];
+
+        $cfg = $map[$statusKey] ?? [
+            'label' => ucfirst($statusKey),
+            'class' => 'bg-slate-50 text-slate-700 border-slate-300',
+            'dot'   => 'text-slate-400'
+        ];
+
+        $text = $customLabel ?: $cfg['label'];
+        return '<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ' . $cfg['class'] . '"><span class="' . $cfg['dot'] . '">●</span> ' . htmlspecialchars($text) . '</span>';
+    }
+}
+
 // Trả về mảng cấu hình cho App\Core\Database
 return [
     'driver'    => 'mysql',

@@ -1,124 +1,198 @@
-<?php require __DIR__ . '/../layouts/header.php'; ?>
+<?php
+/**
+ * ==============================================================================
+ * BÀI TẬP LỚN LẬP TRÌNH WEB - NHÓM 1
+ * HỆ THỐNG HELPDESK CNTT TRỰC TUYẾN - TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI
+ * ------------------------------------------------------------------------------
+ * GIAO DIỆN ĐĂNG NHẬP XÁC THỰC BẢO MẬT (CHUẨN LUỒNG 1 ĐẦY ĐỦ NỘI DUNG)
+ * ==============================================================================
+ */
+if (!isset($appBase)) {
+    $appBase = get_app_base_url();
+}
+$flash = $flash ?? get_flash();
+?>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập - Hệ Thống Helpdesk CNTT ĐH Thủ Đô Hà Nội</title>
+    <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between">
 
-<div class="my-auto py-8 flex items-center justify-center">
-    <div class="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl shadow-2xl shadow-indigo-950/10 overflow-hidden transition-all">
-        <!-- Header Card -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 md:p-8 text-center border-b-2 border-sky-500 relative overflow-hidden">
-            <div class="absolute -right-12 -top-12 w-32 h-32 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
-            <div class="relative z-10 space-y-2">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
+    <!-- Header Khách -->
+    <?php require __DIR__ . '/../../includes/navbar.php'; ?>
+
+    <!-- Khu vực Đăng nhập trung tâm -->
+    <div class="flex-1 max-w-5xl mx-auto w-full px-4 py-8 flex flex-col justify-center">
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+
+            <!-- Cột giới thiệu hệ thống (5 cols) -->
+            <div class="order-2 md:order-1 md:col-span-5 text-white space-y-4">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold">
                     🏛️ ĐẠI HỌC THỦ ĐÔ HÀ NỘI
-                </span>
-                <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">
-                    CỔNG ĐĂNG NHẬP XÁC THỰC
-                </h2>
-                <p class="text-xs text-slate-300">
-                    Hệ Thống Tiếp Nhận & Xử Lý Hỗ Trợ CNTT Trực Tuyến
+                </div>
+                <h1 class="text-2xl md:text-3xl font-black tracking-tight leading-tight">
+                    CỔNG TIẾP NHẬN & XỬ LÝ HỖ TRỢ CNTT
+                </h1>
+                <p class="text-xs text-indigo-200/80 leading-relaxed">
+                    Hệ thống dịch vụ số tiếp nhận sự cố kỹ thuật từ xa theo chuẩn ITIL v4. Tự động phân cấp mức ưu tiên Auto-Priority, hàng đợi SLA thời gian thực và quản lý đào tạo học thuật.
                 </p>
+                <div class="p-4 bg-slate-800/80 rounded-2xl border border-slate-700/60 text-xs text-slate-300 space-y-2">
+                    <p class="font-bold text-white flex items-center gap-1.5">
+                        <span>🔒</span> Yêu Cầu Xác Thực Tài Khoản:
+                    </p>
+                    <p class="text-[11.5px] text-slate-400 leading-relaxed">
+                        Để bảo mật thông tin nội bộ và cách ly dữ liệu sự cố, bạn bắt buộc phải đăng nhập bằng tài khoản trường cấp để truy cập vào hệ thống.
+                    </p>
+                </div>
             </div>
-        </div>
 
-        <!-- Body Form -->
-        <div class="p-6 md:p-8 space-y-5">
-            <form method="POST" action="<?= $appBase ?>login" class="space-y-4">
+            <!-- Cột Form Đăng Nhập (7 cols) -->
+            <div class="order-1 md:order-2 md:col-span-7 bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-5">
+
                 <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                        Mã sinh viên / Email trường cấp (*):
-                    </label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-                            👤
-                        </span>
-                        <input type="text" name="identifier" id="identifier" required autofocus
-                               class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-500"
-                               placeholder="VD: 224001729 hoặc 224001729@daihocthudo.edu.vn">
-                    </div>
-                    <span class="text-[11px] text-slate-500 mt-1 block">Sinh viên nhập MSV (VD: 224001729) hoặc Email trường</span>
+                    <h2 class="text-xl font-black text-slate-900">Đăng Nhập Tài Khoản</h2>
+                    <p class="text-xs text-slate-500 mt-1">Dành cho Sinh viên, Giảng viên, Kỹ thuật viên & Quản trị viên</p>
                 </div>
 
-                <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">
-                            Mật khẩu (*):
-                        </label>
-                        <a href="<?= $appBase ?>forgot-password" class="text-xs text-sky-600 hover:text-sky-700 font-bold hover:underline transition">
-                            Quên mật khẩu?
+                <?php if (!empty($flash)): ?>
+                    <div role="alert" data-auto-dismiss="4500" class="p-3.5 rounded-xl text-xs font-semibold <?= $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
+                        <?= $flash['message']; ?>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Form đăng nhập chuẩn -->
+                <form method="POST" action="<?= $appBase ?>login" class="space-y-4 text-sm">
+                    <div>
+                        <label for="login-identifier" class="block font-bold text-slate-700 mb-1.5">Mã tài khoản hoặc email trường</label>
+                        <input id="login-identifier" type="text" name="identifier" required autocomplete="username" autocapitalize="off" spellcheck="false" placeholder="Ví dụ: 224001736 hoặc email trường"
+                               class="w-full px-4 py-3 text-slate-900 placeholder:text-slate-500 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-base md:text-sm font-semibold" />
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="login-password" class="font-bold text-slate-700">Mật khẩu</label>
+                            <a href="<?= $appBase ?>forgot-password" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline">
+                                Quên mật khẩu?
+                            </a>
+                        </div>
+                        <div class="relative">
+                            <input id="login-password" type="password" name="password" required autocomplete="current-password" placeholder="Nhập mật khẩu của bạn"
+                                   class="w-full px-4 pr-12 py-3 text-slate-900 placeholder:text-slate-500 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-base md:text-sm font-semibold" />
+                            <button type="button" aria-controls="login-password" aria-label="Hiện mật khẩu" data-password-toggle class="absolute inset-y-0 right-0 px-3.5 text-slate-500 hover:text-slate-700 focus:outline-none hidden">
+                                <span data-password-show-icon>👁️</span>
+                                <span data-password-hide-icon class="hidden">🙈</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full py-3.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl transition shadow-lg shadow-indigo-100 flex items-center justify-center gap-2 cursor-pointer">
+                        <span>Đăng Nhập Ngay</span>
+                        <span>→</span>
+                    </button>
+                </form>
+
+                <!-- 1-Click Quick Login cho các tài khoản mẫu -->
+                <details class="group bg-slate-50 rounded-2xl border border-slate-200/90 text-xs">
+                    <summary class="p-3.5 font-bold text-slate-700 cursor-pointer list-none flex items-center justify-between select-none">
+                        <span class="flex items-center gap-2">
+                            <span>⚡</span> Đăng Nhập Nhanh 1-Click (Tài khoản mẫu đồ án)
+                        </span>
+                        <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
+                    </summary>
+                    <div class="p-3.5 pt-0 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs border-t border-slate-200/60 mt-1">
+                        <!-- Trưởng nhóm -->
+                        <a href="<?= $appBase ?>quick-login?code=224001736"
+                           class="p-2.5 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-semibold shadow-sm">
+                            <span>👑</span> <span>SV Thanh Ngân</span>
+                        </a>
+                        <!-- SV Thục Linh -->
+                        <a href="<?= $appBase ?>quick-login?code=224001729"
+                           class="p-2.5 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-semibold shadow-sm">
+                            <span>🎓</span> <span>SV Thục Linh</span>
+                        </a>
+                        <!-- Giảng viên -->
+                        <a href="<?= $appBase ?>quick-login?code=GV001"
+                           class="p-2.5 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-700 hover:text-amber-800 transition flex items-center gap-1.5 font-semibold shadow-sm">
+                            <span>👨‍🏫</span> <span>GV Nguyễn Văn B</span>
+                        </a>
+                        <!-- KTV Canvas -->
+                        <a href="<?= $appBase ?>quick-login?code=KTV004"
+                           class="p-2.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition flex items-center gap-1.5 font-semibold shadow-sm">
+                            <span>👨‍💻</span> <span>KTV Hoàng Dũng</span>
+                        </a>
+                        <!-- KTV SSO -->
+                        <a href="<?= $appBase ?>quick-login?code=KTV001"
+                           class="p-2.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition flex items-center gap-1.5 font-semibold shadow-sm">
+                            <span>👨‍💻</span> <span>KTV Nguyễn Văn An</span>
+                        </a>
+                        <!-- Admin -->
+                        <a href="<?= $appBase ?>quick-login?code=ADM001"
+                           class="p-2.5 rounded-xl bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 text-slate-700 hover:text-purple-800 transition flex items-center gap-1.5 font-semibold shadow-sm">
+                            <span>🛡️</span> <span>Quản Trị Viên</span>
                         </a>
                     </div>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-                            🔒
-                        </span>
-                        <input type="password" name="password" id="password" required autocomplete="current-password"
-                               class="w-full pl-10 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-500"
-                               placeholder="Nhập mật khẩu (Mặc định: 123456)">
-                        <button type="button" data-password-toggle aria-controls="password" aria-pressed="false" aria-label="Hiện mật khẩu" class="hidden absolute inset-y-0 right-0 px-3.5 items-center text-slate-500 hover:text-slate-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-sky-500 rounded-r-xl">
-                            <svg data-password-show-icon aria-hidden="true" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
-                            <svg data-password-hide-icon aria-hidden="true" class="hidden w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.6 6.2A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a15 15 0 0 1-3.1 3.8M6.2 6.3C3.9 7.8 2.5 12 2.5 12s3.5 6 9.5 6a10.7 10.7 0 0 0 3.3-.5"/><path stroke-linecap="round" stroke-linejoin="round" d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>
-                        </button>
-                    </div>
+                </details>
+
+                <div class="pt-2 flex flex-wrap items-center justify-between gap-2 text-xs border-t border-slate-100">
+                    <a href="<?= $appBase ?>guest/ticket" class="text-rose-600 hover:text-rose-700 hover:underline font-bold flex items-center gap-1">
+                        <span>🆘</span> Cứu hộ tài khoản khi bị khóa?
+                    </a>
+                    <a href="<?= $appBase ?>guest/lookup" class="text-indigo-600 hover:text-indigo-800 hover:underline font-semibold flex items-center gap-1">
+                        <span>🔍</span> Tra cứu kết quả cứu hộ
+                    </a>
                 </div>
 
-                <button type="submit" 
-                        class="w-full mt-2 py-3.5 px-6 bg-gradient-to-r from-sky-500 via-sky-600 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-sky-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
-                    <span>Đăng Nhập Cổng CNTT</span>
-                    <span>➔</span>
-                </button>
-            </form>
-
-            <!-- Đường dẫn bổ trợ cứu hộ -->
-            <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs">
-                <a href="<?= $appBase ?>guest/ticket" class="text-rose-600 hover:text-rose-700 font-bold flex items-center gap-1 hover:underline">
-                    <span>🆘</span> Báo cứu hộ khi bị khóa tài khoản
-                </a>
-                <a href="<?= $appBase ?>guest/lookup" class="text-slate-500 hover:text-slate-700 font-semibold flex items-center gap-1 hover:underline">
-                    <span>🔍</span> Tra cứu tiến độ cứu hộ
-                </a>
             </div>
 
-            <!-- Hộp chọn nhanh tài khoản kiểm thử đồ án -->
-            <div class="mt-4 pt-3 border-t border-dashed border-slate-200">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 text-center">
-                    ⚡ Điền nhanh tài khoản kiểm thử:
-                </span>
-                <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px]">
-                    <button type="button" onclick="fillLogin('224001729', '123456')" 
-                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
-                        🎓 SV Thục Linh
-                    </button>
-                    <button type="button" onclick="fillLogin('224001736', '123456')" 
-                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
-                        👑 SV Thanh Ngân
-                    </button>
-                    <button type="button" onclick="fillLogin('GV001', '123456')" 
-                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
-                        👨‍🏫 GV Nguyễn Văn B
-                    </button>
-                    <button type="button" onclick="fillLogin('KTV001', '123456')" 
-                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
-                        👨‍💻 KTV An (SSO)
-                    </button>
-                    <button type="button" onclick="fillLogin('KTV004', '123456')" 
-                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
-                        🛠️ KTV Nam (Hạ Tầng)
-                    </button>
-                    <button type="button" onclick="fillLogin('ADM001', '123456')" 
-                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
-                        🛡️ Quản Trị Viên (Admin)
-                    </button>
-                </div>
-            </div>
         </div>
+
     </div>
-</div>
 
-<script>
-function fillLogin(user, pass) {
-    document.getElementById('identifier').value = user;
-    document.getElementById('password').value = pass;
-    document.getElementById('identifier').focus();
-}
+    <!-- Chân trang chuyên nghiệp -->
+    <?php require __DIR__ . '/../../includes/footer.php'; ?>
 
-</script>
+    <script>
+        document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
+            button.classList.remove('hidden');
+            button.classList.add('flex', 'items-center', 'justify-center');
+        });
 
-<?php require __DIR__ . '/../layouts/footer.php'; ?>
+        document.addEventListener('click', function (event) {
+            const button = event.target.closest('[data-password-toggle]');
+            if (!button) return;
+
+            const input = document.getElementById(button.getAttribute('aria-controls'));
+            if (!input) return;
+
+            const isVisible = input.type === 'text';
+            input.type = isVisible ? 'password' : 'text';
+            button.setAttribute('aria-pressed', String(!isVisible));
+            button.setAttribute('aria-label', isVisible ? 'Hiện mật khẩu' : 'Ẩn mật khẩu');
+            button.querySelector('[data-password-show-icon]').classList.toggle('hidden', !isVisible);
+            button.querySelector('[data-password-hide-icon]').classList.toggle('hidden', isVisible);
+        });
+
+        document.querySelectorAll('[data-auto-dismiss]').forEach(function (message) {
+            const delay = Number(message.dataset.autoDismiss) || 4500;
+            window.setTimeout(function () {
+                if (!message.isConnected) return;
+                message.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                message.style.opacity = '0';
+                message.style.transform = 'translateY(-8px)';
+                window.setTimeout(function () { message.remove(); }, 300);
+            }, delay);
+        });
+    </script>
+</body>
+</html>

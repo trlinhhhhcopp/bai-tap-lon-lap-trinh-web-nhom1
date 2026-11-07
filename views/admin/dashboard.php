@@ -351,9 +351,7 @@ $appBase = get_app_base_url();
                                         </span>
                                     </td>
                                     <td data-label="Trạng thái" class="py-3 px-4 text-center">
-                                        <span class="px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                            ● <?php echo htmlspecialchars($t['status']); ?>
-                                        </span>
+                                        <?= render_status_badge($t['status']); ?>
                                     </td>
                                     <td data-label="Chi tiết" class="py-3 px-4 text-center">
                                         <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition">

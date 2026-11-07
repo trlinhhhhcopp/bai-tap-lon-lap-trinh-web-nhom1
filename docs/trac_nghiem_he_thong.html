@@ -278,6 +278,16 @@
                         📝 Nộp bài &amp; Chấm điểm
                     </button>
                 </div>
+
+                <!-- Randomize Options Setting -->
+                <div class="pt-3 border-t border-slate-700/80 flex items-center justify-between text-xs">
+                    <span class="text-slate-300 font-medium flex items-center gap-1.5" title="Xáo trộn vị trí A/B/C/D ngẫu nhiên, không cố định đáp án ở vị trí số 2">
+                        <span>🔀</span> <span>Xáo trộn đáp án:</span>
+                    </span>
+                    <button id="toggle-random-options-btn" onclick="toggleRandomOptions()" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white shadow hover:bg-indigo-500 transition">
+                        Bật (Ngẫu nhiên)
+                    </button>
+                </div>
             </div>
 
             <!-- Search & Filter Card -->
@@ -417,6 +427,59 @@
         let examTimer = null;
         let examSecondsRemaining = 1800; // 30 minutes default
         let isExamSubmitted = false;
+        let isRandomOptions = true; // Luôn xáo trộn thứ tự A/B/C/D ngẫu nhiên, không cố định ở vị trí thứ 2
+        let questionShuffledOptions = {};
+
+        function toggleRandomOptions() {
+            isRandomOptions = !isRandomOptions;
+            questionShuffledOptions = {};
+            userAnswers = {};
+            questionShuffledOptions = {};
+            const btn = document.getElementById('toggle-random-options-btn');
+            if (btn) {
+                if (isRandomOptions) {
+                    btn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-600 text-white shadow hover:bg-indigo-500 transition";
+                    btn.innerText = "Bật (Ngẫu nhiên)";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-700 text-slate-300 hover:bg-slate-600 transition";
+                    btn.innerText = "Tắt (Cố định)";
+                }
+            }
+            renderQuickGrid();
+            renderQuestions();
+            updateStats();
+        }
+
+        function getQuestionOptions(q) {
+            if (!isRandomOptions) {
+                return ['A', 'B', 'C', 'D'].map(k => ({
+                    label: k,
+                    origKey: k,
+                    text: q.options[k],
+                    isCorrect: (k === q.answer)
+                }));
+            }
+            if (!questionShuffledOptions[q.id]) {
+                const keys = ['A', 'B', 'C', 'D'].sort(() => 0.5 - Math.random());
+                questionShuffledOptions[q.id] = ['A', 'B', 'C', 'D'].map((lbl, idx) => {
+                    const origK = keys[idx];
+                    return {
+                        label: lbl,
+                        origKey: origK,
+                        text: q.options[origK],
+                        isCorrect: (origK === q.answer)
+                    };
+                });
+            }
+            return questionShuffledOptions[q.id];
+        }
+
+        function getCorrectDisplayKey(q) {
+            if (!isRandomOptions) return q.answer;
+            const opts = getQuestionOptions(q);
+            const correctOpt = opts.find(o => o.isCorrect);
+            return correctOpt ? correctOpt.label : q.answer;
+        }
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
@@ -470,6 +533,7 @@
             // Reset state
             currentFilter = 0;
             userAnswers = {};
+            questionShuffledOptions = {};
             searchQuery = '';
             const searchInput = document.getElementById('search-input');
             if (searchInput) searchInput.value = '';
@@ -540,6 +604,7 @@
                 studyBtn.className = "px-3 py-2.5 rounded-xl text-xs font-bold text-slate-300 bg-slate-900/60 hover:bg-slate-700 border border-slate-700 transition flex flex-col items-center gap-1";
                 examSettingsBox.classList.remove('hidden');
                 userAnswers = {};
+            questionShuffledOptions = {};
                 isExamSubmitted = false;
             }
             renderSectionButtons();
@@ -554,6 +619,7 @@
             const shuffled = [...QUESTIONS_DATA].sort(() => 0.5 - Math.random());
             examQuestionsList = shuffled.slice(0, count).map(q => q.id);
             userAnswers = {};
+            questionShuffledOptions = {};
             isExamSubmitted = false;
 
             // Timer
@@ -605,7 +671,7 @@
             let correct = 0;
             const targetQuestions = examQuestionsList.map(id => QUESTIONS_DATA.find(q => q.id === id));
             targetQuestions.forEach(q => {
-                if (userAnswers[q.id] === q.answer) correct++;
+                if (userAnswers[q.id] === getCorrectDisplayKey(q)) correct++;
             });
 
             const total = targetQuestions.length;
@@ -745,7 +811,8 @@
             const userAns = userAnswers[q.id];
             const hasAnswered = !!userAns;
             const showCorrection = (currentMode === 'study' && hasAnswered) || (currentMode === 'exam' && isExamSubmitted);
-            const isCorrect = userAns === q.answer;
+            const correctKey = getCorrectDisplayKey(q);
+            const isCorrect = userAns === correctKey;
 
             let statusBadge = '';
             if (showCorrection) {
@@ -760,11 +827,13 @@
                 }
             }
 
+            const optionsList = getQuestionOptions(q);
             let optionsHTML = '';
-            ['A', 'B', 'C', 'D'].forEach(optKey => {
-                const optText = q.options[optKey];
+            optionsList.forEach(opt => {
+                const optKey = opt.label;
+                const optText = opt.text;
                 const isSelected = userAns === optKey;
-                const isThisTheCorrectAnswer = optKey === q.answer;
+                const isThisTheCorrectAnswer = opt.isCorrect;
 
                 let optClass = "flex items-start gap-3 p-3.5 rounded-xl border text-xs sm:text-sm cursor-pointer transition ";
 
@@ -816,7 +885,7 @@
                     <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-700/90 space-y-2 mt-3 text-xs leading-relaxed">
                         <div class="flex items-center gap-2 font-bold ${isCorrect ? 'text-emerald-400' : 'text-amber-400'}">
                             <span>💡</span>
-                            <span>Căn Cứ Kỹ Thuật &amp; Phân Tích Đáp Án Đúng: Đáp án [${q.answer}]</span>
+                            <span>Căn Cứ Kỹ Thuật &amp; Phân Tích Đáp Án Đúng: Đáp án [${correctKey}]</span>
                         </div>
                         <p class="text-slate-300">${q.explanation}</p>
                     </div>
@@ -866,7 +935,7 @@
                 if (!showCorrection) {
                     if (hasAnswered) bgClass = "bg-indigo-600 text-white font-bold shadow";
                 } else {
-                    if (userAns === q.answer) bgClass = "bg-emerald-600 text-white font-bold shadow";
+                    if (userAns === getCorrectDisplayKey(q)) bgClass = "bg-emerald-600 text-white font-bold shadow";
                     else if (hasAnswered) bgClass = "bg-rose-600 text-white font-bold shadow";
                     else bgClass = "bg-slate-800 text-slate-500 border border-slate-700";
                 }
@@ -898,7 +967,7 @@
                 const ans = userAnswers[q.id];
                 if (ans) {
                     completed++;
-                    if (ans === q.answer) correct++;
+                    if (ans === getCorrectDisplayKey(q)) correct++;
                     else wrong++;
                 }
             });
@@ -916,6 +985,7 @@
         function resetAllProgress() {
             if (confirm("Bạn có chắc chắn muốn làm lại từ đầu không? Toàn bộ các câu đã chọn sẽ được xóa trắng.")) {
                 userAnswers = {};
+            questionShuffledOptions = {};
                 isExamSubmitted = false;
                 if (examTimer) clearInterval(examTimer);
                 document.getElementById('exam-result-card').classList.add('hidden');
