@@ -42,6 +42,27 @@ class Router {
         $uri = '/' . ltrim($uri, '/');
         $uri = ($uri !== '/' && str_ends_with($uri, '/')) ? rtrim($uri, '/') : $uri;
 
+        // Ánh xạ tương thích các query parameter truyền thống (?action=...)
+        if ($uri === '/' || $uri === '' || $uri === '/index.php') {
+            $action = $_GET['action'] ?? ($_POST['action'] ?? '');
+            if (!empty($action)) {
+                $actionMap = [
+                    'login'           => '/login',
+                    'logout'          => '/logout',
+                    'first_login'     => '/first-login',
+                    'forgot_password' => '/forgot-password',
+                    'reset_password'  => '/reset-password',
+                    'guest_ticket'    => '/guest/ticket',
+                    'guest_lookup'    => '/guest/lookup',
+                    'quick_login'     => '/quick-login',
+                    'courses'         => '/student/courses',
+                ];
+                if (isset($actionMap[$action])) {
+                    $uri = $actionMap[$action];
+                }
+            }
+        }
+
         foreach ($this->routes as $route) {
             if ($route['method'] === $method && $route['path'] === $uri) {
                 // Thực thi Middlewares
@@ -61,6 +82,11 @@ class Router {
 
         // 404 Not Found
         http_response_code(404);
-        echo "<h1 style='text-align:center;margin-top:50px;font-family:sans-serif;'>404 - Không tìm thấy trang [{$uri}]</h1>";
+        echo "<div style='max-width:600px;margin:80px auto;padding:30px;background:#fff;border-radius:16px;box-shadow:0 10px 25px rgba(0,0,0,0.06);text-align:center;font-family:sans-serif;'>
+                <div style='font-size:48px;margin-bottom:12px;'>🔍</div>
+                <h2 style='font-size:22px;color:#1e293b;margin-bottom:8px;'>404 - Không tìm thấy trang</h2>
+                <p style='font-size:13px;color:#64748b;margin-bottom:24px;'>Đường dẫn yêu cầu <code>{$uri}</code> không tồn tại trên hệ thống Helpdesk.</p>
+                <a href='./' style='display:inline-block;padding:10px 20px;background:#0284c7;color:#fff;text-decoration:none;font-weight:700;font-size:13px;border-radius:10px;'>← Quay về Trang Chủ</a>
+              </div>";
     }
 }

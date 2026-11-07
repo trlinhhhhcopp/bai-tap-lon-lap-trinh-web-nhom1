@@ -13,18 +13,45 @@ class AuthController extends Controller {
         if (Session::check()) {
             $user = Session::user();
             if ($user['role'] === 'admin') {
-                $this->redirect('/admin/users');
+                $this->redirect('/admin/dashboard');
             } elseif ($user['role'] === 'agent') {
                 $this->redirect('/agent/workbench');
+            } elseif ($user['role'] === 'lecturer' || ($user['user_type'] ?? '') === 'lecturer') {
+                $this->redirect('/lecturer/dashboard');
             } else {
                 $this->redirect('/student/dashboard');
             }
-
         }
 
         $this->view('auth/login', [
             'title' => 'Đăng Nhập Cổng Helpdesk CNTT - ĐH Thủ Đô Hà Nội',
         ]);
+    }
+
+    public function quickLogin(): void {
+        $code = trim($_GET['code'] ?? '');
+        $user = User::findByEmailOrCode($code);
+        if ($user) {
+            if ((int)$user['is_active'] === 0) {
+                $this->flash('danger', 'Tài khoản này đang bị khóa!');
+                $this->redirect('/login');
+                return;
+            }
+            Session::set('user', $user);
+            $this->flash('success', "Đăng nhập thành công với vai trò: <strong>{$user['name']}</strong> ({$user['user_code']})");
+            if ($user['role'] === 'admin') {
+                $this->redirect('/admin/dashboard');
+            } elseif ($user['role'] === 'agent') {
+                $this->redirect('/agent/workbench');
+            } elseif ($user['role'] === 'lecturer' || ($user['user_type'] ?? '') === 'lecturer') {
+                $this->redirect('/lecturer/dashboard');
+            } else {
+                $this->redirect('/student/dashboard');
+            }
+            return;
+        }
+        $this->flash('danger', 'Không tìm thấy tài khoản để đăng nhập nhanh!');
+        $this->redirect('/login');
     }
 
     public function login(): void {
@@ -50,9 +77,11 @@ class AuthController extends Controller {
 
         // Điều hướng theo vai trò (RBAC Routing)
         if ($user['role'] === 'admin') {
-            $this->redirect('/admin/users');
+            $this->redirect('/admin/dashboard');
         } elseif ($user['role'] === 'agent') {
             $this->redirect('/agent/workbench');
+        } elseif ($user['role'] === 'lecturer' || ($user['user_type'] ?? '') === 'lecturer') {
+            $this->redirect('/lecturer/dashboard');
         } else {
             $this->redirect('/student/dashboard');
         }

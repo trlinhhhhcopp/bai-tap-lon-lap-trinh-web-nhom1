@@ -21,7 +21,7 @@ class View {
             die("Lỗi: Không tìm thấy tệp giao diện view [{$viewFile}]!");
         }
 
-        require_once $viewFile;
+        require $viewFile;
     }
 }
 

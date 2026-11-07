@@ -204,7 +204,7 @@
                     </button>
                 </div>
 
-                <form method="POST" action="/student/tickets/create" enctype="multipart/form-data" class="space-y-4">
+                <form method="POST" action="<?= $appBase ?>student/tickets/create" enctype="multipart/form-data" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
@@ -435,7 +435,7 @@
 
                                         <td class="px-3 py-3 whitespace-nowrap">
                                             <?php if (!empty($t['attachment_path'])): ?>
-                                                <a href="/tickets/attachment?file=<?= urlencode($t['attachment_path']) ?>" target="_blank" 
+                                                <a href="<?= $appBase ?>tickets/attachment?file=<?= urlencode($t['attachment_path']) ?>" target="_blank" 
                                                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 text-[11px] font-bold transition">
                                                     📎 Xem file
                                                 </a>
@@ -485,7 +485,7 @@
                                             </button>
 
                                             <?php if ($canCancel): ?>
-                                                <form method="POST" action="/student/tickets/cancel" class="inline-block" 
+                                                <form method="POST" action="<?= $appBase ?>student/tickets/cancel" class="inline-block" 
                                                       onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu <?= htmlspecialchars($t['ticket_code']) ?> không? (Sau khi hủy, KTV sẽ không tiếp nhận xử lý phiếu này nữa)');">
                                                     <input type="hidden" name="ticket_id" value="<?= $t['id'] ?>">
                                                     <button type="submit" 
@@ -1046,7 +1046,7 @@ function resetTicketFilter() {
         <!-- Modal Footer -->
         <div class="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
             <div id="dtlCancelBox" style="display: none;">
-                <form method="POST" action="/student/tickets/cancel" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này không?');">
+                <form method="POST" action="<?= $appBase ?>student/tickets/cancel" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu này không?');">
                     <input type="hidden" name="ticket_id" id="dtlCancelTicketId" value="">
                     <button type="submit" id="dtlCancelBtn" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl font-bold text-xs transition">
                         🚫 Hủy phiếu này
@@ -1074,7 +1074,7 @@ function resetTicketFilter() {
             </button>
         </div>
 
-        <form method="POST" action="/student/avatar" enctype="multipart/form-data" class="p-5 space-y-4">
+        <form method="POST" action="<?= $appBase ?>student/avatar" enctype="multipart/form-data" class="p-5 space-y-4">
             <div class="text-center space-y-2">
                 <div class="w-24 h-24 rounded-full mx-auto border-4 border-sky-400 overflow-hidden bg-slate-100 flex items-center justify-center shadow-lg">
                     <img id="avatarPreviewImg" src="<?= !empty($user['avatar_path']) ? '/tickets/attachment?file=' . urlencode($user['avatar_path']) : '' ?>" alt="Xem trước" class="w-full h-full object-cover <?= empty($user['avatar_path']) ? 'hidden' : '' ?>">

@@ -18,7 +18,7 @@ class Controller {
             die("Lỗi: Không tìm thấy tệp giao diện view [{$viewFile}]!");
         }
 
-        require_once $viewFile;
+        require $viewFile;
     }
 
     protected function json(array $data, int $statusCode = 200): void {

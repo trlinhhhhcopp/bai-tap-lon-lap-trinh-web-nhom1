@@ -81,18 +81,26 @@
                 <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-2 text-center">
                     ⚡ Điền nhanh tài khoản kiểm thử:
                 </span>
-                <div class="grid grid-cols-2 gap-1.5 text-[11px]">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px]">
                     <button type="button" onclick="fillLogin('224001729', '123456')" 
                             class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
-                        🎓 SV Thục Linh (224001729)
+                        🎓 SV Thục Linh
                     </button>
                     <button type="button" onclick="fillLogin('224001736', '123456')" 
                             class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
-                        👑 SV Thanh Ngân (224001736)
+                        👑 SV Thanh Ngân
+                    </button>
+                    <button type="button" onclick="fillLogin('GV001', '123456')" 
+                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
+                        👨‍🏫 GV Nguyễn Văn B
                     </button>
                     <button type="button" onclick="fillLogin('KTV001', '123456')" 
                             class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
                         👨‍💻 KTV An (SSO)
+                    </button>
+                    <button type="button" onclick="fillLogin('KTV004', '123456')" 
+                            class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">
+                        🛠️ KTV Nam (Hạ Tầng)
                     </button>
                     <button type="button" onclick="fillLogin('ADM001', '123456')" 
                             class="px-2.5 py-1.5 bg-slate-100 hover:bg-sky-50 hover:text-sky-700 hover:border-sky-300 border border-slate-200 rounded-lg text-slate-700 font-medium transition text-left truncate">

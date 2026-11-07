@@ -11,7 +11,7 @@
             Xin chào <strong><?= htmlspecialchars($user['name']) ?></strong> (<?= htmlspecialchars($user['user_code']) ?>). Để đảm bảo an toàn thông tin cá nhân, bạn phải cập nhật mật khẩu mới trước khi vào hệ thống.
         </div>
 
-        <form method="POST" action="/first-login">
+        <form method="POST" action="<?= $appBase ?>first-login">
             <div style="margin-bottom: 16px;">
                 <label style="display:block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">Mật khẩu mới (tối thiểu 6 ký tự):</label>
                 <div style="position:relative;">

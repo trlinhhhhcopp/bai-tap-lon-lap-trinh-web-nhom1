@@ -12,6 +12,10 @@ if (empty($currentUser) && !empty($_SESSION['user'])) {
     $currentUser = $_SESSION['user'];
 }
 
+if (!isset($appBase)) {
+    $appBase = function_exists('get_app_base_url') ? get_app_base_url() : '/';
+}
+
 if (!empty($currentUser)) {
     // Đảm bảo có dữ liệu thông báo sinh động phù hợp vai trò
     NotificationService::ensureUserHasInitialNotifications($currentUser);
