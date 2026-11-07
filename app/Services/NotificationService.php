@@ -197,13 +197,14 @@ class NotificationService
             }
 
             // Nếu không có thông báo chưa đọc, lấy thông báo mới nhất trong 24 giờ qua
+            $since = date('Y-m-d H:i:s', time() - 24 * 60 * 60);
             $stmt = db()->prepare("
                 SELECT * FROM notifications 
-                WHERE user_id = :user_id AND created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                WHERE user_id = :user_id AND created_at >= :since
                 ORDER BY created_at DESC 
                 LIMIT 1
             ");
-            $stmt->execute([':user_id' => $userId]);
+            $stmt->execute([':user_id' => $userId, ':since' => $since]);
             $recent = $stmt->fetch(PDO::FETCH_ASSOC);
             return $recent ?: null;
         } catch (Throwable $e) {
@@ -427,6 +428,7 @@ class NotificationService
     {
         if ($adminId <= 0) return;
         $pdo = db();
+        $recentSince = date('Y-m-d H:i:s', time() - 3 * 60 * 60);
 
         try {
             // 1. SỰ CỐ DIỆN RỘNG (MAJOR INCIDENT / CRITICAL)
@@ -439,9 +441,9 @@ class NotificationService
             if ($majorCount > 0) {
                 $stmtCheck = $pdo->prepare("
                     SELECT COUNT(*) FROM notifications 
-                    WHERE user_id = :uid AND type = 'major_incident' AND created_at >= DATE_SUB(NOW(), INTERVAL 3 HOUR)
+                    WHERE user_id = :uid AND type = 'major_incident' AND created_at >= :since
                 ");
-                $stmtCheck->execute([':uid' => $adminId]);
+                $stmtCheck->execute([':uid' => $adminId, ':since' => $recentSince]);
                 if ((int)$stmtCheck->fetchColumn() === 0) {
                     self::send(
                         $adminId,
@@ -516,9 +518,9 @@ class NotificationService
                 $agentNames = implode(', ', array_map(fn($a) => $a['name'] . " ({$a['active_tickets']}/" . ($a['max_capacity'] ?: 15) . " phiếu)", $overflowAgents));
                 $stmtCheck = $pdo->prepare("
                     SELECT COUNT(*) FROM notifications 
-                    WHERE user_id = :uid AND type = 'agent_overflow' AND created_at >= DATE_SUB(NOW(), INTERVAL 3 HOUR)
+                    WHERE user_id = :uid AND type = 'agent_overflow' AND created_at >= :since
                 ");
-                $stmtCheck->execute([':uid' => $adminId]);
+                $stmtCheck->execute([':uid' => $adminId, ':since' => $recentSince]);
                 if ((int)$stmtCheck->fetchColumn() === 0) {
                     self::send(
                         $adminId,
@@ -535,4 +537,3 @@ class NotificationService
         }
     }
 }
-

@@ -4,6 +4,11 @@
 -- CHỦ ĐỀ 9: HỆ THỐNG HELPDESK CNTT TRỰC TUYẾN (IT SUPPORT ONLINE)
 -- TẬP TIN DDL TẠO BẢNG CƠ SỞ DỮ LIỆU: database/schema.sql
 -- Hệ quản trị CSDL: MySQL 8.0+ (InnoDB, utf8mb4_unicode_ci)
+-- ------------------------------------------------------------------------------
+-- ⚠️ CẢNH BÁO: TẬP TIN NÀY CÓ LỆNH DROP TABLE XÓA DỮ LIỆU CŨ.
+-- ĐỂ CÓ ĐẦY ĐỦ 100% CẢ CẤU TRÚC VÀ DỮ LIỆU KIỂM THỬ (32 TÀI KHOẢN, 48 PHIẾU,
+-- PHẢN HỒI, BÀI TẬP), HÃY IMPORT TẬP TIN: database/database_full_nhom1.sql
+-- HOẶC CHẠY TẬP TIN: dong_bo_database.bat !
 -- ==============================================================================
 
 CREATE DATABASE IF NOT EXISTS `helpdesk_thudo` 
@@ -207,7 +212,7 @@ CREATE TABLE `tickets` (
     `system_affected` VARCHAR(50) NOT NULL,
     `attachment_path` VARCHAR(255) NULL,
     
-    `status` ENUM('new', 'in_progress', 'waiting_requester', 'resolved', 'closed') NOT NULL DEFAULT 'new',
+    `status` ENUM('new', 'in_progress', 'waiting_requester', 'resolved', 'closed', 'cancelled') NOT NULL DEFAULT 'new',
     `closed_reason` ENUM('completed', 'auto_closed', 'duplicate', 'cancelled') NULL,
     
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -217,6 +222,7 @@ CREATE TABLE `tickets` (
     `first_response_at` DATETIME NULL,
     `resolved_at` DATETIME NULL,
     `closed_at` DATETIME NULL,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     `reopen_count` TINYINT UNSIGNED NOT NULL DEFAULT 0,
     
     `ticket_code` VARCHAR(30) NOT NULL UNIQUE, -- Mã vé định danh (VD: HD-2026-00001) do hệ thống sinh tự động

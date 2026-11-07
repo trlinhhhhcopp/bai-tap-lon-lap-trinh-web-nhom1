@@ -53,22 +53,25 @@ if (!function_exists('db')) {
         $port     = 3306;
         $database = 'helpdesk_thudo';
         $username = 'root';
-        $password = '12345678';
-        $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
+        $passwords = ['', '12345678', 'root'];
 
-        try {
-            $pdo = new PDO($dsn, $username, $password, [
-                PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_EMULATE_PREPARES   => true,
-                PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
-            ]);
-            $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;");
-        } catch (PDOException $e) {
-            die("<strong>Lỗi kết nối CSDL:</strong> " . htmlspecialchars($e->getMessage()));
+        $lastEx = null;
+        foreach ($passwords as $pwd) {
+            try {
+                $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
+                $pdo = new PDO($dsn, $username, $pwd, [
+                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES   => true,
+                    PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci",
+                ]);
+                $pdo->exec("SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci;");
+                return $pdo;
+            } catch (PDOException $e) {
+                $lastEx = $e;
+            }
         }
-
-        return $pdo;
+        die("<strong>Lỗi kết nối CSDL:</strong> " . htmlspecialchars($lastEx ? $lastEx->getMessage() : 'Không thể kết nối MySQL'));
     }
 }
 
@@ -179,7 +182,7 @@ return [
     'port'      => 3306,
     'database'  => 'helpdesk_thudo',
     'username'  => 'root',
-    'password'  => '12345678',
+    'password'  => '',
     'charset'   => 'utf8mb4',
     'collation' => 'utf8mb4_unicode_ci',
     'options'   => [

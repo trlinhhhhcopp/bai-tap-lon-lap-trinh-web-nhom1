@@ -219,12 +219,15 @@ class TicketService {
      */
     public static function getAgentQueue(int $agentId, string $statusFilter = ''): array {
         $pdo = Database::getConnection();
+        $minutesRemaining = Database::isFallback()
+            ? "CAST((julianday(t.due_at) - julianday(NOW())) * 1440 AS INTEGER)"
+            : "TIMESTAMPDIFF(MINUTE, NOW(), t.due_at)";
 
         $sql = "SELECT t.*, 
                        u_req.name AS requester_name, u_req.user_code AS requester_code,
                        c.name AS category_name, c.code AS category_code,
                        p.name AS priority_name, p.code AS priority_code,
-                       TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) AS minutes_remaining
+                       {$minutesRemaining} AS minutes_remaining
                 FROM tickets t
                 JOIN users u_req ON t.requester_id = u_req.id
                 JOIN categories c ON t.category_id = c.id
@@ -314,4 +317,3 @@ class TicketService {
         }
     }
 }
-

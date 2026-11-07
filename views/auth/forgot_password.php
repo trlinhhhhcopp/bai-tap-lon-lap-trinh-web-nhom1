@@ -47,6 +47,28 @@ $hasOtp = ($activeOtp && time() <= ($activeOtp['expires_at'] ?? 0) && empty($act
                     <p class="text-slate-600 leading-relaxed text-[11.5px]">
                         🔒 <strong>Bảo mật tài khoản:</strong> Hệ thống đã gửi thư xác thực kèm mã OTP gồm <strong>6 chữ cái in hoa</strong> đến hòm thư trường trên. Bạn hãy mở hòm thư của mình (hộp thư đến hoặc mục Thư rác/Spam), lấy đúng 6 chữ cái và nhập vào ô xác thực bên dưới.
                     </p>
+
+                    <?php if (!empty($activeOtp['otp'])): ?>
+                        <div class="mt-3 p-3 bg-amber-50 border-2 border-amber-300 rounded-xl space-y-2">
+                            <div class="flex items-center justify-between flex-wrap gap-2">
+                                <div>
+                                    <span class="text-[10.5px] font-bold text-amber-900 uppercase block flex items-center gap-1">
+                                        <span>🧪</span> Mã OTP Giả Lập Kiểm Thử (Localhost Test):
+                                    </span>
+                                    <span class="font-mono text-2xl font-black text-indigo-950 tracking-widest block mt-0.5"><?= htmlspecialchars($activeOtp['otp']); ?></span>
+                                </div>
+                                <button type="button" onclick="document.querySelector('input[name=otp_input]').value = '<?= htmlspecialchars($activeOtp['otp']); ?>';" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg text-xs transition shadow-xs cursor-pointer flex items-center gap-1">
+                                    <span>⚡</span> Tự động điền mã
+                                </button>
+                            </div>
+                            <div class="pt-1.5 border-t border-amber-200 text-[11px] text-amber-800 flex items-center justify-between flex-wrap gap-1">
+                                <span>Hoặc mở thẳng trang đổi mật khẩu:</span>
+                                <a href="<?= $appBase ?>reset-password?token=<?= urlencode($activeOtp['otp']); ?>" class="font-bold text-indigo-700 hover:underline">
+                                    🔑 Bấm vào đây để đặt lại mật khẩu ngay ➔
+                                </a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 

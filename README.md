@@ -192,11 +192,10 @@ Hệ thống đã được tinh chỉnh, nâng cấp và hoàn thiện 100% theo
 1. **Cấu hình Web Server (XAMPP):**
    * Đặt thư mục dự án vào `C:/xampp/htdocs/web01/bai-tap-lon-lap-trinh-web-nhom1`
    * Khởi động **Apache** và **MySQL** trong XAMPP Control Panel.
-2. **Khởi tạo Cơ sở dữ liệu:**
-   * Truy cập `http://localhost/phpmyadmin`
-   * Tạo cơ sở dữ liệu tên: **`helpdesk_thudo`** (Collation: `utf8mb4_unicode_ci`)
-   * Import tập tin DDL tạo bảng: [`database/schema.sql`](database/schema.sql)
-   * Import tập tin DML dữ liệu mẫu: [`database/seed.sql`](database/seed.sql)
+2. **Khởi tạo Cơ sở dữ liệu (Đồng bộ đầy đủ 100%):**
+   * **Cách 1 (Tự động - Khuyên dùng):** Nhấp đúp chuột chạy file [`dong_bo_database.bat`](dong_bo_database.bat). File sẽ tự động nạp toàn bộ CSDL chỉ trong 5 giây!
+   * **Cách 2 (Thủ công qua phpMyAdmin):** Truy cập `http://localhost/phpmyadmin` → Tab **Import** → Chọn duy nhất tập tin CSDL đầy đủ: [`database/database_full_nhom1.sql`](database/database_full_nhom1.sql) (đã bao gồm toàn bộ 14 bảng, 32 tài khoản kiểm thử mật khẩu `123456`, 48 phiếu sự cố, phản hồi và bài tập).
+   * ⚠️ *Lưu ý quan trọng:* Không import riêng `database/schema.sql` vì file này chỉ chứa DDL trống có lệnh `DROP TABLE` sẽ xóa mất dữ liệu mẫu của hệ thống.
 3. **Truy cập ứng dụng:**
    * Mở trình duyệt truy cập: `http://localhost/web01/bai-tap-lon-lap-trinh-web-nhom1/`
    * Đăng nhập bằng một trong các tài khoản trong bảng kiểm thử ở Mục 3 (Mật khẩu: `123456`).

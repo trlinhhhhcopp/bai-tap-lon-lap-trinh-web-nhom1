@@ -314,11 +314,12 @@ erDiagram
 ## 🚀 PHẦN 5: HƯỚNG DẪN CHẠY SCRIPT TẠO CƠ SỞ DỮ LIỆU
 
 1. **Khởi động XAMPP:** Bật dịch vụ **Apache** và **MySQL**.
-2. **Import qua phpMyAdmin:**
-   * Mở `http://localhost/phpmyadmin` &rarr; Tạo CSDL: `helpdesk_thudo` (Collation: `utf8mb4_unicode_ci`).
-   * Chọn `helpdesk_thudo` &rarr; Tab **Import**:
-     * Lần 1: Chọn file [`database/schema.sql`](database/schema.sql) &rarr; Bấm **Import**.
-     * Lần 2: Chọn file [`database/seed.sql`](database/seed.sql) &rarr; Bấm **Import**.
+2. **Đồng bộ Cơ sở dữ liệu (Đầy đủ 100%):**
+   * **Cách 1 (Tự động - Khuyên dùng):** Chạy file [`dong_bo_database.bat`](dong_bo_database.bat). Tự động nạp CSDL chỉ trong 5 giây!
+   * **Cách 2 (Thủ công qua phpMyAdmin):**
+     * Mở `http://localhost/phpmyadmin` &rarr; Tab **Import**.
+     * Chọn duy nhất tệp CSDL đầy đủ: [`database/database_full_nhom1.sql`](database/database_full_nhom1.sql) (đã bao gồm toàn bộ 14 bảng, 32 tài khoản mật khẩu `123456`, 48 phiếu sự cố, phản hồi, bài tập). Bấm **Import**.
+     * ⚠️ *Lưu ý:* Không import `schema.sql` vì file này chỉ chứa khung bảng rỗng có lệnh `DROP TABLE` sẽ làm mất dữ liệu kiểm thử.
 3. **Tài khoản kiểm tra mẫu (Mật khẩu cố định: `123456`):**
    * **Admin:** `admin@daihocthudo.edu.vn` (có menu Import CSV đầu kỳ & lọc hết khóa).
    * **Kỹ thuật viên 1 (SSO):** `ktv1@daihocthudo.edu.vn`

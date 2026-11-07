@@ -92,7 +92,7 @@ class TicketRepository {
                     AND (
                         (t.due_at IS NOT NULL AND t.due_at < NOW())
                         OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
-                        OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
+                        OR (t.due_at IS NOT NULL AND " . self::minutesRemainingExpression() . " BETWEEN 0 AND 60)
                         OR (p.code IN ('urgent', 'high'))
                         OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
                         OR (t.reopen_count > 0)
@@ -211,7 +211,7 @@ class TicketRepository {
                     AND (
                         (t.due_at IS NOT NULL AND t.due_at < NOW())
                         OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
-                        OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
+                        OR (t.due_at IS NOT NULL AND " . self::minutesRemainingExpression() . " BETWEEN 0 AND 60)
                         OR (p.code IN ('urgent', 'high'))
                         OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
                         OR (t.reopen_count > 0)
@@ -325,7 +325,7 @@ class TicketRepository {
             "(
                 (t.due_at IS NOT NULL AND t.due_at < NOW())
                 OR (t.triage_due_at IS NOT NULL AND t.triage_due_at < NOW() AND t.assigned_to IS NULL)
-                OR (t.due_at IS NOT NULL AND TIMESTAMPDIFF(MINUTE, NOW(), t.due_at) BETWEEN 0 AND 60)
+                OR (t.due_at IS NOT NULL AND " . self::minutesRemainingExpression() . " BETWEEN 0 AND 60)
                 OR (p.code IN ('urgent', 'high'))
                 OR (t.title LIKE '%[CỨU HỘ KHẨN CẤP]%')
                 OR (t.reopen_count > 0)
@@ -808,15 +808,16 @@ class TicketRepository {
     public static function autoCloseExpiredResolvedTickets(): int {
         try {
             $db = db();
+            $cutoff = date('Y-m-d H:i:s', time() - 24 * 60 * 60);
             $sql = "UPDATE tickets 
                     SET status = 'closed', 
                         closed_at = NOW(), 
-                        closed_reason = 'auto_closed_24h' 
+                        closed_reason = 'auto_closed' 
                     WHERE status = 'resolved' 
                       AND resolved_at IS NOT NULL 
-                      AND resolved_at <= NOW() - INTERVAL 24 HOUR";
+                      AND resolved_at <= :cutoff";
             $stmt = $db->prepare($sql);
-            $stmt->execute();
+            $stmt->execute([':cutoff' => $cutoff]);
             return (int)$stmt->rowCount();
         } catch (\Throwable $e) {
             return 0;
@@ -902,5 +903,13 @@ class TicketRepository {
                 WHERE t.is_guest_ticket = 1 AND t.rescue_verified = 1 AND t.status NOT IN ('closed')
                 ORDER BY t.id DESC";
         return $db->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    private static function minutesRemainingExpression(): string {
+        if (\App\Core\Database::isFallback()) {
+            return "CAST((julianday(t.due_at) - julianday(NOW())) * 1440 AS INTEGER)";
+        }
+
+        return "TIMESTAMPDIFF(MINUTE, NOW(), t.due_at)";
     }
 }
