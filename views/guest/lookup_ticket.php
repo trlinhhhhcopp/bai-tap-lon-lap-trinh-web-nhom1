@@ -1,6 +1,7 @@
 <?php 
-require_once __DIR__ . '/../../config/database.php';
-require __DIR__ . '/../layouts/header.php'; 
+$appRoot = dirname(__DIR__, 2);
+require_once $appRoot . '/config/database.php';
+require $appRoot . '/includes/navbar.php'; 
 
 $code = $code ?? trim($_GET['code'] ?? '');
 $ticket = $ticket ?? null;
@@ -143,4 +144,4 @@ if (empty($ticket) && !empty($code)) {
     </div>
 </div>
 
-<?php require __DIR__ . '/../layouts/footer.php'; ?>
+<?php require $appRoot . '/includes/footer.php'; ?>

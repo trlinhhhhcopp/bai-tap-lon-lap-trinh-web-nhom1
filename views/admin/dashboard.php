@@ -140,13 +140,13 @@ $appBase = get_app_base_url();
                 <div class="overflow-x-auto bg-white rounded-2xl border border-rose-200 shadow-2xs">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-rose-50/80 text-rose-950 font-bold border-b border-rose-200 text-[11px]">
-                                <th class="py-3 px-4">Mã Vé Sự Cố</th>
-                                <th class="py-3 px-4">Tiêu Đề & Hệ Thống</th>
-                                <th class="py-3 px-4">KTV Báo Cáo</th>
-                                <th class="py-3 px-4">Thời Điểm Báo</th>
-                                <th class="py-3 px-4">Cảnh Báo Toàn Trường</th>
-                                <th class="py-3 px-4 text-center">Thao Tác</th>
+                            <tr class="bg-rose-50/80 text-rose-900 font-bold border-b border-rose-200 text-[10.5px] uppercase tracking-wider">
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Mã Vé<br>Sự Cố</th>
+                                <th class="py-2.5 px-3.5">Tiêu Đề &<br>Hệ Thống</th>
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">KTV<br>Báo Cáo</th>
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Thời Điểm<br>Báo Cáo</th>
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Cảnh Báo<br>Toàn Trường</th>
+                                <th class="py-2.5 px-3.5 text-center whitespace-nowrap">Thao<br>Tác</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -225,13 +225,13 @@ $appBase = get_app_base_url();
                 <div id="admin_rescue_table_body" data-collapsible-table class="overflow-x-auto bg-white rounded-2xl border border-rose-200 shadow-2xs">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-rose-50/80 text-rose-950 font-bold border-b border-rose-200 text-[11px]">
-                                <th class="py-3 px-4">Mã Vé Cứu Hộ</th>
-                                <th class="py-3 px-4">Người Gửi (SV/CB)</th>
-                                <th class="py-3 px-4">Lớp / Đơn Vị</th>
-                                <th class="py-3 px-4">Trạng Thái Tài Khoản</th>
-                                <th class="py-3 px-4 text-center">Xác Thực KTV</th>
-                                <th class="py-3 px-4 text-center">Thao Tác</th>
+                            <tr class="bg-rose-50/80 text-rose-900 font-bold border-b border-rose-200 text-[10.5px] uppercase tracking-wider">
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Mã Vé<br>Cứu Hộ</th>
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Người Gửi<br>(SV / CB)</th>
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Lớp /<br>Đơn Vị</th>
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Trạng Thái<br>Tài Khoản</th>
+                                <th class="py-2.5 px-3.5 text-center whitespace-nowrap">Xác Thực<br>KTV</th>
+                                <th class="py-2.5 px-3.5 text-center whitespace-nowrap">Thao<br>Tác</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-rose-100">
@@ -322,13 +322,13 @@ $appBase = get_app_base_url();
                 <div id="admin_triage_table_body" data-collapsible-table class="overflow-x-auto">
                     <table class="admin-ticket-table w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-600 font-bold border-b border-slate-200 text-[11px]">
-                                <th class="py-3 px-4">Mã Vé</th>
-                                <th class="py-3 px-4">Tiêu Đề</th>
-                                <th class="py-3 px-4">Người Gửi</th>
-                                <th class="py-3 px-4 text-center">Ưu Tiên</th>
-                                <th class="py-3 px-4 text-center">Trạng Thái</th>
-                                <th class="py-3 px-4 text-center">Thao Tác</th>
+                            <tr class="bg-slate-50/80 text-slate-500 font-bold border-b border-slate-200 text-[10.5px] uppercase tracking-wider">
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Mã<br>Vé</th>
+                                <th class="py-2.5 px-3.5">Tiêu Đề<br>Sự Cố</th>
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Người<br>Gửi</th>
+                                <th class="py-2.5 px-3.5 text-center whitespace-nowrap">Mức<br>Ưu Tiên</th>
+                                <th class="py-2.5 px-3.5 text-center whitespace-nowrap">Trạng<br>Thái</th>
+                                <th class="py-2.5 px-3.5 text-center whitespace-nowrap">Thao<br>Tác</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">

@@ -1,10 +1,11 @@
 <?php 
-require_once __DIR__ . '/../../config/database.php';
+$appRoot = dirname(__DIR__, 2);
+require_once $appRoot . '/config/database.php';
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     (new \App\Controllers\GuestTicketController())->submit();
     exit;
 }
-require __DIR__ . '/../layouts/header.php'; 
+require $appRoot . '/includes/navbar.php'; 
 ?>
 
 <div class="my-auto py-8 flex items-center justify-center">
@@ -274,4 +275,4 @@ function clearGuestAttachment() {
 }
 </script>
 
-<?php require __DIR__ . '/../layouts/footer.php'; ?>
+<?php require $appRoot . '/includes/footer.php'; ?>

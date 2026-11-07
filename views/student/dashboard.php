@@ -71,7 +71,7 @@ $flash = $flash ?? get_flash();
                 <a href="<?= $appBase ?>student/ratings" class="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs">
                     <span>⭐</span> Đánh Giá CSAT 5★
                 </a>
-                <a href="#form-tao-phieu" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs cursor-pointer">
+                <a href="<?= $appBase ?>tickets/create" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-2xl shadow-md transition flex items-center gap-1.5 text-xs cursor-pointer">
                     <span>➕</span> Gửi Phiếu Mới
                 </a>
             </div>
@@ -160,7 +160,7 @@ $flash = $flash ?? get_flash();
                         <span class="toggle-table-icon">✕</span>
                         <span class="toggle-table-text">Ẩn bảng</span>
                     </button>
-                    <a href="#form-tao-phieu" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                    <a href="<?= $appBase ?>tickets/create" class="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
                         <span>➕</span> Gửi Phiếu Mới
                     </a>
                 </div>
@@ -171,20 +171,20 @@ $flash = $flash ?? get_flash();
                 <div class="p-10 text-center text-slate-400 text-xs space-y-2">
                     <span class="text-3xl block">📭</span>
                     <p class="text-sm font-bold text-slate-600">Hiện bạn chưa gửi yêu cầu hỗ trợ nào.</p>
-                    <p class="text-[11.5px] text-slate-400">Khi gặp sự cố kỹ thuật phòng máy, phần mềm hoặc tài khoản, hãy dùng biểu mẫu bên dưới để gửi yêu cầu.</p>
+                    <p class="text-[11.5px] text-slate-400">Khi gặp sự cố kỹ thuật phòng máy, phần mềm hoặc tài khoản, hãy bấm nút Gửi Phiếu Mới ở trên để gửi yêu cầu.</p>
                 </div>
             <?php else: ?>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-[11px]">
-                                <th class="py-3 px-4">Mã Vé</th>
-                                <th class="py-3 px-4">Tiêu Đề Sự Cố</th>
-                                <th class="py-3 px-4">Chuyên Mục</th>
-                                <th class="py-3 px-4 text-center">TRẠNG THÁI</th>
-                                <th class="py-3 px-4">KTV Phụ Trách</th>
-                                <th class="py-3 px-4 text-center">Đánh Giá CSAT</th>
-                                <th class="py-3 px-4 text-center">Thao Tác</th>
+                            <tr class="bg-slate-50/80 text-slate-500 font-bold border-b border-slate-200 text-[10.5px] uppercase tracking-wider">
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Mã<br>Vé</th>
+                                <th class="py-2.5 px-3.5">Tiêu Đề<br>Sự Cố</th>
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Chuyên<br>Mục</th>
+                                <th class="py-2.5 px-3.5 text-center whitespace-nowrap">Trạng<br>Thái</th>
+                                <th class="py-2.5 px-3.5 whitespace-nowrap">Kỹ Thuật<br>Viên</th>
+                                <th class="py-2.5 px-3.5 text-center whitespace-nowrap">Đánh Giá<br>CSAT</th>
+                                <th class="py-2.5 px-3.5 text-center whitespace-nowrap">Thao<br>Tác</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -252,117 +252,6 @@ $flash = $flash ?? get_flash();
             </div>
         </div>
 
-        <!-- 5. FORM TẠO PHIẾU HỖ TRỢ MỚI NGAY TẠI TRANG (TÍCH HỢP WEBCAM HTML5 + UPLOAD) -->
-        <div id="form-tao-phieu" class="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-            <div class="border-b border-slate-100 pb-4">
-                <h2 class="text-base font-black text-slate-900 flex items-center gap-2">
-                    <span>➕</span> GỬI YÊU CẦU HỖ TRỢ KỸ THUẬT MỚI
-                </h2>
-                <p class="text-xs text-slate-500 mt-1">
-                    Thuật toán điều phối Triage thông minh sẽ tự động phân loại và gán phiếu cho KTV chuyên trách đang trực ca có tải thấp nhất.
-                </p>
-            </div>
-
-            <form method="POST" action="<?= $appBase ?>student/tickets/create" enctype="multipart/form-data" class="space-y-5 text-xs">
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Chọn danh mục -->
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1.5">Chuyên Mục Sự Cố (*)</label>
-                        <select name="category_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800 text-xs">
-                            <?php foreach ($categories as $cat): ?>
-                                <option value="<?= $cat['id']; ?>">
-                                    <?= htmlspecialchars($cat['name']); ?> (SLA chuẩn: <?= $cat['sla_hours']; ?>h)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <!-- Mức ưu tiên -->
-                    <div>
-                        <label class="block font-bold text-slate-700 mb-1.5">Mức Độ Ưu Tiên (*)</label>
-                        <select name="priority_id" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800 text-xs">
-                            <?php foreach ($priorities as $pri): ?>
-                                <option value="<?= $pri['id']; ?>" <?= ($pri['code'] ?? '') === 'MED' ? 'selected' : ''; ?>>
-                                    <?= htmlspecialchars($pri['name']); ?> (Hệ số SLA: <?= $pri['sla_factor']; ?>x)
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Tiêu đề sự cố -->
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1.5">Tiêu Đề Sự Cố Ngắn Gọn (*)</label>
-                    <input type="text" name="title" required placeholder="Ví dụ: Lỗi không tải được tài liệu buổi 3 môn Lập trình Web..."
-                           class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-semibold text-slate-800 text-xs" />
-                </div>
-
-                <!-- Mô tả chi tiết -->
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1.5">Mô Tả Chi Tiết Sự Cố & Thông Báo Lỗi (*)</label>
-                    <textarea name="description" rows="4" required placeholder="Mô tả cụ thể triệu chứng, phòng máy, thiết bị, môn học liên quan để KTV xử lý nhanh chóng..."
-                              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 text-xs leading-relaxed"></textarea>
-                </div>
-
-                <!-- ĐÍNH KÈM TỆP & WEBCAM HTML5 TRỰC TIẾP -->
-                <div class="p-4 bg-slate-50 border border-slate-200/90 rounded-2xl space-y-3">
-                    <label class="block font-bold text-slate-700">Minh Chứng Lỗi (Tệp tải lên hoặc Chụp ảnh Webcam trực tiếp)</label>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                        <div>
-                            <input type="file" name="attachment" accept=".jpg,.jpeg,.png,.pdf,.docx,.zip"
-                                   class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer" />
-                            <p class="text-[11px] text-slate-400 mt-1">Định dạng hỗ trợ: JPG, PNG, PDF, DOCX, ZIP (Tối đa 5MB).</p>
-                        </div>
-
-                        <!-- Nút Bật Webcam Chụp Ảnh Màn Hình / Thẻ Sinh Viên -->
-                        <div class="flex items-center gap-2">
-                            <button type="button" id="btnToggleWebcam" onclick="toggleWebcam()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition flex items-center gap-1.5 text-xs cursor-pointer shadow-sm">
-                                <span>📸</span> Bật Webcam Chụp Lỗi
-                            </button>
-                            <span id="webcamStatus" class="text-[11px] text-slate-500">Chưa kích hoạt camera</span>
-                        </div>
-                    </div>
-
-                    <!-- Khung Video Stream Live từ Webcam -->
-                    <div id="webcamContainer" class="hidden pt-3 border-t border-slate-200 space-y-3">
-                        <div class="relative w-full max-w-md mx-auto bg-slate-900 rounded-2xl overflow-hidden aspect-video flex items-center justify-center">
-                            <video id="liveVideo" autoplay playsinline class="w-full h-full object-cover"></video>
-                            <canvas id="snapshotCanvas" class="hidden"></canvas>
-                        </div>
-                        <div class="flex items-center justify-center gap-3">
-                            <button type="button" onclick="takeSnapshot()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-md cursor-pointer">
-                                <span>📷</span> Chụp Khung Hình Này
-                            </button>
-                            <button type="button" onclick="stopWebcam()" class="px-3.5 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">
-                                Đóng Camera
-                            </button>
-                        </div>
-                        <!-- Preview ảnh vừa chụp -->
-                        <div id="snapshotPreviewBox" class="hidden text-center space-y-2">
-                            <p class="text-xs font-bold text-emerald-700">✓ Đã chụp thành công ảnh minh chứng:</p>
-                            <img id="snapshotPreview" src="" alt="Snapshot Preview" class="max-h-36 mx-auto rounded-xl border border-emerald-300 shadow-sm" />
-                        </div>
-                    </div>
-
-                    <!-- Input ẩn lưu chuỗi Base64 khi chụp từ webcam -->
-                    <input type="hidden" name="captured_image" id="captured_image_input" value="" />
-                </div>
-
-                <div class="pt-2 flex items-center justify-end gap-3">
-                    <button type="reset" onclick="resetForm()" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold rounded-xl text-xs transition cursor-pointer">
-                        Làm lại
-                    </button>
-                    <button type="submit" class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl text-xs transition shadow-lg shadow-indigo-100 flex items-center gap-1.5 cursor-pointer">
-                        <span>Gửi Phiếu Báo Sự Cố</span>
-                        <span>→</span>
-                    </button>
-                </div>
-
-            </form>
-        </div>
-
     </main>
 
     <!-- Chân trang chuyên nghiệp -->
@@ -379,64 +268,6 @@ $flash = $flash ?? get_flash();
             if (textSpan) textSpan.textContent = isHidden ? 'Hiện bảng' : 'Ẩn bảng';
             if (iconSpan) iconSpan.textContent = isHidden ? '👁️' : '✕';
         };
-
-        // Webcam Module
-        let videoStream = null;
-        function toggleWebcam() {
-            const container = document.getElementById('webcamContainer');
-            const status = document.getElementById('webcamStatus');
-            if (container.classList.contains('hidden')) {
-                navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
-                    .then(function(stream) {
-                        videoStream = stream;
-                        const video = document.getElementById('liveVideo');
-                        video.srcObject = stream;
-                        container.classList.remove('hidden');
-                        status.textContent = '● Camera đang hoạt động';
-                        status.classList.add('text-emerald-600', 'font-bold');
-                    })
-                    .catch(function(err) {
-                        alert('Không thể mở Webcam: ' + err.message + '\nVui lòng cấp quyền truy cập camera trên trình duyệt.');
-                    });
-            } else {
-                stopWebcam();
-            }
-        }
-
-        function stopWebcam() {
-            if (videoStream) {
-                videoStream.getTracks().forEach(track => track.stop());
-                videoStream = null;
-            }
-            document.getElementById('webcamContainer').classList.add('hidden');
-            const status = document.getElementById('webcamStatus');
-            status.textContent = 'Chưa kích hoạt camera';
-            status.classList.remove('text-emerald-600', 'font-bold');
-        }
-
-        function takeSnapshot() {
-            const video = document.getElementById('liveVideo');
-            const canvas = document.getElementById('snapshotCanvas');
-            canvas.width = video.videoWidth || 640;
-            canvas.height = video.videoHeight || 480;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const base64Data = canvas.toDataURL('image/jpeg', 0.85);
-
-            document.getElementById('captured_image_input').value = base64Data;
-            document.getElementById('snapshotPreview').src = base64Data;
-            document.getElementById('snapshotPreviewBox').classList.remove('hidden');
-            stopWebcam();
-            const status = document.getElementById('webcamStatus');
-            status.textContent = '✓ Đã đính kèm ảnh chụp từ Webcam';
-            status.classList.add('text-indigo-600', 'font-bold');
-        }
-
-        function resetForm() {
-            stopWebcam();
-            document.getElementById('captured_image_input').value = '';
-            document.getElementById('snapshotPreviewBox').classList.add('hidden');
-        }
     </script>
 
 </body>

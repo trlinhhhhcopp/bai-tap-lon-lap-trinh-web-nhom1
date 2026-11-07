@@ -179,6 +179,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    // Xử lý ảnh chụp trực tiếp từ Webcam HTML5 (Hỗ trợ cho cả Sinh viên và Giảng viên)
+    if (empty($attachmentPath) && !empty($_POST['webcam_image']) && str_starts_with($_POST['webcam_image'], 'data:image')) {
+        $parts = explode(',', $_POST['webcam_image']);
+        if (count($parts) === 2) {
+            $raw = base64_decode($parts[1]);
+            if ($raw !== false) {
+                $uploadDir = __DIR__ . '/../uploads/attachments/';
+                if (!is_dir($uploadDir)) {
+                    @mkdir($uploadDir, 0777, true);
+                }
+                $webcamFile = 'webcam_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.jpg';
+                if (@file_put_contents($uploadDir . $webcamFile, $raw)) {
+                    $attachmentPath = 'uploads/attachments/' . $webcamFile;
+                }
+            }
+        }
+    }
+
     // KIỂM TRA CHỐNG TRÙNG LẶP SỰ CỐ (ANTI-DUPLICATE CHECK THEO ĐẶC TẢ)
     // Định nghĩa: Cùng 1 người gửi 1 dịch vụ sự cố gặp vấn đề nhiều lần trong 1 ngày HOẶC vấn đề đó đang xử lý đều tính là phiếu trùng
     if (empty($errors)) {
@@ -418,18 +436,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                           placeholder="Mô tả cụ thể thông báo lỗi, thời điểm gặp sự cố và mong muốn KTV hỗ trợ..."><?php echo htmlspecialchars($_POST['description'] ?? $prefillDesc); ?></textarea>
             </div>
 
-            <!-- ĐÍNH KÈM TỆP ẢNH / TÀI LIỆU MINH CHỨNG SỰ CỐ -->
+            <!-- ĐÍNH KÈM TỆP ẢNH / CHỤP WEBCAM MINH CHỨNG SỰ CỐ (HỖ TRỢ CẢ SV & GV) -->
             <div>
-                <label class="block font-bold text-slate-700 mb-1">📎 Tệp ảnh / Tài liệu minh chứng sự cố (Tùy chọn):</label>
-                <div class="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-                    <input type="file" name="attachment" id="createAttachInput" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf"
-                           class="w-full text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-300 rounded-xl bg-white p-1" />
-                    <span class="text-[10.5px] text-slate-400 block">Định dạng hỗ trợ: JPG, PNG, WEBP, GIF, PDF (Tối đa 10MB). Đính kèm ảnh chụp màn hình lỗi giúp KTV chẩn đoán và xử lý nhanh hơn 50%.</span>
-                    
-                    <div id="createPreviewBox" class="hidden pt-2">
-                        <p class="text-[11px] font-bold text-slate-600 mb-1">Xem trước tệp minh chứng:</p>
-                        <img id="createPreviewImg" src="" alt="Minh chứng" class="max-h-40 rounded-xl border border-slate-300 shadow-sm object-contain bg-white p-1" />
+                <label class="block font-bold text-slate-700 mb-1">📎 Minh chứng sự cố (Đính kèm tệp hoặc Chụp Webcam trực tiếp):</label>
+                <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <label class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded-xl text-xs font-semibold cursor-pointer transition shadow-2xs">
+                            <span>📁</span> <span>Chọn tệp từ máy tính</span>
+                            <input type="file" name="attachment" id="createAttachInput" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf" class="hidden" />
+                        </label>
+                        <button type="button" id="startTicketWebcamBtn" onclick="toggleTicketWebcam()" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold transition shadow-2xs">
+                            <span>📸</span> <span id="ticketWebcamBtnText">Chụp ảnh qua Webcam</span>
+                        </button>
+                        <span id="ticketAttachFileName" class="text-[11px] text-slate-500 italic">Chưa chọn tệp hoặc ảnh chụp</span>
                     </div>
+
+                    <!-- Khung Webcam trực tiếp -->
+                    <div id="ticketWebcamBox" class="hidden p-3 bg-slate-900 rounded-2xl text-center space-y-3 border border-slate-700">
+                        <p class="text-xs text-slate-300 font-medium">Đưa lỗi màn hình, thiết bị hoặc thẻ xác minh trước camera rồi bấm Chụp Ngay:</p>
+                        <div class="relative max-w-md mx-auto aspect-video bg-black rounded-xl overflow-hidden flex items-center justify-center">
+                            <video id="ticketWebcamVideo" autoplay playsinline class="w-full h-full object-cover"></video>
+                        </div>
+                        <div class="flex items-center justify-center gap-2">
+                            <button type="button" onclick="captureTicketWebcam()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow flex items-center gap-1.5">
+                                <span>📸</span> <span>Bấm Chụp Ngay</span>
+                            </button>
+                            <button type="button" onclick="stopTicketWebcam()" class="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-white font-medium rounded-xl text-xs transition">
+                                <span>✕</span> <span>Đóng Camera</span>
+                            </button>
+                        </div>
+                        <canvas id="ticketWebcamCanvas" class="hidden"></canvas>
+                    </div>
+
+                    <!-- Khung xem trước ảnh preview (từ tệp hoặc từ webcam) -->
+                    <div id="createPreviewBox" class="hidden pt-1">
+                        <div class="flex items-center justify-between pb-1.5">
+                            <p class="text-[11.5px] font-bold text-emerald-700 flex items-center gap-1">
+                                <span>✓</span> <span id="previewLabelText">Xem trước ảnh minh chứng:</span>
+                            </p>
+                            <button type="button" onclick="clearTicketAttachment()" class="text-rose-600 hover:text-rose-700 text-xs font-semibold hover:underline">
+                                🗑️ Xóa / Chọn lại
+                            </button>
+                        </div>
+                        <img id="createPreviewImg" src="" alt="Minh chứng" class="max-h-48 rounded-xl border border-slate-300 shadow-sm object-contain bg-white p-1" />
+                    </div>
+
+                    <input type="hidden" name="webcam_image" id="ticketWebcamImageInput" value="" />
+                    <span class="text-[10.5px] text-slate-400 block">Định dạng hỗ trợ: JPG, PNG, WEBP, GIF, PDF hoặc chụp webcam trực tiếp. Minh chứng rõ ràng giúp KTV xử lý sự cố nhanh hơn 50%.</span>
                 </div>
             </div>
 
@@ -496,25 +549,127 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    const input = document.getElementById('createAttachInput');
-    const box = document.getElementById('createPreviewBox');
-    const img = document.getElementById('createPreviewImg');
-    if (input && box && img) {
-        input.addEventListener('change', function() {
+    // Xử lý xem trước tệp chọn từ máy tính
+    const attachInput = document.getElementById('createAttachInput');
+    const previewBox = document.getElementById('createPreviewBox');
+    const previewImg = document.getElementById('createPreviewImg');
+    const fileNameSpan = document.getElementById('ticketAttachFileName');
+
+    if (attachInput && previewBox && previewImg) {
+        attachInput.addEventListener('change', function() {
             const file = this.files[0];
-            if (file && file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    img.src = e.target.result;
-                    box.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            } else {
-                box.classList.add('hidden');
+            if (file) {
+                if (fileNameSpan) fileNameSpan.textContent = file.name + ' (' + Math.round(file.size / 1024) + ' KB)';
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewImg.src = e.target.result;
+                        previewBox.classList.remove('hidden');
+                        document.getElementById('previewLabelText').textContent = 'Xem trước tệp ảnh đính kèm:';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewBox.classList.add('hidden');
+                }
+                // Xóa ảnh webcam nếu vừa chọn file
+                document.getElementById('ticketWebcamImageInput').value = '';
+                stopTicketWebcam();
             }
         });
     }
 });
+
+let ticketWebcamStream = null;
+
+function toggleTicketWebcam() {
+    const box = document.getElementById('ticketWebcamBox');
+    if (box.classList.contains('hidden')) {
+        startTicketWebcam();
+    } else {
+        stopTicketWebcam();
+    }
+}
+
+function startTicketWebcam() {
+    const box = document.getElementById('ticketWebcamBox');
+    const video = document.getElementById('ticketWebcamVideo');
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('Trình duyệt của bạn không hỗ trợ truy cập Webcam HTML5!');
+        return;
+    }
+    box.classList.remove('hidden');
+    document.getElementById('ticketWebcamBtnText').textContent = 'Đang mở Camera...';
+
+    navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } } })
+        .then(function(stream) {
+            ticketWebcamStream = stream;
+            video.srcObject = stream;
+            document.getElementById('ticketWebcamBtnText').textContent = 'Tắt Camera';
+        })
+        .catch(function(err) {
+            console.error('Lỗi mở camera:', err);
+            alert('Không thể kết nối với Webcam: ' + (err.message || 'Vui lòng cấp quyền truy cập camera cho trình duyệt!'));
+            stopTicketWebcam();
+        });
+}
+
+function stopTicketWebcam() {
+    const box = document.getElementById('ticketWebcamBox');
+    const video = document.getElementById('ticketWebcamVideo');
+    if (ticketWebcamStream) {
+        ticketWebcamStream.getTracks().forEach(track => track.stop());
+        ticketWebcamStream = null;
+    }
+    if (video) video.srcObject = null;
+    if (box) box.classList.add('hidden');
+    const btnText = document.getElementById('ticketWebcamBtnText');
+    if (btnText) btnText.textContent = 'Chụp ảnh qua Webcam';
+}
+
+function captureTicketWebcam() {
+    const video = document.getElementById('ticketWebcamVideo');
+    const canvas = document.getElementById('ticketWebcamCanvas');
+    const hiddenInput = document.getElementById('ticketWebcamImageInput');
+    const previewBox = document.getElementById('createPreviewBox');
+    const previewImg = document.getElementById('createPreviewImg');
+    const fileNameSpan = document.getElementById('ticketAttachFileName');
+
+    if (!video || !canvas) return;
+
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const base64 = canvas.toDataURL('image/jpeg', 0.9);
+    hiddenInput.value = base64;
+
+    previewImg.src = base64;
+    previewBox.classList.remove('hidden');
+    document.getElementById('previewLabelText').textContent = '✓ Đã chụp ảnh từ Webcam thành công:';
+    if (fileNameSpan) fileNameSpan.textContent = 'Ảnh chụp Webcam trực tiếp (' + canvas.width + 'x' + canvas.height + ')';
+
+    // Xóa file input để ưu tiên ảnh webcam
+    const attachInput = document.getElementById('createAttachInput');
+    if (attachInput) attachInput.value = '';
+
+    stopTicketWebcam();
+}
+
+function clearTicketAttachment() {
+    const attachInput = document.getElementById('createAttachInput');
+    const hiddenInput = document.getElementById('ticketWebcamImageInput');
+    const previewBox = document.getElementById('createPreviewBox');
+    const previewImg = document.getElementById('createPreviewImg');
+    const fileNameSpan = document.getElementById('ticketAttachFileName');
+
+    if (attachInput) attachInput.value = '';
+    if (hiddenInput) hiddenInput.value = '';
+    if (previewImg) previewImg.src = '';
+    if (previewBox) previewBox.classList.add('hidden');
+    if (fileNameSpan) fileNameSpan.textContent = 'Chưa chọn tệp hoặc ảnh chụp';
+    stopTicketWebcam();
+}
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>

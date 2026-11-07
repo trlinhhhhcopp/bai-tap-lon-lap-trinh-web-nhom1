@@ -142,42 +142,90 @@ class AuthController extends Controller {
     }
 
     public function sendResetLink(): void {
-        $email = trim($_POST['email'] ?? '');
+        $step = $_POST['step'] ?? '';
 
-        // 1. Kiểm tra rỗng
-        if (empty($email)) {
-            $this->flash('danger', 'Vui lòng nhập địa chỉ Email trường cấp của bạn!');
+        // 1. Xử lý bước 2: Xác nhận mã OTP gồm 6 chữ cái in hoa
+        if ($step === 'verify_otp') {
+            $otpInput = strtoupper(trim($_POST['otp_input'] ?? ''));
+            if (empty($otpInput)) {
+                $this->flash('danger', 'Vui lòng nhập mã OTP gồm 6 chữ cái xác thực!');
+                $this->redirect('/forgot-password?step=enter_otp');
+            }
+
+            $record = PasswordReset::verifyToken($otpInput);
+            if (!$record) {
+                $this->flash('danger', 'Mã OTP không chính xác hoặc đã hết hạn hiệu lực 15 phút. Vui lòng kiểm tra lại!');
+                $this->redirect('/forgot-password?step=enter_otp');
+            }
+
+            $_SESSION['reset_otp_data'] = [
+                'user_id'        => $record['user_id'],
+                'user_name'      => $record['name'],
+                'user_code'      => $record['user_code'],
+                'email'          => $record['email'],
+                'verified'       => true,
+                'verified_token' => $otpInput,
+            ];
+
+            $this->flash('success', 'Xác thực mã OTP thành công! Vui lòng thiết lập mật khẩu mới.');
+            $this->redirect('/reset-password?token=' . rawurlencode($otpInput));
+        }
+
+        // 2. Xử lý bước 1: Nhận MSV hoặc Email trường và phát sinh mã OTP
+        $identifier = trim($_POST['identifier'] ?? $_POST['email'] ?? '');
+
+        if (empty($identifier)) {
+            $this->flash('danger', 'Vui lòng nhập Mã Sinh Viên hoặc địa chỉ Email trường cấp của bạn!');
             $this->redirect('/forgot-password');
         }
 
-        // Hỗ trợ sinh viên: nếu lỡ chỉ gõ MSV (VD: 224001729), tự động ghép đuôi @daihocthudo.edu.vn
-        if (!str_contains($email, '@')) {
-            $email .= '@daihocthudo.edu.vn';
+        // Tự động tìm user theo MSV hoặc email
+        $user = User::findByEmailOrCode($identifier);
+        if (!$user && !str_contains($identifier, '@')) {
+            $user = User::findByEmailOrCode($identifier . '@daihocthudo.edu.vn');
         }
 
-        // 2. Kiểm tra định dạng email và đuôi trường cấp
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || !str_ends_with(strtolower($email), '@daihocthudo.edu.vn')) {
-            $this->flash('danger', 'Vui lòng nhập đúng Email trường cấp có đuôi <strong>@daihocthudo.edu.vn</strong> (Ví dụ: 224001729@daihocthudo.edu.vn)!');
+        if (!$user) {
+            $this->flash('danger', 'Không tìm thấy tài khoản với thông tin đã nhập! Vui lòng kiểm tra lại MSV hoặc Email.');
             $this->redirect('/forgot-password');
         }
+
+        if (empty($user['is_active']) || ($user['academic_status'] ?? '') === 'expelled') {
+            $this->flash('danger', 'Tài khoản này đang bị khóa hoặc ngừng hoạt động. Vui lòng gửi đơn tại Trạm cứu hộ tài khoản!');
+            $this->redirect('/forgot-password');
+        }
+
+        $email = $user['email'];
+        $userName = $user['name'] ?? 'Sinh viên';
 
         try {
-            $rawToken = AuthService::requestResetToken($email);
-            $user = User::findByEmailOrCode($email);
-            $userName = $user['name'] ?? 'Sinh viên';
+            // Cấp mã OTP dạng chữ cái in hoa (6 ký tự, hiệu lực 15 phút)
+            $rawToken = PasswordReset::createToken($user['id'], $email, 15);
             $link = $this->resetPasswordUrl($rawToken);
             $fullLink = $this->resetPasswordUrl($rawToken, true);
             $nowTime = date('H:i:s');
-            $expiresAtTimestamp = time() + 900; // 15 phút (900 giây)
+            $expiresAtTimestamp = time() + 900; // 15 phút
             $expireTime = date('H:i:s', $expiresAtTimestamp);
 
-            // Gửi email thật qua máy chủ Google Gmail
-            $emailSubject = "[Helpdesk TUD] Hướng dẫn đặt lại mật khẩu tài khoản sinh viên";
-            $emailHtml = self::buildResetEmailTemplate($userName, $email, $fullLink, $nowTime, $expireTime);
+            // Gửi email thật qua máy chủ Google Gmail & lưu mailbox nội bộ
+            $emailSubject = "[Helpdesk TUD] Mã OTP khôi phục mật khẩu tài khoản: {$rawToken}";
+            $emailHtml = self::buildResetEmailTemplate($userName, $email, $fullLink, $nowTime, $expireTime, $rawToken);
             $sentReal = MailService::send($email, $userName, $emailSubject, $emailHtml);
             \App\Services\InternalMailboxService::send($email, $userName, $emailSubject, $emailHtml, $rawToken);
 
-            // Lưu thông tin hòm thư vào session
+            // Lưu phiên xác thực OTP
+            $_SESSION['reset_otp_data'] = [
+                'user_id'      => $user['id'],
+                'user_name'    => $userName,
+                'user_code'    => $user['user_code'],
+                'email'        => $email,
+                'target_email' => $email,
+                'otp'          => $rawToken,
+                'expires_at'   => $expiresAtTimestamp,
+                'verified'     => false,
+            ];
+
+            // Lưu thông tin hòm thư vào session (backward-compatible)
             $_SESSION['simulated_reset_email'] = [
                 'email'        => $email,
                 'name'         => $userName,
@@ -188,83 +236,8 @@ class AuthController extends Controller {
                 'is_sent_real' => $sentReal,
             ];
 
-            // Thông báo Flash Message kèm đồng hồ đếm ngược 15 phút và link mở tab mới
-            $statusText = $sentReal 
-                ? "🚀 <strong>Hệ thống đã gửi link đổi mật khẩu thành công đến:</strong> <span style='color:#0369a1; font-weight:700;'>{$email}</span>!
-                   <div style='margin-top: 4px; font-size: 13px; color: #334155;'>
-                       Vui lòng mở tab <strong>Gmail</strong> của bạn, mở thư gửi từ <em>Trung tâm CNTT</em> và bấm nút <strong>\"🔑 ĐẶT LẠI MẬT KHẨU NGAY\"</strong> trong email để thiết lập mật khẩu mới.
-                   </div>"
-                : "✉️ <strong>Đã cấp liên kết khôi phục mật khẩu cho email trường cấp:</strong> <span style='color:#0369a1; font-weight:700;'>{$email}</span>!";
-
-            $msg = "
-            <div id='resetCountdownBox' data-expires='{$expiresAtTimestamp}' style='display:flex; flex-direction:column; gap:8px;'>
-                <div>
-                    {$statusText}
-                </div>
-                <div style='display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-top:2px;'>
-                    <span style='display:inline-flex; align-items:center; gap:6px; background:#16a34a; color:#fff; padding:7px 16px; border-radius:6px; font-weight:700; font-size:13px; box-shadow:0 2px 6px rgba(22,163,74,0.3);'>
-                        ✓ ĐÃ GỬI LINK VỀ GMAIL!
-                    </span>
-                    <a href='https://mail.google.com' target='_blank' style='display:inline-flex; align-items:center; gap:6px; background:#0284c7; color:#fff; padding:7px 15px; border-radius:6px; font-weight:700; text-decoration:none; font-size:13px; box-shadow:0 2px 6px rgba(2,132,199,0.3);' title='Mở nhanh tab Gmail để kiểm tra hộp thư'>
-                        📬 Mở tab Gmail của bạn ➔
-                    </a>
-                    <span style='background:#fef3c7; color:#b45309; padding:5px 12px; border-radius:6px; font-weight:700; font-size:12.5px; border:1px solid #fde68a; display:inline-flex; align-items:center; gap:6px;'>
-                        ⏱️ Hiệu lực đường link còn: <span id='countdownTimer' style='font-family:monospace; font-size:14px; font-weight:800; color:#b91c1c;'>15:00</span>
-                    </span>
-                </div>
-                <div style='font-size:12px; color:#64748b; margin-top:2px;'>
-                    📅 Thời gian cấp: <strong>{$nowTime}</strong> | Đường link hết hiệu lực lúc: <strong>{$expireTime}</strong> (Đúng 15 phút).
-                </div>
-                <div style='font-size:11.5px; color:#94a3b8; margin-top:1px;'>
-                    💡 Lưu ý: Bạn vào Gmail rồi bấm nút trong email mới mở tab đặt lại mật khẩu mới. Nếu không tìm thấy ở Hộp thư đến, bạn kiểm tra thêm mục <strong>Thư rác (Spam)</strong> nhé.
-                </div>
-            </div>
-            <script>
-            (function() {
-                const box = document.getElementById('resetCountdownBox');
-                if (!box) return;
-                const expiresAt = parseInt(box.getAttribute('data-expires'), 10);
-                const timerElem = document.getElementById('countdownTimer');
-                const alertContainer = box.closest('.alert');
-
-                function updateCountdown() {
-                    const now = Math.floor(Date.now() / 1000);
-                    const remaining = Math.max(0, expiresAt - now);
-
-                    if (remaining <= 0) {
-                        if (alertContainer) {
-                            alertContainer.innerHTML = '<div style=\"color:#b91c1c; font-weight:700; padding:6px;\">⚠️ Đường link đổi mật khẩu đã hết hạn hiệu lực 15 phút! Flash message sẽ tự động đóng...</div>';
-                            setTimeout(function() {
-                                alertContainer.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-                                alertContainer.style.opacity = '0';
-                                alertContainer.style.transform = 'translateY(-10px)';
-                                setTimeout(function() { if (alertContainer) alertContainer.remove(); }, 800);
-                            }, 3000);
-                        }
-                        return false;
-                    }
-
-                    const m = Math.floor(remaining / 60);
-                    const s = remaining % 60;
-                    if (timerElem) {
-                        timerElem.textContent = (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
-                    }
-                    return true;
-                }
-
-                if (updateCountdown()) {
-                    const timerInterval = setInterval(function() {
-                        if (!updateCountdown()) {
-                            clearInterval(timerInterval);
-                        }
-                    }, 1000);
-                }
-            })();
-            </script>
-            ";
-
-            $this->flash('success', $msg);
-            $this->redirect('/forgot-password');
+            $this->flash('success', "🚀 Đã gửi mã OTP 6 chữ cái in hoa đến hộp thư: <strong>{$email}</strong>! Vui lòng nhập mã OTP để tiếp tục.");
+            $this->redirect('/forgot-password?step=enter_otp');
         } catch (\PDOException $e) {
             $this->flash('danger', 'Hệ thống đang bận xử lý dữ liệu. Vui lòng thử lại sau ít phút hoặc gửi yêu cầu cứu hộ tài khoản!');
             $this->redirect('/forgot-password');
@@ -283,13 +256,14 @@ class AuthController extends Controller {
     }
 
     public function resetPassword(): void {
-        $token   = $_POST['token'] ?? '';
+        $token   = trim($_POST['token'] ?? ($_SESSION['reset_otp_data']['verified_token'] ?? ''));
         $newPass = $_POST['new_password'] ?? '';
         $confirm = $_POST['confirm_password'] ?? '';
 
         try {
             AuthService::resetPasswordWithToken($token, $newPass, $confirm);
             unset($_SESSION['simulated_reset_email']);
+            unset($_SESSION['reset_otp_data']);
             $this->flash('success', 'Đặt lại mật khẩu thành công! Vui lòng đăng nhập bằng mật khẩu mới.');
             $this->redirect('/login');
         } catch (\PDOException $e) {
@@ -362,7 +336,18 @@ class AuthController extends Controller {
         return $scheme . '://' . $host . $path;
     }
 
-    public static function buildResetEmailTemplate(string $name, string $email, string $link, string $nowTime, string $expireTime): string {
+    public static function buildResetEmailTemplate(string $name, string $email, string $link, string $nowTime, string $expireTime, ?string $otpCode = null): string {
+        $otpSection = '';
+        if (!empty($otpCode)) {
+            $otpSection = "
+            <div style='background: #eef2ff; border: 2px dashed #6366f1; border-radius: 10px; padding: 18px; text-align: center; margin: 20px 0;'>
+                <div style='font-size: 12px; font-weight: bold; color: #4338ca; text-transform: uppercase; letter-spacing: 1px;'>Mã Xác Thực OTP Của Bạn (6 Chữ Cái):</div>
+                <div style='font-family: monospace; font-size: 32px; font-weight: 900; color: #1e1b4b; letter-spacing: 8px; margin-top: 6px;'>{$otpCode}</div>
+                <div style='font-size: 11px; color: #6366f1; margin-top: 4px;'>Nhập trực tiếp mã 6 chữ cái này trên trang Quên mật khẩu hoặc bấm nút bên dưới</div>
+            </div>
+            ";
+        }
+
         return "
         <!DOCTYPE html>
         <html>
@@ -374,7 +359,7 @@ class AuthController extends Controller {
             <div style='max-width: 580px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;'>
                 <div style='background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); padding: 25px; text-align: center; border-bottom: 3px solid #0284c7;'>
                     <h2 style='color: #38bdf8; margin: 0 0 6px; font-size: 20px; text-transform: uppercase; letter-spacing: 0.5px;'>Trường Đại Học Thủ Đô Hà Nội</h2>
-                    <p style='color: #94a3b8; margin: 0; font-size: 13px;'>Hệ Thống Tiếp Nhận & Xử Lý Hỗ Trợ CNTT Trực Tuyến (Helpdesk Online)</p>
+                    <p style='color: #94a3b8; margin: 0; font-size: 13px;'>Hệ Thống Tiếp Nhận & Xử Lý Hỗ Trực Tuyến (Helpdesk Online)</p>
                 </div>
 
                 <div style='padding: 30px 25px; color: #1e293b; line-height: 1.6;'>
@@ -383,8 +368,9 @@ class AuthController extends Controller {
                         Hệ thống Helpdesk vừa tiếp nhận yêu cầu đặt lại mật khẩu cho tài khoản sinh viên của bạn: 
                         <strong style='color: #0369a1;'>{$email}</strong> vào lúc <strong>{$nowTime}</strong>.
                     </p>
+                    {$otpSection}
                     <p style='font-size: 14px; color: #475569;'>
-                        Để hoàn tất việc thiết lập mật khẩu mới, bạn vui lòng bấm vào nút bên dưới:
+                        Để hoàn tất việc thiết lập mật khẩu mới, bạn có thể nhập mã OTP ở trên hoặc bấm vào nút bên dưới:
                     </p>
 
                     <div style='text-align: center; margin: 30px 0;'>
@@ -394,7 +380,7 @@ class AuthController extends Controller {
                     </div>
 
                     <div style='background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 14px; font-size: 13px; color: #92400e; margin-bottom: 20px;'>
-                        ⏱️ <strong>Lưu ý bảo mật:</strong> Đường link này chỉ có hiệu lực trong vòng <strong>15 phút</strong> (hết hạn lúc <strong>{$expireTime}</strong>). Sau thời gian này, liên kết sẽ tự động bị hủy để đảm bảo an toàn cho tài khoản của bạn.
+                        ⏱️ <strong>Lưu ý bảo mật:</strong> Đường link và mã OTP này chỉ có hiệu lực trong vòng <strong>15 phút</strong> (hết hạn lúc <strong>{$expireTime}</strong>). Sau thời gian này, liên kết sẽ tự động bị hủy để đảm bảo an toàn cho tài khoản của bạn.
                     </div>
 
                     <p style='font-size: 13px; color: #64748b; margin-bottom: 0;'>

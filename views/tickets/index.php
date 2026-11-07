@@ -252,15 +252,15 @@ $appRoot = dirname(__DIR__, 2);
                 <div class="overflow-x-auto">
                     <table class="w-full min-w-[880px] text-left border-collapse text-xs">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-700 font-bold border-b border-slate-200 text-[11px] uppercase tracking-wider">
-                                <th class="py-3.5 px-4 w-32 whitespace-nowrap">Mã Vé</th>
-                                <th class="py-3.5 px-4 min-w-[240px]">Tiêu Đề Sự Cố</th>
-                                <th class="py-3.5 px-4 w-36 whitespace-nowrap">Người Gửi</th>
-                                <th class="py-3.5 px-4 w-36 whitespace-nowrap">Danh Mục</th>
-                                <th class="py-3.5 px-4 w-28 text-center whitespace-nowrap">Mức Ưu Tiên</th>
-                                <th class="py-3.5 px-4 w-32 whitespace-nowrap">KTV Phụ Trách</th>
-                                <th class="py-3.5 px-4 w-32 text-center whitespace-nowrap">Trạng Thái</th>
-                                <th class="py-3.5 px-4 w-24 text-center whitespace-nowrap">Hành Động</th>
+                            <tr class="bg-slate-50/80 text-slate-500 font-bold border-b border-slate-200 text-[10.5px] uppercase tracking-wider">
+                                <th class="py-2.5 px-3.5 w-32 whitespace-nowrap">Mã<br>Vé</th>
+                                <th class="py-2.5 px-3.5 min-w-[240px]">Tiêu Đề<br>Sự Cố</th>
+                                <th class="py-2.5 px-3.5 w-36 whitespace-nowrap">Người<br>Gửi</th>
+                                <th class="py-2.5 px-3.5 w-36 whitespace-nowrap">Chuyên<br>Mục</th>
+                                <th class="py-2.5 px-3.5 w-28 text-center whitespace-nowrap">Mức<br>Ưu Tiên</th>
+                                <th class="py-2.5 px-3.5 w-32 whitespace-nowrap">Kỹ Thuật<br>Viên</th>
+                                <th class="py-2.5 px-3.5 w-32 text-center whitespace-nowrap">Trạng<br>Thái</th>
+                                <th class="py-2.5 px-3.5 w-24 text-center whitespace-nowrap">Thao<br>Tác</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">

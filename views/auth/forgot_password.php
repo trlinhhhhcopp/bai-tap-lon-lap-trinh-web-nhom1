@@ -1,88 +1,113 @@
-<?php require __DIR__ . '/../layouts/header.php'; ?>
+<?php
+$appRoot = dirname(__DIR__, 2);
+require $appRoot . '/includes/navbar.php';
+
+$step = $_GET['step'] ?? 'input_identifier';
+$activeOtp = $_SESSION['reset_otp_data'] ?? null;
+$hasOtp = ($activeOtp && time() <= ($activeOtp['expires_at'] ?? 0) && empty($activeOtp['verified']));
+?>
 
 <div class="my-auto py-8 flex flex-col items-center justify-center">
-    <div class="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl shadow-2xl shadow-indigo-950/10 overflow-hidden transition-all">
-        <!-- Header Card -->
-        <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 md:p-8 text-center border-b-2 border-sky-500 relative overflow-hidden">
-            <div class="absolute -right-12 -top-12 w-32 h-32 bg-sky-500/10 rounded-full blur-2xl pointer-events-none"></div>
-            <div class="relative z-10 space-y-2">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">
-                    🔐 XÁC THỰC BẢO MẬT SSPR
-                </span>
-                <h2 class="text-xl md:text-2xl font-black text-white tracking-tight">
-                    KHÔI PHỤC MẬT KHẨU
-                </h2>
-                <p class="text-xs text-slate-300">
-                    Nhận liên kết đổi mật khẩu an toàn qua Email trường cấp (@daihocthudo.edu.vn)
-                </p>
-            </div>
+    <div class="w-full max-w-xl bg-white rounded-3xl p-6 md:p-8 shadow-2xl border border-slate-200 space-y-6">
+        <div>
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                🔑 SSPR · KHÔI PHỤC MẬT KHẨU QUA EMAIL TRƯỜNG CẤP
+            </span>
+            <h2 class="text-xl md:text-2xl font-black text-slate-900 mt-2">
+                Quên Mật Khẩu Tài Khoản
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">
+                Mã OTP gồm 6 chữ cái in hoa sẽ được gửi tới Email trường của bạn (Hiệu lực: 15 phút).
+            </p>
         </div>
 
-        <!-- Body Form -->
-        <div class="p-6 md:p-8 space-y-5">
-            <form method="POST" action="<?= $appBase ?>forgot-password" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                        Email trường cấp (@daihocthudo.edu.vn) (*):
-                    </label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400">
-                            ✉️
-                        </span>
-                        <input type="email" name="email" required autofocus
-                               class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium focus:bg-white focus:outline-none focus:ring-4 focus:ring-sky-500/20 focus:border-sky-500 transition-all placeholder:text-slate-400"
-                               placeholder="VD: 224001736@daihocthudo.edu.vn">
-                    </div>
-                    <span class="text-[11px] text-slate-500 mt-1 block">
-                        * Nhập chính xác địa chỉ Email trường cấp có đuôi @daihocthudo.edu.vn
+        <?php if ($hasOtp || $step === 'enter_otp'): ?>
+            <!-- 1. KHUNG THÔNG BÁO GỬI MÃ OTP VỀ HÒM THƯ -->
+            <div class="bg-sky-50 border border-sky-200 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-sm">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="text-xs font-bold text-sky-950 flex items-center gap-1.5">
+                        <span class="text-base">📬</span> HỘP THƯ TRƯỜNG NHẬN MÃ XÁC THỰC OTP
+                    </span>
+                    <span class="text-[11px] font-bold text-sky-800 bg-white px-2.5 py-1 rounded-full border border-sky-200 shadow-2xs">
+                        Hiệu lực mã: 15 phút
                     </span>
                 </div>
 
-                <button type="submit" 
-                        class="w-full py-3.5 px-6 bg-gradient-to-r from-sky-500 via-sky-600 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white font-extrabold text-sm rounded-xl shadow-lg shadow-sky-500/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
-                    <span>Gửi Thư Khôi Phục Mật Khẩu</span>
-                    <span>➔</span>
+                <div class="bg-white rounded-xl p-4 border border-sky-100 text-xs space-y-2.5 shadow-2xs">
+                    <div class="space-y-1 pb-2 border-b border-slate-100 text-[11.5px]">
+                        <div class="text-slate-700">
+                            Chủ tài khoản: <strong class="text-slate-900"><?= htmlspecialchars($activeOtp['user_name'] ?? 'Sinh viên'); ?></strong> 
+                            (Mã: <code class="text-indigo-600 font-bold"><?= htmlspecialchars($activeOtp['user_code'] ?? ''); ?></code>)
+                        </div>
+                        <div class="text-slate-600">
+                            Hòm thư trường nhận mã: <strong class="text-sky-800 font-mono text-sm"><?= htmlspecialchars($activeOtp['target_email'] ?? $activeOtp['email'] ?? ''); ?></strong>
+                        </div>
+                    </div>
+                    
+                    <p class="text-slate-600 leading-relaxed text-[11.5px]">
+                        🔒 <strong>Bảo mật tài khoản:</strong> Hệ thống đã gửi thư xác thực kèm mã OTP gồm <strong>6 chữ cái in hoa</strong> đến hòm thư trường trên. Bạn hãy mở hòm thư của mình (hộp thư đến hoặc mục Thư rác/Spam), lấy đúng 6 chữ cái và nhập vào ô xác thực bên dưới.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 2. FORM NHẬP MÃ OTP CHỮ CÁI -->
+            <form method="POST" action="<?= $appBase ?>forgot-password" class="space-y-4 text-xs pt-1">
+                <input type="hidden" name="step" value="verify_otp" />
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1.5">
+                        Nhập mã OTP gồm 6 chữ cái xác thực:
+                    </label>
+                    <input type="text" name="otp_input" required maxlength="6" autofocus placeholder="VD: TUDKHA (6 chữ cái)" 
+                           style="text-transform: uppercase; letter-spacing: 0.35em;"
+                           class="w-full px-4 py-3 bg-slate-50 border-2 border-indigo-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-center font-mono text-2xl font-black text-indigo-950 uppercase" />
+                    <p class="text-[11px] text-slate-400 mt-1 text-center">Hệ thống tự động chuyển thành chữ in hoa khi bạn gõ.</p>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-2 text-xs cursor-pointer">
+                    <span>✅</span> Xác Nhận Mã OTP Để Đổi Mật Khẩu
                 </button>
             </form>
 
-            <div class="pt-3 border-t border-slate-100 text-center">
-                <a href="<?= $appBase ?>login" class="text-xs text-sky-600 hover:text-sky-700 font-bold hover:underline transition inline-flex items-center gap-1">
-                    <span>←</span> Quay lại trang Đăng nhập
+            <div class="flex items-center justify-between text-[11px] pt-1">
+                <form method="POST" action="<?= $appBase ?>forgot-password" class="inline">
+                    <input type="hidden" name="step" value="send_otp" />
+                    <input type="hidden" name="identifier" value="<?= htmlspecialchars($activeOtp['user_code'] ?? $activeOtp['email'] ?? ''); ?>" />
+                    <button type="submit" class="text-indigo-600 hover:underline font-semibold flex items-center gap-1 cursor-pointer">
+                        <span>🔄</span> Gửi lại mã OTP khác
+                    </button>
+                </form>
+                <a href="<?= $appBase ?>forgot-password?step=input_identifier" class="text-slate-500 hover:underline">
+                    ← Đổi tài khoản khác
                 </a>
             </div>
+
+        <?php else: ?>
+            <!-- FORM NHẬP MÃ SINH VIÊN HOẶC EMAIL TRƯỜNG -->
+            <form method="POST" action="<?= $appBase ?>forgot-password" class="space-y-4 text-xs">
+                <input type="hidden" name="step" value="send_otp" />
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1.5">
+                        Nhập Mã Sinh Viên hoặc Email trường của bạn:
+                    </label>
+                    <input type="text" name="identifier" required autofocus placeholder="Ví dụ: 224001736 hoặc 224001729@daihocthudo.edu.vn" 
+                           class="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-xs font-semibold" />
+                    <p class="text-[11px] text-slate-400 mt-1">Hệ thống sẽ gửi mã OTP gồm các chữ cái về địa chỉ Email trường cấp của bạn.</p>
+                </div>
+
+                <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-100 flex items-center justify-center gap-2 text-xs cursor-pointer">
+                    <span>🚀</span> Gửi Mã OTP Đến Email Trường (15 Phút)
+                </button>
+            </form>
+        <?php endif; ?>
+
+        <div class="pt-3 border-t border-slate-100 text-center">
+            <a href="<?= $appBase ?>login" class="text-xs text-indigo-600 hover:underline font-semibold flex items-center justify-center gap-1">
+                <span>←</span> Quay lại màn hình Đăng Nhập
+            </a>
         </div>
     </div>
-
-    <?php if (!empty($simulatedEmail)): ?>
-        <!-- THÔNG BÁO VÀ HƯỚNG DẪN ĐỔI MẬT KHẨU NHANH -->
-        <div class="w-full max-w-md mt-6 bg-amber-50/90 border-2 border-amber-300 rounded-3xl p-6 shadow-xl shadow-amber-500/10 space-y-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl shrink-0">
-                    🔑
-                </div>
-                <div>
-                    <h3 class="text-sm font-black text-amber-950">Mã Xác Thực Đặt Lại Mật Khẩu</h3>
-                    <p class="text-xs text-amber-800">Email: <strong class="font-mono"><?= htmlspecialchars($simulatedEmail['email']) ?></strong></p>
-                </div>
-            </div>
-
-            <div class="bg-white p-4 rounded-2xl text-xs text-slate-700 space-y-2.5 border border-amber-200 leading-relaxed shadow-2xs">
-                <p class="font-bold text-slate-900">Kính gửi bạn <?= htmlspecialchars($simulatedEmail['name']) ?>:</p>
-                <p class="text-slate-600">
-                    Hệ thống đã tạo liên kết đặt lại mật khẩu cho tài khoản sinh viên của bạn. Vui lòng bấm vào nút bên dưới để tiến hành đổi mật khẩu mới:
-                </p>
-                <div class="text-center py-1">
-                    <a href="<?= htmlspecialchars($simulatedEmail['link']) ?>" 
-                       class="inline-flex items-center justify-center gap-2 w-full py-3 bg-gradient-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">
-                        <span>🔑 ĐẶT LẠI MẬT KHẨU NGAY ➔</span>
-                    </a>
-                </div>
-                <div class="p-2 bg-amber-50 text-amber-900 rounded-xl text-[11px] border border-amber-200 text-center">
-                    ⏱️ Liên kết có hiệu lực trong vòng 15 phút (đến <?= htmlspecialchars($simulatedEmail['expire_time']) ?>).
-                </div>
-            </div>
-        </div>
-    <?php endif; ?>
 </div>
 
-<?php require __DIR__ . '/../layouts/footer.php'; ?>
+<?php require $appRoot . '/includes/footer.php'; ?>

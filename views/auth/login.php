@@ -110,37 +110,69 @@ $flash = $flash ?? get_flash();
                         </span>
                         <span class="text-slate-400 group-open:rotate-180 transition-transform">▼</span>
                     </summary>
-                    <div class="p-3.5 pt-0 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs border-t border-slate-200/60 mt-1">
-                        <!-- Trưởng nhóm -->
-                        <a href="<?= $appBase ?>quick-login?code=224001736"
-                           class="p-2.5 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-semibold shadow-sm">
-                            <span>👑</span> <span>SV Thanh Ngân</span>
-                        </a>
-                        <!-- SV Thục Linh -->
-                        <a href="<?= $appBase ?>quick-login?code=224001729"
-                           class="p-2.5 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-semibold shadow-sm">
-                            <span>🎓</span> <span>SV Thục Linh</span>
-                        </a>
-                        <!-- Giảng viên -->
-                        <a href="<?= $appBase ?>quick-login?code=GV001"
-                           class="p-2.5 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-700 hover:text-amber-800 transition flex items-center gap-1.5 font-semibold shadow-sm">
-                            <span>👨‍🏫</span> <span>GV Nguyễn Văn B</span>
-                        </a>
-                        <!-- KTV Canvas -->
-                        <a href="<?= $appBase ?>quick-login?code=KTV004"
-                           class="p-2.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition flex items-center gap-1.5 font-semibold shadow-sm">
-                            <span>👨‍💻</span> <span>KTV Hoàng Dũng</span>
-                        </a>
-                        <!-- KTV SSO -->
-                        <a href="<?= $appBase ?>quick-login?code=KTV001"
-                           class="p-2.5 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition flex items-center gap-1.5 font-semibold shadow-sm">
-                            <span>👨‍💻</span> <span>KTV Nguyễn Văn An</span>
-                        </a>
-                        <!-- Admin -->
-                        <a href="<?= $appBase ?>quick-login?code=ADM001"
-                           class="p-2.5 rounded-xl bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 text-slate-700 hover:text-purple-800 transition flex items-center gap-1.5 font-semibold shadow-sm">
-                            <span>🛡️</span> <span>Quản Trị Viên</span>
-                        </a>
+                    <div class="p-3.5 pt-2 space-y-3 text-xs border-t border-slate-200/60 mt-1">
+                        <!-- 5 Sinh viên Nhóm 1 -->
+                        <div>
+                            <span class="text-[10.5px] font-bold uppercase tracking-wider text-indigo-700 block mb-1.5 flex items-center gap-1">
+                                <span>🎓</span> 5 Sinh Viên Nhóm 1 (Học Phần &amp; CSAT):
+                            </span>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                                <a href="<?= $appBase ?>quick-login?code=224001736" class="p-2 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>👑</span> <span>SV Thanh Ngân</span>
+                                </a>
+                                <a href="<?= $appBase ?>quick-login?code=224001729" class="p-2 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>🎓</span> <span>SV Thục Linh</span>
+                                </a>
+                                <a href="<?= $appBase ?>quick-login?code=224001735" class="p-2 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>🎓</span> <span>SV Hà My</span>
+                                </a>
+                                <a href="<?= $appBase ?>quick-login?code=224001742" class="p-2 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>🎓</span> <span>SV Ánh Nhi</span>
+                                </a>
+                                <a href="<?= $appBase ?>quick-login?code=224001746" class="p-2 rounded-xl bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 text-slate-700 hover:text-indigo-700 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>🎓</span> <span>SV Công Thành</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 5 Kỹ thuật viên (KTV) Chuyên trách ITIL -->
+                        <div>
+                            <span class="text-[10.5px] font-bold uppercase tracking-wider text-emerald-700 block mb-1.5 flex items-center gap-1">
+                                <span>👨‍💻</span> 5 Kỹ Thuật Viên Chuyên Trách (Hàng Đợi &amp; Triage):
+                            </span>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                                <a href="<?= $appBase ?>quick-login?code=KTV001" class="p-2 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>⚡</span> <span>KTV An (SSO)</span>
+                                </a>
+                                <a href="<?= $appBase ?>quick-login?code=KTV002" class="p-2 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>⚡</span> <span>KTV Bích (Mail)</span>
+                                </a>
+                                <a href="<?= $appBase ?>quick-login?code=KTV003" class="p-2 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>⚡</span> <span>KTV Cường (QLĐT)</span>
+                                </a>
+                                <a href="<?= $appBase ?>quick-login?code=KTV004" class="p-2 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>⚡</span> <span>KTV Dũng (Canvas)</span>
+                                </a>
+                                <a href="<?= $appBase ?>quick-login?code=KTV005" class="p-2 rounded-xl bg-white hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-800 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>⚡</span> <span>KTV Én (Mạng/Wi-Fi)</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Giảng viên & Quản trị viên -->
+                        <div>
+                            <span class="text-[10.5px] font-bold uppercase tracking-wider text-purple-700 block mb-1.5 flex items-center gap-1">
+                                <span>🛡️</span> Giảng Viên &amp; Ban Quản Trị Hệ Thống:
+                            </span>
+                            <div class="grid grid-cols-2 gap-1.5">
+                                <a href="<?= $appBase ?>quick-login?code=GV001" class="p-2 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-700 hover:text-amber-800 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>👨‍🏫</span> <span>GV TS. Nguyễn Văn Giảng</span>
+                                </a>
+                                <a href="<?= $appBase ?>quick-login?code=ADM001" class="p-2 rounded-xl bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 text-slate-700 hover:text-purple-800 transition flex items-center gap-1.5 font-semibold shadow-2xs">
+                                    <span>🛡️</span> <span>Quản Trị Viên (Admin)</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </details>
 
