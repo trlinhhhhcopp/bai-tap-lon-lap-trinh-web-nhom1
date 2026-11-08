@@ -10,7 +10,17 @@ use Exception;
 
 class AuthController extends Controller {
     public function showLogin(): void {
-        if (Session::check()) {
+        $uri = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
+        $isRoot = ($uri === '/' || $uri === '' || str_ends_with($uri, '/index.php'));
+        $forceLogin = isset($_GET['login']) || isset($_GET['switch']) || isset($_GET['force']);
+
+        if (isset($_GET['logout'])) {
+            $this->logout();
+            return;
+        }
+
+        // Chỉ tự động điều hướng sang dashboard khi truy cập trang chủ gốc '/' và không có yêu cầu xem form đăng nhập
+        if ($isRoot && !$forceLogin && Session::check()) {
             $user = Session::user();
             if ($user['role'] === 'admin') {
                 $this->redirect('/admin/dashboard');
@@ -21,10 +31,12 @@ class AuthController extends Controller {
             } else {
                 $this->redirect('/student/dashboard');
             }
+            return;
         }
 
         $this->view('auth/login', [
-            'title' => 'Đăng Nhập Cổng Helpdesk CNTT - ĐH Thủ Đô Hà Nội',
+            'title'       => 'Đăng Nhập Cổng Helpdesk CNTT - ĐH Thủ Đô Hà Nội',
+            'currentUser' => Session::user(),
         ]);
     }
 

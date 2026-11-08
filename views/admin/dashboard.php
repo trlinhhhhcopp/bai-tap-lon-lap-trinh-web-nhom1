@@ -332,29 +332,60 @@ $appBase = get_app_base_url();
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <?php foreach ($recentTickets as $t): ?>
-                                <tr class="hover:bg-slate-50/80 transition">
-                                    <td data-label="Mã vé" class="admin-ticket-code py-3 px-4 font-mono font-bold text-indigo-600">
-                                        <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:underline">
-                                            <?php echo htmlspecialchars($t['ticket_code']); ?>
-                                        </a>
+                            <?php foreach ($recentTickets as $t): 
+                                $isOverdue  = (!empty($t['due_at']) && strtotime($t['due_at']) < time() && !in_array($t['status'], ['resolved', 'closed', 'cancelled']));
+                                $systemName = !empty($t['system_affected']) ? $t['system_affected'] : ($t['category_name'] ?? 'Hệ thống chung');
+                                $dueText    = !empty($t['due_at']) ? $t['due_at'] : 'Chưa xác định';
+                            ?>
+                                <tr class="hover:bg-slate-50/80 transition <?= $isOverdue ? 'border-l-4 border-rose-500 bg-rose-50/25' : '' ?>">
+                                    <td data-label="Mã vé" class="admin-ticket-code py-3.5 px-4 font-mono font-bold whitespace-nowrap">
+                                        <div class="flex items-center gap-1.5">
+                                            <?php if ($isOverdue || !empty($t['is_major_incident'])): ?>
+                                                <span class="text-amber-500 text-sm leading-none" title="Cảnh báo: Quá hạn SLA hoặc sự cố khẩn!">⚠️</span>
+                                            <?php endif; ?>
+                                            <a href="<?php echo $appBase; ?>tickets/show?id=<?php echo $t['id']; ?>" class="text-indigo-600 hover:underline">
+                                                <?php echo htmlspecialchars($t['ticket_code']); ?>
+                                            </a>
+                                        </div>
                                     </td>
-                                    <td data-label="Tiêu đề" class="admin-ticket-title py-3 px-4 font-semibold text-slate-800">
-                                        <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="hover:text-indigo-600 transition block max-w-xs truncate">
+                                    <td data-label="Tiêu đề" class="admin-ticket-title py-3.5 px-4">
+                                        <?php if ($isOverdue): ?>
+                                            <div class="mb-1">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-600 text-white shadow-2xs">
+                                                    ⏰ QUÁ HẠN SLA
+                                                </span>
+                                            </div>
+                                        <?php endif; ?>
+                                        <a href="<?php echo $appBase; ?>tickets/show?id=<?php echo $t['id']; ?>" class="hover:text-indigo-600 transition block font-bold text-slate-800 leading-snug">
                                             <?php echo htmlspecialchars($t['title']); ?>
                                         </a>
+                                        <div class="text-[11px] text-slate-400 mt-1 flex items-center flex-wrap gap-1 leading-relaxed">
+                                            <span>Hệ thống:</span>
+                                            <span class="font-medium text-slate-600"><?= htmlspecialchars($systemName); ?></span>
+                                            <span class="text-slate-300">·</span>
+                                            <span>Hạn:</span>
+                                            <span class="font-mono text-slate-600"><?= htmlspecialchars($dueText); ?></span>
+                                            <?php if (!empty($t['attachment_path'])): ?>
+                                                <span class="ml-1 inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                                                    📎 Minh chứng
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
-                                    <td data-label="Người gửi" class="admin-ticket-requester py-3 px-4 text-slate-600"><?php echo htmlspecialchars($t['requester_name']); ?></td>
-                                    <td data-label="Ưu tiên" class="py-3 px-4 text-center">
+                                    <td data-label="Người gửi" class="admin-ticket-requester py-3.5 px-4 text-slate-600 whitespace-nowrap">
+                                        <span class="font-medium block text-slate-800"><?php echo htmlspecialchars($t['requester_name']); ?></span>
+                                        <span class="text-[10.5px] font-mono text-slate-400"><?php echo htmlspecialchars($t['requester_code'] ?? ''); ?></span>
+                                    </td>
+                                    <td data-label="Ưu tiên" class="py-3.5 px-4 text-center whitespace-nowrap">
                                         <span class="px-2 py-0.5 rounded text-[10.5px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
                                             <?php echo htmlspecialchars($t['priority_name']); ?>
                                         </span>
                                     </td>
-                                    <td data-label="Trạng thái" class="py-3 px-4 text-center">
+                                    <td data-label="Trạng thái" class="py-3.5 px-4 text-center whitespace-nowrap">
                                         <?= render_status_badge($t['status']); ?>
                                     </td>
-                                    <td data-label="Chi tiết" class="py-3 px-4 text-center">
-                                        <a href="<?php echo $appBase; ?>tickets/show.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition">
+                                    <td data-label="Chi tiết" class="py-3.5 px-4 text-center whitespace-nowrap">
+                                        <a href="<?php echo $appBase; ?>tickets/show?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition inline-block">
                                             Chi tiết →
                                         </a>
                                     </td>

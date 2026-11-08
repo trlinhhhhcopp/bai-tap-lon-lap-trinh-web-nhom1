@@ -188,22 +188,44 @@ $flash = $flash ?? get_flash();
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <?php foreach ($myTickets as $t): ?>
-                                <tr class="hover:bg-slate-50/80 transition">
-                                    <td class="py-3.5 px-4 font-mono font-bold text-indigo-600">
-                                        <a href="<?= $appBase ?>tickets/show?id=<?= $t['id']; ?>" class="hover:underline">
-                                            <?= htmlspecialchars($t['ticket_code']); ?>
-                                        </a>
+                            <?php foreach ($myTickets as $t): 
+                                $createdTs  = !empty($t['created_at']) ? strtotime($t['created_at']) : 0;
+                                $isOverdue  = (!empty($t['due_at']) && strtotime($t['due_at']) < time() && !in_array($t['status'], ['resolved', 'closed', 'cancelled']));
+                                $canCancel  = in_array($t['status'], ['new', 'waiting_requester']) && ($createdTs > 0) && ((time() - $createdTs) <= 900);
+                                $systemName = !empty($t['system_affected']) ? $t['system_affected'] : ($t['category_name'] ?? 'Hệ thống chung');
+                                $dueText    = !empty($t['due_at']) ? $t['due_at'] : 'Chưa xác định';
+                            ?>
+                                <tr class="hover:bg-slate-50/80 transition <?= $isOverdue ? 'border-l-4 border-rose-500 bg-rose-50/25' : '' ?>">
+                                    <td class="py-3.5 px-4 font-mono font-bold whitespace-nowrap">
+                                        <div class="flex items-center gap-1.5">
+                                            <?php if ($isOverdue || !empty($t['is_major_incident'])): ?>
+                                                <span class="text-amber-500 text-sm leading-none" title="Cảnh báo: Quá hạn SLA hoặc sự cố khẩn!">⚠️</span>
+                                            <?php endif; ?>
+                                            <a href="<?= $appBase ?>tickets/show?id=<?= $t['id']; ?>" class="text-indigo-600 hover:underline">
+                                                <?= htmlspecialchars($t['ticket_code']); ?>
+                                            </a>
+                                        </div>
                                     </td>
-                                    <td class="py-3.5 px-4 font-semibold text-slate-900">
-                                        <a href="<?= $appBase ?>tickets/show?id=<?= $t['id']; ?>" class="hover:text-indigo-600 transition block max-w-sm truncate">
+                                    <td class="py-3.5 px-4">
+                                        <?php if ($isOverdue): ?>
+                                            <div class="mb-1">
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-600 text-white shadow-2xs">
+                                                    ⏰ QUÁ HẠN SLA
+                                                </span>
+                                            </div>
+                                        <?php endif; ?>
+                                        <a href="<?= $appBase ?>tickets/show?id=<?= $t['id']; ?>" class="hover:text-indigo-600 transition block font-bold text-slate-900 leading-snug">
                                             <?= htmlspecialchars($t['title']); ?>
                                         </a>
-                                        <div class="flex items-center gap-2 mt-0.5">
-                                            <span class="text-[10.5px] text-slate-400 font-normal">Gửi lúc: <?= htmlspecialchars($t['created_at']); ?></span>
+                                        <div class="text-[11px] text-slate-400 mt-1 flex items-center flex-wrap gap-1 leading-relaxed">
+                                            <span>Hệ thống:</span>
+                                            <span class="font-medium text-slate-600"><?= htmlspecialchars($systemName); ?></span>
+                                            <span class="text-slate-300">·</span>
+                                            <span>Hạn:</span>
+                                            <span class="font-mono text-slate-600"><?= htmlspecialchars($dueText); ?></span>
                                             <?php if (!empty($t['attachment_path'])): ?>
-                                                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
-                                                    📎 Có minh chứng
+                                                <span class="ml-1 inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">
+                                                    📎 Minh chứng
                                                 </span>
                                             <?php endif; ?>
                                         </div>
@@ -234,10 +256,10 @@ $flash = $flash ?? get_flash();
                                         <a href="<?= $appBase ?>tickets/show?id=<?= $t['id']; ?>" class="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl transition inline-block text-xs">
                                             Chi tiết & Chat →
                                         </a>
-                                        <?php if (in_array($t['status'], ['new', 'waiting_requester'])): ?>
-                                            <form method="POST" action="<?= $appBase ?>student/tickets/cancel" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu hỗ trợ #<?= htmlspecialchars($t['ticket_code']); ?>?');">
+                                        <?php if ($canCancel): ?>
+                                            <form method="POST" action="<?= $appBase ?>student/tickets/cancel" class="inline" onsubmit="return confirm('Bạn có chắc chắn muốn hủy phiếu hỗ trợ #<?= htmlspecialchars($t['ticket_code']); ?>? (Chỉ hủy được trong vòng 15 phút)');">
                                                 <input type="hidden" name="ticket_id" value="<?= $t['id']; ?>">
-                                                <button type="submit" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl transition inline-block text-xs border border-rose-200 cursor-pointer" title="Hủy phiếu này">
+                                                <button type="submit" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl transition inline-block text-xs border border-rose-200 cursor-pointer" title="Hủy phiếu này (còn hạn 15 phút)">
                                                     ✕ Hủy
                                                 </button>
                                             </form>

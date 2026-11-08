@@ -193,6 +193,14 @@ class StudentDashboardController extends Controller {
             return;
         }
 
+        // Quy tắc ITIL: Chỉ cho phép sinh viên hủy phiếu trong vòng 15 phút (900 giây) kể từ thời điểm gửi
+        $createdTs = !empty($ticket['created_at']) ? strtotime($ticket['created_at']) : 0;
+        if ($createdTs > 0 && (time() - $createdTs) > 900) {
+            $this->flash('danger', 'Quá thời hạn 15 phút! Phiếu chỉ có thể hủy trong vòng 15 phút kể từ thời điểm gửi yêu cầu.');
+            $this->redirect('/student/dashboard');
+            return;
+        }
+
         $updateStmt = $pdo->prepare("UPDATE tickets SET status = 'cancelled', closed_at = NOW(), updated_at = NOW() WHERE id = :id");
         $updateStmt->execute([':id' => $ticketId]);
 

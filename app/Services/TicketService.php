@@ -33,16 +33,21 @@ class TicketService {
         $pdo = Database::getConnection();
 
         // 1. Tìm KTV chuyên trách nhóm dịch vụ này (bất kể trực hay nghỉ) để kiểm tra trạng thái
+        // Tie-breaker: Nếu có nhiều KTV chuyên trách, ưu tiên KTV có ít tải hơn, thời điểm gán phiếu gần nhất xa hơn (last_assigned_at ASC) hoặc id nhỏ hơn
         $stmt = $pdo->prepare("
             SELECT u.*, 
                    (SELECT COUNT(*) FROM tickets t 
                     WHERE t.assigned_to = u.id 
                       AND t.status IN ('new', 'in_progress', 'waiting_requester')
-                   ) AS current_active_count
+                   ) AS current_active_count,
+                   (SELECT COALESCE(MAX(created_at), '2000-01-01 00:00:00') FROM tickets t 
+                    WHERE t.assigned_to = u.id
+                   ) AS last_assigned_at
             FROM users u
             WHERE u.role = 'agent' 
               AND u.is_active = 1 
               AND u.specialty_category_id = :cat_id
+            ORDER BY current_active_count ASC, last_assigned_at ASC, u.id ASC
             LIMIT 1
         ");
         $stmt->execute([':cat_id' => $categoryId]);
@@ -65,17 +70,21 @@ class TicketService {
 
         // 2. KÍCH HOẠT CƠ CHẾ ĐIỀU PHỐI DỰ PHÒNG / TRÀN TẢI (OVERFLOW DISPATCH)
         // Tìm KTV khác ĐANG TRỰC (is_on_duty = 1) có ít phiếu đang xử lý nhất
+        // Tie-breaker ổn định: current_active_count ASC, last_assigned_at ASC, u.id ASC
         $overflowStmt = $pdo->query("
             SELECT u.*, 
                    (SELECT COUNT(*) FROM tickets t 
                     WHERE t.assigned_to = u.id 
                       AND t.status IN ('new', 'in_progress', 'waiting_requester')
-                   ) AS current_active_count
+                   ) AS current_active_count,
+                   (SELECT COALESCE(MAX(created_at), '2000-01-01 00:00:00') FROM tickets t 
+                    WHERE t.assigned_to = u.id
+                   ) AS last_assigned_at
             FROM users u
             WHERE u.role = 'agent' 
               AND u.is_active = 1 
               AND u.is_on_duty = 1
-            ORDER BY current_active_count ASC, u.id ASC
+            ORDER BY current_active_count ASC, last_assigned_at ASC, u.id ASC
             LIMIT 1
         ");
         $backupAgent = $overflowStmt->fetch();

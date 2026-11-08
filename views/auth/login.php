@@ -65,6 +65,28 @@ $flash = $flash ?? get_flash();
                     <p class="text-xs text-slate-500 mt-1">Dành cho Sinh viên, Giảng viên, Kỹ thuật viên & Quản trị viên</p>
                 </div>
 
+                <?php if (!empty($currentUser)): 
+                    $dashUrl = $appBase . 'student/dashboard';
+                    if (($currentUser['role'] ?? '') === 'admin') $dashUrl = $appBase . 'admin/dashboard';
+                    elseif (($currentUser['role'] ?? '') === 'agent') $dashUrl = $appBase . 'agent/workbench';
+                    elseif (($currentUser['role'] ?? '') === 'lecturer' || ($currentUser['user_type'] ?? '') === 'lecturer') $dashUrl = $appBase . 'lecturer/dashboard';
+                ?>
+                    <div class="p-3.5 bg-indigo-50 border border-indigo-200 rounded-2xl text-xs text-indigo-900 flex items-center justify-between gap-3 flex-wrap">
+                        <div>
+                            <span>👤 Đang đăng nhập: <strong><?= htmlspecialchars($currentUser['name']) ?></strong> (<?= htmlspecialchars($currentUser['user_code']) ?>)</span>
+                            <span class="block text-[11px] text-indigo-600 mt-0.5">Bạn có thể đăng nhập tài khoản khác bên dưới hoặc tiếp tục làm việc.</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <a href="<?= $dashUrl ?>" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-2xs">
+                                Vào Bàn Làm Việc →
+                            </a>
+                            <a href="<?= $appBase ?>logout" class="px-2.5 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 font-bold rounded-xl text-xs transition">
+                                Đăng Xuất
+                            </a>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
                 <?php if (!empty($flash)): ?>
                     <div role="alert" data-auto-dismiss="4500" class="p-3.5 rounded-xl text-xs font-semibold <?= $flash['type'] === 'danger' ? 'bg-rose-50 text-rose-800 border border-rose-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'; ?>">
                         <?= $flash['message']; ?>

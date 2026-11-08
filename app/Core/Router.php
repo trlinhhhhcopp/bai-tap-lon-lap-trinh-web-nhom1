@@ -25,6 +25,10 @@ class Router {
 
     public function dispatch(): void {
         $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        if ($method === 'HEAD') {
+            $method = 'GET';
+        }
+
         $fullUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 
         // Tự động loại bỏ tiền tố script / thư mục dự án khi chạy trên XAMPP hoặc subfolder
@@ -41,6 +45,17 @@ class Router {
         // Chuẩn hóa URI
         $uri = '/' . ltrim($uri, '/');
         $uri = ($uri !== '/' && str_ends_with($uri, '/')) ? rtrim($uri, '/') : $uri;
+
+        // Ánh xạ các đường dẫn alias truyền thống (.php)
+        $uriAliases = [
+            '/login.php'       => '/login',
+            '/auth/login.php'  => '/login',
+            '/logout.php'      => '/logout',
+            '/auth/logout.php' => '/logout',
+        ];
+        if (isset($uriAliases[$uri])) {
+            $uri = $uriAliases[$uri];
+        }
 
         // Ánh xạ tương thích các query parameter truyền thống (?action=...)
         if ($uri === '/' || $uri === '' || $uri === '/index.php') {
