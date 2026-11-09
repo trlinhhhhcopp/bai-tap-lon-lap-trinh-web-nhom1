@@ -127,11 +127,11 @@
 </div>
 
 <div class="admin-bar">
-    <form class="search-box" method="GET" action="/admin/users">
+    <form class="search-box" method="GET" action="<?= $appBase ?>admin/users">
         <input type="text" name="kw" value="<?= htmlspecialchars($kw) ?>" placeholder="Tìm kiếm theo Mã định danh, Họ tên, Email..." style="flex:1; padding:8px 12px; border:1px solid var(--border-color); border-radius:6px; font-size:13px;">
         <button type="submit" class="btn btn-primary">🔍 Tìm kiếm</button>
         <?php if ($kw !== ''): ?>
-            <a href="/admin/users" class="btn btn-outline">✕ Xóa lọc</a>
+            <a href="<?= $appBase ?>admin/users" class="btn btn-outline">✕ Xóa lọc</a>
         <?php endif; ?>
     </form>
 
@@ -194,9 +194,9 @@
                         </td>
                         <td style="text-align: center;">
                             <div style="display: inline-flex; gap: 4px;">
-                                <a href="/admin/users/detail?id=<?= $u['id'] ?>" class="btn btn-outline" title="Xem hồ sơ">👁️ Xem</a>
+                                <a href="<?= $appBase ?>admin/users/detail?id=<?= $u['id'] ?>" class="btn btn-outline" title="Xem hồ sơ">👁️ Xem</a>
                                 <button type="button" class="btn btn-outline" onclick='openEdit(<?= json_encode($u) ?>)'>✏️ Sửa</button>
-                                <form method="POST" action="/admin/users/toggle-lock" onsubmit="return confirm('Xác nhận đổi trạng thái khóa tài khoản?');" style="display:inline;">
+                                <form method="POST" action="<?= $appBase ?>admin/users/toggle-lock" onsubmit="return confirm('Xác nhận đổi trạng thái khóa tài khoản?');" style="display:inline;">
                                     <input type="hidden" name="id" value="<?= $u['id'] ?>">
                                     <?php if ($u['is_active'] == 1): ?>
                                         <button type="submit" class="btn btn-danger" title="Khóa tài khoản">🔒 Khóa</button>
@@ -228,7 +228,7 @@
 <!-- Modal Thêm mới -->
 <div id="createModal" class="modal-overlay">
     <div class="modal-card">
-        <form method="POST" action="/admin/users/create">
+        <form method="POST" action="<?= $appBase ?>admin/users/create">
             <div class="modal-header">
                 <h3>➕ Thêm Tài Khoản Người Dùng Mới</h3>
                 <button type="button" onclick="document.getElementById('createModal').style.display='none'" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
@@ -277,7 +277,7 @@
 <!-- Modal Sửa -->
 <div id="editModal" class="modal-overlay">
     <div class="modal-card">
-        <form method="POST" action="/admin/users/update">
+        <form method="POST" action="<?= $appBase ?>admin/users/update">
             <input type="hidden" name="id" id="edit_id">
             <div class="modal-header">
                 <h3>✏️ Cập Nhật Hồ Sơ Người Dùng</h3>

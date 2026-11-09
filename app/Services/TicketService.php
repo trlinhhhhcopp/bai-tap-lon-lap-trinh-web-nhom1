@@ -21,6 +21,14 @@ use RuntimeException;
 class TicketService {
 
     /**
+     * Tiện ích lấy nhanh ID KTV được phân công (tương thích các controller gọi trực tiếp)
+     */
+    public static function assignAgent(int $categoryId): ?int {
+        $dispatch = self::dispatchAgent($categoryId);
+        return !empty($dispatch['agent_id']) ? (int)$dispatch['agent_id'] : null;
+    }
+
+    /**
      * Thuật toán phân công KTV thông minh (Smart Dispatching & Atomic Overflow)
      * 
      * 1. Bước 1: Tìm KTV chuyên trách tương ứng với category_id đang trực (is_on_duty = 1)

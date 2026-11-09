@@ -199,7 +199,7 @@ $navAttributes = static function (array $paths, ?array $actions = null) use ($cu
                     <a href="<?php echo $appBase; ?>index.php" <?php echo $navAttributes(['index.php'], ['']); ?>>
                         <span aria-hidden="true">🛡️</span><span class="sidebar-label">Tổng Quan Quản Trị</span>
                     </a>
-                    <a href="<?php echo $appBase; ?>admin/users.php" <?php echo $navAttributes(['admin/users.php', 'admin/user_detail.php']); ?>>
+                    <a href="<?php echo $appBase; ?>admin/users" <?php echo $navAttributes(['admin/users', 'admin/users/detail', 'admin/users.php', 'admin/user_detail.php']); ?>>
                         <span aria-hidden="true">👥</span><span class="sidebar-label">Quản Lý Tài Khoản & Ca Trực</span>
                     </a>
                     <a href="<?php echo $appBase; ?>admin/import_excel.php" <?php echo $navAttributes(['admin/import_excel.php']); ?>>

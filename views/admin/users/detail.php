@@ -54,7 +54,7 @@
         </div>
 
         <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
-            <a href="/admin/users" style="padding: 8px 16px; background: #e2e8f0; color: #334155; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px;">← Quay lại Quản trị</a>
+            <a href="<?= $appBase ?>admin/users" style="padding: 8px 16px; background: #e2e8f0; color: #334155; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px;">← Quay lại Quản trị</a>
         </div>
     </div>
 </div>
