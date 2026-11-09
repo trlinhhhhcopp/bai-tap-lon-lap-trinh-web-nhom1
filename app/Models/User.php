@@ -7,75 +7,139 @@ use PDO;
 class User {
     public static function findById(int $id): ?array {
         $pdo = Database::getConnection();
-        $sql = "SELECT u.*, 
-                       COALESCE(c.class_code, 'N/A') AS class_code,
-                       COALESCE(c.name, 'Chưa xếp lớp') AS class_name,
-                       COALESCE(cat.name, 'Không phân bổ chuyên môn') AS specialty_name
-                FROM users u
-                LEFT JOIN classes c ON c.id = u.class_id
-                LEFT JOIN categories cat ON cat.id = u.specialty_category_id
-                WHERE u.id = :id LIMIT 1";
-        $stmt = $pdo->prepare($sql);
+        $stmt = $pdo->prepare("SELECT u.*, COALESCE(c.name, 'Chưa xếp lớp') AS class_name 
+                               FROM users u 
+                               LEFT JOIN classes c ON c.id = u.class_id 
+                               WHERE u.id = :id LIMIT 1");
         $stmt->execute([':id' => $id]);
-        $res = $stmt->fetch();
-        return $res ?: null;
+        $user = $stmt->fetch();
+        return $user ?: null;
     }
 
     public static function findByEmailOrCode(string $identifier): ?array {
         $pdo = Database::getConnection();
-        $sql = "SELECT * FROM users WHERE email = :id1 OR user_code = :id2 OR personal_email = :id3 LIMIT 1";
-        $stmt = $pdo->prepare($sql);
-        $ident = trim($identifier);
-        $stmt->execute([':id1' => $ident, ':id2' => $ident, ':id3' => $ident]);
-        $res = $stmt->fetch();
-        return $res ?: null;
+        $stmt = $pdo->prepare("SELECT * FROM users 
+                               WHERE email = :id1 OR user_code = :id2 OR personal_email = :id3 
+                               LIMIT 1");
+        $stmt->execute([':id1' => $identifier, ':id2' => $identifier, ':id3' => $identifier]);
+        $user = $stmt->fetch();
+        return $user ?: null;
+    }
+
+    public static function findByUserCode(string $userCode): ?array {
+        $pdo = Database::getConnection();
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE user_code = :code LIMIT 1");
+        $stmt->execute([':code' => $userCode]);
+        $user = $stmt->fetch();
+        return $user ?: null;
     }
 
     public static function findActiveUsers(array $filters = [], int $page = 1, int $perPage = 8): array {
         $pdo = Database::getConnection();
         $kw = trim($filters['kw'] ?? '');
+        $type = trim($filters['type'] ?? '');
+        $classId = (int)($filters['class_id'] ?? 0);
+
         $page = max(1, $page);
         $offset = ($page - 1) * $perPage;
+
+        $where = [];
+        $params = [];
+
+        if ($kw !== '') {
+            $where[] = "(u.user_code LIKE :kw1 OR u.name LIKE :kw2 OR u.email LIKE :kw3)";
+            $params[':kw1'] = '%' . $kw . '%';
+            $params[':kw2'] = '%' . $kw . '%';
+            $params[':kw3'] = '%' . $kw . '%';
+        }
+
+        if ($type === 'student') {
+            $where[] = "(u.user_type = 'student' OR (u.role = 'requester' AND u.user_type != 'lecturer'))";
+        } elseif ($type === 'lecturer') {
+            $where[] = "u.user_type = 'lecturer'";
+        } elseif ($type === 'agent') {
+            $where[] = "u.role = 'agent'";
+        } elseif ($type === 'admin') {
+            $where[] = "u.role = 'admin'";
+        }
+
+        if ($classId > 0) {
+            $where[] = "u.class_id = :class_id";
+            $params[':class_id'] = $classId;
+        }
 
         $sql = "SELECT u.*, COALESCE(c.name, 'Chưa xếp lớp') AS class_name
                 FROM users u
                 LEFT JOIN classes c ON c.id = u.class_id ";
 
-        if ($kw !== '') {
-            $sql .= "WHERE u.user_code LIKE :kw1 OR u.name LIKE :kw2 OR u.email LIKE :kw3 ";
+        if (!empty($where)) {
+            $sql .= "WHERE " . implode(' AND ', $where) . " ";
         }
 
         $sql .= "ORDER BY u.id DESC LIMIT :limit OFFSET :offset";
 
         $stmt = $pdo->prepare($sql);
-        if ($kw !== '') {
-            $kwVal = '%' . $kw . '%';
-            $stmt->bindValue(':kw1', $kwVal, PDO::PARAM_STR);
-            $stmt->bindValue(':kw2', $kwVal, PDO::PARAM_STR);
-            $stmt->bindValue(':kw3', $kwVal, PDO::PARAM_STR);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue($k, $v, PDO::PARAM_STR);
         }
         $stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
 
-        return $stmt->fetchAll();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public static function countActiveUsers(array $filters = []): int {
         $pdo = Database::getConnection();
         $kw = trim($filters['kw'] ?? '');
+        $type = trim($filters['type'] ?? '');
+        $classId = (int)($filters['class_id'] ?? 0);
+
+        $where = [];
+        $params = [];
+
+        if ($kw !== '') {
+            $where[] = "(u.user_code LIKE :kw1 OR u.name LIKE :kw2 OR u.email LIKE :kw3)";
+            $params[':kw1'] = '%' . $kw . '%';
+            $params[':kw2'] = '%' . $kw . '%';
+            $params[':kw3'] = '%' . $kw . '%';
+        }
+
+        if ($type === 'student') {
+            $where[] = "(u.user_type = 'student' OR (u.role = 'requester' AND u.user_type != 'lecturer'))";
+        } elseif ($type === 'lecturer') {
+            $where[] = "u.user_type = 'lecturer'";
+        } elseif ($type === 'agent') {
+            $where[] = "u.role = 'agent'";
+        } elseif ($type === 'admin') {
+            $where[] = "u.role = 'admin'";
+        }
+
+        if ($classId > 0) {
+            $where[] = "u.class_id = :class_id";
+            $params[':class_id'] = $classId;
+        }
 
         $sql = "SELECT COUNT(*) FROM users u ";
-        if ($kw !== '') {
-            $sql .= "WHERE u.user_code LIKE :kw1 OR u.name LIKE :kw2 OR u.email LIKE :kw3";
+        if (!empty($where)) {
+            $sql .= "WHERE " . implode(' AND ', $where);
             $stmt = $pdo->prepare($sql);
-            $kwVal = '%' . $kw . '%';
-            $stmt->execute([':kw1' => $kwVal, ':kw2' => $kwVal, ':kw3' => $kwVal]);
+            $stmt->execute($params);
         } else {
             $stmt = $pdo->query($sql);
         }
 
         return (int) $stmt->fetchColumn();
+    }
+
+    public static function countCountsByType(): array {
+        $pdo = Database::getConnection();
+        return [
+            'all'      => (int)$pdo->query("SELECT COUNT(*) FROM users")->fetchColumn(),
+            'student'  => (int)$pdo->query("SELECT COUNT(*) FROM users WHERE user_type = 'student' OR (role = 'requester' AND user_type != 'lecturer')")->fetchColumn(),
+            'lecturer' => (int)$pdo->query("SELECT COUNT(*) FROM users WHERE user_type = 'lecturer'")->fetchColumn(),
+            'agent'    => (int)$pdo->query("SELECT COUNT(*) FROM users WHERE role = 'agent'")->fetchColumn(),
+        ];
     }
 
     public static function create(array $data): int {
@@ -195,4 +259,3 @@ class User {
         ];
     }
 }
-

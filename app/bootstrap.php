@@ -148,6 +148,7 @@ function bootstrapRouter(): Router {
     $router->post('/admin/users/create', [AdminUserController::class, 'create'], [AdminMiddleware::class]);
     $router->post('/admin/users/update', [AdminUserController::class, 'update'], [AdminMiddleware::class]);
     $router->post('/admin/users/toggle-lock', [AdminUserController::class, 'toggleLock'], [AdminMiddleware::class]);
+    $router->post('/admin/users/toggle-duty', [AdminUserController::class, 'toggleDuty'], [AdminMiddleware::class]);
 
     // Quản lý ngày nghỉ lễ (Phan Công Thành)
     $router->get('/admin/holidays', [HolidayController::class, 'index'], [AdminMiddleware::class]);

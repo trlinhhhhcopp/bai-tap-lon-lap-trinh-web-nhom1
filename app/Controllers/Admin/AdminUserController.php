@@ -9,25 +9,34 @@ use Exception;
 class AdminUserController extends Controller {
     public function index(): void {
         $kw      = trim($_GET['kw'] ?? '');
+        $type    = trim($_GET['type'] ?? '');
+        if (!in_array($type, ['student', 'lecturer', 'agent', 'admin'], true)) {
+            $type = '';
+        }
+        $classId = (int)($_GET['class_id'] ?? 0);
         $page    = max(1, (int)($_GET['page'] ?? 1));
-        $perPage = 6;
+        $perPage = 8;
 
-        $filters    = ['kw' => $kw];
+        $filters    = ['kw' => $kw, 'type' => $type, 'class_id' => $classId];
         $totalUsers = User::countActiveUsers($filters);
         $totalPages = max(1, (int)ceil($totalUsers / $perPage));
         if ($page > $totalPages) $page = $totalPages;
 
         $users   = User::findActiveUsers($filters, $page, $perPage);
         $classes = MasterData::getClasses();
+        $counts  = User::countCountsByType();
 
         $this->view('admin/users/index', [
             'users'      => $users,
             'classes'    => $classes,
             'kw'         => $kw,
+            'type'       => $type,
+            'classId'    => $classId,
+            'counts'     => $counts,
             'page'       => $page,
             'totalPages' => $totalPages,
             'totalUsers' => $totalUsers,
-            'title'      => 'Admin Center - Quản Trị Người Dùng & Phân Quyền',
+            'title'      => 'Quản Trị Tài Khoản & Phân Quyền - Admin Center',
         ]);
     }
 
@@ -48,13 +57,24 @@ class AdminUserController extends Controller {
 
     public function create(): void {
         try {
+            $role = $_POST['role'] ?? 'requester';
+            $userType = 'student';
+            if ($role === 'agent') {
+                $userType = 'staff';
+            } elseif ($role === 'lecturer') {
+                $role = 'requester';
+                $userType = 'lecturer';
+            } elseif ($role === 'admin') {
+                $userType = 'staff';
+            }
+
             $newId = User::create([
                 'user_code'       => $_POST['user_code'] ?? '',
                 'name'            => $_POST['name'] ?? '',
                 'email'           => $_POST['email'] ?? '',
-                'role'            => $_POST['role'] ?? 'requester',
-                'user_type'       => $_POST['user_type'] ?? 'student',
-                'class_id'        => $_POST['class_id'] ?? null,
+                'role'            => $role,
+                'user_type'       => $userType,
+                'class_id'        => !empty($_POST['class_id']) ? (int)$_POST['class_id'] : null,
                 'department'      => $_POST['department'] ?? 'Khoa: Toán-CNTT',
                 'phone'           => $_POST['phone'] ?? '',
                 'password_hash'   => password_hash('123456', PASSWORD_BCRYPT),
@@ -78,7 +98,7 @@ class AdminUserController extends Controller {
                 'email'      => $_POST['email'] ?? '',
                 'phone'      => $_POST['phone'] ?? '',
                 'department' => $_POST['department'] ?? '',
-                'class_id'   => $_POST['class_id'] ?? null,
+                'class_id'   => !empty($_POST['class_id']) ? (int)$_POST['class_id'] : null,
             ]);
 
             $this->flash('success', "Cập nhật thông tin tài khoản #{$id} thành công!");
@@ -101,5 +121,23 @@ class AdminUserController extends Controller {
 
         $this->redirect('/admin/users');
     }
-}
 
+    public function toggleDuty(): void {
+        $id = (int)($_POST['id'] ?? 0);
+        try {
+            $user = User::findById($id);
+            if (!$user || $user['role'] !== 'agent') {
+                $this->flash('danger', 'Chỉ kỹ thuật viên (KTV) mới có trạng thái ca trực!');
+                $this->redirect('/admin/users');
+                return;
+            }
+            $newDuty = ($user['is_on_duty'] == 1) ? 0 : 1;
+            db()->prepare("UPDATE users SET is_on_duty = :duty WHERE id = :id")->execute([':duty' => $newDuty, ':id' => $id]);
+            $msg = ($newDuty == 1) ? "KTV {$user['name']} đã BẬT ca trực (sẵn sàng tiếp nhận vé)!" : "KTV {$user['name']} đã chuyển sang trạng thái NGHỈ CA / BÁO ỐM!";
+            $this->flash('info', $msg);
+        } catch (Exception $e) {
+            $this->flash('danger', 'Lỗi: ' . $e->getMessage());
+        }
+        $this->redirect('/admin/users');
+    }
+}
