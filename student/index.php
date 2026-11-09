@@ -5,7 +5,7 @@ require_once __DIR__ . '/../app/LegacyRoute.php';
 $action = $_GET['action'] ?? $_POST['action'] ?? 'courses';
 $routes = [
     'courses' => '/student/courses',
-    'course_detail' => '/student/courses/detail',
+    'course_detail' => '/student/courses',
     'course_submit' => '/student/courses/submit',
     'course_delete_submission' => '/student/courses/delete-submission',
     'api_lessons' => '/student/courses/lessons',
