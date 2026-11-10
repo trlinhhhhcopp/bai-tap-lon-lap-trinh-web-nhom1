@@ -1,8 +1,8 @@
 <?php
 /**
- * View: Học Phần & Bài Tập Của Tôi (Giao diện 1 trang duy nhất - Unified Integrated Workspace)
+ * View: Học Phần & Bài Tập Của Tôi (Giao diện tích hợp dạng Bảng - Unified Course Workspace)
  * Phân hệ Sinh viên
- * Kết hợp danh mục học phần (Course Switcher) và chi tiết buổi học + nộp bài tập trên cùng một màn hình.
+ * Kết hợp danh mục học phần và bảng chi tiết các buổi học + đính kèm bài tập thực hành.
  */
 require_once __DIR__ . '/../../../config/database.php';
 $appBase = get_app_base_url();
@@ -27,15 +27,10 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
     <title><?= !empty($selectedCourse) ? htmlspecialchars($selectedCourse['course_name'] ?? $selectedCourse['name']) . ' - ' : '' ?>Học Phần & Bài Tập - Helpdesk ĐH Thủ Đô</title>
     <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
     <style>
-        .lesson-card {
-            transition: all 0.2s ease-in-out;
-        }
-        .lesson-card:hover {
-            border-color: #cbd5e1;
-        }
-        html {
-            scroll-behavior: smooth;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        html { scroll-behavior: smooth; }
+        .table-row-hover:hover { background-color: #f8fafc; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen flex flex-col justify-between">
@@ -58,7 +53,7 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                 Học Phần & Bài Tập Của Tôi
             </h1>
             <p class="text-xs text-indigo-200/80 mt-1 max-w-2xl">
-                Không gian học tập tích hợp: Theo dõi tiến độ tất cả học phần, xem đề cương chi tiết và đính kèm bài tập thực hành từng buổi học trực tiếp trên cùng một màn hình.
+                Không gian học tập tích hợp: Bấm vào từng học phần để xem bảng chi tiết các buổi học, theo dõi hạn nộp và đính kèm bài tập thực hành trực tiếp trên cùng một màn hình.
             </p>
         </div>
         <div class="flex items-center gap-3 bg-slate-800/80 border border-slate-700/80 p-3.5 rounded-2xl shrink-0 shadow-inner">
@@ -90,98 +85,107 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
         </div>
     <?php endif; ?>
 
-    <!-- 2. SECTION CHỌN NHANH HỌC PHẦN (COURSE SWITCHER / CARDS GRID) -->
+    <!-- 2. SECTION CHỌN NHANH HỌC PHẦN (CARDS GRID KÈM NÚT ẨN/HIỆN NHƯ CŨ) -->
     <section class="space-y-3">
         <div class="flex items-center justify-between flex-wrap gap-2">
             <h2 class="text-xs font-black uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                <span>📖</span> DANH SÁCH HỌC PHẦN (BẤM VÀO MÔN ĐỂ XEM VÀ NỘP BÀI TẬP NGAY BÊN DƯỚI)
+                <span>📖</span> DANH SÁCH HỌC PHẦN (BẤM VÀO MÔN ĐỂ HIỆN BẢNG BÀI TẬP BÊN DƯỚI)
             </h2>
-            <span class="text-[11px] text-slate-400 font-medium">
-                <?= $totalCourses ?> học phần đang theo học
-            </span>
+            <div class="flex items-center gap-2">
+                <span class="text-[11px] text-slate-400 font-medium">
+                    <?= $totalCourses ?> học phần đang theo học
+                </span>
+                <button type="button" data-target-table="student_courses_cards_container" onclick="toggleTableCollapse('student_courses_cards_container', this)" title="Ẩn hoặc hiện danh sách học phần" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
+                    <span class="toggle-table-icon">✕</span>
+                    <span class="toggle-table-text">Ẩn danh sách</span>
+                </button>
+            </div>
         </div>
 
-        <?php if (empty($courses)): ?>
-            <div class="bg-white rounded-3xl p-10 text-center border border-slate-200 shadow-sm">
-                <div class="text-4xl mb-3">📭</div>
-                <h3 class="text-base font-bold text-slate-800">Chưa có học phần nào được phân công</h3>
-                <p class="text-xs text-slate-500 mt-1">Lớp của bạn hiện chưa được phân công môn học trong học kỳ này.</p>
-            </div>
-        <?php else: ?>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <?php foreach ($courses as $c): 
-                    $cid = (int)$c['course_id'];
-                    $pct = (int)($c['progress_pct'] ?? 0);
-                    $isActive = ($cid === $selectedCourseId);
-                    $isAllDoneCourse = ($pct === 100);
-                ?>
-                    <a href="<?= $appBase ?>student/courses?course_id=<?= $cid ?>#course-workspace"
-                       class="relative rounded-3xl p-4.5 transition flex flex-col justify-between overflow-hidden border text-left group <?= $isActive 
-                           ? 'bg-indigo-50/70 border-indigo-500 ring-2 ring-indigo-500/30 shadow-md' 
-                           : 'bg-white border-slate-200/90 hover:border-indigo-300 hover:shadow-md' ?>">
-                        
-                        <div class="space-y-2.5">
-                            <div class="flex items-center justify-between gap-2">
-                                <span class="px-2.5 py-1 <?= $isActive ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700' ?> font-black text-xs rounded-xl border <?= $isActive ? 'border-indigo-600' : 'border-slate-200' ?>">
-                                    <?= htmlspecialchars($c['course_code']) ?>
-                                </span>
+        <div id="student_courses_cards_container" data-collapsible-table>
+            <?php if (empty($courses)): ?>
+                <div class="bg-white rounded-3xl p-10 text-center border border-slate-200 shadow-sm">
+                    <div class="text-4xl mb-3">📭</div>
+                    <h3 class="text-base font-bold text-slate-800">Chưa có học phần nào được phân công</h3>
+                    <p class="text-xs text-slate-500 mt-1">Lớp của bạn hiện chưa được phân công môn học trong học kỳ này.</p>
+                </div>
+            <?php else: ?>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <?php foreach ($courses as $c): 
+                        $cid = (int)$c['course_id'];
+                        $pct = (int)($c['progress_pct'] ?? 0);
+                        $isActive = ($cid === $selectedCourseId);
+                        $isAllDoneCourse = ($pct === 100);
+                    ?>
+                        <a href="<?= $appBase ?>student/courses?course_id=<?= $cid ?>#course-workspace"
+                           onclick="ensureLessonsTableVisible()"
+                           class="relative rounded-3xl p-4.5 transition flex flex-col justify-between overflow-hidden border text-left group <?= $isActive 
+                               ? 'bg-indigo-50/70 border-indigo-500 ring-2 ring-indigo-500/30 shadow-md' 
+                               : 'bg-white border-slate-200/90 hover:border-indigo-300 hover:shadow-md' ?>">
+                            
+                            <div class="space-y-2.5">
+                                <div class="flex items-center justify-between gap-2">
+                                    <span class="px-2.5 py-1 <?= $isActive ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-700' ?> font-black text-xs rounded-xl border <?= $isActive ? 'border-indigo-600' : 'border-slate-200' ?>">
+                                        <?= htmlspecialchars($c['course_code']) ?>
+                                    </span>
 
+                                    <?php if ($isActive): ?>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-600 text-white shadow-2xs flex items-center gap-1 animate-pulse">
+                                            ● ĐANG XEM
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-[11px] font-bold text-slate-500">
+                                            <?= (int)$c['credits'] ?> Tín chỉ
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-sm font-black <?= $isActive ? 'text-indigo-950' : 'text-slate-900 group-hover:text-indigo-600' ?> transition line-clamp-1">
+                                        <?= htmlspecialchars($c['course_name']) ?>
+                                    </h3>
+                                    <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                                        GV: <strong class="text-slate-600"><?= htmlspecialchars($c['lecturer_name'] ?: 'Chưa chỉ định') ?></strong>
+                                        · Lớp: <span class="font-mono text-slate-600"><?= htmlspecialchars($c['class_code']) ?></span>
+                                    </p>
+                                </div>
+
+                                <!-- THANH TIẾN ĐỘ THẺ MÔN HỌC -->
+                                <div class="space-y-1 pt-1">
+                                    <div class="flex justify-between items-center text-[10.5px]">
+                                        <span class="font-medium text-slate-500">Tiến độ bài tập:</span>
+                                        <span class="font-black <?= $isAllDoneCourse ? 'text-emerald-600' : ($isActive ? 'text-indigo-700' : 'text-slate-700') ?>">
+                                            <?= (int)$c['completed_lessons'] ?> / <?= (int)$c['total_lessons'] ?> Buổi (<?= $pct ?>%)
+                                        </span>
+                                    </div>
+                                    <div class="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
+                                        <div class="h-1.5 rounded-full transition-all duration-500 <?= $isAllDoneCourse ? 'bg-emerald-500' : ($isActive ? 'bg-indigo-600' : 'bg-slate-500') ?>" style="width: <?= $pct ?>%"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="pt-3 mt-3 border-t <?= $isActive ? 'border-indigo-200/80 text-indigo-700 font-bold' : 'border-slate-100 text-slate-500 group-hover:text-indigo-600' ?> flex items-center justify-between text-[11px]">
                                 <?php if ($isActive): ?>
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-black bg-indigo-600 text-white shadow-2xs flex items-center gap-1 animate-pulse">
-                                        ● ĐANG XEM
+                                    <span class="font-black text-indigo-700 flex items-center gap-1">
+                                        <span>✓</span> Đang hiển thị bảng buổi học bên dưới
                                     </span>
+                                    <span class="text-xs">↓</span>
                                 <?php else: ?>
-                                    <span class="text-[11px] font-bold text-slate-500">
-                                        <?= (int)$c['credits'] ?> Tín chỉ
-                                    </span>
+                                    <span>Bấm xem bảng bài tập</span>
+                                    <span class="font-bold text-xs group-hover:translate-x-1 transition">→</span>
                                 <?php endif; ?>
                             </div>
 
-                            <div>
-                                <h3 class="text-sm font-black <?= $isActive ? 'text-indigo-950' : 'text-slate-900 group-hover:text-indigo-600' ?> transition line-clamp-1">
-                                    <?= htmlspecialchars($c['course_name']) ?>
-                                </h3>
-                                <p class="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
-                                    GV: <strong class="text-slate-600"><?= htmlspecialchars($c['lecturer_name'] ?: 'Chưa chỉ định') ?></strong>
-                                    · Lớp: <span class="font-mono text-slate-600"><?= htmlspecialchars($c['class_code']) ?></span>
-                                </p>
-                            </div>
-
-                            <!-- THANH TIẾN ĐỘ THẺ MÔN HỌC -->
-                            <div class="space-y-1 pt-1">
-                                <div class="flex justify-between items-center text-[10.5px]">
-                                    <span class="font-medium text-slate-500">Tiến độ bài tập:</span>
-                                    <span class="font-black <?= $isAllDoneCourse ? 'text-emerald-600' : ($isActive ? 'text-indigo-700' : 'text-slate-700') ?>">
-                                        <?= (int)$c['completed_lessons'] ?> / <?= (int)$c['total_lessons'] ?> Buổi (<?= $pct ?>%)
-                                    </span>
-                                </div>
-                                <div class="w-full bg-slate-200/80 rounded-full h-1.5 overflow-hidden">
-                                    <div class="h-1.5 rounded-full transition-all duration-500 <?= $isAllDoneCourse ? 'bg-emerald-500' : ($isActive ? 'bg-indigo-600' : 'bg-slate-500') ?>" style="width: <?= $pct ?>%"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="pt-3 mt-3 border-t <?= $isActive ? 'border-indigo-200/80 text-indigo-700 font-bold' : 'border-slate-100 text-slate-500 group-hover:text-indigo-600' ?> flex items-center justify-between text-[11px]">
-                            <?php if ($isActive): ?>
-                                <span class="font-black text-indigo-700 flex items-center gap-1">
-                                    <span>✓</span> Đang hiển thị buổi học bên dưới
-                                </span>
-                                <span class="text-xs">↓</span>
-                            <?php else: ?>
-                                <span>Chuyển sang môn này</span>
-                                <span class="font-bold text-xs group-hover:translate-x-1 transition">→</span>
-                            <?php endif; ?>
-                        </div>
-
-                    </a>
-                <?php endforeach; ?>
-            </div>
-        <?php endif; ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
     </section>
 
-    <!-- 3. SECTION CHI TIẾT HỌC PHẦN & KHÔNG GIAN BÀI TẬP CỦA MÔN ĐANG CHỌN -->
+    <!-- 3. SECTION BẢNG BUỔI HỌC & BÀI TẬP CỦA MÔN ĐANG CHỌN (ẤN VÀO LÀ HIỆN BẢNG) -->
     <?php if (!empty($selectedCourse)): ?>
-        <section id="course-workspace" class="space-y-5 pt-2">
+        <section id="course-workspace" class="space-y-4 pt-2">
 
             <!-- HEADER BANNER HỌC PHẦN ĐANG CHỌN -->
             <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 shadow-md border border-indigo-900/50 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -243,316 +247,258 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
                 </div>
             </div>
 
-            <!-- THANH ĐIỀU HƯỚNG BỘ LỌC CÁC BUỔI HỌC -->
+            <!-- THANH ĐIỀU HƯỚNG BỘ LỌC CÁC BUỔI HỌC & CÁI NÚT ẨN/HIỆN BẢNG NHƯ CŨ -->
             <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div class="flex items-center gap-1.5 flex-wrap">
                     <span class="font-bold text-slate-700 mr-1">Bộ lọc buổi:</span>
-                    <button type="button" onclick="filterLessons('all')" class="filter-btn px-3 py-1.5 rounded-xl font-bold bg-indigo-600 text-white transition shadow-sm" data-filter="all">
+                    <button type="button" onclick="filterLessonsTable('all')" class="filter-btn px-3 py-1.5 rounded-xl font-bold bg-indigo-600 text-white transition shadow-sm" data-filter="all">
                         Tất cả (<?= $totalLessons ?>)
                     </button>
-                    <button type="button" onclick="filterLessons('completed')" class="filter-btn px-3 py-1.5 rounded-xl font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-filter="completed">
+                    <button type="button" onclick="filterLessonsTable('completed')" class="filter-btn px-3 py-1.5 rounded-xl font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-filter="completed">
                         Đã hoàn thành (<?= $completedLessons ?>)
                     </button>
-                    <button type="button" onclick="filterLessons('pending')" class="filter-btn px-3 py-1.5 rounded-xl font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-filter="pending">
+                    <button type="button" onclick="filterLessonsTable('pending')" class="filter-btn px-3 py-1.5 rounded-xl font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition" data-filter="pending">
                         Chưa hoàn thành (<?= $totalLessons - $completedLessons ?>)
                     </button>
                 </div>
-                <div class="text-[11.5px] text-slate-500 italic">
-                    * Thời hạn nộp bài tập được tính theo thời khóa biểu thực tế của nhóm
+
+                <div class="flex items-center gap-2">
+                    <span class="text-[11.5px] text-slate-400 italic hidden sm:inline">
+                        Bảng quản lý nộp bài tập chuẩn
+                    </span>
+                    <!-- CÁI NÚT ẨN / HIỆN NHƯ CŨ -->
+                    <button type="button" data-target-table="student_lessons_table_body" onclick="toggleTableCollapse('student_lessons_table_body', this)" title="Ẩn hoặc hiện bảng này" class="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1.5 border border-slate-200 cursor-pointer shadow-xs">
+                        <span class="toggle-table-icon">✕</span>
+                        <span class="toggle-table-text">Ẩn bảng</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- DANH SÁCH LẦN LƯỢT CÁC BUỔI HỌC -->
-            <?php if (empty($lessons)): ?>
-                <div class="bg-white rounded-3xl p-10 text-center border border-slate-200 shadow-sm space-y-2">
-                    <span class="text-3xl block">📋</span>
-                    <h3 class="text-sm font-bold text-slate-800">Chưa có đề cương buổi học cho môn này</h3>
-                    <p class="text-xs text-slate-400">Giảng viên phụ trách chưa cập nhật danh sách các buổi học cho môn <?= htmlspecialchars($selectedCourse['course_name'] ?? $selectedCourse['name']) ?>.</p>
-                </div>
-            <?php else: ?>
-                <div class="space-y-4" id="lessons-container">
-                    <?php foreach ($lessons as $index => $item): 
-                        $isSubmitted = !empty($item['is_submitted']);
-                        $isOverdue = !empty($item['is_overdue']);
-                        $isLate = !empty($item['is_late']);
-                        $lessonId = (int)$item['lesson_id'];
-                        $filterType = $isSubmitted ? 'completed' : 'pending';
-                    ?>
-                        <article class="lesson-card bg-white rounded-3xl border <?= $isSubmitted ? 'border-emerald-200 shadow-sm' : ($isOverdue ? 'border-rose-200 shadow-sm' : 'border-slate-200 shadow-sm') ?> overflow-hidden" data-status="<?= $filterType ?>" id="lesson-card-<?= $lessonId ?>">
-                            
-                            <!-- TIÊU ĐỀ & THÔNG TIN HẠN BUỔI HỌC -->
-                            <div class="p-5 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-gradient-to-r <?= $isSubmitted ? 'from-emerald-50/40 via-white to-white' : ($isOverdue ? 'from-rose-50/40 via-white to-white' : 'from-slate-50/60 via-white to-white') ?>">
-                                <div class="space-y-1">
-                                    <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="px-2.5 py-0.5 rounded-lg text-xs font-black <?= $isSubmitted ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-800' ?>">
-                                            BUỔI <?= (int)$item['lesson_number'] ?>
-                                        </span>
-
-                                        <!-- BADGE HOÀN THÀNH -->
-                                        <?php if ($isSubmitted): ?>
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
-                                                <span>✅</span> ĐÃ HOÀN THÀNH
+            <!-- 4. BẢNG BUỔI HỌC & ĐÍNH KÈM BÀI TẬP (TABLE CONTAINER) -->
+            <div id="student_lessons_table_body" data-collapsible-table class="bg-white border border-slate-200/90 rounded-3xl shadow-sm overflow-hidden">
+                <?php if (empty($lessons)): ?>
+                    <div class="p-10 text-center text-slate-400 text-xs space-y-2">
+                        <span class="text-3xl block">📋</span>
+                        <h3 class="text-sm font-bold text-slate-800">Chưa có đề cương buổi học cho môn này</h3>
+                        <p class="text-xs text-slate-400">Giảng viên phụ trách chưa cập nhật danh sách các buổi học cho môn <?= htmlspecialchars($selectedCourse['course_name'] ?? $selectedCourse['name']) ?>.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50/90 text-slate-600 font-extrabold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                                    <th class="py-3.5 px-4 text-center w-20">Buổi</th>
+                                    <th class="py-3.5 px-4 min-w-[240px]">Chủ Đề & Yêu Cầu Buổi Học</th>
+                                    <th class="py-3.5 px-4 w-44">Hạn Nộp Bài</th>
+                                    <th class="py-3.5 px-4 text-center w-36">Trạng Thái</th>
+                                    <th class="py-3.5 px-4 min-w-[200px]">Tệp Đã Đính Kèm</th>
+                                    <th class="py-3.5 px-4 text-center w-32">Đánh Giá GV</th>
+                                    <th class="py-3.5 px-4 text-center w-40">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100" id="lessons-table-rows">
+                                <?php foreach ($lessons as $index => $item): 
+                                    $isSubmitted = !empty($item['is_submitted']);
+                                    $isOverdue = !empty($item['is_overdue']);
+                                    $isLate = !empty($item['is_late']);
+                                    $lessonId = (int)$item['lesson_id'];
+                                    $filterType = $isSubmitted ? 'completed' : 'pending';
+                                ?>
+                                    <!-- DÒNG THÔNG TIN BUỔI HỌC -->
+                                    <tr class="table-row-hover transition lesson-row <?= $isSubmitted ? 'bg-emerald-50/20' : ($isOverdue ? 'bg-rose-50/20' : '') ?>" data-status="<?= $filterType ?>" id="lesson-row-<?= $lessonId ?>">
+                                        
+                                        <!-- CỘT 1: BUỔI -->
+                                        <td class="py-3.5 px-4 text-center font-black align-middle">
+                                            <span class="inline-block px-2.5 py-1 rounded-xl text-xs font-black <?= $isSubmitted ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-slate-100 text-slate-700 border border-slate-200' ?>">
+                                                Buổi <?= (int)$item['lesson_number'] ?>
                                             </span>
-                                        <?php else: ?>
-                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-1">
-                                                <span>❌</span> CHƯA HOÀN THÀNH
-                                            </span>
-                                        <?php endif; ?>
+                                        </td>
 
-                                        <!-- BADGE DEADLINE / THỜI HẠN BÀI TẬP -->
-                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-<?= $item['status_color'] ?>-100 text-<?= $item['status_color'] ?>-800 border border-<?= $item['status_color'] ?>-300">
-                                            ⏱ Hạn nộp: <?= $item['deadline_formatted'] ?> (<?= htmlspecialchars($item['status_badge']) ?>)
-                                        </span>
-                                    </div>
-
-                                    <h3 class="text-base md:text-lg font-bold text-slate-900 pt-1">
-                                        <?= htmlspecialchars($item['title']) ?>
-                                    </h3>
-                                </div>
-
-                                <div class="shrink-0 flex items-center gap-2 flex-wrap">
-                                    <?php if ($isSubmitted): ?>
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 font-bold text-xs">
-                                            <span>🎉</span> Đã đính kèm bài tập
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 font-semibold text-xs">
-                                            <span>⚠️</span> Cần đính kèm tệp
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-
-                            <!-- NỘI DUNG YÊU CẦU & KHU VỰC ĐÍNH KÈM -->
-                            <div class="p-5 md:p-6 space-y-4">
-                                
-                                <!-- MÔ TẢ NỘI DUNG BUỔI HỌC -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                                    <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-1">
-                                        <div class="font-bold text-slate-700 flex items-center gap-1.5">
-                                            <span>📖</span> Nội dung lý thuyết & thực hành buổi học:
-                                        </div>
-                                        <p class="text-slate-600 leading-relaxed">
-                                            <?= htmlspecialchars($item['description'] ?: 'Chưa cập nhật nội dung chi tiết.') ?>
-                                        </p>
-                                    </div>
-                                    <div class="bg-indigo-50/50 p-3.5 rounded-2xl border border-indigo-100 space-y-1">
-                                        <div class="font-bold text-indigo-900 flex items-center justify-between gap-1.5 flex-wrap">
-                                            <span class="flex items-center gap-1.5"><span>🎯</span> Yêu cầu đính kèm bài tập:</span>
-                                            <?php if (!empty($item['attachment_path'])): ?>
-                                                <a href="<?= $appBase . htmlspecialchars($item['attachment_path']); ?>" target="_blank" download class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[11px] font-bold transition shadow-2xs">
-                                                    <span>📎 Tải Đề Bài / Tài Liệu</span>
-                                                </a>
-                                            <?php endif; ?>
-                                        </div>
-                                        <p class="text-indigo-950 leading-relaxed font-medium">
-                                            <?= htmlspecialchars($item['assignment_requirement'] ?: 'Sinh viên hoàn thành bài thực hành và đính kèm tệp nén mã nguồn.') ?>
-                                        </p>
-                                        <?php if (!empty($item['attachment_path'])): ?>
-                                            <div class="pt-1 text-[11px] text-indigo-700 font-mono flex items-center gap-1">
-                                                <span>📄 Tệp đính kèm từ Thầy/Cô:</span>
-                                                <strong><?= htmlspecialchars($item['attachment_name'] ?: 'De_bai.pdf') ?></strong>
+                                        <!-- CỘT 2: CHỦ ĐỀ & YÊU CẦU -->
+                                        <td class="py-3.5 px-4 align-middle space-y-1">
+                                            <div class="font-bold text-slate-900 text-[13px] leading-snug">
+                                                <?= htmlspecialchars($item['title']) ?>
                                             </div>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-
-                                <!-- KHU VỰC TRẠNG THÁI BÀI TẬP ĐÍNH KÈM -->
-                                <div class="pt-2 border-t border-slate-100">
-                                    <?php if ($isSubmitted): ?>
-                                        <!-- NẾU ĐÃ NỘP BÀI TẬP ĐÍNH KÈM -->
-                                        <div class="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                            <div class="flex items-start gap-3">
-                                                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-lg shrink-0 shadow-sm">
-                                                    📦
+                                            <?php if (!empty($item['requirement'])): ?>
+                                                <div class="text-[11.5px] text-slate-500 line-clamp-2">
+                                                    <?= htmlspecialchars($item['requirement']) ?>
                                                 </div>
-                                                <div class="space-y-0.5">
-                                                    <div class="text-xs font-bold text-emerald-950 flex items-center gap-2 flex-wrap">
-                                                        <span>Tệp đính kèm:</span>
-                                                        <span class="font-mono bg-white px-2 py-0.5 rounded border border-emerald-300 text-emerald-800">
-                                                            <?= htmlspecialchars($item['file_name']) ?>
-                                                        </span>
-                                                        <span class="text-[11px] text-emerald-700 font-normal">
-                                                            (<?= round((int)$item['file_size'] / 1024, 1) ?> KB)
-                                                        </span>
-                                                    </div>
-                                                    <div class="text-[11px] text-emerald-800">
-                                                        Thời điểm nộp: <span class="font-semibold"><?= date('d/m/Y H:i:s', strtotime($item['submitted_at'])) ?></span>
-                                                        <?php if ($isLate): ?>
-                                                            <span class="text-rose-600 font-bold ml-1">(Nộp muộn)</span>
-                                                        <?php endif; ?>
+                                            <?php endif; ?>
+                                            <?php if (!empty($item['attachment_path'])): ?>
+                                                <div class="pt-0.5">
+                                                    <a href="<?= $appBase . htmlspecialchars($item['attachment_path']) ?>" target="_blank" class="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded-lg border border-indigo-200">
+                                                        <span>📥 Đề bài GV:</span>
+                                                        <span class="truncate max-w-[150px]"><?= htmlspecialchars($item['attachment_name'] ?: 'Tệp đính kèm') ?></span>
+                                                    </a>
+                                                </div>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <!-- CỘT 3: HẠN NỘP BÀI -->
+                                        <td class="py-3.5 px-4 align-middle">
+                                            <div class="font-mono text-slate-700 font-semibold text-xs whitespace-nowrap">
+                                                <?= $item['deadline_formatted'] ?>
+                                            </div>
+                                            <div class="mt-0.5">
+                                                <span class="inline-block px-2 py-0.5 rounded-md text-[10.5px] font-bold bg-<?= $item['status_color'] ?>-100 text-<?= $item['status_color'] ?>-800 border border-<?= $item['status_color'] ?>-300">
+                                                    <?= htmlspecialchars($item['status_badge']) ?>
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <!-- CỘT 4: TRẠNG THÁI HOÀN THÀNH -->
+                                        <td class="py-3.5 px-4 text-center align-middle whitespace-nowrap">
+                                            <?php if ($isSubmitted): ?>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                                    <span>✅</span> ĐÃ HOÀN THÀNH
+                                                </span>
+                                            <?php elseif ($isOverdue): ?>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-rose-100 text-rose-800 border border-rose-300">
+                                                    <span>⛔</span> QUÁ HẠN NỘP
+                                                </span>
+                                            <?php else: ?>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-300">
+                                                    <span>⏳</span> CHƯA NỘP
+                                                </span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <!-- CỘT 5: TỆP ĐÃ ĐÍNH KÈM -->
+                                        <td class="py-3.5 px-4 align-middle">
+                                            <?php if ($isSubmitted): ?>
+                                                <div class="space-y-1">
+                                                    <a href="<?= $appBase . htmlspecialchars($item['file_path']) ?>" download class="font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1 text-xs truncate max-w-[200px]" title="<?= htmlspecialchars($item['file_name']) ?>">
+                                                        <span>📎</span>
+                                                        <span class="truncate"><?= htmlspecialchars($item['file_name']) ?></span>
+                                                    </a>
+                                                    <div class="text-[10.5px] text-slate-400">
+                                                        <span><?= !empty($item['file_size']) ? round($item['file_size'] / 1024, 1) . ' KB' : ($item['file_size_formatted'] ?? '') ?></span> · 
+                                                        <span>Nộp: <?= !empty($item['submitted_at']) ? date('d/m/Y H:i', strtotime($item['submitted_at'])) : '' ?></span>
                                                     </div>
                                                     <?php if (!empty($item['notes'])): ?>
-                                                        <div class="text-[11px] text-slate-600 italic mt-1">
-                                                            Ghi chú: "<?= htmlspecialchars($item['notes']) ?>"
+                                                        <div class="text-[10.5px] text-slate-500 italic truncate max-w-[200px]" title="<?= htmlspecialchars($item['notes']) ?>">
+                                                            💬 <?= htmlspecialchars($item['notes']) ?>
                                                         </div>
                                                     <?php endif; ?>
                                                 </div>
-                                            </div>
+                                            <?php else: ?>
+                                                <span class="text-slate-400 italic text-[11.5px]">Chưa đính kèm tệp</span>
+                                            <?php endif; ?>
+                                        </td>
 
-                                            <div class="flex items-center gap-2 shrink-0 flex-wrap">
-                                                <a href="<?= $appBase . htmlspecialchars($item['file_path']) ?>" download="<?= htmlspecialchars($item['file_name']) ?>" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1">
-                                                    <span>⬇️</span> Tải Bài Nộp
-                                                </a>
-                                                
+                                        <!-- CỘT 6: ĐÁNH GIÁ CỦA GIẢNG VIÊN -->
+                                        <td class="py-3.5 px-4 text-center align-middle whitespace-nowrap">
+                                            <?php if ($item['score'] !== null): ?>
+                                                <div>
+                                                    <span class="px-2.5 py-1 rounded-full text-xs font-black bg-amber-400 text-slate-900 shadow-2xs">
+                                                        🎯 <?= number_format((float)$item['score'], 1) ?>
+                                                    </span>
+                                                    <?php if (!empty($item['feedback'])): ?>
+                                                        <div class="text-[10.5px] text-slate-500 truncate max-w-[120px] mt-1" title="<?= htmlspecialchars($item['feedback']) ?>">
+                                                            <?= htmlspecialchars($item['feedback']) ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php elseif ($isSubmitted): ?>
+                                                <span class="text-[11px] text-slate-400 font-semibold">⏳ Chờ chấm</span>
+                                            <?php else: ?>
+                                                <span class="text-slate-300">—</span>
+                                            <?php endif; ?>
+                                        </td>
+
+                                        <!-- CỘT 7: THAO TÁC -->
+                                        <td class="py-3.5 px-4 text-center align-middle whitespace-nowrap">
+                                            <div class="flex items-center justify-center gap-1.5 flex-wrap">
                                                 <?php if (!$isOverdue): ?>
-                                                <!-- NÚT MỞ FORM NỘP LẠI (CHỈ KHI CÒN HẠN) -->
-                                                <button type="button" onclick="toggleSubmitForm(<?= $lessonId ?>)" class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">
-                                                    ✏️ Nộp Lại Tệp
-                                                </button>
+                                                    <!-- NÚT MỞ FORM NỘP BÀI / NỘP LẠI -->
+                                                    <button type="button" onclick="toggleSubmitFormRow(<?= $lessonId ?>)" class="px-3 py-1.5 <?= $isSubmitted ? 'bg-white border border-slate-300 hover:bg-slate-100 text-slate-700' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-2xs' ?> font-bold rounded-xl text-xs transition cursor-pointer flex items-center gap-1">
+                                                        <span><?= $isSubmitted ? '✏️ Nộp lại' : '📎 Nộp bài' ?></span>
+                                                    </button>
 
-                                                <!-- FORM XÓA BÀI NỘP (CHỈ KHI CÒN HẠN) -->
-                                                <form method="POST" action="<?= $appBase ?>student/courses/delete-submission" onsubmit="return confirm('Bạn có chắc chắn muốn hủy bài nộp buổi này? Buổi học sẽ chuyển về trạng thái Chưa hoàn thành.');" class="inline">
+                                                    <?php if ($isSubmitted): ?>
+                                                        <!-- NÚT HỦY BÀI NỘP -->
+                                                        <form method="POST" action="<?= $appBase ?>student/courses/delete-submission" onsubmit="return confirm('Bạn có chắc chắn muốn hủy bài nộp Buổi <?= (int)$item['lesson_number'] ?>?');" class="inline">
+                                                            <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrfToken) ?>">
+                                                            <input type="hidden" name="course_id" value="<?= (int)$selectedCourseId ?>">
+                                                            <input type="hidden" name="lesson_id" value="<?= $lessonId ?>">
+                                                            <input type="hidden" name="submission_id" value="<?= (int)$item['submission_id'] ?>">
+                                                            <button type="submit" class="px-2 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-xl text-xs transition cursor-pointer" title="Hủy nộp bài buổi này">
+                                                                ✕
+                                                            </button>
+                                                        </form>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <!-- NÚT BÁO SỰ CỐ KHI QUÁ HẠN -->
+                                                    <a href="<?= $appBase ?>tickets/create?course_id=<?= (int)$selectedCourseId ?>&lesson_id=<?= $lessonId ?>&category_id=4" 
+                                                       class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-xl text-xs transition shadow-2xs flex items-center gap-1"
+                                                       title="Báo lỗi kỹ thuật để Thầy/Cô xem xét mở lại hạn">
+                                                        <span>🚨 Báo sự cố</span>
+                                                    </a>
+                                                <?php endif; ?>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+
+                                    <!-- DÒNG PHỤ: FORM NỘP BÀI TẬP (MỞ RA KHI BẤM NỘP BÀI) -->
+                                    <?php if (!$isOverdue): ?>
+                                    <tr id="submit-form-row-<?= $lessonId ?>" class="hidden bg-indigo-50/50 border-y border-indigo-100">
+                                        <td colspan="7" class="p-4 md:p-5">
+                                            <div class="bg-white border border-indigo-200 rounded-2xl p-4 shadow-sm space-y-3 max-w-4xl mx-auto">
+                                                <div class="flex items-center justify-between text-xs font-bold text-slate-800 border-b border-slate-100 pb-2.5">
+                                                    <span class="flex items-center gap-1.5 text-indigo-700 font-black">
+                                                        <span>📤</span> ĐÍNH KÈM TỆP BÀI TẬP - BUỔI <?= (int)$item['lesson_number'] ?>: <?= htmlspecialchars($item['title']) ?>
+                                                    </span>
+                                                    <button type="button" onclick="toggleSubmitFormRow(<?= $lessonId ?>)" class="text-slate-400 hover:text-slate-600 font-bold px-2 py-0.5 rounded cursor-pointer">
+                                                        Đóng ✕
+                                                    </button>
+                                                </div>
+
+                                                <form method="POST" action="<?= $appBase ?>student/courses/submit" enctype="multipart/form-data" class="space-y-3 text-xs" onsubmit="return handleFormSubmit(event, this, <?= $lessonId ?>);">
                                                     <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrfToken) ?>">
                                                     <input type="hidden" name="course_id" value="<?= (int)$selectedCourseId ?>">
                                                     <input type="hidden" name="lesson_id" value="<?= $lessonId ?>">
-                                                    <input type="hidden" name="submission_id" value="<?= (int)$item['submission_id'] ?>">
-                                                    <button type="submit" class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold rounded-xl text-xs transition cursor-pointer">
-                                                        ✕ Hủy nộp
-                                                    </button>
+
+                                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                        <!-- CHỌN TỆP ĐÍNH KÈM -->
+                                                        <div class="space-y-1">
+                                                            <label class="block font-bold text-slate-700">
+                                                                Chọn tệp bài tập đính kèm <span class="text-rose-500">*</span>:
+                                                            </label>
+                                                            <input type="file" name="assignment_file" required accept=".zip,.rar,.7z,.pdf,.docx,.doc,.png,.jpg,.jpeg,.sql,.txt,.php" class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 bg-white border border-slate-300 rounded-xl cursor-pointer">
+                                                            <p class="text-[10.5px] text-slate-400">Hỗ trợ: .zip, .rar, .pdf, .docx, .sql, .png (Tối đa 25MB)</p>
+                                                        </div>
+
+                                                        <!-- GHI CHÚ BÀI NỘP -->
+                                                        <div class="space-y-1">
+                                                            <label class="block font-bold text-slate-700">
+                                                                Ghi chú bài nộp / Link GitHub (nếu có):
+                                                            </label>
+                                                            <input type="text" name="notes" placeholder="VD: https://github.com/... hoặc Đã hoàn thiện xong chức năng" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="flex items-center justify-end gap-2 pt-1 border-t border-slate-100">
+                                                        <button type="button" onclick="toggleSubmitFormRow(<?= $lessonId ?>)" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition cursor-pointer">
+                                                            Hủy bỏ
+                                                        </button>
+                                                        <button type="submit" class="submit-btn px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 cursor-pointer">
+                                                            <span class="btn-icon">📎</span>
+                                                            <span class="btn-text"><?= $isSubmitted ? 'Xác Nhận Cập Nhật Tệp' : 'Xác Nhận Nộp Bài' ?></span>
+                                                        </button>
+                                                    </div>
                                                 </form>
-                                                <?php endif; ?>
                                             </div>
-                                        </div>
-
-                                        <!-- KHỐI ĐIỂM SỐ & NHẬN XÉT CỦA GIẢNG VIÊN (THANG ĐIỂM 10) -->
-                                        <?php if ($item['score'] !== null): ?>
-                                            <div class="mt-3 bg-gradient-to-r from-amber-50/80 via-white to-amber-50/50 border border-amber-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-2xs">
-                                                <div class="flex items-start gap-3">
-                                                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-sm">
-                                                        🎯
-                                                    </div>
-                                                    <div>
-                                                        <div class="flex items-center gap-2 flex-wrap">
-                                                            <span class="text-xs font-black text-slate-800">ĐÁNH GIÁ CỦA GIẢNG VIÊN:</span>
-                                                            <span class="px-3 py-1 rounded-full text-xs font-black bg-amber-400 text-slate-900 shadow-2xs">
-                                                                🎯 Điểm số: <?= number_format((float)$item['score'], 1) ?> / 10.0
-                                                            </span>
-                                                            <?php if (!empty($item['graded_at'])): ?>
-                                                                <span class="text-[11px] text-slate-400 font-medium">
-                                                                    (Chấm lúc: <?= date('d/m/Y H:i', strtotime($item['graded_at'])) ?>)
-                                                                </span>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                        <div class="mt-1 text-xs text-slate-700 bg-white/80 p-2.5 rounded-xl border border-amber-200/60 leading-relaxed font-medium">
-                                                            💬 <strong>Nhận xét:</strong> <?= htmlspecialchars($item['feedback'] ?: 'Đã hoàn thành bài tập.') ?>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div class="shrink-0 text-right">
-                                                    <span class="px-3 py-1 bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-full text-[11px] font-bold">
-                                                        ✅ Đã Được Chấm Điểm
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="mt-3 bg-slate-50 border border-slate-200/80 rounded-2xl p-3 flex items-center justify-between gap-2 text-xs text-slate-500">
-                                                <div class="flex items-center gap-2">
-                                                    <span>⏳</span>
-                                                    <span>Trạng thái đánh giá: <strong class="text-slate-700">Đang chờ Giảng viên chấm điểm & nhận xét</strong></span>
-                                                </div>
-                                                <span class="text-[11px] text-slate-400 font-mono">Thang điểm 10.0</span>
-                                            </div>
-                                        <?php endif; ?>
-                                    <?php else: ?>
-                                        <!-- NẾU CHƯA ĐÍNH KÈM BÀI TẬP -->
-                                        <?php if ($isOverdue): ?>
-                                            <!-- NẾU ĐÃ QUÁ HẠN -->
-                                            <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                                <div class="flex items-center gap-3 text-xs">
-                                                    <div class="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center text-lg shrink-0">
-                                                        ⛔
-                                                    </div>
-                                                    <div>
-                                                        <div class="font-bold text-rose-950">
-                                                            ĐÃ HẾT HẠN NỘP BÀI (HẠN CHÓT: <?= htmlspecialchars($item['deadline_formatted'] ?? '') ?>)
-                                                        </div>
-                                                        <div class="text-[11.5px] text-rose-800">
-                                                            Hệ thống đã khóa tiếp nhận bài nộp tự động. Nếu bạn gặp sự cố kỹ thuật (lỗi mạng, hệ thống LMS, sự cố máy tính...), vui lòng gửi phiếu báo lỗi để KTV xác thực và Thầy/Cô xem xét mở lại Deadline!
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <a href="<?= $appBase ?>tickets/create?course_id=<?= (int)$selectedCourseId ?>&lesson_id=<?= $lessonId ?>&category_id=4" 
-                                                   class="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5 shrink-0">
-                                                    <span>🚨</span> Báo Lỗi Để Thầy/Cô Xem Xét Gia Hạn
-                                                </a>
-                                            </div>
-                                        <?php else: ?>
-                                            <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
-                                                <div class="flex items-center gap-3 text-xs">
-                                                    <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-lg shrink-0">
-                                                        ⏳
-                                                    </div>
-                                                    <div>
-                                                        <div class="font-bold text-amber-950">
-                                                            Chưa đính kèm bài tập cho buổi học này!
-                                                        </div>
-                                                        <div class="text-[11.5px] text-amber-800">
-                                                            Mỗi buổi cần đính kèm tệp bài tập (zip, rar, pdf, docx, mã nguồn) mới được tính là hoàn thành buổi học.
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <button type="button" onclick="toggleSubmitForm(<?= $lessonId ?>)" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
-                                                    <span>📎</span> Đính Kèm Bài Tập Ngay
-                                                </button>
-                                            </div>
-                                        <?php endif; ?>
+                                        </td>
+                                    </tr>
                                     <?php endif; ?>
 
-                                    <!-- FORM UPLOAD ĐÍNH KÈM BÀI TẬP (CHỈ HIỂN THỊ KHI CÒN HẠN) -->
-                                    <?php if (!$isOverdue): ?>
-                                    <div id="submit-form-<?= $lessonId ?>" class="<?= $isSubmitted ? 'hidden' : 'block' ?> mt-4 bg-slate-50 border border-indigo-100 rounded-2xl p-4 space-y-3">
-                                        <div class="flex items-center justify-between text-xs font-bold text-slate-800 border-b border-slate-200 pb-2">
-                                            <span class="flex items-center gap-1.5">
-                                                <span>📤</span> Nộp đính kèm bài tập Buổi <?= (int)$item['lesson_number'] ?>
-                                            </span>
-                                            <?php if ($isSubmitted): ?>
-                                                <button type="button" onclick="toggleSubmitForm(<?= $lessonId ?>)" class="text-slate-400 hover:text-slate-600 cursor-pointer">Đóng ✕</button>
-                                            <?php endif; ?>
-                                        </div>
-
-                                        <form method="POST" action="<?= $appBase ?>student/courses/submit" enctype="multipart/form-data" class="space-y-3 text-xs" onsubmit="return handleFormSubmit(event, this, <?= $lessonId ?>);">
-                                            <input type="hidden" name="csrf" value="<?= htmlspecialchars($csrfToken) ?>">
-                                            <input type="hidden" name="course_id" value="<?= (int)$selectedCourseId ?>">
-                                            <input type="hidden" name="lesson_id" value="<?= $lessonId ?>">
-
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                <!-- CHỌN TỆP ĐÍNH KÈM -->
-                                                <div class="space-y-1">
-                                                    <label class="block font-bold text-slate-700">
-                                                        Chọn tệp bài tập đính kèm <span class="text-rose-500">*</span>:
-                                                    </label>
-                                                    <input type="file" name="assignment_file" required accept=".zip,.rar,.7z,.pdf,.docx,.doc,.png,.jpg,.jpeg,.sql,.txt,.php" class="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-3.5 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 bg-white border border-slate-300 rounded-xl cursor-pointer">
-                                                    <p class="text-[10.5px] text-slate-400">Hỗ trợ: .zip, .rar, .pdf, .docx, .sql, .png (Tối đa 25MB)</p>
-                                                </div>
-
-                                                <!-- GHI CHÚ BÀI NỘP -->
-                                                <div class="space-y-1">
-                                                    <label class="block font-bold text-slate-700">
-                                                        Ghi chú bài nộp / Đường dẫn GitHub (nếu có):
-                                                    </label>
-                                                    <input type="text" name="notes" placeholder="VD: https://github.com/... hoặc Đã hoàn thiện chức năng CRUD" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-xs">
-                                                </div>
-                                            </div>
-
-                                            <div class="flex items-center justify-end gap-2 pt-1">
-                                                <button type="submit" class="submit-btn px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 cursor-pointer">
-                                                    <span class="btn-icon">📎</span>
-                                                    <span class="btn-text"><?= $isSubmitted ? 'Cập Nhật Tệp Bài Tập' : 'Xác Nhận Nộp & Hoàn Thành Buổi Học' ?></span>
-                                                </button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                    <?php endif; ?>
-
-                                </div>
-
-                            </div>
-
-                        </article>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </div>
 
         </section>
     <?php endif; ?>
@@ -560,17 +506,24 @@ $isAllDone = ($totalLessons > 0 && $completedLessons === $totalLessons);
 </main>
 
 <script>
-// Toggle hiển thị form nộp bài
-function toggleSubmitForm(lessonId) {
-    const el = document.getElementById('submit-form-' + lessonId);
-    if (el) {
-        el.classList.toggle('hidden');
+// Đảm bảo bảng luôn mở khi bấm vào thẻ học phần phía trên
+function ensureLessonsTableVisible() {
+    const tableBody = document.getElementById('student_lessons_table_body');
+    if (tableBody && tableBody.classList.contains('hidden')) {
+        toggleTableCollapse('student_lessons_table_body');
     }
 }
 
-// Bộ lọc các buổi học
-function filterLessons(type) {
-    // Cập nhật giao diện nút bấm
+// Mở/đóng dòng form nộp bài tập ngay dưới buổi học
+function toggleSubmitFormRow(lessonId) {
+    const row = document.getElementById('submit-form-row-' + lessonId);
+    if (row) {
+        row.classList.toggle('hidden');
+    }
+}
+
+// Bộ lọc các buổi học trong bảng
+function filterLessonsTable(type) {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         if (btn.getAttribute('data-filter') === type) {
             btn.className = 'filter-btn px-3 py-1.5 rounded-xl font-bold bg-indigo-600 text-white transition shadow-sm';
@@ -579,13 +532,18 @@ function filterLessons(type) {
         }
     });
 
-    // Ẩn/hiện card
-    document.querySelectorAll('.lesson-card').forEach(card => {
-        const status = card.getAttribute('data-status');
+    document.querySelectorAll('.lesson-row').forEach(row => {
+        const status = row.getAttribute('data-status');
+        const lessonId = row.id.replace('lesson-row-', '');
+        const formRow = document.getElementById('submit-form-row-' + lessonId);
+
         if (type === 'all' || status === type) {
-            card.style.display = 'block';
+            row.style.display = '';
         } else {
-            card.style.display = 'none';
+            row.style.display = 'none';
+            if (formRow) {
+                formRow.classList.add('hidden');
+            }
         }
     });
 }
@@ -603,7 +561,6 @@ function handleFormSubmit(event, form, lessonId) {
     const btnText = form.querySelector('.btn-text');
     const btnIcon = form.querySelector('.btn-icon');
 
-    // Chuyển nút sang trạng thái đang tải (Loading state)
     if (submitBtn) {
         submitBtn.disabled = true;
         if (btnIcon) btnIcon.textContent = '⏳';
