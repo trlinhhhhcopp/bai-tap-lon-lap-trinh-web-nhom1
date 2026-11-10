@@ -24,6 +24,10 @@ $flash = $flash ?? get_flash();
         body {
             font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
+        input[type="password"]::-ms-reveal,
+        input[type="password"]::-ms-clear {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex flex-col justify-between">
@@ -111,9 +115,9 @@ $flash = $flash ?? get_flash();
                         <div class="relative">
                             <input id="login-password" type="password" name="password" required autocomplete="current-password" placeholder="Nhập mật khẩu của bạn"
                                    class="w-full px-4 pr-12 py-3 text-slate-900 placeholder:text-slate-500 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition text-base md:text-sm font-semibold" />
-                            <button type="button" aria-controls="login-password" aria-label="Hiện mật khẩu" data-password-toggle class="absolute inset-y-0 right-0 px-3.5 text-slate-500 hover:text-slate-700 focus:outline-none hidden">
-                                <span data-password-show-icon>👁️</span>
-                                <span data-password-hide-icon class="hidden">🙈</span>
+                            <button type="button" onclick="toggleLoginPassword(this)" aria-controls="login-password" aria-label="Hiện mật khẩu" title="Hiện mật khẩu"
+                                    class="absolute inset-y-0 right-0 px-3.5 flex items-center justify-center text-slate-500 hover:text-slate-800 focus:outline-none cursor-pointer z-10 text-lg transition">
+                                <span id="pwd-icon">👁️</span>
                             </button>
                         </div>
                     </div>
@@ -125,8 +129,8 @@ $flash = $flash ?? get_flash();
                 </form>
 
                 <!-- 1-Click Quick Login cho các tài khoản mẫu -->
-                <details class="group bg-slate-50 rounded-2xl border border-slate-200/90 text-xs">
-                    <summary class="p-3.5 font-bold text-slate-700 cursor-pointer list-none flex items-center justify-between select-none">
+                <details open class="group bg-slate-50 rounded-2xl border border-slate-200/90 text-xs">
+                    <summary class="p-3.5 font-bold text-slate-700 cursor-pointer list-none flex items-center justify-between select-none hover:bg-slate-100/70 transition rounded-2xl">
                         <span class="flex items-center gap-2">
                             <span>⚡</span> Đăng Nhập Nhanh 1-Click (Tài khoản mẫu đồ án)
                         </span>
@@ -217,6 +221,18 @@ $flash = $flash ?? get_flash();
     <?php require __DIR__ . '/../../includes/footer.php'; ?>
 
     <script>
+        function toggleLoginPassword(btn) {
+            const input = document.getElementById('login-password');
+            if (!input) return;
+            const isPwd = input.type === 'password';
+            input.type = isPwd ? 'text' : 'password';
+            const icon = document.getElementById('pwd-icon') || btn;
+            icon.textContent = isPwd ? '🙈' : '👁️';
+            btn.setAttribute('aria-label', isPwd ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+            btn.setAttribute('title', isPwd ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+            input.focus();
+        }
+
         document.querySelectorAll('[data-password-toggle]').forEach(function (button) {
             button.classList.remove('hidden');
             button.classList.add('flex', 'items-center', 'justify-center');
@@ -233,8 +249,10 @@ $flash = $flash ?? get_flash();
             input.type = isVisible ? 'password' : 'text';
             button.setAttribute('aria-pressed', String(!isVisible));
             button.setAttribute('aria-label', isVisible ? 'Hiện mật khẩu' : 'Ẩn mật khẩu');
-            button.querySelector('[data-password-show-icon]').classList.toggle('hidden', !isVisible);
-            button.querySelector('[data-password-hide-icon]').classList.toggle('hidden', isVisible);
+            const showIcon = button.querySelector('[data-password-show-icon]');
+            const hideIcon = button.querySelector('[data-password-hide-icon]');
+            if (showIcon) showIcon.classList.toggle('hidden', !isVisible);
+            if (hideIcon) hideIcon.classList.toggle('hidden', isVisible);
         });
 
         document.querySelectorAll('[data-auto-dismiss]').forEach(function (message) {
