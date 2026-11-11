@@ -583,6 +583,42 @@ class CourseLesson
     }
 
     /**
+     * Giảng viên xóa một buổi học / bài tập đã giao (khi giao sai hoặc gỡ bỏ)
+     * Ràng buộc CSDL: student_assignment_submissions có ON DELETE CASCADE nên các bài nộp sẽ tự động được xóa.
+     */
+    public function deleteLesson(int $lessonId): bool
+    {
+        // 1. Lấy thông tin bài học để xóa file tài liệu đính kèm đề bài nếu có
+        $lesson = $this->getLessonById($lessonId);
+        if ($lesson && !empty($lesson['attachment_path'])) {
+            $filePath = __DIR__ . '/../../' . ltrim($lesson['attachment_path'], '/\\');
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
+        // 2. Xóa các tệp bài làm sinh viên đã nộp trên máy chủ nếu có
+        $subStmt = $this->pdo->prepare("SELECT file_path FROM student_assignment_submissions WHERE lesson_id = :lid");
+        $subStmt->execute([':lid' => $lessonId]);
+        $subFiles = $subStmt->fetchAll(PDO::FETCH_COLUMN);
+        foreach ($subFiles as $fPath) {
+            if (!empty($fPath)) {
+                $fFullPath = __DIR__ . '/../../' . ltrim($fPath, '/\\');
+                if (file_exists($fFullPath)) {
+                    @unlink($fFullPath);
+                }
+            }
+        }
+
+        // 3. Đưa lesson_id trong bảng tickets về NULL nếu có vé cứu hộ gắn với buổi học này
+        $this->pdo->prepare("UPDATE tickets SET lesson_id = NULL WHERE lesson_id = :lid")->execute([':lid' => $lessonId]);
+
+        // 4. Xóa record trong course_lessons
+        $stmt = $this->pdo->prepare("DELETE FROM course_lessons WHERE id = :id");
+        return $stmt->execute([':id' => $lessonId]);
+    }
+
+    /**
      * Giảng viên tạo thêm buổi học / bài tập mới cho môn học
      */
     public function createLesson(int $courseId, int $lessonNumber, string $title, string $description, string $requirement, string $deadlineAt, ?string $attachmentPath = null, ?string $attachmentName = null): int

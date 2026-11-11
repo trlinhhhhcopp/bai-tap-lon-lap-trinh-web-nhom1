@@ -130,16 +130,28 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-2 shrink-0 self-start sm:self-center">
+                                <div class="flex items-center gap-2 shrink-0 self-start sm:self-center flex-wrap">
                                     <button type="button" 
                                             onclick='openEditLessonModal(<?php echo json_encode($item, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>)' 
-                                            class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm">
+                                            class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm cursor-pointer">
                                         <span>✏️</span> Giao Đề & Đổi Hạn
                                     </button>
                                     <a href="lessons.php?ca_id=<?php echo $selectedCaId; ?>&view_lesson_id=<?php echo $item['id']; ?>" 
                                        class="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs">
                                         <span>👥</span> Xem Bài Nộp (<?php echo (int)$item['submission_count']; ?>)
                                     </a>
+                                    <form method="POST" action="lessons.php" class="inline m-0" onsubmit="return confirmDeleteLesson(<?= (int)$item['lesson_number'] ?>, <?= htmlspecialchars(json_encode($item['title']), ENT_QUOTES, 'UTF-8') ?>, <?= (int)$item['submission_count'] ?>);">
+                                        <input type="hidden" name="action" value="delete" />
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
+                                        <input type="hidden" name="lesson_id" value="<?php echo (int)$item['id']; ?>" />
+                                        <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
+                                        <input type="hidden" name="ca_id" value="<?php echo (int)$selectedCaId; ?>" />
+                                        <button type="submit" 
+                                                title="Xóa bài tập buổi học này khi giao sai" 
+                                                class="px-3 py-1.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                                            <span>🗑️</span> Xóa Bài Tập
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
 
@@ -200,7 +212,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                 Hạn chót nộp bài: <strong class="text-rose-600 font-mono"><?php echo htmlspecialchars($activeLesson['deadline_at']); ?></strong> · Yêu cầu: <span class="text-slate-700 font-medium"><?php echo htmlspecialchars($activeLesson['assignment_requirement'] ?: 'Chưa cập nhật đề bài'); ?></span>
                             </p>
                         </div>
-                        <div class="flex items-center gap-2">
+                        <div class="flex items-center gap-2 flex-wrap">
                             <button type="button" data-target-table="lecturer_submissions_table_body" onclick="toggleTableCollapse('lecturer_submissions_table_body', this)" title="Ẩn hoặc hiện bảng nộp bài" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl text-xs transition flex items-center gap-1 border border-slate-200 cursor-pointer">
                                 <span class="toggle-table-icon">✕</span>
                                 <span class="toggle-table-text">Ẩn bảng</span>
@@ -209,6 +221,18 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                                class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-xs transition shadow-sm flex items-center gap-1.5 cursor-pointer">
                                 <span>✕</span> Đóng Danh Sách / Quay Lại Các Buổi Học
                             </a>
+                            <form method="POST" action="lessons.php" class="inline m-0" onsubmit="return confirmDeleteLesson(<?= (int)$activeLesson['lesson_number'] ?>, <?= htmlspecialchars(json_encode($activeLesson['title']), ENT_QUOTES, 'UTF-8') ?>, <?= count($lessonSubmissions) ?>);">
+                                <input type="hidden" name="action" value="delete" />
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
+                                <input type="hidden" name="lesson_id" value="<?php echo (int)$activeLesson['id']; ?>" />
+                                <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
+                                <input type="hidden" name="ca_id" value="<?php echo (int)$selectedCaId; ?>" />
+                                <button type="submit" 
+                                        title="Xóa bài tập buổi học này khi giao sai" 
+                                        class="px-4 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-2xl text-xs transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                                    <span>🗑️</span> Xóa Bài Tập Này
+                                </button>
+                            </form>
                         </div>
                     </div>
 
@@ -352,7 +376,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 <button type="button" onclick="closeEditLessonModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold text-sm">✕</button>
             </div>
 
-            <form method="POST" action="lessons.php" enctype="multipart/form-data" class="space-y-4 text-xs">
+            <form method="POST" action="lessons.php" enctype="multipart/form-data" class="space-y-4 text-xs" id="editLessonForm" onsubmit="return checkLessonFormDeadline(this);">
                 <input type="hidden" name="action" value="update" />
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
                 <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
@@ -384,21 +408,35 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">
-                        Thời Hạn Nộp Bài Tập (Deadline): <span class="text-rose-500">*</span>
-                    </label>
-                    <input type="datetime-local" name="deadline_at" id="formLessonDeadline" required min="<?php echo date('Y-m-d\TH:i'); ?>" 
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700">
+                            Thời Hạn Nộp Bài Tập (Deadline): <span class="text-rose-500">*</span>
+                        </label>
+                        <span class="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                            ⚠️ Yêu cầu: Ngày ≥ hôm nay (<?php echo date('d/m/Y'); ?>)
+                        </span>
+                    </div>
+                    <input type="datetime-local" name="deadline_at" id="formLessonDeadline" required 
+                           min="<?php echo date('Y-m-d\TH:i'); ?>" 
+                           onchange="validateDeadlineInput(this)"
                            class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 font-mono font-bold text-slate-800" />
-                    <span class="text-[11px] text-slate-400 mt-1 block">Sinh viên nộp sau thời điểm này sẽ bị hệ thống gắn nhãn ⚠️ Nộp muộn.</span>
+                    <span class="text-[11px] text-amber-700 mt-1 block">
+                        ⚠️ <strong>Lưu ý:</strong> Hạn chót nộp bài phải từ ngày hôm nay trở đi (≥ <?php echo date('d/m/Y'); ?>). Sinh viên nộp sau thời điểm này sẽ bị hệ thống gắn nhãn ⚠️ Nộp muộn.
+                    </span>
                 </div>
 
-                <div class="pt-2 flex items-center justify-end gap-2">
-                    <button type="button" onclick="closeEditLessonModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
-                        Hủy
+                <div class="pt-2 flex items-center justify-between gap-2">
+                    <button type="button" onclick="deleteFromEditModal()" class="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 font-bold rounded-xl transition flex items-center gap-1.5 text-xs cursor-pointer" title="Xóa bài tập buổi học này khi giao sai">
+                        <span>🗑️</span> Xóa Bài Tập Này
                     </button>
-                    <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-200">
-                        💾 Lưu & Ban Hành Đề Bài
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="closeEditLessonModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
+                            Hủy
+                        </button>
+                        <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition shadow-md shadow-indigo-200">
+                            💾 Lưu & Ban Hành Đề Bài
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -476,9 +514,12 @@ $csrfToken = $_SESSION['csrf'] ?? '';
         </div>
     </div>
 
-    <!-- SCRIPT ĐIỀU KHIỂN MODAL -->
+    <!-- SCRIPT ĐIỀU KHIỂN MODAL & NGHIỆP VỤ GIẢNG VIÊN -->
     <script>
+        let currentEditingLesson = null;
+
         function openEditLessonModal(lesson) {
+            currentEditingLesson = lesson;
             document.getElementById('modalLessonTitle').innerText = 'Giao Bài Tập - Buổi ' + lesson.lesson_number;
             document.getElementById('formLessonId').value = lesson.id;
             document.getElementById('formLessonTitle').value = lesson.title;
@@ -488,10 +529,79 @@ $csrfToken = $_SESSION['csrf'] ?? '';
         }
 
         function closeEditLessonModal() {
+            currentEditingLesson = null;
             document.getElementById('editLessonModal').classList.add('hidden');
         }
 
-        
+        function deleteFromEditModal() {
+            const lessonId = parseInt(document.getElementById('formLessonId').value, 10);
+            if (!lessonId) return;
+            const lessonNum = currentEditingLesson ? currentEditingLesson.lesson_number : '';
+            const lessonTitle = currentEditingLesson ? currentEditingLesson.title : '';
+            const subCount = currentEditingLesson ? parseInt(currentEditingLesson.submission_count || 0, 10) : 0;
+
+            if (confirmDeleteLesson(lessonNum, lessonTitle, subCount)) {
+                // Tạo form ẩn gửi action delete
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'lessons.php';
+                form.innerHTML = `
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>">
+                    <input type="hidden" name="lesson_id" value="${lessonId}">
+                    <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>">
+                    <input type="hidden" name="ca_id" value="<?php echo (int)$selectedCaId; ?>">
+                `;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
+        function confirmDeleteLesson(lessonNumber, lessonTitle, submissionCount) {
+            let msg = `Bạn có chắc chắn muốn xóa bài tập Buổi ${lessonNumber}: "${lessonTitle}" không?\n\n(Chức năng này dùng khi Giảng viên giao nhầm / giao sai đề bài).`;
+            if (submissionCount > 0) {
+                msg = `⚠️ CẢNH BÁO NGUY HIỂM:\nBuổi ${lessonNumber} hiện đã có ${submissionCount} bài nộp của sinh viên!\n\nNếu bạn xóa bài tập này do giao sai, toàn bộ bài nộp và điểm số liên quan của sinh viên sẽ bị gỡ bỏ vĩnh viễn.\n\nBạn có chắc chắn vẫn muốn xóa bài tập này không?`;
+            }
+            return confirm(msg);
+        }
+
+        function validateDeadlineInput(input) {
+            if (!input || !input.value) return true;
+            const selectedDate = new Date(input.value);
+            const now = new Date();
+            // Lấy mốc 00:00:00 ngày hôm nay để so sánh ngày >= hôm nay
+            const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+
+            if (selectedDate < todayMidnight) {
+                const todayStr = String(now.getDate()).padStart(2, '0') + '/' + 
+                                 String(now.getMonth() + 1).padStart(2, '0') + '/' + 
+                                 now.getFullYear();
+                alert(`⚠️ CẢNH BÁO: Hạn chót nộp bài (Deadline) không được chọn ngày trong quá khứ!\n\nQuy định học vụ: Thời hạn nộp bài phải từ ngày hôm nay trở đi (Ngày >= ${todayStr}).\n\nVui lòng chọn lại ngày kết thúc bài tập hợp lệ!`);
+                input.value = '';
+                input.focus();
+                return false;
+            }
+            return true;
+        }
+
+        function checkLessonFormDeadline(form) {
+            const deadlineInput = form.querySelector('input[name="deadline_at"]');
+            if (deadlineInput && deadlineInput.value) {
+                const selectedDate = new Date(deadlineInput.value);
+                const now = new Date();
+                const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+                if (selectedDate < todayMidnight) {
+                    const todayStr = String(now.getDate()).padStart(2, '0') + '/' + 
+                                     String(now.getMonth() + 1).padStart(2, '0') + '/' + 
+                                     now.getFullYear();
+                    alert(`⚠️ CẢNH BÁO: Thời hạn nộp bài (Deadline) phải từ ngày hôm nay trở đi (Ngày >= ${todayStr})!\n\nVui lòng điều chỉnh lại hạn nộp trước khi lưu đề bài.`);
+                    deadlineInput.focus();
+                    return false;
+                }
+            }
+            return true;
+        }
+
         function openGradeModal(sub) {
             document.getElementById('formSubmissionId').value = sub.id;
             document.getElementById('gradeStudentName').innerText = sub.student_name || '—';
@@ -526,7 +636,7 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 <button type="button" onclick="closeCreateLessonModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 flex items-center justify-center font-bold text-sm">✕</button>
             </div>
 
-            <form method="POST" action="lessons.php" enctype="multipart/form-data" class="space-y-4 text-xs">
+            <form method="POST" action="lessons.php" enctype="multipart/form-data" class="space-y-4 text-xs" id="createLessonForm" onsubmit="return checkLessonFormDeadline(this);">
                 <input type="hidden" name="action" value="create" />
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken); ?>" />
                 <input type="hidden" name="course_id" value="<?php echo (int)$selectedCourseId; ?>" />
@@ -566,10 +676,23 @@ $csrfToken = $_SESSION['csrf'] ?? '';
                 </div>
 
                 <div>
-                    <label class="block font-bold text-slate-700 mb-1">
-                        Hạn Chót Nộp Bài (Deadline): <span class="text-rose-500">*</span>
-                    </label>
-                    <input type="datetime-local" name="deadline_at" required class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-mono font-bold text-slate-800" />
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="block font-bold text-slate-700">
+                            Hạn Chót Nộp Bài (Deadline): <span class="text-rose-500">*</span>
+                        </label>
+                        <span class="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                            ⚠️ Yêu cầu: Ngày ≥ hôm nay (<?php echo date('d/m/Y'); ?>)
+                        </span>
+                    </div>
+                    <input type="datetime-local" name="deadline_at" id="createLessonDeadline" required 
+                           min="<?php echo date('Y-m-d\TH:i'); ?>" 
+                           value="<?php echo date('Y-m-d\T23:59', strtotime('+7 days')); ?>" 
+                           onchange="validateDeadlineInput(this)"
+                           class="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-emerald-500 font-mono font-bold text-slate-800" />
+                    <span class="text-[11px] text-amber-700 mt-1 block">
+                        ⚠️ <strong>Lưu ý:</strong> Hạn chót nộp bài phải từ ngày hôm nay trở đi (≥ <?php echo date('d/m/Y'); ?>). Mặc định gợi ý: 23:59 sau 7 ngày.
+                    </span>
+                </div>
                 </div>
 
                 <div class="pt-2 flex items-center justify-end gap-2">

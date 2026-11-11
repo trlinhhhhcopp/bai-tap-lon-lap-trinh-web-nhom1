@@ -47,7 +47,7 @@ class LecturerLessonController
 
     private function verifyCsrf(): void
     {
-        $postToken = $_POST['csrf_token'] ?? '';
+        $postToken = $_POST['csrf_token'] ?? $_GET['csrf_token'] ?? '';
         $sessionToken = $_SESSION['csrf'] ?? '';
         if (empty($postToken) || empty($sessionToken) || !hash_equals($sessionToken, $postToken)) {
             set_flash('error', 'Phiên làm việc đã hết hạn hoặc mã xác thực bảo mật CSRF không hợp lệ!');
@@ -160,9 +160,18 @@ class LecturerLessonController
             $formattedDeadline .= ':00';
         }
 
-        // Kiểm tra thời hạn nộp bài phải lớn hơn thời điểm hiện tại (> hôm nay)
-        if (strtotime($formattedDeadline) <= time()) {
-            set_flash('error', 'Thời hạn nộp bài (Deadline) phải lớn hơn thời điểm hiện tại (hôm nay)!');
+        $deadlineTs = strtotime($formattedDeadline);
+        $todayMidnight = strtotime(date('Y-m-d 00:00:00'));
+
+        // Kiểm tra thời hạn nộp bài phải từ ngày hôm nay trở đi (>= hôm nay)
+        if ($deadlineTs === false || $deadlineTs < $todayMidnight) {
+            set_flash('error', '⚠️ Cảnh báo: Thời hạn nộp bài (Deadline) phải từ ngày hôm nay trở đi (ngày >= ' . date('d/m/Y') . ')!');
+            header("Location: {$redirectUrl}");
+            exit;
+        }
+
+        if ($deadlineTs <= time()) {
+            set_flash('error', '⚠️ Cảnh báo: Giờ nộp bài (Deadline) phải lớn hơn thời điểm hiện tại!');
             header("Location: {$redirectUrl}");
             exit;
         }
@@ -326,6 +335,22 @@ class LecturerLessonController
             $formattedDeadline .= ':00';
         }
 
+        $deadlineTs = strtotime($formattedDeadline);
+        $todayMidnight = strtotime(date('Y-m-d 00:00:00'));
+
+        // Kiểm tra thời hạn nộp bài phải từ ngày hôm nay trở đi (>= hôm nay)
+        if ($deadlineTs === false || $deadlineTs < $todayMidnight) {
+            set_flash('error', '⚠️ Cảnh báo: Thời hạn nộp bài (Deadline) phải từ ngày hôm nay trở đi (ngày >= ' . date('d/m/Y') . ')!');
+            header("Location: {$redirectUrl}");
+            exit;
+        }
+
+        if ($deadlineTs <= time()) {
+            set_flash('error', '⚠️ Cảnh báo: Giờ nộp bài (Deadline) phải lớn hơn thời điểm hiện tại!');
+            header("Location: {$redirectUrl}");
+            exit;
+        }
+
         // Xử lý tệp đính kèm đề bài nếu giáo viên upload
         $attachmentPath = null;
         $attachmentName = null;
@@ -452,6 +477,50 @@ class LecturerLessonController
             'status' => 'success',
             'data' => array_merge($sub, ['file_info' => $fileInfo])
         ]);
+        exit;
+    }
+
+    /**
+     * Giảng viên xóa bài tập / buổi học khi giao sai hoặc muốn gỡ bỏ đề bài
+     */
+    public function delete(): void
+    {
+        $currentUser = $this->requireLecturer();
+        $this->verifyCsrf();
+
+        $lessonId = (int)($_POST['lesson_id'] ?? ($_GET['lesson_id'] ?? 0));
+        $courseId = (int)($_POST['course_id'] ?? ($_GET['course_id'] ?? 0));
+        $caId     = (int)($_POST['ca_id'] ?? ($_GET['ca_id'] ?? 0));
+
+        $redirectUrl = "lessons.php?" . ($caId > 0 ? "ca_id={$caId}" : "course_id={$courseId}");
+
+        if ($lessonId <= 0) {
+            set_flash('error', 'ID bài tập cần xóa không hợp lệ!');
+            header("Location: {$redirectUrl}");
+            exit;
+        }
+
+        $lesson = $this->model->getLessonById($lessonId);
+        if (
+            !$lesson
+            || ($courseId > 0 && (int)$lesson['course_id'] !== $courseId)
+            || !$this->model->lecturerCanAccessLesson($lessonId, (int)$currentUser['id'], $this->isAdmin($currentUser))
+        ) {
+            http_response_code(403);
+            exit('Bạn không có quyền xóa bài tập buổi học này.');
+        }
+
+        $lessonNum = $lesson['lesson_number'];
+        $lessonTitle = $lesson['title'];
+
+        $success = $this->model->deleteLesson($lessonId);
+        if ($success) {
+            set_flash('success', "Đã xóa bài tập Buổi {$lessonNum}: \"{$lessonTitle}\" thành công!");
+        } else {
+            set_flash('error', 'Không thể xóa bài tập này, vui lòng thử lại!');
+        }
+
+        header("Location: {$redirectUrl}");
         exit;
     }
 }

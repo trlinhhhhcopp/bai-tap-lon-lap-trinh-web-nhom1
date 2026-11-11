@@ -8,6 +8,7 @@ $route = match ($action) {
     'update' => '/lecturer/lessons/update',
     'grade' => '/lecturer/lessons/grade',
     'preview' => '/lecturer/lessons/preview',
+    'delete' => '/lecturer/lessons/delete',
     default => '/lecturer/lessons',
 };
 

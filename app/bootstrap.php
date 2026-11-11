@@ -172,6 +172,8 @@ function bootstrapRouter(): Router {
     $router->post('/lecturer/lessons/update', [LecturerLessonController::class, 'update'], [AuthMiddleware::class]);
     $router->post('/lecturer/lessons/grade', [LecturerLessonController::class, 'grade'], [AuthMiddleware::class]);
     $router->get('/lecturer/lessons/preview', [LecturerLessonController::class, 'preview'], [AuthMiddleware::class]);
+    $router->post('/lecturer/lessons/delete', [LecturerLessonController::class, 'delete'], [AuthMiddleware::class]);
+    $router->get('/lecturer/lessons/delete', [LecturerLessonController::class, 'delete'], [AuthMiddleware::class]);
 
     return $router;
 }
