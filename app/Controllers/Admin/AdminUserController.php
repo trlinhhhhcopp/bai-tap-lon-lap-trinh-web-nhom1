@@ -68,18 +68,30 @@ class AdminUserController extends Controller {
                 $userType = 'staff';
             }
 
+            $rawClassId = $_POST['class_id'] ?? '';
+            $classId = null;
+            $isActive = 1;
+            if ($rawClassId === 'retired' || $rawClassId === 'resigned') {
+                $isActive = 0;
+            } elseif ($rawClassId === 'working' || $rawClassId === 'active') {
+                $isActive = 1;
+            } elseif (!empty($rawClassId) && is_numeric($rawClassId)) {
+                $classId = (int)$rawClassId;
+            }
+
             $newId = User::create([
                 'user_code'       => $_POST['user_code'] ?? '',
                 'name'            => $_POST['name'] ?? '',
                 'email'           => $_POST['email'] ?? '',
                 'role'            => $role,
                 'user_type'       => $userType,
-                'class_id'        => !empty($_POST['class_id']) ? (int)$_POST['class_id'] : null,
+                'class_id'        => $classId,
                 'department'      => $_POST['department'] ?? 'Khoa: Toán-CNTT',
                 'phone'           => $_POST['phone'] ?? '',
                 'password_hash'   => password_hash('123456', PASSWORD_BCRYPT),
                 'cohort'          => $_POST['cohort'] ?? 'D24',
                 'academic_status' => 'studying',
+                'is_active'       => $isActive,
             ]);
 
             $this->flash('success', "Thêm người dùng mới #{$newId} thành công! Mật khẩu khởi tạo: 123456.");
@@ -93,12 +105,24 @@ class AdminUserController extends Controller {
     public function update(): void {
         $id = (int)($_POST['id'] ?? 0);
         try {
+            $rawClassId = $_POST['class_id'] ?? '';
+            $classId = null;
+            if ($rawClassId === 'retired' || $rawClassId === 'resigned') {
+                $classId = null;
+                Database::getConnection()->prepare("UPDATE users SET is_active = 0, lock_reason = 'resigned' WHERE id = :id")->execute([':id' => $id]);
+            } elseif ($rawClassId === 'working' || $rawClassId === 'active') {
+                $classId = null;
+                Database::getConnection()->prepare("UPDATE users SET is_active = 1, lock_reason = 'none' WHERE id = :id")->execute([':id' => $id]);
+            } elseif (!empty($rawClassId) && is_numeric($rawClassId)) {
+                $classId = (int)$rawClassId;
+            }
+
             User::update($id, [
                 'name'       => $_POST['name'] ?? '',
                 'email'      => $_POST['email'] ?? '',
                 'phone'      => $_POST['phone'] ?? '',
                 'department' => $_POST['department'] ?? '',
-                'class_id'   => !empty($_POST['class_id']) ? (int)$_POST['class_id'] : null,
+                'class_id'   => $classId,
             ]);
 
             $this->flash('success', "Cập nhật thông tin tài khoản #{$id} thành công!");

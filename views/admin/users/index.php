@@ -9,30 +9,41 @@ $kw = $kw ?? '';
 <style>
     .admin-bar {
         background: #ffffff;
-        padding: 16px 20px;
+        padding: 12px 18px;
         border-radius: 16px;
         border: 1px solid #e2e8f0;
         margin-bottom: 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap;
-        gap: 14px;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 10px;
         box-shadow: 0 1px 3px rgba(0,0,0,0.03);
     }
     .search-box { 
-        display: flex; 
-        gap: 8px; 
-        flex: 1; 
-        max-width: 680px; 
-        flex-wrap: wrap;
+        display: inline-flex; 
+        gap: 6px; 
         align-items: center;
+        flex-wrap: nowrap;
+        flex-shrink: 0;
+    }
+    .search-box .form-control {
+        font-size: 12.5px;
+        padding: 6.5px 10px;
     }
     .filter-buttons {
-        display: flex;
+        display: inline-flex;
+        gap: 5px;
+        align-items: center;
+        flex-wrap: nowrap;
+        flex-shrink: 0;
+    }
+    .admin-actions {
+        display: inline-flex;
         gap: 6px;
         align-items: center;
-        flex-wrap: wrap;
+        flex-shrink: 0;
     }
     .table-container {
         background: #ffffff;
@@ -160,21 +171,20 @@ $kw = $kw ?? '';
         <h1 class="text-2xl font-black text-white tracking-normal">Quản Trị Tài Khoản & Phân Quyền</h1>
         <p class="text-xs text-indigo-200/80">Phân hệ Quản trị Người dùng toàn trường (Sinh viên, Giảng viên, Kỹ thuật viên) - Trường Đại học Thủ Đô Hà Nội</p>
     </div>
-    <div class="text-right text-xs bg-slate-800/80 border border-slate-700/80 px-4 py-3 rounded-2xl shrink-0 shadow-inner">
-        <span class="text-slate-400 block text-[11px]">Phụ trách lập trình:</span>
-        <strong class="text-sky-400 font-bold text-sm">Trần Thục Linh</strong>
-        <div class="text-[11.5px] text-slate-300 mt-0.5 font-mono">MSV: 224001729 (Toán Ứng Dụng D24)</div>
+    <div class="text-right text-xs bg-slate-800/80 border border-slate-700/80 px-4 py-2.5 rounded-2xl shrink-0 shadow-inner flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="text-slate-300 font-semibold text-xs">Tổng số: <strong class="text-white font-mono"><?= $totalUsers ?></strong> tài khoản</span>
     </div>
 </div>
 
-<!-- 2. CONTROL BAR: TÌM KIẾM, BỘ LỌC ĐỐI TƯỢNG (SV, GV, KTV), LỌC THEO LỚP & NÚT THÊM -->
+<!-- 2. CONTROL BAR: SẮP XẾP GỌN GÀNG TRÊN 1 DÒNG DUY NHẤT -->
 <div class="admin-bar">
     <form class="search-box" method="GET" action="<?= $appBase ?>admin/users">
         <!-- Ô nhập từ khóa tìm kiếm -->
-        <input type="text" name="kw" value="<?= htmlspecialchars($kw) ?>" placeholder="Tìm kiếm theo Mã định danh, Họ tên, Email..." class="form-control" style="flex: 1; min-width: 220px;">
+        <input type="text" name="kw" value="<?= htmlspecialchars($kw) ?>" placeholder="Mã định danh, Họ tên, Email..." class="form-control" style="width: 190px;">
 
         <!-- Dropdown lọc theo lớp sinh hoạt -->
-        <select name="class_id" class="form-control" style="max-width: 175px;" onchange="this.form.submit()">
+        <select name="class_id" class="form-control" style="width: 140px;" onchange="this.form.submit()">
             <option value="0">-- Lọc theo Lớp --</option>
             <?php foreach ($classes as $cl): ?>
                 <option value="<?= $cl['id'] ?>" <?= ($classId === (int)$cl['id']) ? 'selected' : '' ?>>
@@ -187,10 +197,10 @@ $kw = $kw ?? '';
             <input type="hidden" name="type" value="<?= htmlspecialchars($type) ?>">
         <?php endif; ?>
 
-        <button type="submit" class="btn btn-primary">🔍 Tìm kiếm</button>
+        <button type="submit" class="btn btn-primary" style="padding: 6px 11px;">🔍 Tìm kiếm</button>
 
         <?php if ($kw !== '' || $type !== '' || $classId > 0): ?>
-            <a href="<?= $appBase ?>admin/users" class="btn btn-outline" title="Xóa toàn bộ bộ lọc">✕ Xóa lọc</a>
+            <a href="<?= $appBase ?>admin/users" class="btn btn-outline" style="padding: 6px 10px;" title="Xóa toàn bộ bộ lọc">✕ Xóa lọc</a>
         <?php endif; ?>
     </form>
 
@@ -211,7 +221,7 @@ $kw = $kw ?? '';
     </nav>
 
     <!-- Nhóm Nút Thao tác: Ẩn/Hiện Bảng và Thêm người dùng mới -->
-    <div style="display: flex; gap: 8px;">
+    <div class="admin-actions">
         <button type="button" class="btn btn-outline" data-target-table="admin_users_table_body" onclick="toggleTableCollapse('admin_users_table_body', this)">
             <span class="toggle-table-icon">✕</span> <span class="toggle-table-text">Ẩn bảng</span>
         </button>
@@ -232,7 +242,7 @@ $kw = $kw ?? '';
                     <th>Họ và tên</th>
                     <th>Email trường</th>
                     <th>Vai trò</th>
-                    <th>Lớp sinh hoạt</th>
+                    <th>Lớp sinh hoạt / Công tác</th>
                     <th>Trạng thái</th>
                     <th style="text-align: center; width: 230px;">Thao tác</th>
                 </tr>
@@ -272,7 +282,23 @@ $kw = $kw ?? '';
                                     <span class="badge badge-student">Sinh viên</span>
                                 <?php endif; ?>
                             </td>
-                            <td><?= htmlspecialchars($u['class_name'] ?? 'Chưa xếp lớp') ?></td>
+                            <td>
+                                <?php if ($u['role'] === 'agent' || $u['user_type'] === 'lecturer' || $u['role'] === 'admin'): ?>
+                                    <?php if ($u['is_active'] == 1): ?>
+                                        <span class="badge" style="background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; font-weight: 700;">
+                                            💼 Đang công tác
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge" style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; font-weight: 700;">
+                                            ⏸️ Đã nghỉ
+                                        </span>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span style="font-weight: 600; color: #334155;">
+                                        <?= htmlspecialchars($u['class_name'] ?? 'Chưa xếp lớp') ?>
+                                    </span>
+                                <?php endif; ?>
+                            </td>
                             <td>
                                 <?php if ($u['is_active'] == 1): ?>
                                     <span class="badge badge-active">● Hoạt động</span>
@@ -361,12 +387,12 @@ $kw = $kw ?? '';
                     </div>
                     <div class="form-group full">
                         <label class="form-label">Email trường học (*):</label>
-                        <input type="email" name="email" required class="form-control" placeholder="VD: nam224@daihocthudo.edu.vn" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}" title="Vui lòng nhập đúng email có tên miền và dấu chấm hợp lệ">
+                        <input type="email" name="email" required class="form-control" placeholder="VD: nam224@daihocthudo.edu.vn">
                         <small style="font-size: 11px; color: #64748b;">Mật khẩu ban đầu mặc định là: <strong>123456</strong> (Yêu cầu đổi pass lần đầu)</small>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Vai trò hệ thống:</label>
-                        <select name="role" class="form-control">
+                        <select name="role" class="form-control" id="create_role" onchange="onRoleChange(this.value)">
                             <option value="requester">Sinh viên (Requester)</option>
                             <option value="lecturer">Giảng viên (Lecturer)</option>
                             <option value="agent">Kỹ thuật viên IT (Agent)</option>
@@ -374,12 +400,18 @@ $kw = $kw ?? '';
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Lớp sinh hoạt:</label>
-                        <select name="class_id" class="form-control">
-                            <option value="">-- Chọn lớp sinh hoạt --</option>
-                            <?php foreach ($classes as $c): ?>
-                                <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['class_code'] . ' - ' . $c['name']) ?></option>
-                            <?php endforeach; ?>
+                        <label class="form-label" id="class_label">Lớp sinh hoạt / Trạng thái công tác:</label>
+                        <select name="class_id" class="form-control" id="create_class_id">
+                            <optgroup label="Dành cho Sinh viên" id="optgroup_students">
+                                <option value="">-- Chọn lớp sinh hoạt --</option>
+                                <?php foreach ($classes as $c): ?>
+                                    <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['class_code'] . ' - ' . $c['name']) ?></option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                            <optgroup label="Dành cho Cán bộ / Giảng viên / KTV" id="optgroup_staff">
+                                <option value="working" selected>💼 Đang công tác</option>
+                                <option value="retired">⏸️ Đã nghỉ việc / Nghỉ công tác</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="form-group">
@@ -423,19 +455,25 @@ $kw = $kw ?? '';
                     </div>
                     <div class="form-group full">
                         <label class="form-label">Email trường (*):</label>
-                        <input type="email" name="email" id="edit_email" required class="form-control" pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}">
+                        <input type="email" name="email" id="edit_email" required class="form-control">
                     </div>
                     <div class="form-group">
                         <label class="form-label">Số điện thoại:</label>
                         <input type="text" name="phone" id="edit_phone" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Lớp sinh hoạt:</label>
+                        <label class="form-label" id="edit_class_label">Lớp sinh hoạt / Công tác:</label>
                         <select name="class_id" id="edit_class_id" class="form-control">
-                            <option value="">-- Chưa xếp lớp --</option>
-                            <?php foreach ($classes as $c): ?>
-                                <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['class_code']) ?></option>
-                            <?php endforeach; ?>
+                            <optgroup label="Cán bộ / Giảng viên / KTV">
+                                <option value="working">💼 Đang công tác</option>
+                                <option value="retired">⏸️ Đã nghỉ việc / Nghỉ công tác</option>
+                            </optgroup>
+                            <optgroup label="Lớp sinh hoạt Sinh viên">
+                                <option value="">-- Chưa xếp lớp --</option>
+                                <?php foreach ($classes as $c): ?>
+                                    <option value="<?= $c['id'] ?>"><?= htmlspecialchars($c['class_code']) ?></option>
+                                <?php endforeach; ?>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="form-group full">
@@ -453,7 +491,25 @@ $kw = $kw ?? '';
 </div>
 
 <script>
+function onRoleChange(role) {
+    const classLabel = document.getElementById('class_label');
+    const classSelect = document.getElementById('create_class_id');
+    if (!classLabel || !classSelect) return;
+    if (role === 'lecturer' || role === 'agent' || role === 'admin') {
+        classLabel.textContent = 'Trạng thái công tác:';
+        classSelect.value = 'working';
+    } else {
+        classLabel.textContent = 'Lớp sinh hoạt:';
+        classSelect.value = '';
+    }
+}
+
 function openCreateModal() {
+    const roleSelect = document.getElementById('create_role');
+    if (roleSelect) {
+        roleSelect.value = 'requester';
+        onRoleChange('requester');
+    }
     document.getElementById('createModal').style.display = 'flex';
 }
 
@@ -467,7 +523,11 @@ function openEdit(u) {
     document.getElementById('edit_name').value = u.name;
     document.getElementById('edit_email').value = u.email;
     document.getElementById('edit_phone').value = u.phone || '';
-    document.getElementById('edit_class_id').value = u.class_id || '';
+    if (u.role === 'agent' || u.user_type === 'lecturer' || u.role === 'admin') {
+        document.getElementById('edit_class_id').value = (u.is_active == 1) ? 'working' : 'retired';
+    } else {
+        document.getElementById('edit_class_id').value = u.class_id || '';
+    }
     document.getElementById('edit_department').value = u.department || '';
     document.getElementById('editModal').style.display = 'flex';
 }

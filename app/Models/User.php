@@ -151,7 +151,7 @@ class User {
                 ) VALUES (
                     :user_code, :name, :email, :password_hash, :role, :user_type, 
                     :department, :phone, :class_id, :cohort, :academic_status, 
-                    1, 'none', 1
+                    :is_active, 'none', 1
                 )";
 
         $stmt = $pdo->prepare($sql);
@@ -167,6 +167,7 @@ class User {
             ':class_id'        => !empty($data['class_id']) ? (int)$data['class_id'] : null,
             ':cohort'          => trim($data['cohort'] ?? 'D24'),
             ':academic_status' => $data['academic_status'] ?? 'studying',
+            ':is_active'       => isset($data['is_active']) ? (int)$data['is_active'] : 1,
         ]);
 
         return (int) $pdo->lastInsertId();

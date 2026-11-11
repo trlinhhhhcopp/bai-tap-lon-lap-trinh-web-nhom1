@@ -384,7 +384,13 @@ $appRoot = dirname(__DIR__, 2);
                                         <a href="show.php?id=<?php echo $t['id']; ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg text-[11px] font-bold transition inline-block">
                                             Chi Tiết →
                                         </a>
-                                        <?php if (in_array($t['status'], ['resolved', 'closed']) && empty($t['rating_id']) && ($isStudentOrLecturer || (int)$t['requester_id'] === (int)$currentUser['id'])): ?>
+                                        <?php 
+                                        $canRateThisTicket = in_array($t['status'], ['resolved', 'closed']) 
+                                            && empty($t['rating_id']) 
+                                            && !$isLecturer 
+                                            && (int)$t['requester_id'] === (int)$currentUser['id'];
+                                        ?>
+                                        <?php if ($canRateThisTicket): ?>
                                             <a href="show.php?id=<?php echo $t['id']; ?>#csat-box" class="px-2.5 py-1 bg-amber-400 hover:bg-amber-300 text-slate-950 rounded-lg text-[11px] font-black transition inline-block shadow-2xs" title="Chấm điểm đánh giá CSAT cho phiếu này">
                                                 ⭐ Chấm Điểm
                                             </a>
