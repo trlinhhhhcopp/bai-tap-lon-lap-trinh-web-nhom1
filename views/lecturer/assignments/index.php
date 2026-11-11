@@ -17,6 +17,7 @@ if (empty($_SESSION['user'])) {
     header('Location: ../index.php');
     exit;
 }
+$baseActionUrl = (function_exists('get_app_base_url') ? get_app_base_url() : '/web01/bai-tap-lon-lap-trinh-web-nhom1/') . 'assignments/index.php';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -55,19 +56,19 @@ if (empty($_SESSION['user'])) {
         </div>
         <div class="flex items-center gap-2 flex-wrap">
             <!-- Nút xuất Excel / CSV (Page 3 & Page 8) -->
-            <a href="index.php?<?= htmlspecialchars($exportQuery) ?>" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
+            <a href="<?= $baseActionUrl ?>?<?= htmlspecialchars($exportQuery) ?>" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
                 <span>📥</span> Xuất File Excel
             </a>
 
             <?php if ($isAdmin): ?>
                 <!-- Nút khóa / mở khóa CSDL cho Admin (Page 8) -->
-                <a href="index.php?action=toggle_lock" 
+                <a href="<?= $baseActionUrl ?>?action=toggle_lock" 
                    onclick="return confirm('<?= $isLocked ? 'Bạn muốn MỞ KHÓA cơ sở dữ liệu để tiếp tục chỉnh sửa?' : 'Bạn muốn KHÓA cơ sở dữ liệu phân công giảng dạy (Chế độ chỉ đọc)?' ?>');"
                    class="px-3.5 py-2 <?= $isLocked ? 'bg-amber-600 hover:bg-amber-500' : 'bg-slate-700 hover:bg-slate-600' ?> text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5">
                     <span><?= $isLocked ? '🔓' : '🔒' ?></span> <?= $isLocked ? 'Mở Khóa CSDL' : 'Khóa CSDL' ?>
                 </a>
 
-                <a href="index.php?action=create" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 <?= $isLocked ? 'opacity-50 pointer-events-none' : '' ?>">
+                <a href="<?= $baseActionUrl ?>?action=create" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center gap-1.5 <?= $isLocked ? 'opacity-50 pointer-events-none' : '' ?>">
                     <span>➕</span> Thêm Phân Công
                 </a>
             <?php endif; ?>
@@ -85,7 +86,7 @@ if (empty($_SESSION['user'])) {
                 </div>
             </div>
             <?php if ($isAdmin): ?>
-                <a href="index.php?action=toggle_lock" class="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition text-[11px]">
+                <a href="<?= $baseActionUrl ?>?action=toggle_lock" class="shrink-0 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition text-[11px]">
                     Mở Khóa Ngay 🔓
                 </a>
             <?php endif; ?>
@@ -105,11 +106,11 @@ if (empty($_SESSION['user'])) {
                     <h2 class="font-bold text-slate-900">Import phân công từ một tệp</h2>
                     <p class="text-slate-500 mt-1">Cột: Mã lớp, Mã môn, Mã giảng viên hoặc email, Học kỳ, Năm học. Hỗ trợ .xlsx và .csv.</p>
                 </div>
-                <a href="index.php?action=download_template&amp;type=assignments" class="font-bold text-indigo-700 hover:underline">
+                <a href="<?= $baseActionUrl ?>?action=download_template&amp;type=assignments" class="font-bold text-indigo-700 hover:underline">
                     Tải mẫu import (.csv)
                 </a>
             </div>
-            <form method="post" enctype="multipart/form-data" action="index.php?action=import_assignments" class="flex flex-wrap items-center gap-2">
+            <form method="post" enctype="multipart/form-data" action="<?= $baseActionUrl ?>?action=import_assignments" class="flex flex-wrap items-center gap-2">
                 <input type="file" name="import_file" required accept=".xlsx,.csv,.txt" <?= $isLocked ? 'disabled' : '' ?>
                        class="min-w-0 flex-1 text-[11px] text-slate-600 file:mr-2 file:rounded-lg file:border-0 file:bg-indigo-50 file:px-3 file:py-2 file:font-semibold border border-slate-200 rounded-xl bg-slate-50 p-1">
                 <button type="submit" <?= $isLocked ? 'disabled' : '' ?>
@@ -157,7 +158,7 @@ if (empty($_SESSION['user'])) {
 
     <!-- THANH TÌM KIẾM -->
     <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex items-center justify-between flex-wrap gap-3 text-xs">
-        <form method="get" action="index.php" class="flex items-center gap-2 flex-1 flex-wrap">
+        <form method="get" action="<?= $baseActionUrl ?>" class="flex items-center gap-2 flex-1 flex-wrap">
             <input type="hidden" name="action" value="index">
             <input type="text" name="q" value="<?= htmlspecialchars($keyword) ?>" placeholder="Tìm kiếm theo mã lớp, môn học, giảng viên..." 
                    class="min-w-52 flex-1 px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium" />
@@ -183,7 +184,7 @@ if (empty($_SESSION['user'])) {
                 Lọc
             </button>
             <?php if ($keyword !== '' || $classId > 0 || $lecturerFilterId > 0): ?>
-                <a href="index.php?action=index" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition">
+                <a href="<?= $baseActionUrl ?>?action=index" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition">
                     Xóa lọc
                 </a>
             <?php endif; ?>
@@ -243,10 +244,10 @@ if (empty($_SESSION['user'])) {
                                             <span class="text-[11px] text-slate-400 italic">Đã khóa</span>
                                         <?php else: ?>
                                             <div class="flex items-center justify-center gap-1.5">
-                                                <a href="index.php?action=edit&id=<?= $row['id'] ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition text-[11px]">
+                                                <a href="<?= $baseActionUrl ?>?action=edit&id=<?= $row['id'] ?>" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-lg transition text-[11px]">
                                                     Sửa
                                                 </a>
-                                                <form method="POST" action="index.php?action=delete" onsubmit="return confirm('Bạn có chắc muốn xóa phân công này?');" class="inline">
+                                                <form method="POST" action="<?= $baseActionUrl ?>?action=delete" onsubmit="return confirm('Bạn có chắc muốn xóa phân công này?');" class="inline">
                                                     <input type="hidden" name="id" value="<?= $row['id'] ?>">
                                                     <button type="submit" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-lg transition text-[11px] cursor-pointer">
                                                         Xóa
@@ -266,7 +267,7 @@ if (empty($_SESSION['user'])) {
         <?php if ($totalPages > 1): ?>
             <div class="p-4 border-t border-slate-100 flex items-center justify-center gap-1.5 text-xs">
                 <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <a href="index.php?action=index&page=<?= $i ?>&q=<?= urlencode($keyword) ?>&class_id=<?= $classId ?>&lecturer_id=<?= $lecturerFilterId ?>"
+                    <a href="<?= $baseActionUrl ?>?action=index&page=<?= $i ?>&q=<?= urlencode($keyword) ?>&class_id=<?= $classId ?>&lecturer_id=<?= $lecturerFilterId ?>"
                        class="px-3 py-1.5 rounded-lg border <?= $i == $page ? 'bg-indigo-600 text-white border-indigo-600 font-bold' : 'border-slate-300 text-slate-700 hover:bg-slate-100' ?>">
                         <?= $i ?>
                     </a>

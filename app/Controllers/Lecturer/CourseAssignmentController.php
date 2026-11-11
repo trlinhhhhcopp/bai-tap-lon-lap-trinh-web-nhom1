@@ -566,6 +566,10 @@ class CourseAssignmentController
             : 0;
         $rows = CourseAssignment::exportAll($lecturerId, $keyword, $classId, $lecturerFilterId);
 
+        if (ob_get_level()) {
+            ob_end_clean();
+        }
+
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename="bang_phan_cong_giang_day_helpdesk_' . date('Ymd_His') . '.csv"');
         header('Pragma: no-cache');
