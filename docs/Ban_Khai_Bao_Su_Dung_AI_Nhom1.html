@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Bản Khai Báo Sử Dụng Trí Tuệ Nhân Tạo (AI) - Nhóm 1</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 16mm 15mm 16mm;
+        }
+        
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 10.5pt;
+            line-height: 1.38;
+            color: #111827;
+            background: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Style */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 8px;
+        }
+        .header-table td {
+            vertical-align: top;
+            padding: 0;
+            border: none;
+        }
+        .school-name {
+            font-size: 10.5pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+            line-height: 1.3;
+        }
+        .school-sub {
+            font-size: 9.5pt;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-align: center;
+            color: #1e3a8a;
+            border-bottom: 1px solid #1e3a8a;
+            display: inline-block;
+            padding-bottom: 2px;
+            margin-top: 2px;
+        }
+        .motto {
+            font-size: 10.5pt;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.3;
+        }
+        .motto-sub {
+            font-size: 9.5pt;
+            font-style: italic;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            display: inline-block;
+            padding-bottom: 2px;
+            margin-top: 2px;
+        }
+
+        .doc-title {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 6px;
+        }
+        .doc-title h1 {
+            font-size: 14.5pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #0f172a;
+            margin: 0;
+            letter-spacing: 0.5px;
+        }
+        .doc-subtitle {
+            font-size: 10pt;
+            font-style: italic;
+            color: #334155;
+            margin-top: 3px;
+        }
+
+        .principle-box {
+            background-color: #f1f5f9;
+            border-left: 3.5px solid #2563eb;
+            padding: 6px 9px;
+            font-size: 9pt;
+            line-height: 1.35;
+            color: #334155;
+            margin-bottom: 10px;
+            border-radius: 2px;
+        }
+        .principle-box strong {
+            color: #1e3a8a;
+        }
+
+        /* Section Headings */
+        .section-title {
+            font-size: 11pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #1e3a8a;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            padding-bottom: 2px;
+            border-bottom: 1.5px solid #cbd5e1;
+            page-break-after: avoid;
+        }
+
+        /* Info List */
+        .info-grid {
+            margin-bottom: 8px;
+            font-size: 10.5pt;
+        }
+        .info-item {
+            margin-bottom: 3px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #0f172a;
+        }
+        .member-list {
+            margin: 3px 0 5px 18px;
+            padding: 0;
+            line-height: 1.38;
+        }
+        .member-list li {
+            margin-bottom: 2px;
+        }
+        .member-role {
+            color: #475569;
+            font-size: 9.5pt;
+        }
+        .leader-badge {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+            font-size: 8.5pt;
+            font-weight: bold;
+            padding: 1px 5px;
+            border-radius: 3px;
+            border: 1px solid #bfdbfe;
+            margin-left: 4px;
+        }
+
+        /* Tables */
+        table.data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            font-size: 9.2pt;
+            page-break-inside: auto;
+        }
+        table.data-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+        table.data-table th, table.data-table td {
+            border: 1px solid #94a3b8;
+            padding: 4.5px 6.5px;
+            vertical-align: top;
+            line-height: 1.32;
+        }
+        table.data-table th {
+            background-color: #e2e8f0;
+            color: #0f172a;
+            font-weight: bold;
+            text-align: center;
+            font-size: 9.5pt;
+        }
+        table.data-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+        .text-center { text-align: center; }
+        .text-bold { font-weight: bold; }
+        .text-lead { font-weight: bold; color: #1e3a8a; }
+
+        ul.table-list {
+            margin: 0;
+            padding-left: 14px;
+        }
+        ul.table-list li {
+            margin-bottom: 2px;
+        }
+
+        /* Callout / Highlight in table */
+        .err-label {
+            color: #b91c1c;
+            font-weight: bold;
+        }
+        .fix-label {
+            color: #15803d;
+            font-weight: bold;
+        }
+
+        /* Commitment block */
+        .commitment-text {
+            font-size: 9.8pt;
+            font-style: italic;
+            line-height: 1.38;
+            text-align: justify;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            page-break-inside: avoid;
+        }
+        .signature-table td {
+            border: none;
+            padding: 0;
+            vertical-align: top;
+        }
+        .sig-box {
+            text-align: center;
+            width: 260px;
+            float: right;
+        }
+        .sig-date {
+            font-size: 9.5pt;
+            font-style: italic;
+            margin-bottom: 3px;
+        }
+        .sig-role {
+            font-size: 10pt;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .sig-note {
+            font-size: 8.5pt;
+            font-style: italic;
+            color: #64748b;
+            margin-bottom: 50px;
+        }
+        .sig-name {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .footer-note {
+            text-align: right;
+            font-size: 8pt;
+            color: #94a3b8;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TRANG 1: HEADER, THÔNG TIN CHUNG, CÔNG CỤ AI -->
+    <!-- Header Quốc Hiệu / Trường -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 48%;">
+                <div class="school-name">TRƯỜNG ĐẠI HỌC THỦ ĐÔ HÀ NỘI</div>
+                <div style="text-align: center;"><span class="school-sub">KHOA CÔNG NGHỆ THÔNG TIN</span></div>
+            </td>
+            <td style="width: 4%;"></td>
+            <td style="width: 48%;">
+                <div class="motto">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</div>
+                <div style="text-align: center;"><span class="motto-sub">Độc lập – Tự do – Hạnh phúc</span></div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Tiêu đề chính -->
+    <div class="doc-title">
+        <h1>BẢN KHAI BÁO SỬ DỤNG TRÍ TUỆ NHÂN TẠO (AI)</h1>
+        <div class="doc-subtitle">Học phần: <strong>Lập trình Web & Ứng dụng</strong> (Mã HP: <strong>WEB101</strong>) — Học kỳ I, Năm học 2026 - 2027</div>
+    </div>
+
+    <!-- Hộp nguyên tắc đạo đức -->
+    <div class="principle-box">
+        <strong>Nguyên tắc cốt lõi:</strong> AI chỉ đóng vai trò trợ lý học tập hỗ trợ tra cứu và rà soát. Sinh viên phải tự hiểu, tự làm chủ, giải thích được toàn bộ kiến trúc, dữ liệu và từng dòng mã nguồn nộp. Nhóm cam kết không sao chép thụ động kết quả AI mà không kiểm chứng; tuyệt đối không đưa dữ liệu nhạy cảm lên công cụ bên ngoài. Bản khai báo được nộp kèm theo báo cáo kỹ thuật và toàn bộ mã nguồn của Bài tập lớn.
+    </div>
+
+    <!-- I. THÔNG TIN CHUNG -->
+    <div class="section-title">I. THÔNG TIN CHUNG</div>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="info-label">• Họ và tên sinh viên (Trưởng nhóm):</span> <strong>Phạm Thị Thanh Ngân</strong> <span class="leader-badge">TRƯỞNG NHÓM</span>
+        </div>
+        <div class="info-item">
+            <span class="info-label">• Mã số sinh viên:</span> <strong>224001736</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+            <span class="info-label">• Lớp học phần:</span> Lập trình Web & Ứng dụng — <strong>D24 CNTT1</strong>
+        </div>
+        <div class="info-item">
+            <span class="info-label">• Đề tài Bài tập lớn:</span> 
+            <strong>Xây dựng Hệ thống Tiếp nhận & Xử lý Hỗ trợ CNTT Trực tuyến theo chuẩn ITIL v4 (Helpdesk Online TUD) — Trường Đại học Thủ Đô Hà Nội</strong>
+        </div>
+        <div class="info-item" style="margin-top: 4px;">
+            <span class="info-label">• Danh sách thành viên Nhóm 1 và phân hệ phụ trách:</span>
+            <ol class="member-list">
+                <li><strong>Phạm Thị Thanh Ngân</strong> (MSV: 224001736 - Trưởng nhóm) — <span class="member-role">Phân hệ KTV Workbench, SLA Engine, Bộ đếm giờ hành chính & Đánh giá CSAT</span></li>
+                <li><strong>Trần Thục Linh</strong> (MSV: 224001729) — <span class="member-role">Phân hệ Admin Control Center, Quản trị tài khoản, Phân quyền RBAC & Bảo mật hệ thống</span></li>
+                <li><strong>Lê Hà My</strong> (MSV: 224001735) — <span class="member-role">Phân hệ Cổng Giảng viên, Phân công học phần, Quản lý Buổi học, Bài tập & Kiểm tra Deadline</span></li>
+                <li><strong>Nguyễn Ánh Nhi</strong> (MSV: 224001742) — <span class="member-role">Phân hệ Cổng Sinh viên, Trạm cứu hộ nộp bài khẩn cấp không cần đăng nhập & Nghiệm thu vé</span></li>
+                <li><strong>Phan Công Thành</strong> (MSV: 224001746) — <span class="member-role">Phân hệ Quản trị Sự cố diện rộng (Major Incident), Quản lý Lịch lễ nghỉ bù trừ SLA hệ thống</span></li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- II. CÔNG CỤ AI ĐÃ SỬ DỤNG -->
+    <div class="section-title">II. CÔNG CỤ AI ĐÃ SỬ DỤNG</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 25%;">Công cụ AI<br><em>(Tên, Phiên bản)</em></th>
+                <th style="width: 62%;">Mục đích sử dụng cụ thể<br><em>(Gợi ý giải pháp, tối ưu mã nguồn, kiểm thử, phân tích dữ liệu)</em></th>
+                <th style="width: 13%;">Mức độ<br><em>(Ít/TB/Nhiều)</em></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Google Antigravity / Gemini 2.5 Pro & Claude 3.5 Sonnet</strong></td>
+                <td>
+                    <ul class="table-list">
+                        <li>Hỗ trợ rà soát mã nguồn (Code Review), chuẩn hóa kiến trúc MVC thuần PHP không phụ thuộc framework.</li>
+                        <li>Gợi ý cấu trúc giải thuật tính toán hạn chót SLA theo khung giờ hành chính và khấu trừ lịch nghỉ lễ.</li>
+                        <li>Hỗ trợ viết script CLI kiểm thử tự động cú pháp CSDL và xuất sơ đồ cấu trúc dữ liệu 14 bảng.</li>
+                    </ul>
+                </td>
+                <td class="text-center text-bold" style="color: #2563eb;">TB</td>
+            </tr>
+            <tr>
+                <td><strong>ChatGPT / GitHub Copilot</strong></td>
+                <td>
+                    <ul class="table-list">
+                        <li>Tra cứu nhanh cú pháp các lớp tiện ích CSS Tailwind và cấu trúc thẻ HTML5 ngữ nghĩa.</li>
+                        <li>Hỗ trợ phát hiện nhanh lỗi cú pháp (Syntax errors) trong quá trình debug mã nguồn PHP/SQL.</li>
+                    </ul>
+                </td>
+                <td class="text-center text-bold" style="color: #64748b;">Ít</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer-note">Trang 1 / 3 — Báo cáo Bài tập lớn Lập trình Web Nhóm 1 (TUD)</div>
+
+    <!-- TRANG 2: BẢNG 6 GIAI ĐOẠN ĐÓNG GÓP -->
+    <div class="page-break"></div>
+
+    <div class="section-title">III. PHÂN ĐỊNH ĐÓNG GÓP CỦA SINH VIÊN VÀ AI THEO TỪNG GIAI ĐOẠN</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 22%;">Giai đoạn phát triển</th>
+                <th style="width: 46%;">Phần sinh viên tự làm (Đóng góp cốt lõi)</th>
+                <th style="width: 32%;">Phần AI hỗ trợ (Chi tiết đóng góp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-bold">1. Bài toán / Yêu cầu<br><span style="font-size: 8.2pt; font-weight: normal; color: #64748b;">Mục tiêu, phạm vi, tác tử</span></td>
+                <td>
+                    <ul class="table-list">
+                        <li>Khảo sát thực tế nhu cầu cứu hộ sự cố học tập và cấp lại mật khẩu tại trường ĐH Thủ Đô Hà Nội.</li>
+                        <li>Xác định phạm vi 4 nhóm tác tử (Sinh viên, Giảng viên, KTV, Admin).</li>
+                        <li>Thiết lập chỉ tiêu: Cam kết phản hồi SLA 15 phút, tạm dừng SLA khi chờ phản hồi, trạm cứu hộ không cần login.</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Gợi ý cách phân loại 4 cấp độ ưu tiên sự cố theo chuẩn ITIL v4 (URGENT, HIGH, MED, LOW).</li>
+                        <li>Đóng góp ý tưởng luồng giao diện 1 trang (Single Page Portal) cho sinh viên nộp bài cứu hộ.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-bold">2. Dữ liệu / CSDL<br><span style="font-size: 8.2pt; font-weight: normal; color: #64748b;">Lược đồ, bảng, quan hệ</span></td>
+                <td>
+                    <ul class="table-list">
+                        <li>Trực tiếp thiết kế toàn bộ 14 bảng CSDL chuẩn 3NF (users, tickets, categories, course_lessons...).</li>
+                        <li>Thiết lập toàn bộ khóa chính (PK), khóa ngoại (FK) và liên kết ràng buộc toàn vẹn.</li>
+                        <li>Xây dựng dữ liệu mẫu (Seeding) gồm 32 tài khoản thực tế, danh mục dịch vụ và lịch nghỉ lễ.</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Hỗ trợ chuyển đổi nhanh lược đồ bảng sang cú pháp câu lệnh SQL CREATE TABLE và INSERT dữ liệu mẫu.</li>
+                        <li>Gợi ý chuẩn đặt tên trường theo quy tắc quốc tế snake_case.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-bold">3. Thiết kế giải pháp<br><span style="font-size: 8.2pt; font-weight: normal; color: #64748b;">Mô hình, giải thuật, state</span></td>
+                <td>
+                    <ul class="table-list">
+                        <li>Lựa chọn mô hình MVC hướng đối tượng OOP PHP, tự xây dựng bộ lõi không dùng framework.</li>
+                        <li>Thiết kế máy trạng thái (State Machine) quản lý vòng đời vé: new &rarr; in_progress &rarr; waiting_requester &rarr; resolved &rarr; closed.</li>
+                        <li>Thiết kế giải thuật phân công tự động cân bằng tải cho KTV trực ban.</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Gợi ý cấu trúc bộ định tuyến Router.php và cơ chế gắn Middleware lọc request.</li>
+                        <li>Gợi ý công thức tính hệ số thời gian SLA: Effective Minutes = SLA Hours &times; SLA Factor.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-bold">4. Cài đặt & Tích hợp<br><span style="font-size: 8.2pt; font-weight: normal; color: #64748b;">Mã nguồn, Controller, Model</span></td>
+                <td>
+                    <ul class="table-list">
+                        <li>Tự lập trình toàn bộ Controller và Model cho cả 5 phân hệ thành viên.</li>
+                        <li>Tự cài đặt 5 tầng bảo mật: Chống SQL Injection bằng Prepared Statement, chống CSRF bằng token hash_equals, lọc XSS bằng htmlspecialchars, phân quyền RBAC và Upload file an toàn.</li>
+                        <li>Tự tích hợp hệ thống thông báo chuông thời gian thực.</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Hỗ trợ kiểm tra và chuẩn hóa các đoạn code xử lý đối tượng ngày tháng DateTime PHP.</li>
+                        <li>Gợi ý đoạn mã JavaScript xử lý AJAX xem trước file mã nguồn/file ZIP bài nộp (In-App Previewer).</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-bold">5. Thử nghiệm / Test<br><span style="font-size: 8.2pt; font-weight: normal; color: #64748b;">Test case, an toàn, kịch bản</span></td>
+                <td>
+                    <ul class="table-list">
+                        <li>Thiết lập bảng và chạy thực tế 25 Test Case kiểm thử chức năng trên trình duyệt.</li>
+                        <li>Trực tiếp test các kịch bản biên: Giao bài tập đặt deadline quá khứ, gửi vé trùng lặp spam, nộp bài sau deadline bị gắn nhãn Nộp muộn.</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Hỗ trợ viết script PHP CLI (test_crud_cli.php) chạy tự động kiểm tra cú pháp và logic cơ sở dữ liệu trên Terminal.</li>
+                        <li>Đề xuất kịch bản kiểm thử bảo mật chống vượt quyền truy cập chéo IDOR.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-bold">6. Phân tích & Báo cáo<br><span style="font-size: 8.2pt; font-weight: normal; color: #64748b;">Đánh giá, thuyết trình</span></td>
+                <td>
+                    <ul class="table-list">
+                        <li>Tổng hợp chỉ số kỹ thuật: Tỷ lệ đáp ứng SLA, điểm CSAT trung bình 4.9/5.0 sao.</li>
+                        <li>Phân tích rõ hạn chế: Chưa tích hợp thanh toán lệ phí, chưa đẩy thông báo qua Telegram/Zalo Bot.</li>
+                        <li>Trực tiếp thuyết trình, demo và giải thích tường tận từng dòng mã nguồn trước Hội đồng chấm thi.</li>
+                    </ul>
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Hỗ trợ định dạng bảng biểu, cấu trúc mục lục báo cáo tài liệu PDF/Markdown chuẩn mực.</li>
+                        <li>Gợi ý khung kịch bản phân bổ thời gian thuyết trình 5 phút đạt chuẩn điểm tối đa.</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="footer-note">Trang 2 / 3 — Báo cáo Bài tập lớn Lập trình Web Nhóm 1 (TUD)</div>
+
+    <!-- TRANG 3: KIỂM CHỨNG KẾT QUẢ AI & CAM KẾT KÝ TÊN -->
+    <div class="page-break"></div>
+
+    <div class="section-title">IV. KIỂM CHỨNG KẾT QUẢ DO AI TẠO RA (MINH CHỨNG CHỦ ĐỘNG KIỂM SOÁT)</div>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th style="width: 25%;">Nội dung do AI tạo cần kiểm chứng</th>
+                <th style="width: 43%;">Sai sót sinh viên đã phát hiện và cách xử lý</th>
+                <th style="width: 32%;">Cách thức & Nguồn kiểm chứng thực tế</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-bold">1. Mã nguồn truy vấn CSDL<br><em>(SQL Query)</em></td>
+                <td>
+                    <span class="err-label">• Sai sót phát hiện:</span> AI ban đầu gợi ý câu truy vấn nối chuỗi trực tiếp <code>$sql .= "WHERE name = '$kw'"</code>, dẫn đến nguy cơ bị <strong>SQL Injection</strong> nghiêm trọng.<br>
+                    <span class="fix-label">• Cách sửa của SV:</span> Sinh viên phát hiện và sửa lại 100% bằng <strong>Prepared Statement</strong> với tham số ẩn danh <code>:kw</code> và hàm <code>bindValue()</code> an toàn.
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Kiểm chứng bằng cách nhập chuỗi payload khai thác: <code>' OR '1'='1</code>, <code>'; DROP TABLE users; --</code>.</li>
+                        <li>Kết quả: Hệ thống lọc an toàn, không có lỗ hổng.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-bold">2. Thuật toán tính hạn chót SLA<br><em>(SlaService.php)</em></td>
+                <td>
+                    <span class="err-label">• Sai sót phát hiện:</span> Thuật toán do AI gợi ý ban đầu chỉ cộng dồn thời gian 24/7, không đóng băng giờ nghỉ trưa và không loại trừ ngày thứ Bảy, Chủ Nhật.<br>
+                    <span class="fix-label">• Cách sửa của SV:</span> Sinh viên viết lại hàm <code>addBusinessMinutes()</code>, bổ sung khung giờ hành chính (08:00–12:00 & 13:30–17:30) và truy vấn bảng <code>holidays</code>.
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Kiểm chứng bằng kịch bản test thực tế: Tạo vé sự cố lúc 11:55 trưa (SLA cam kết 30 phút).</li>
+                        <li>Hạn hoàn thành chính xác là 14:10 chiều (đã trừ trọn vẹn 90 phút nghỉ trưa).</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-bold">3. Ràng buộc ngày nộp bài tập<br><em>(course_lessons)</em></td>
+                <td>
+                    <span class="err-label">• Sai sót phát hiện:</span> AI ban đầu chỉ tạo trường <code>deadline_at</code> mà không kiểm tra tính hợp lệ, dẫn đến Giảng viên có thể vô tình nhập ngày trong quá khứ.<br>
+                    <span class="fix-label">• Cách sửa của SV:</span> Sinh viên tự bổ sung thuộc tính <code>min</code> HTML5, JS cảnh báo khi chọn ngày &lt; hôm nay, và xác thực 2 lớp Backend <code>strtotime($deadline) &gt;= today</code>.
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Kiểm thử trực tiếp trên form: Chọn ngày hôm qua &rarr; Hệ thống lập tức bật cảnh báo và từ chối lưu.</li>
+                        <li>Chạy script kiểm thử PHP <code>test_lesson_delete.php</code> xác nhận dữ liệu đã được bảo vệ.</li>
+                    </ul>
+                </td>
+            </tr>
+            <tr>
+                <td class="text-bold">4. Sơ đồ kiến trúc CSDL 4 tầng<br><em>(Database Architecture)</em></td>
+                <td>
+                    <span class="err-label">• Sai sót phát hiện:</span> Sơ đồ AI vẽ ban đầu gộp chung <code>courses & course_lessons</code> làm 1 ô (khiến đếm thiếu mất 1 bảng) và ghi nhầm <code>course_assignments</code> là gán SV.<br>
+                    <span class="fix-label">• Cách sửa của SV:</span> Sinh viên đã tách riêng <code>course_lessons</code> xuống Tầng 3 Nghiệp vụ và đính chính bảng phân công Giảng viên phụ trách, đủ 14 bảng chuẩn 3NF.
+                </td>
+                <td>
+                    <ul class="table-list">
+                        <li>Đối chiếu trực tiếp với câu lệnh <code>SHOW TABLES</code> trong phpMyAdmin và sơ đồ quan hệ Foreign Key thực tế.</li>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- V. CAM KẾT -->
+    <div class="section-title">V. CAM KẾT CỦA SINH VIÊN</div>
+    <div class="commitment-text">
+        Em cam kết toàn bộ thông tin khai báo trên đây là hoàn toàn trung thực; em và các thành viên trong nhóm hiểu rõ, làm chủ và có khả năng giải thích chi tiết toàn bộ các nội dung, thuật toán, mã nguồn do mình nộp. Nếu khai báo sai sự thật hoặc sao chép kết quả từ công cụ AI mà không khai báo, nhóm xin chịu mọi hình thức kỷ luật học tập và bài tập lớn sẽ bị đánh giá <strong>Không đạt</strong> theo đúng quy định của Nhà trường và Bộ môn.
+    </div>
+
+    <table class="signature-table">
+        <tr>
+            <td style="width: 50%;"></td>
+            <td style="width: 50%;">
+                <div class="sig-box">
+                    <div class="sig-date">Hà Nội, ngày 16 tháng 11 năm 2026</div>
+                    <div class="sig-role">TRƯỞNG NHÓM CAM KẾT</div>
+                    <div class="sig-note">(Ký và ghi rõ họ tên)</div>
+                    <div class="sig-name">Phạm Thị Thanh Ngân</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="footer-note" style="margin-top: 25px;">Trang 3 / 3 — Báo cáo Bài tập lớn Lập trình Web Nhóm 1 (TUD)</div>
+
+</body>
+</html>
