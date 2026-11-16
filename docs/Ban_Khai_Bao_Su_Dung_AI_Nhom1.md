@@ -8,7 +8,7 @@
 
 ### I. THÔNG TIN CHUNG
 
-* **Họ và tên sinh viên (hoặc trưởng nhóm):** Phạm Thị Thanh Ngân *(hoặc Trần Thục Linh)*
+* **Họ và tên sinh viên (Trưởng nhóm):** Phạm Thị Thanh Ngân
 * **Mã sinh viên:** 224001736  
 * **Lớp học phần:** Lập trình Web & Ứng dụng — D24 CNTT1  
 * **Thành viên nhóm (Nhóm 1):**
@@ -59,5 +59,5 @@
 
 Em cam kết thông tin khai báo là trung thực; em hiểu và có thể giải thích các nội dung, thuật toán, mã nguồn do mình nộp. Nếu khai báo sai hoặc sao chép kết quả AI mà không khai báo, bài tập lớn sẽ bị đánh giá Không đạt.
 
-| | Hà Nội, ngày 16 tháng 11 năm 2026<br><br>**ĐẠI DIỆN NHÓM CAM KẾT**<br>*(Ký và ghi rõ họ tên)*<br><br><br><br>**Phạm Thị Thanh Ngân** |
+| | Hà Nội, ngày 16 tháng 11 năm 2026<br><br>**TRƯỞNG NHÓM CAM KẾT**<br>*(Ký và ghi rõ họ tên)*<br><br><br><br>**Phạm Thị Thanh Ngân** |
 |:---|:---:|
